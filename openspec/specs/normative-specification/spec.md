@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change establish-product-definition-foundation. Update Purpose after archive.
+The normative specification documents that fix the methodology's artifact, relationship and handoff contracts.
 
 ## Requirements
 

@@ -108,6 +108,71 @@ describe('checkCoverage', () => {
     expect(result.diagnostics.some((d) => d.target === 'HOF-OTHER-999')).toBe(true);
   });
 
+  it('rejects covered entries with empty evidence arrays (schema minItems)', async () => {
+    await writeCoverage(
+      [
+        'schema: product-definition-as-code/coverage/v1alpha1',
+        'handoff: HOF-FIXTURE-001',
+        'requirements:',
+        '  FR-FIXTURE-002:',
+        '    status: covered',
+        '    specification: []',
+        '    verification: []',
+        '',
+      ].join('\n'),
+    );
+    const result = await checkCoverage(root, changeDir(), registry, labels);
+    expect(result.diagnostics.some((d) => d.severity === 'error')).toBe(true);
+  });
+
+  it('rejects evidence paths that escape the repository', async () => {
+    await writeCoverage(
+      [
+        'schema: product-definition-as-code/coverage/v1alpha1',
+        'handoff: HOF-FIXTURE-001',
+        'requirements:',
+        '  FR-FIXTURE-002:',
+        '    status: covered',
+        '    specification:',
+        '      - ../../outside/spec.md',
+        '    verification:',
+        '      - tests/demo.test.ts',
+        '',
+      ].join('\n'),
+    );
+    const result = await checkCoverage(root, changeDir(), registry, labels);
+    const errors = result.diagnostics.filter((d) => d.severity === 'error');
+    expect(errors.some((d) => d.target === '../../outside/spec.md')).toBe(true);
+    expect(errors.some((d) => d.message.includes('inside the repository'))).toBe(true);
+  });
+
+  it('rejects coverage entries for requirements the handoff does not implement', async () => {
+    await writeCoverage(
+      [
+        'schema: product-definition-as-code/coverage/v1alpha1',
+        'handoff: HOF-FIXTURE-001',
+        'requirements:',
+        '  FR-FIXTURE-002:',
+        '    status: covered',
+        '    specification:',
+        '      - specs/demo/spec.md',
+        '    verification:',
+        '      - tests/demo.test.ts',
+        '  FR-UNRELATED-001:',
+        '    status: covered',
+        '    specification:',
+        '      - specs/demo/spec.md',
+        '    verification:',
+        '      - tests/demo.test.ts',
+        '',
+      ].join('\n'),
+    );
+    const result = await checkCoverage(root, changeDir(), registry, labels);
+    const errors = result.diagnostics.filter((d) => d.severity === 'error');
+    expect(errors.some((d) => d.artifact === 'FR-UNRELATED-001')).toBe(true);
+    expect(errors.some((d) => d.message.includes('unrelated'))).toBe(true);
+  });
+
   it('passes with complete coverage and existing evidence', async () => {
     await writeCoverage(
       [

@@ -1,4 +1,4 @@
-import { initRepository, rendererFor } from '@prodshape/distribution';
+import { InstallConflictError, initRepository, rendererFor } from '@prodshape/distribution';
 import { CliError, exitCodes, type CliIo } from '../context.js';
 
 export interface InitCliOptions {
@@ -27,12 +27,20 @@ export async function runInit(io: CliIo, options: InitCliOptions): Promise<numbe
     );
   }
 
-  const result = await initRepository({
-    root: io.cwd,
-    ai,
-    ...(options.sdd ? { sdd: options.sdd } : {}),
-    ...(options.force !== undefined ? { force: options.force } : {}),
-  });
+  let result;
+  try {
+    result = await initRepository({
+      root: io.cwd,
+      ai,
+      ...(options.sdd ? { sdd: options.sdd } : {}),
+      ...(options.force !== undefined ? { force: options.force } : {}),
+    });
+  } catch (error) {
+    if (error instanceof InstallConflictError) {
+      throw new CliError(error.message, exitCodes.validationErrors);
+    }
+    throw error;
+  }
 
   io.out(`Initialized Product Definition as Code (${result.created.length} file(s) created).`);
   if (result.skipped.length > 0) {

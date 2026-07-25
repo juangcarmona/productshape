@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change implement-product-graph-core. Update Purpose after archive.
+Compilation of the typed product graph from Markdown artifacts, with derived reverse relationships.
 
 ## Requirements
 

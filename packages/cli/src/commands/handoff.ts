@@ -3,6 +3,7 @@ import { isAbsolute, join, relative, sep } from 'node:path';
 import { parse } from 'yaml';
 import {
   checkHandoffClosure,
+  escalateWarnings,
   generateHandoff,
   handoffStatus,
   loadModel,
@@ -69,9 +70,10 @@ export async function runHandoffCreate(io: CliIo, options: HandoffCreateOptions)
   const model = await loadModel(repo.modelDir, repo.root, repo.registry);
 
   const validation = validateChange(change, model.artifacts, changes, repo.config);
-  const errors = [...model.diagnostics, ...validation.diagnostics].filter(
-    (d) => d.severity === 'error',
-  );
+  const errors = escalateWarnings(
+    [...model.diagnostics, ...validation.diagnostics],
+    repo.config.validation['warnings-as-errors'],
+  ).filter((d) => d.severity === 'error');
   if (errors.length > 0) {
     for (const diagnostic of errors) io.err(formatDiagnosticLine(diagnostic));
     io.err('Handoff not generated: the change overlay has validation errors.');

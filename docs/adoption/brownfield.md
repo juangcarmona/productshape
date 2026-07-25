@@ -10,9 +10,9 @@ Recover workflow — a defined, human-driven process — and the `recover-produc
 assists it. No tool will scan your codebase and emit a product model. Plan for recovery to be real
 analytical work; the methodology structures it, it does not eliminate it.
 
-> **Milestone note.** The `product-definition` CLI does not exist yet; commands below arrive with
-> the `implement-product-graph-core` change and its successors. See
-> [Limitations of v0.1](../limitations-v0.1.md).
+> The CLI ships as [`@prodshape/cli`](https://www.npmjs.com/package/@prodshape/cli); the
+> `product-definition` commands below run through the installed v0.x alias (identical to
+> `prodshape`). See [Limitations of v0.1](../limitations-v0.1.md).
 
 ## 1. Initialize
 

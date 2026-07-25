@@ -6,12 +6,12 @@ what is deliberately excluded, and where the design has known limits. Genuinely 
 
 ## Implementation status
 
-v0.1 is complete as scoped. All four OpenSpec changes — `establish-product-definition-foundation`,
-`implement-product-graph-core`, `implement-product-change-and-handoff` and
-`package-ai-and-sdd-integrations` — are implemented: the `product-definition` CLI, the graph
-compiler, change overlays, handoffs, coverage checking, promotion and the AI and SDD integrations
-all work today. The package is not published to npm; the CLI is built from the repository (see
-[OD-005](../OPEN-DECISIONS.md#od-005-npm-publication)).
+v0.1 is complete as scoped. All four founding OpenSpec changes —
+`establish-product-definition-foundation`, `implement-product-graph-core`,
+`implement-product-change-and-handoff` and `package-ai-and-sdd-integrations` — are implemented:
+the `prodshape` CLI (with its `product-definition` alias), the graph compiler, change overlays,
+handoffs, coverage checking, promotion and the AI and SDD integrations all work today. The
+`@prodshape/*` packages are published to npm and the CLI can also be built from the repository.
 
 Honest operational limitations within that scope:
 

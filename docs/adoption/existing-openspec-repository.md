@@ -4,9 +4,9 @@ This guide is for repositories that already run OpenSpec. Product Definition as 
 product-definition layer above your existing workflow; OpenSpec keeps owning everything it owns
 today. This repository itself works exactly this way.
 
-> **Milestone note.** The `product-definition` CLI and the OpenSpec adapter do not exist yet; the
-> adapter ships with the `implement-product-change-and-handoff` and
-> `package-ai-and-sdd-integrations` changes. The contracts below are fixed in the
+> The CLI ships as [`@prodshape/cli`](https://www.npmjs.com/package/@prodshape/cli) and includes
+> the OpenSpec adapter; the `product-definition` commands below run through the installed v0.x
+> alias (identical to `prodshape`). The contracts are fixed in the
 > [specification](../specification/handoff-contract.md). See
 > [Limitations of v0.1](../limitations-v0.1.md).
 

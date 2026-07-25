@@ -175,6 +175,48 @@ export function changeDoc(options: {
   ].join('\n');
 }
 
+/** Minimal .product/config.yaml; parseConfig merges it over the defaults. */
+export function configDoc(sddProvider?: string): string {
+  return [
+    'integrations:',
+    ...(sddProvider ? ['  sdd:', `    provider: ${sddProvider}`] : ['  sdd: {}']),
+    '',
+  ].join('\n');
+}
+
+/** A product-coverage.yaml sidecar for the given handoff. */
+export function coverageDoc(
+  handoffId: string,
+  entries: Record<
+    string,
+    {
+      status: 'covered' | 'partial' | 'uncovered';
+      specification?: string[];
+      verification?: string[];
+    }
+  >,
+): string {
+  const lines = [
+    'schema: product-definition-as-code/coverage/v1alpha1',
+    `handoff: ${handoffId}`,
+    'requirements:',
+  ];
+  for (const [requirement, entry] of Object.entries(entries)) {
+    lines.push(`  ${requirement}:`);
+    lines.push(`    status: ${entry.status}`);
+    if (entry.specification) {
+      lines.push('    specification:');
+      for (const path of entry.specification) lines.push(`      - ${path}`);
+    }
+    if (entry.verification) {
+      lines.push('    verification:');
+      for (const path of entry.verification) lines.push(`      - ${path}`);
+    }
+  }
+  lines.push('');
+  return lines.join('\n');
+}
+
 export function sliceDoc(options: {
   id: string;
   change: string;

@@ -11,13 +11,17 @@ governed-by:
 uses-terms:
   - TERM-CURRENT-PRODUCT-MODEL
   - TERM-PRODUCT-ARTIFACT
+  - TERM-METHODOLOGY
+  - TERM-REFERENCE-IMPLEMENTATION
 ---
 
 ## Goal
 
 The repository gains everything needed to define a product as code: the product definition
 structure, valid configuration, artifact templates, and — when chosen — installed AI and SDD
-integrations, without disturbing anything already in the repository.
+integrations, without disturbing anything already in the repository. Initialization is the moment
+a repository adopts the methodology by installing its reference implementation, so the two must
+stay distinguishable from the very first command.
 
 ## Trigger
 

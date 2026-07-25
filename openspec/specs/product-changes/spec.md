@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change implement-product-change-and-handoff. Update Purpose after archive.
+The Product Change overlay lifecycle: draft through approval, implementation and terminal states, with overlay validation.
 
 ## Requirements
 

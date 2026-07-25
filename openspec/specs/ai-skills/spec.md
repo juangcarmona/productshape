@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change package-ai-and-sdd-integrations. Update Purpose after archive.
+The canonical AI skills, slash commands and hook descriptors rendered into provider-specific integrations.
 
 ## Requirements
 

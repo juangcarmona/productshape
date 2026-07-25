@@ -4,6 +4,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { runCli } from '@prodshape/cli';
 import {
   changeDoc,
+  configDoc,
+  coverageDoc,
   createLifecycleRepo,
   functionalRequirementDoc,
   git,
@@ -303,23 +305,107 @@ describe('handoff generation and staleness', () => {
 });
 
 describe('promotion', () => {
-  it('refuses promotion before implemented status and resolved slices', async () => {
-    const result = await run(['change', 'promote', CHG, '--dry-run']);
-    expect(result.code).toBe(1);
-    expect(result.out).toContain("requires status 'implemented'");
-  });
+  const sddDir = 'openspec/changes/impl-annotate';
+  const HOF = 'HOF-GITHUB-88';
 
-  it('dry run reports the plan without changing anything', async () => {
-    await writeAnnotateChange({ status: 'implemented' });
+  async function writeAnnotateSlice(status: string) {
     await write(
       root,
       `${changeDir}/slices/sli-annotate-001.yaml`,
       sliceDoc({
         id: 'SLI-ANNOTATE-001',
         change: CHG,
-        status: 'completed',
+        status,
         requirement: 'FR-ANNOTATE-001',
         affects: ['UC-ANNOTATE-001', 'JRN-SHARE-001'],
+      }),
+    );
+  }
+
+  it('refuses promotion before implemented status and resolved slices', async () => {
+    const result = await run(['change', 'promote', CHG, '--dry-run']);
+    expect(result.code).toBe(1);
+    expect(result.out).toContain("requires status 'implemented'");
+  });
+
+  it('refuses without an SDD provider: coverage evidence cannot be verified (PRODUCT044)', async () => {
+    await writeAnnotateChange({ status: 'implemented' });
+    await writeAnnotateSlice('completed');
+    const before = await git(root, 'status', '--porcelain');
+    const result = await run(['change', 'promote', CHG, '--dry-run']);
+    expect(result.code).toBe(1);
+    expect(result.out).toContain('PRODUCT044');
+    expect(result.out).toContain('integrations.sdd');
+    expect(await git(root, 'status', '--porcelain')).toBe(before);
+  });
+
+  it('--accept-external-evidence promotes without an adapter, loudly (PRODUCT044 warning)', async () => {
+    const result = await run(['change', 'promote', CHG, '--dry-run', '--accept-external-evidence']);
+    expect(result.code).toBe(0);
+    expect(result.out).toContain('Dry run: nothing was changed.');
+    expect(result.out).toContain('PRODUCT044');
+    expect(result.out).toContain('asserted outside any SDD adapter');
+  });
+
+  it('with an SDD provider configured, a completed slice without a handoff is refused', async () => {
+    await write(root, '.product/config.yaml', configDoc('openspec'));
+    const result = await run(['change', 'promote', CHG, '--dry-run']);
+    expect(result.code).toBe(1);
+    expect(result.out).toContain('PRODUCT044');
+    expect(result.out).toContain('SLI-ANNOTATE-001');
+  });
+
+  it('uncovered evidence is refused, and the escape flag cannot bypass an adapter', async () => {
+    // Generate the handoff sidecars into the SDD change dir (requires an approved slice).
+    await writeAnnotateSlice('approved');
+    const created = await run([
+      'handoff',
+      'create',
+      '--change',
+      CHG,
+      '--slice',
+      'SLI-ANNOTATE-001',
+      '--work-item',
+      'github:owner/repo#88',
+      '--title',
+      'Annotate short links',
+      '--out',
+      sddDir,
+    ]);
+    expect(created.code).toBe(0);
+    await writeAnnotateSlice('completed');
+
+    await write(
+      root,
+      `${sddDir}/product-coverage.yaml`,
+      coverageDoc(HOF, { 'FR-ANNOTATE-001': { status: 'uncovered' } }),
+    );
+    const result = await run(['change', 'promote', CHG, '--dry-run']);
+    expect(result.code).toBe(1);
+    expect(result.out).toContain('PRODUCT043');
+
+    const flagged = await run([
+      'change',
+      'promote',
+      CHG,
+      '--dry-run',
+      '--accept-external-evidence',
+    ]);
+    expect(flagged.code).toBe(1);
+  });
+
+  it('dry run reports the plan without changing anything', async () => {
+    await write(root, `${sddDir}/specs/annotate/spec.md`, '# Annotate spec\n');
+    await write(root, `${sddDir}/tests/annotate.test.md`, '# Annotate verification\n');
+    await write(
+      root,
+      `${sddDir}/product-coverage.yaml`,
+      coverageDoc(HOF, {
+        'FR-ANNOTATE-001': {
+          status: 'covered',
+          specification: ['specs/annotate/spec.md'],
+          verification: ['tests/annotate.test.md'],
+        },
       }),
     );
     const status = await git(root, 'status', '--porcelain');
@@ -331,6 +417,23 @@ describe('promotion', () => {
     expect(await git(root, 'status', '--porcelain')).toBe(status);
   });
 
+  it('cancelled slices need no coverage evidence', async () => {
+    const cancelledPath = `${changeDir}/slices/sli-cancel-001.yaml`;
+    await write(
+      root,
+      cancelledPath,
+      sliceDoc({
+        id: 'SLI-CANCEL-001',
+        change: CHG,
+        status: 'cancelled',
+        requirement: 'FR-ANNOTATE-001',
+      }),
+    );
+    const result = await run(['change', 'promote', CHG, '--dry-run']);
+    await rm(join(root, ...cancelledPath.split('/')));
+    expect(result.code).toBe(0);
+  });
+
   it('detects baseline drift since base-revision (PRODUCT027)', async () => {
     const path = 'docs/product/model/journeys/jrn-share-001.md';
     const original = await read(root, path);
@@ -340,6 +443,20 @@ describe('promotion', () => {
     expect(result.code).toBe(1);
     expect(result.out).toContain('PRODUCT027');
     expect(result.out).toContain('JRN-SHARE-001');
+  });
+
+  it('a failing preflight mutates nothing (archive destination occupied)', async () => {
+    const blocker = 'docs/product/changes/completed/chg-annotate-001';
+    await write(root, `${blocker}/placeholder.md`, 'occupied\n');
+    const journeyBefore = await read(root, 'docs/product/model/journeys/jrn-share-001.md');
+    const result = await run(['change', 'promote', CHG]);
+    expect(result.code).toBe(1);
+    expect(result.err).toContain('archive destination');
+    // Nothing was applied: no new use case, journey byte-identical, change still active.
+    await expect(read(root, 'docs/product/model/use-cases/uc-annotate-001.md')).rejects.toThrow();
+    expect(await read(root, 'docs/product/model/journeys/jrn-share-001.md')).toBe(journeyBefore);
+    expect(await read(root, `${changeDir}/change.md`)).toContain(CHG);
+    await rm(join(root, ...blocker.split('/')), { recursive: true });
   });
 
   it('promotes: applies operations, moves the change, keeps history, no commits', async () => {

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change package-ai-and-sdd-integrations. Update Purpose after archive.
+Sidecar-based handoff placement and coverage validation inside native OpenSpec changes, without invading their ownership.
 
 ## Requirements
 

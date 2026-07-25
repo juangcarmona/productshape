@@ -49,14 +49,16 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .command('add')
     .description('Install a provider integration (claude, copilot, openspec)')
     .argument('<provider>', 'provider name')
-    .action(async (provider: string) => {
-      capture.code = await runIntegrationAdd(io, provider);
+    .option('--force', 'overwrite existing unmanaged or hand-edited files')
+    .action(async (provider: string, options: { force?: boolean }) => {
+      capture.code = await runIntegrationAdd(io, provider, options);
     });
   integration
     .command('update')
     .description('Regenerate all installed integrations (--check detects drift only)')
     .option('--check', 'detect drift without writing')
-    .action(async (options: { check?: boolean }) => {
+    .option('--force', 'regenerate even over hand-edited managed files')
+    .action(async (options: { check?: boolean; force?: boolean }) => {
       capture.code = await runIntegrationUpdate(io, options);
     });
 
@@ -92,7 +94,11 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .description('Apply an implemented Product Change to the baseline (explicit, never implicit)')
     .argument('<id>', 'Product Change ID')
     .option('--dry-run', 'report the plan without changing anything')
-    .action(async (id: string, options: { dryRun?: boolean }) => {
+    .option(
+      '--accept-external-evidence',
+      'without an SDD adapter, assert that coverage evidence exists outside the repository tooling',
+    )
+    .action(async (id: string, options: { dryRun?: boolean; acceptExternalEvidence?: boolean }) => {
       capture.code = await runChangePromote(io, id, options);
     });
 

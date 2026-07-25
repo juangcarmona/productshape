@@ -27,6 +27,21 @@ export const codes = {
   missingBodySection: 'PRODUCT009',
 } as const;
 
+/**
+ * Apply the repository's warnings-as-errors escalation. One semantic for every
+ * validating command: baseline validate, change validate, handoff generation,
+ * graph generation and promotion all gate on the escalated set.
+ */
+export function escalateWarnings(
+  diagnostics: Diagnostic[],
+  warningsAsErrors: boolean,
+): Diagnostic[] {
+  if (!warningsAsErrors) return diagnostics;
+  return diagnostics.map((d) =>
+    d.severity === 'warning' ? { ...d, severity: 'error' as const } : d,
+  );
+}
+
 /** Deterministic ordering: by file, then code, then target. */
 export function sortDiagnostics(diagnostics: Diagnostic[]): Diagnostic[] {
   return [...diagnostics].sort(

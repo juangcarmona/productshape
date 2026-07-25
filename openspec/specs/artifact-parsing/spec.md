@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change establish-product-definition-foundation. Update Purpose after archive.
+The parsing contract that turns canonical Markdown-plus-frontmatter files into typed product artifacts.
 
 ## Requirements
 

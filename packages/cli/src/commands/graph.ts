@@ -2,6 +2,7 @@ import {
   buildGeneratedOutputs,
   buildGraphJson,
   buildMermaid,
+  escalateWarnings,
   stableJson,
   validateBaseline,
   writeGeneratedOutputs,
@@ -14,7 +15,8 @@ export interface GraphOptions {
 
 export async function runGraph(io: CliIo, options: GraphOptions): Promise<number> {
   const repo = await resolveRepository(io);
-  const { graph, diagnostics } = await validateBaseline(repo);
+  const { graph, diagnostics: reported } = await validateBaseline(repo);
+  const diagnostics = escalateWarnings(reported, repo.config.validation['warnings-as-errors']);
 
   const errors = diagnostics.filter((d) => d.severity === 'error');
   if (errors.length > 0) {

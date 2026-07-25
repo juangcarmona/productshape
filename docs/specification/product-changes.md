@@ -81,6 +81,14 @@ Promotion is the only operation that applies a Product Change to the baseline. P
 2. MUST require every `approved` slice of the change to be `completed` or explicitly `cancelled`.
 3. MUST require traceability evidence for the requirements implemented by the change's completed
    slices (see [Handoff Contract](handoff-contract.md) and the adapter's coverage mapping).
+   With an SDD provider configured, evidence is discovered deterministically from the SDD
+   workspace: a completed slice is evidenced when at least one handoff referencing it passes the
+   coverage check without errors, and the union of covered requirements must contain every
+   requirement implemented by completed slices. A completed slice without verifiable evidence
+   fails promotion with `PRODUCT044`. Cancelled slices are exempt. Without an SDD provider,
+   promotion refuses with `PRODUCT044` unless `--accept-external-evidence` is passed, which
+   records a `PRODUCT044` warning in the plan output; the flag has no effect when a provider is
+   configured.
 4. MUST revalidate the overlay.
 5. MUST check baseline-revision compatibility: if any artifact named in the change's operations
    changed in the baseline since `base-revision`, promotion MUST fail until the change is
@@ -91,5 +99,9 @@ Promotion is the only operation that applies a Product Change to the baseline. P
 7. Moves the change directory to `docs/product/changes/completed/<chg-id>/`, preserving its
    history.
 8. MUST support `--dry-run`, reporting every action without performing any.
+   Before mutating anything, promotion MUST preflight every planned action (readable sources,
+   existing delete targets, absent archive destination); a preflight failure leaves the working
+   tree untouched, and execution orders the change-directory move last so the archived change
+   appears only when every other action succeeded.
 9. MUST NOT be executed implicitly — not by an AI hook, not by SDD archival, not by any automatic
    trigger. Promotion MUST NOT create Git commits; committing is the user's decision.

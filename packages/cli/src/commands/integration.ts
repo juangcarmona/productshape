@@ -1,5 +1,6 @@
 import {
   checkIntegrations,
+  InstallConflictError,
   installProvider,
   rendererFor,
   updateIntegrations,
@@ -12,7 +13,11 @@ import {
   type CliIo,
 } from '../context.js';
 
-export async function runIntegrationAdd(io: CliIo, provider: string): Promise<number> {
+export async function runIntegrationAdd(
+  io: CliIo,
+  provider: string,
+  options?: { force?: boolean },
+): Promise<number> {
   const repo = await resolveRepository(io);
   if (provider === 'openspec') {
     io.out(
@@ -27,14 +32,22 @@ export async function runIntegrationAdd(io: CliIo, provider: string): Promise<nu
       exitCodes.invalidInvocation,
     );
   }
-  const result = await installProvider(repo.root, provider);
+  let result;
+  try {
+    result = await installProvider(repo.root, provider, undefined, options?.force);
+  } catch (error) {
+    if (error instanceof InstallConflictError) {
+      throw new CliError(error.message, exitCodes.validationErrors);
+    }
+    throw error;
+  }
   io.out(`Installed ${result.provider} integration (${result.written.length} managed file(s)).`);
   return exitCodes.success;
 }
 
 export async function runIntegrationUpdate(
   io: CliIo,
-  options: { check?: boolean },
+  options: { check?: boolean; force?: boolean },
 ): Promise<number> {
   const repo = await resolveRepository(io);
 
@@ -49,7 +62,15 @@ export async function runIntegrationUpdate(
     return diagnostics.length === 0 ? exitCodes.success : exitCodes.validationErrors;
   }
 
-  const results = await updateIntegrations(repo.root);
+  let results;
+  try {
+    results = await updateIntegrations(repo.root, options.force);
+  } catch (error) {
+    if (error instanceof InstallConflictError) {
+      throw new CliError(error.message, exitCodes.validationErrors);
+    }
+    throw error;
+  }
   if (results.length === 0) {
     io.out('No integrations installed; add one with: prodshape integration add <provider>');
     return exitCodes.success;

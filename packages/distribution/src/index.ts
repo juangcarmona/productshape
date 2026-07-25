@@ -11,6 +11,7 @@ export { initRepository } from './init.js';
 export type { InitOptions, InitResult } from './init.js';
 export {
   checkIntegrations,
+  InstallConflictError,
   installProvider,
   rendererFor,
   renderers,

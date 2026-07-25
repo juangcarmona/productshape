@@ -11,7 +11,7 @@ export { discoverChanges, loadChange } from './changes.js';
 export type { ChangeOperations, LoadedChange, LoadedSlice } from './changes.js';
 export { configSchemaId, defaultConfig, loadConfig, parseConfig } from './config.js';
 export type { ConfigResult, ProductConfig } from './config.js';
-export { codes, sortDiagnostics } from './diagnostics.js';
+export { codes, escalateWarnings, sortDiagnostics } from './diagnostics.js';
 export type { Diagnostic, DiagnosticSeverity } from './diagnostics.js';
 export { contentDigest, normalizeToLf } from './digest.js';
 export { computeClosureFromSeeds } from './closure.js';
@@ -62,7 +62,13 @@ export type { ChangeValidation } from './overlay.js';
 export { parseArtifactDocument } from './parse.js';
 export type { ParseResult } from './parse.js';
 export { applyPromotion, modelSubdirByType, planPromotion } from './promote.js';
-export type { PlanPromotionOptions, PromotionAction, PromotionPlan } from './promote.js';
+export type {
+  CoverageEvidenceProvider,
+  PlanPromotionOptions,
+  PromotionAction,
+  PromotionPlan,
+  SliceEvidence,
+} from './promote.js';
 export { changesAffecting, handoffsReferencing, slicesReferencing } from './references.js';
 export type { HandoffReference } from './references.js';
 export { allowedTargets, extractEdges, relationshipSpecs } from './relationships.js';

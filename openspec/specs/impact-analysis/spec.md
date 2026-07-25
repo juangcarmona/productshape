@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change implement-product-graph-core. Update Purpose after archive.
+Structural impact traversal over the product graph in both directions.
 
 ## Requirements
 

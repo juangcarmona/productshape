@@ -1,6 +1,6 @@
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { runCli } from '@prodshape/cli';
 import { checkIntegrations, loadBundledAssets } from '@prodshape/distribution';
@@ -136,9 +136,53 @@ describe('init and managed-file lifecycle (end to end)', () => {
     expect(missing.out).toContain('PRODUCT052');
     const diagnostics = await checkIntegrations(workDir);
     expect(diagnostics.map((d) => d.code)).toContain('PRODUCT051');
-    // Repair for later tests.
-    const repair = await run(['integration', 'update'], workDir);
+    // Repair for later tests: regeneration over drift needs explicit --force.
+    const repair = await run(['integration', 'update', '--force'], workDir);
     expect(repair.code).toBe(0);
+  });
+
+  it('integration update refuses to regenerate over hand-edited files without --force', async () => {
+    const managed = join(workDir, '.claude', 'commands', 'product', 'audit.md');
+    const original = await readFile(managed, 'utf8');
+    const tampered = `${original}\nuser edit that must not be lost\n`;
+    await writeFile(managed, tampered, 'utf8');
+    const lockBefore = await readFile(join(workDir, '.product', 'installation.lock.json'), 'utf8');
+
+    const refused = await run(['integration', 'update'], workDir);
+    expect(refused.code).toBe(1);
+    expect(refused.err).toContain('Refusing to overwrite');
+    expect(refused.err).toContain('.claude/commands/product/audit.md');
+    // Nothing was destroyed: the edit survives and the lock is untouched.
+    expect(await readFile(managed, 'utf8')).toBe(tampered);
+    expect(await readFile(join(workDir, '.product', 'installation.lock.json'), 'utf8')).toBe(
+      lockBefore,
+    );
+
+    const forced = await run(['integration', 'update', '--force'], workDir);
+    expect(forced.code).toBe(0);
+    expect(await readFile(managed, 'utf8')).toBe(original);
+  });
+
+  it('integration add refuses to claim files it does not own', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'product-definition-collide-'));
+    try {
+      const init = await run(['init'], scratch);
+      expect(init.code).toBe(0);
+      const userFile = join(scratch, '.claude', 'skills', 'define-product', 'SKILL.md');
+      await mkdir(dirname(userFile), { recursive: true });
+      await writeFile(userFile, 'my own skill\n', 'utf8');
+
+      const refused = await run(['integration', 'add', 'claude'], scratch);
+      expect(refused.code).toBe(1);
+      expect(refused.err).toContain('Refusing to overwrite');
+      expect(await readFile(userFile, 'utf8')).toBe('my own skill\n');
+
+      const forced = await run(['integration', 'add', 'claude', '--force'], scratch);
+      expect(forced.code).toBe(0);
+      expect(await readFile(userFile, 'utf8')).toContain('MANAGED FILE');
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
   });
 
   it('doctor reports a healthy repository after repair', async () => {

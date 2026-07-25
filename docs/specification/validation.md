@@ -52,6 +52,7 @@ them for a repository; tools MUST NOT escalate unilaterally.
 | `PRODUCT041` | Handoff missing required artifacts                                                     |
 | `PRODUCT042` | Invalid or unverifiable content digest                                                 |
 | `PRODUCT043` | Implemented requirement without a coverage mapping                                     |
+| `PRODUCT044` | Coverage evidence for a completed delivery slice missing or unverifiable at promotion  |
 | `PRODUCT050` | Invalid configuration or unknown top-level configuration key                           |
 | `PRODUCT051` | Managed integration file modified by hand                                              |
 | `PRODUCT052` | Expected managed or generated file missing                                             |

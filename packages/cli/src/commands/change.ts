@@ -1,12 +1,15 @@
 import { join } from 'node:path';
+import { checkSliceEvidence } from '@prodshape/adapter-openspec';
 import {
   applyPromotion,
   discoverChanges,
+  escalateWarnings,
   loadChange,
   loadModel,
   planPromotion,
   stableJson,
   validateChange,
+  type CoverageEvidenceProvider,
   type LoadedChange,
   type ProductRepository,
 } from '@prodshape/core';
@@ -53,7 +56,10 @@ export async function runChangeValidate(
     changes,
     repo.config,
   );
-  const allDiagnostics = [...model.diagnostics, ...diagnostics];
+  const allDiagnostics = escalateWarnings(
+    [...model.diagnostics, ...diagnostics],
+    repo.config.validation['warnings-as-errors'],
+  );
   const errors = allDiagnostics.filter((d) => d.severity === 'error');
   const warnings = allDiagnostics.filter((d) => d.severity === 'warning');
 
@@ -77,6 +83,7 @@ export async function runChangeValidate(
 
 export interface ChangePromoteOptions {
   dryRun?: boolean;
+  acceptExternalEvidence?: boolean;
 }
 
 export async function runChangePromote(
@@ -90,9 +97,16 @@ export async function runChangePromote(
   const model = await loadModel(repo.modelDir, repo.root, repo.registry);
 
   const validation = validateChange(change, model.artifacts, changes, repo.config);
-  const overlayErrors = [...model.diagnostics, ...validation.diagnostics].filter(
-    (d) => d.severity === 'error',
-  );
+  const overlayErrors = escalateWarnings(
+    [...model.diagnostics, ...validation.diagnostics],
+    repo.config.validation['warnings-as-errors'],
+  ).filter((d) => d.severity === 'error');
+
+  const coverageProvider: CoverageEvidenceProvider | undefined =
+    repo.config.integrations.sdd.provider === 'openspec'
+      ? (forChange, slice) =>
+          checkSliceEvidence(repo.root, forChange.id ?? '', slice.id ?? '', repo.registry)
+      : undefined;
 
   const plan = await planPromotion({
     repoRoot: repo.root,
@@ -101,11 +115,16 @@ export async function runChangePromote(
     change,
     baseline: model.artifacts,
     overlayErrors,
+    coverageProvider,
+    acceptExternalEvidence: options.acceptExternalEvidence,
+    warningsAsErrors: repo.config.validation['warnings-as-errors'],
   });
 
   const planErrors = plan.diagnostics.filter((d) => d.severity === 'error');
+  const planWarnings = plan.diagnostics.filter((d) => d.severity === 'warning');
   io.out(`Promotion plan for ${id}:`);
   for (const action of plan.actions) io.out(`  ${action.kind}: ${action.description}`);
+  for (const diagnostic of planWarnings) io.out(`  ${formatDiagnosticLine(diagnostic)}`);
   if (planErrors.length > 0) {
     io.out('Blocking problems:');
     for (const diagnostic of planErrors) io.out(`  ${formatDiagnosticLine(diagnostic)}`);
@@ -117,7 +136,12 @@ export async function runChangePromote(
     return exitCodes.success;
   }
 
-  await applyPromotion(repo.root, plan);
+  try {
+    await applyPromotion(repo.root, plan);
+  } catch (error) {
+    io.err(`error: ${error instanceof Error ? error.message : String(error)}`);
+    return exitCodes.validationErrors;
+  }
   io.out(`Promoted ${id}: baseline updated, change moved to completed.`);
   io.out('Review and commit the result; promotion never creates Git commits.');
   return exitCodes.success;

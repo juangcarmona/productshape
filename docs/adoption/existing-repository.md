@@ -5,10 +5,10 @@ owns each path, and how to configure it. For how to build the model itself, foll
 [greenfield](greenfield.md) or [brownfield](brownfield.md) guide; if the repository already uses
 OpenSpec, also read [Adopting in an existing OpenSpec repository](existing-openspec-repository.md).
 
-> **Milestone note.** The `product-definition` CLI does not exist yet; `init`, `integration` and
-> `doctor` arrive across the `implement-product-graph-core` and `package-ai-and-sdd-integrations`
-> changes. The layout and configuration below are the fixed v0.1 contract and can be created by
-> hand today. See [Limitations of v0.1](../limitations-v0.1.md).
+> The CLI ships as [`@prodshape/cli`](https://www.npmjs.com/package/@prodshape/cli); the
+> `product-definition` commands below run through the installed v0.x alias (identical to
+> `prodshape`). The layout and configuration below are the fixed v0.1 contract and can also be
+> created by hand. See [Limitations of v0.1](../limitations-v0.1.md).
 
 ## What init touches
 
