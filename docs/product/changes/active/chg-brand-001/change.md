@@ -2,7 +2,7 @@
 id: CHG-BRAND-001
 type: product-change
 title: Adopt ProductShape as the public brand of the reference implementation
-status: draft
+status: approved
 base-revision: 077f9e5413ca46281af499697a2d0e96f216f645
 operations:
   add:
@@ -108,13 +108,12 @@ brand, not an adopter's, so the two constraints coexist.
 
 ## Open Questions
 
-- **Alias sunset.** The exact v0.x release at which the `product-definition` binary alias is removed
-  is not yet fixed; its removal will require a follow-up Product Change that modifies the 15 model
-  artifacts naming the binary.
-- **Term usage vs. advisory warning.** The two new domain terms are foundational but not yet
-  referenced by any use case's `uses-terms`, so validation reports two advisory `PRODUCT106`
-  (unused domain term) warnings. Accepted deliberately here; a later change may reference them from
-  a use case to clear the warnings if preferred.
+None. Two items were considered during the branding review and are settled rather than left open.
+The exact v0.x release at which the `product-definition` binary alias is removed is deferred to a
+follow-up Product Change and is recorded under Out of Scope, not a decision this change makes. The
+two new domain terms are accepted as foundational vocabulary even though no use case references
+them yet — the resulting two advisory `PRODUCT106` warnings are an accepted, non-blocking tradeoff
+that a later change may clear by referencing the terms from a use case.
 
 ## Product Acceptance
 
