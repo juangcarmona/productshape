@@ -21,8 +21,12 @@
       `pnpm build`, `pnpm typecheck`, `pnpm test` as a publish gate
 - [x] 2.3 Integrate `changesets/action` (pin by SHA): open/update the "Version Packages" PR, and
       publish via `pnpm changeset publish` when versions are ahead of npm
-- [ ] 2.4 ⚙️ Run initially in token mode (`NODE_AUTH_TOKEN` from the `NPM_TOKEN` secret) and validate
-      the release-PR → publish flow end to end on a low-risk package
+- [x] 2.4 ⚙️ Run initially in token mode (`NODE_AUTH_TOKEN` from the `NPM_TOKEN` secret) and validate
+      the release-PR → publish flow end to end on a low-risk package (validated 2026-07-25: PR #9
+      versioned four packages and `publish-stable` published them all to npm with provenance;
+      caught and fixed a real bug in the process — `push tags` used `--follow-tags`, which never
+      pushes tags when the job itself advances no branch ref, so tags silently never reached the
+      remote; fixed to `--tags` and backfilled the four missing tags for this release)
 
 ## 3. Pre-release tracks (alpha / beta / stable)
 
@@ -56,7 +60,9 @@
 
 - [x] 6.1 Finalize `RELEASING.md`: required secrets, npm configuration, release process, alpha/
       beta/stable flow, rollback (publish-forward), migration steps
-- [ ] 6.2 ⚙️ Dry-run the full pipeline for a patch release of one package and confirm: only changed
-      packages publish, correct dist-tag, provenance present, no committed secrets
+- [x] 6.2 ⚙️ Dry-run the full pipeline for a patch release of one package and confirm: only changed
+      packages publish, correct dist-tag, provenance present, no committed secrets (confirmed
+      2026-07-25 via PR #9: only the four changed packages published, `latest` dist-tag correct,
+      SLSA provenance attestations present on the registry, no secrets in the diff)
 - [x] 6.3 Confirm no product-model, methodology, or PDaC artifacts changed; CI and conformance
       remain green
