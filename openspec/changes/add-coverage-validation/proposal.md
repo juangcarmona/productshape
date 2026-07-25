@@ -11,7 +11,7 @@ this change implements it.
 ## What Changes
 
 - Implement the deterministic coverage check exposed as `product-definition coverage check
-  <sdd-change>`: reads the sidecar handoff, validates `product-coverage.yaml`, reports uncovered
+<sdd-change>`: reads the sidecar handoff, validates `product-coverage.yaml`, reports uncovered
   implemented requirements (PRODUCT043) and dangling evidence paths, and exits non-zero on gaps.
 - Map this change's own coverage evidence in `product-coverage.yaml`.
 

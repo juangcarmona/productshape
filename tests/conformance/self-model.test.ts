@@ -17,6 +17,7 @@ const expectedIds: Record<string, string[]> = {
     'UC-SLICE-001',
     'UC-HANDOFF-001',
     'UC-HANDOFF-STATUS-001',
+    'UC-COVERAGE-001',
     'UC-PROMOTE-001',
   ],
   'business-rule': [

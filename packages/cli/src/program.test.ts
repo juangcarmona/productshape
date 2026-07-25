@@ -161,6 +161,6 @@ describe('self-application', () => {
     const result = await run(['validate'], repoRoot);
     expect(result.err).toEqual([]);
     expect(result.code).toBe(0);
-    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across 55 artifact\(s\)/);
+    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across 56 artifact\(s\)/);
   });
 });

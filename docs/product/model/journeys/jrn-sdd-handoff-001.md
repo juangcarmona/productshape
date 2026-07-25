@@ -7,6 +7,7 @@ primary-actor: ACT-PRODUCT-ENGINEER
 steps:
   - use-case: UC-HANDOFF-001
   - use-case: UC-HANDOFF-STATUS-001
+  - use-case: UC-COVERAGE-001
   - use-case: UC-PROMOTE-001
 ---
 
@@ -30,22 +31,24 @@ natively — proposal, specs, design, tasks, implementation — which from Produ
 perspective is a waiting period. Before and during implementation, handoff status is checked so
 the delivery team knows whether the packaged product knowledge is still current. As
 implementation completes, coverage evidence is mapped back to the requirements each slice
-implements. When all slices of the change are completed or explicitly cancelled, the Repository
-Maintainer promotes the change: a deliberate, human-triggered act that applies the verified
-delta to the baseline.
+implements and the coverage check verifies the mapping: every implemented requirement must carry
+resolvable specification and verification evidence before the SDD change closes. When all slices
+of the change are completed or explicitly cancelled, the Repository Maintainer promotes the
+change: a deliberate, human-triggered act that applies the verified delta to the baseline.
 
 ## Variants and Branches
 
 - Stale handoff: when referenced product knowledge changes mid-delivery, the handoff is reported
   stale and is regenerated before implementation continues.
 - Uncovered requirements: requirements a slice claims to implement but that lack coverage
-  evidence block SDD closure until covered or explicitly rescoped.
+  evidence fail the coverage check and block SDD closure until covered or explicitly rescoped.
 - Contradiction discovered downstream: when the SDD workflow uncovers a conflict with the
   product definition, it is reported back as a question on the Product Change rather than
   resolved silently in delivery artifacts.
 
 ## Completion Conditions
 
-- The slice's implementation is verified and its requirement coverage evidence is recorded.
+- The slice's implementation is verified and its requirement coverage evidence is recorded and
+  checked.
 - The Product Change is promoted: its delta is part of the baseline and the change is completed
   with its history preserved.

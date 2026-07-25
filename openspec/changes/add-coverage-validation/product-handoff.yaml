@@ -4,7 +4,7 @@ generated-at: 2026-07-25T07:10:40.748Z
 work-item:
   provider: github
   repository: jgcarmona-com/product-definition-as-code
-  id: "1"
+  id: '1'
   title: Add requirement coverage validation to the OpenSpec adapter
 source:
   repository: jgcarmona-com/product-definition-as-code

@@ -4,12 +4,14 @@ type: functional-requirement
 title: Validate requirement coverage before SDD closure
 status: active
 derived-from:
+  - UC-COVERAGE-001
   - UC-HANDOFF-001
   - BR-SDD-001
 verification:
   - scenario: An implemented requirement without a coverage mapping is reported before closure
   - scenario: Coverage is validated deterministically from mappings, never inferred from file names
   - scenario: Full coverage of every implemented requirement allows closure to proceed
+  - scenario: A declared evidence path that does not exist fails the check naming the path
 ---
 
 ## Requirement
@@ -19,7 +21,8 @@ every requirement the handoff implements has a coverage mapping linking it to sp
 verification evidence. A requirement without such a mapping MUST be reported with the documented
 error code, and the report MUST arrive before closure so the gap can be fixed while the work is
 still open. Coverage MUST be established deterministically from the declared mappings; the product
-MUST NOT infer coverage from file names, folder placement or any other resemblance heuristic.
+MUST NOT infer coverage from file names, folder placement or any other resemblance heuristic, and
+MUST verify that every declared evidence path exists.
 
 ## Rationale
 
@@ -38,6 +41,8 @@ flow into a false sense of safety.
   the documented error code, and closure is flagged as blocked until the mapping is completed.
 - A file whose name matches a requirement ID exists in the SDD change, but no mapping declares it
   as evidence. The requirement is still reported as uncovered: resemblance is not coverage.
+- A mapping declares evidence at a path that does not exist. The check fails naming the dangling
+  path, because a claim that cannot be resolved is not evidence.
 - Every implemented requirement has a declared mapping to its specification and verification
   evidence, and each mapping resolves. Coverage validation passes deterministically, and repeated
   runs over the same content produce the identical report.

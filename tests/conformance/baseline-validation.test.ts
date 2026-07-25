@@ -45,7 +45,7 @@ describe('self-hosted model through the full pipeline', () => {
       ...validateModel(model.artifacts, graph, { config }),
     ];
     expect(diagnostics).toEqual([]);
-    expect(graph.nodes).toHaveLength(55);
+    expect(graph.nodes).toHaveLength(56);
     expect(graph.edges.length).toBeGreaterThan(60);
   });
 });
