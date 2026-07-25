@@ -1,6 +1,6 @@
 {
   "name": "@prodshape/distribution",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Installation, provider-asset generation, managed-file lifecycle and doctor for Product Definition as Code.",
   "license": "Apache-2.0",
   "type": "module",
