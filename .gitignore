@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Test output
+coverage/
+
+# Derived, regenerable outputs (never canonical)
+.product/generated/
+.product/cache/
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db

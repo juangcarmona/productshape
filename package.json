@@ -1,0 +1,29 @@
+{
+  "name": "product-definition-as-code",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Define products as a versioned graph of Markdown artifacts. Project product knowledge into backlog and Spec-Driven Development through stable handoff contracts.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20.10"
+  },
+  "packageManager": "pnpm@11.1.0",
+  "scripts": {
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r run typecheck",
+    "test": "vitest run",
+    "build": "pnpm -r run build"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^3.0.0"
+  }
+}
