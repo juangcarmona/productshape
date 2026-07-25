@@ -32,8 +32,8 @@ and verification paths exist — never inferring evidence from file names.
 
 ### Requirement: Missing evidence paths are errors
 
-Coverage entries whose `specification` or `verification` paths do not exist in the repository
-SHALL be reported as errors naming the missing path.
+The adapter SHALL report an error naming the missing path for every coverage entry whose
+`specification` or `verification` path does not exist in the repository.
 
 #### Scenario: Dangling evidence path
 
