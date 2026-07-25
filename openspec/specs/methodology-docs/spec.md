@@ -1,8 +1,11 @@
 # methodology-docs Specification
 
 ## Purpose
+
 TBD - created by archiving change establish-product-definition-foundation. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: Methodology overview is explainable in under five minutes
 
 The documentation SHALL provide an overview (`docs/methodology/overview.md`) that explains the product graph, the artifact families, the three operations (Define, Recover, Change) and the flow from Product Definition to SDD implementation, readable in under five minutes.
@@ -47,4 +50,3 @@ The documentation SHALL provide adoption guides for greenfield products, brownfi
 
 - **WHEN** a maintainer of an OpenSpec repository reads `docs/adoption/existing-openspec-repository.md`
 - **THEN** the guide explains what Product Definition adds, what OpenSpec keeps owning, and the order of adoption steps
-

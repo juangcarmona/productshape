@@ -1,8 +1,11 @@
 # artifact-schemas Specification
 
 ## Purpose
+
 TBD - created by archiving change establish-product-definition-foundation. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: Every artifact kind has a JSON Schema
 
 The repository SHALL provide JSON Schemas (draft 2020-12) for: common definitions, actor, journey, use-case, business-rule, domain-term, bounded-context, functional-requirement, quality-requirement, constraint, product-change, delivery-slice, product-handoff and product-coverage.
@@ -47,4 +50,3 @@ Every authoring template in `templates/` SHALL parse and validate against its co
 
 - **WHEN** the conformance test suite parses each template
 - **THEN** every template validates against its schema with zero errors
-

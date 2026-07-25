@@ -1,8 +1,11 @@
 # normative-specification Specification
 
 ## Purpose
+
 TBD - created by archiving change establish-product-definition-foundation. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: The specification defines every artifact type normatively
 
 The specification SHALL define, using RFC-style normative language (MUST, MUST NOT, SHOULD, SHOULD NOT, MAY), the structure and semantics of Actors, Journeys, Use Cases, Business Rules, Domain Terms, Bounded Contexts, Functional Requirements, Quality Requirements, Constraints, Product Changes, Delivery Slices and Product Handoffs, including required frontmatter fields and required body sections.
@@ -74,4 +77,3 @@ The specification SHALL define what it means for a repository and for an impleme
 
 - **WHEN** a fixture artifact violates a normative statement
 - **THEN** `docs/specification/conformance.md` classifies which diagnostic the violation maps to
-

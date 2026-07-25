@@ -1,8 +1,11 @@
 # self-hosted-product-model Specification
 
 ## Purpose
+
 TBD - created by archiving change establish-product-definition-foundation. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: The repository defines itself with its own methodology
 
 The repository SHALL contain an initial current product model under `docs/product/model` covering the adoption and change workflow, established under the initial-baseline bootstrap exception, with at minimum: actors ACT-PRODUCT-ENGINEER, ACT-REPOSITORY-MAINTAINER, ACT-AI-ASSISTANT; journeys JRN-ADOPT-001, JRN-CHANGE-001, JRN-SDD-HANDOFF-001; use cases UC-INIT-001, UC-DEFINE-001, UC-VALIDATE-001, UC-INSPECT-001, UC-IMPACT-001, UC-CHANGE-001, UC-SLICE-001, UC-HANDOFF-001, UC-HANDOFF-STATUS-001, UC-PROMOTE-001; business rules BR-CANONICAL-001, BR-IDENTITY-001, BR-RELATIONSHIPS-001, BR-CHANGE-001, BR-SDD-001, BR-AI-001; domain terms TERM-PRODUCT-ARTIFACT, TERM-PRODUCT-GRAPH, TERM-PRODUCT-CHANGE, TERM-DELIVERY-SLICE, TERM-PRODUCT-HANDOFF, TERM-PRODUCT-CONTEXT, TERM-CURRENT-PRODUCT-MODEL; bounded contexts BC-PRODUCT-DEFINITION, BC-DELIVERY-INTEGRATION; the fifteen functional requirements FR-INIT-001 through FR-COVERAGE-001 listed in the founding brief; quality requirements QR-PORTABILITY-001, QR-DETERMINISM-001, QR-EXPLAINABILITY-001, QR-EXTENSIBILITY-001; and constraints CON-MARKDOWN-001, CON-NO-GRAPH-DATABASE, CON-NO-WEB-UI, CON-SDD-AGNOSTIC, CON-PUBLIC-GENERIC.
@@ -38,4 +41,3 @@ The repository SHALL contain `.product/config.yaml` conforming to the configurat
 
 - **WHEN** tooling reads `.product/config.yaml`
 - **THEN** the model and changes paths resolve to the self-hosted product definition
-
