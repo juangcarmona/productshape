@@ -1,5 +1,13 @@
-[![CI](https://github.com/juangcarmona/productshape/actions/workflows/ci.yml/badge.svg)](https://github.com/juangcarmona/productshape/actions/workflows/ci.yml)
-[![Conformance](https://github.com/juangcarmona/productshape/actions/workflows/conformance.yml/badge.svg)](https://github.com/juangcarmona/productshape/actions/workflows/conformance.yml)
+<p align="center">
+  <img src="assets/branding.png" alt="ProductShape — Product Definition as Code" width="360" />
+</p>
+
+<p align="center">
+  <a href="https://github.com/juangcarmona/productshape/actions/workflows/ci.yml"><img src="https://github.com/juangcarmona/productshape/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://github.com/juangcarmona/productshape/actions/workflows/conformance.yml"><img src="https://github.com/juangcarmona/productshape/actions/workflows/conformance.yml/badge.svg" alt="Conformance" /></a>
+  <a href="https://www.npmjs.com/package/@prodshape/cli"><img src="https://img.shields.io/npm/v/@prodshape/cli?logo=npm&label=%40prodshape%2Fcli" alt="npm version" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/npm/l/@prodshape/cli" alt="License" /></a>
+</p>
 
 # ProductShape
 
@@ -100,10 +108,32 @@ human explicitly promotes the Product Change, which applies it to the baseline. 
 [SDD handoff](docs/methodology/sdd-handoff.md) and the
 [handoff contract](docs/specification/handoff-contract.md).
 
+## Packages
+
+All packages are published on npm under the
+[`@prodshape`](https://www.npmjs.com/org/prodshape) scope, versioned independently with
+[Changesets](https://github.com/changesets/changesets) and published from GitHub Actions with
+provenance (see [RELEASING.md](RELEASING.md)).
+
+| Package                                                                                          | Version                                                                                                                             | Description                                          |
+| ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| [`@prodshape/cli`](https://www.npmjs.com/package/@prodshape/cli)                                 | [![npm](https://img.shields.io/npm/v/@prodshape/cli)](https://www.npmjs.com/package/@prodshape/cli)                                 | The `prodshape` command-line tool (bundles the rest) |
+| [`@prodshape/core`](https://www.npmjs.com/package/@prodshape/core)                               | [![npm](https://img.shields.io/npm/v/@prodshape/core)](https://www.npmjs.com/package/@prodshape/core)                               | Deterministic parsing, validation and graph          |
+| [`@prodshape/distribution`](https://www.npmjs.com/package/@prodshape/distribution)               | [![npm](https://img.shields.io/npm/v/@prodshape/distribution)](https://www.npmjs.com/package/@prodshape/distribution)               | Init, provider-asset generation and doctor           |
+| [`@prodshape/adapter-openspec`](https://www.npmjs.com/package/@prodshape/adapter-openspec)       | [![npm](https://img.shields.io/npm/v/@prodshape/adapter-openspec)](https://www.npmjs.com/package/@prodshape/adapter-openspec)       | OpenSpec adapter and coverage validation             |
+| [`@prodshape/integration-claude`](https://www.npmjs.com/package/@prodshape/integration-claude)   | [![npm](https://img.shields.io/npm/v/@prodshape/integration-claude)](https://www.npmjs.com/package/@prodshape/integration-claude)   | Claude Code renderer for canonical assets            |
+| [`@prodshape/integration-copilot`](https://www.npmjs.com/package/@prodshape/integration-copilot) | [![npm](https://img.shields.io/npm/v/@prodshape/integration-copilot)](https://www.npmjs.com/package/@prodshape/integration-copilot) | GitHub Copilot renderer for canonical assets         |
+
+```bash
+npm install -g @prodshape/cli
+# or run it once, without installing
+pnpm dlx @prodshape/cli --help
+```
+
 ## Try it in five minutes
 
-The `prodshape` CLI is built from this repository — npm publication is deliberately pending, see
-[OD-005](OPEN-DECISIONS.md#od-005-npm-publication):
+The `prodshape` CLI is published on npm (see [Packages](#packages)). To try it against this
+repository's own product model, build from source:
 
 ```bash
 git clone git@github.com:juangcarmona/productshape.git
@@ -115,10 +145,10 @@ This repository defines itself with its own methodology, so the built CLI has a 
 to run against — 56 artifacts, zero diagnostics:
 
 ```bash
-node packages/cli/dist/cli.js validate
-node packages/cli/dist/cli.js graph --format mermaid
-node packages/cli/dist/cli.js inspect FR-COVERAGE-001
-node packages/cli/dist/cli.js impact BR-SDD-001 --direction incoming
+node packages/cli/dist/bin.js validate
+node packages/cli/dist/bin.js graph --format mermaid
+node packages/cli/dist/bin.js inspect FR-COVERAGE-001
+node packages/cli/dist/bin.js impact BR-SDD-001 --direction incoming
 ```
 
 For a new repository, scaffold the model plus the AI and SDD integrations with:
@@ -127,7 +157,7 @@ For a new repository, scaffold the model plus the AI and SDD integrations with:
 prodshape init --ai claude --sdd openspec
 ```
 
-`prodshape` here means the built CLI binary: run it as `node packages/cli/dist/cli.js`, or make it
+`prodshape` here means the built CLI binary: run it as `node packages/cli/dist/bin.js`, or make it
 a global command with `pnpm link --global` from `packages/cli`. `product-definition` remains a
 temporary v0.x alias for `prodshape` — identical output — and is removed before v1. The
 `/product:*` commands stay canonical; `/ps:*` is an optional shorthand (`/ps:change`, `/ps:impact`,
@@ -165,15 +195,15 @@ v0.1 was built in the open through four OpenSpec changes, all complete:
 
 The repository has delivered one real Product Change through the complete loop —
 `CHG-TRACEABILITY-001`, handed off as `HOF-GITHUB-1` into a native OpenSpec change, implemented,
-covered with evidence and explicitly promoted into the baseline — and v0.1.0 is a release
-candidate, unpublished.
+covered with evidence and explicitly promoted into the baseline — and the v0.1 packages are
+published to npm under the `@prodshape/*` scope.
 
 The reference implementation adopted the ProductShape brand via `CHG-BRAND-001` (delivery slice
 `SLI-BRAND-001`); the methodology name Product Definition as Code is retained.
 
-Nothing is published to npm yet. The public brand is final — ProductShape, the reference
-implementation of the Product Definition as Code methodology. Remaining open decisions are in
-[OPEN-DECISIONS.md](OPEN-DECISIONS.md).
+The v0.1 packages are published to npm under the `@prodshape/*` scope. The public brand is final —
+ProductShape, the reference implementation of the Product Definition as Code methodology. Remaining
+open decisions are in [OPEN-DECISIONS.md](OPEN-DECISIONS.md).
 
 ## Outside v0.1
 
