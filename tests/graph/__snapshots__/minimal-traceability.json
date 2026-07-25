@@ -1,0 +1,20 @@
+{
+  "schema": "product-definition-as-code/traceability/v1alpha1",
+  "requirements": {
+    "CON-NO-TRACKING": {
+      "type": "constraint",
+      "sources": [],
+      "actors": []
+    },
+    "FR-SHORTEN-001": {
+      "type": "functional-requirement",
+      "sources": ["BR-VALID-URL-001", "UC-SHORTEN-001"],
+      "actors": ["ACT-VISITOR"]
+    },
+    "QR-RESOLVE-001": {
+      "type": "quality-requirement",
+      "sources": ["UC-SHORTEN-001"],
+      "actors": ["ACT-VISITOR"]
+    }
+  }
+}

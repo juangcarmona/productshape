@@ -1,0 +1,139 @@
+{
+  "schema": "product-definition-as-code/graph/v1alpha1",
+  "nodes": [
+    {
+      "id": "ACT-VISITOR",
+      "type": "actor",
+      "title": "Visitor",
+      "status": "active",
+      "path": "model/actors/act-visitor.md",
+      "digest": "sha256:d969b1c778c9501eaf481fdffe6cd61ef1c249ece4794e38a8a62264e8898022"
+    },
+    {
+      "id": "BC-SHORTENING",
+      "type": "bounded-context",
+      "title": "Shortening",
+      "status": "active",
+      "path": "model/domain/bounded-contexts/bc-shortening.md",
+      "digest": "sha256:2fc58ad1fef23f881b1c918a77dc2ec3552a5ad136a62f74a068a315b07ba2c2"
+    },
+    {
+      "id": "BR-VALID-URL-001",
+      "type": "business-rule",
+      "title": "Only well-formed absolute URLs are shortened",
+      "status": "active",
+      "path": "model/business-rules/br-valid-url-001.md",
+      "digest": "sha256:08a2beb833c78440ad392220d2aa29f77fed51da8b886ea0a2328a26f2ea42be"
+    },
+    {
+      "id": "CON-NO-TRACKING",
+      "type": "constraint",
+      "title": "The service does not track visitors",
+      "status": "active",
+      "path": "model/requirements/constraints/con-no-tracking.md",
+      "digest": "sha256:89dc3f900ca0898141ccf7e2b96be5fd300d6a789b52ef6673d4bb97a3208671"
+    },
+    {
+      "id": "FR-SHORTEN-001",
+      "type": "functional-requirement",
+      "title": "Issue a resolving short link for every accepted URL",
+      "status": "active",
+      "path": "model/requirements/functional/fr-shorten-001.md",
+      "digest": "sha256:7e8957aff5ed6edd8c58d476fc6f972dd00f4a426d7fd1aeee56cd57a4518d5d"
+    },
+    {
+      "id": "JRN-SHARE-001",
+      "type": "journey",
+      "title": "Share a long address as a short link",
+      "status": "active",
+      "path": "model/journeys/jrn-share-001.md",
+      "digest": "sha256:99d779cde4d7d9993594bae7c7db831a7637a5e8acceed5733aeeefce5c285dd"
+    },
+    {
+      "id": "QR-RESOLVE-001",
+      "type": "quality-requirement",
+      "title": "Short links keep resolving",
+      "status": "active",
+      "path": "model/requirements/quality/qr-resolve-001.md",
+      "digest": "sha256:c18911939ab5645cc02f4b42f308bf32d033ff8ec515a3c2ea4c97e47da778a3"
+    },
+    {
+      "id": "TERM-SHORT-LINK",
+      "type": "domain-term",
+      "title": "Short Link",
+      "status": "active",
+      "path": "model/domain/terms/term-short-link.md",
+      "digest": "sha256:ca3b4bc3f9a8842b3093f554957be158d615645330b83bc8e1238837029a89d4"
+    },
+    {
+      "id": "UC-SHORTEN-001",
+      "type": "use-case",
+      "title": "Shorten a URL",
+      "status": "active",
+      "path": "model/use-cases/uc-shorten-001.md",
+      "digest": "sha256:6dbf4cfe242af19f50495db0cdd070df5bfd155a85bc1d812b14d3b28adc1fa8"
+    }
+  ],
+  "edges": [
+    {
+      "from": "BR-VALID-URL-001",
+      "kind": "applies-to",
+      "to": "UC-SHORTEN-001"
+    },
+    {
+      "from": "FR-SHORTEN-001",
+      "kind": "derived-from",
+      "to": "BR-VALID-URL-001"
+    },
+    {
+      "from": "FR-SHORTEN-001",
+      "kind": "derived-from",
+      "to": "UC-SHORTEN-001"
+    },
+    {
+      "from": "JRN-SHARE-001",
+      "kind": "primary-actor",
+      "to": "ACT-VISITOR"
+    },
+    {
+      "from": "JRN-SHARE-001",
+      "kind": "steps",
+      "to": "UC-SHORTEN-001"
+    },
+    {
+      "from": "QR-RESOLVE-001",
+      "kind": "applies-to",
+      "to": "UC-SHORTEN-001"
+    },
+    {
+      "from": "TERM-SHORT-LINK",
+      "kind": "defined-in",
+      "to": "BC-SHORTENING"
+    },
+    {
+      "from": "UC-SHORTEN-001",
+      "kind": "bounded-context",
+      "to": "BC-SHORTENING"
+    },
+    {
+      "from": "UC-SHORTEN-001",
+      "kind": "governed-by",
+      "to": "BR-VALID-URL-001"
+    },
+    {
+      "from": "UC-SHORTEN-001",
+      "kind": "primary-actor",
+      "to": "ACT-VISITOR"
+    },
+    {
+      "from": "UC-SHORTEN-001",
+      "kind": "uses-terms",
+      "to": "TERM-SHORT-LINK"
+    }
+  ],
+  "derived": {
+    "owns-terms": {
+      "BC-SHORTENING": ["TERM-SHORT-LINK"]
+    }
+  }
+}
