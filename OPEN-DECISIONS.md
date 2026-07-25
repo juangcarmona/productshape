@@ -63,10 +63,16 @@ recorded source revision. In shallow clones that revision may be absent.
 when the recorded revision cannot be resolved. Whether to add an optional remote-fetch fallback is
 deferred.
 
-## OD-007: Node.js support floor
+## OD-007: Node.js support policy — RESOLVED
 
 **Why it matters:** The support floor constrains dependency choices and syntax targets for
 consumers.
 
-**Interim position:** v0.1 requires Node >= 20.10 (`engines` field) and is tested on Node 20 and
-current LTS in CI. A longer-term LTS support policy is deferred.
+**Resolved — policy:** ProductShape supports the Node.js release lines that are in Active LTS or
+Maintenance LTS. The `engines` floor is the lowest currently-maintained LTS; CI runs the floor and
+the current LTS. Raising the floor when a line reaches end-of-life is a documented minor-version
+change, not a breaking one, because an end-of-life runtime is already unsupported upstream.
+
+**Current lineup (as of this release):** Node 20 (Iron) reached end-of-life in April 2026, so the
+floor is **Node 22** (Jod), and CI runs Node 22 and Node 24 (Krypton, the current LTS, maintained
+to April 2028). The `engines` field is `>=22.0.0`.
