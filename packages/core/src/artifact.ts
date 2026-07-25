@@ -1,0 +1,76 @@
+export const productArtifactTypes = [
+  'actor',
+  'journey',
+  'use-case',
+  'business-rule',
+  'domain-term',
+  'bounded-context',
+  'functional-requirement',
+  'quality-requirement',
+  'constraint',
+] as const;
+
+export type ProductArtifactType = (typeof productArtifactTypes)[number];
+
+/** Markdown-authored document types (product artifacts plus the product change definition). */
+export const markdownDocumentTypes = [...productArtifactTypes, 'product-change'] as const;
+
+export type MarkdownDocumentType = (typeof markdownDocumentTypes)[number];
+
+export const idPrefixByType: Record<MarkdownDocumentType, string> = {
+  actor: 'ACT',
+  journey: 'JRN',
+  'use-case': 'UC',
+  'business-rule': 'BR',
+  'domain-term': 'TERM',
+  'bounded-context': 'BC',
+  'functional-requirement': 'FR',
+  'quality-requirement': 'QR',
+  constraint: 'CON',
+  'product-change': 'CHG',
+};
+
+export const requiredBodySections: Record<MarkdownDocumentType, string[]> = {
+  actor: ['Purpose', 'Goals', 'Responsibilities', 'Boundaries'],
+  journey: [
+    'Intended Outcome',
+    'Entry Conditions',
+    'Journey Narrative',
+    'Variants and Branches',
+    'Completion Conditions',
+  ],
+  'use-case': [
+    'Goal',
+    'Trigger',
+    'Preconditions',
+    'Main Flow',
+    'Alternative Flows',
+    'Failure Conditions',
+    'Postconditions',
+  ],
+  'business-rule': ['Rule', 'Rationale', 'Examples', 'Exceptions'],
+  'domain-term': ['Definition', 'Distinguish From', 'Usage'],
+  'bounded-context': ['Responsibility', 'Language', 'Boundaries', 'External Relationships'],
+  'functional-requirement': ['Requirement', 'Rationale', 'Acceptance Scenarios'],
+  'quality-requirement': ['Requirement', 'Measurement', 'Verification'],
+  constraint: ['Constraint', 'Rationale', 'Consequences'],
+  'product-change': [
+    'Problem',
+    'Intended Product Outcome',
+    'Rationale',
+    'Affected Product Areas',
+    'Open Questions',
+    'Product Acceptance',
+    'Out of Scope',
+  ],
+};
+
+export function isMarkdownDocumentType(value: unknown): value is MarkdownDocumentType {
+  return typeof value === 'string' && (markdownDocumentTypes as readonly string[]).includes(value);
+}
+
+export interface ParsedArtifact {
+  file: string;
+  frontmatter: Record<string, unknown>;
+  body: string;
+}

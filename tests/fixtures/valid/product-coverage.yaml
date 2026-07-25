@@ -1,0 +1,9 @@
+schema: product-definition-as-code/coverage/v1alpha1
+handoff: HOF-FIXTURE-001
+requirements:
+  FR-FIXTURE-002:
+    status: covered
+    specification:
+      - specs/fixture/spec.md
+    verification:
+      - tests/fixture.test.ts

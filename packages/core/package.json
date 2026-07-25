@@ -1,0 +1,26 @@
+{
+  "name": "@product-definition-as-code/core",
+  "version": "0.1.0",
+  "description": "Deterministic core of Product Definition as Code: artifact parsing, schema validation, digests and diagnostics.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ajv": "^8.17.0",
+    "ajv-formats": "^3.0.0",
+    "gray-matter": "^4.0.3",
+    "yaml": "^2.5.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0"
+  }
+}
