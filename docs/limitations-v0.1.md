@@ -1,30 +1,37 @@
 # Limitations of v0.1
 
-An honest account of what v0.1 does not do: what is planned but not yet built, what is deliberately
-excluded, and where the design has known limits. Genuinely open decisions are tracked separately in
+An honest account of what v0.1 does not do: where the implemented scope has operational limits,
+what is deliberately excluded, and where the design has known limits. Genuinely open decisions are tracked separately in
 [OPEN-DECISIONS.md](../OPEN-DECISIONS.md).
 
-## Not yet implemented at the current milestone
+## Implementation status
 
-v0.1 is being built through four OpenSpec changes under `openspec/changes/`. Only the first is
-complete, so at this milestone:
+v0.1 is complete as scoped. All four OpenSpec changes — `establish-product-definition-foundation`,
+`implement-product-graph-core`, `implement-product-change-and-handoff` and
+`package-ai-and-sdd-integrations` — are implemented: the `product-definition` CLI, the graph
+compiler, change overlays, handoffs, coverage checking, promotion and the AI and SDD integrations
+all work today. The package is not published to npm; the CLI is built from the repository (see
+[OD-005](../OPEN-DECISIONS.md#od-005-npm-publication)).
 
-- **No CLI.** The `product-definition` binary does not exist. `init`, `validate`, `graph`,
-  `inspect` and `impact` arrive with `implement-product-graph-core`.
-- **No graph compiler.** The product graph, derived reverse relationships, structural validation
-  beyond frontmatter schemas, and generated outputs (`product-graph.json`, indexes, Mermaid) are
-  part of `implement-product-graph-core`.
-- **No change overlays or handoffs.** Product Change overlay validation, delivery-slice tooling,
-  handoff generation, staleness checking, coverage checking and promotion arrive with
-  `implement-product-change-and-handoff`.
-- **No AI or SDD integrations.** The six canonical skills, `/product:*` commands, hooks, the
-  generated Claude Code and GitHub Copilot integrations, the OpenSpec adapter, `integration
-add`/`update` and `doctor` arrive with `package-ai-and-sdd-integrations`.
+Honest operational limitations within that scope:
 
-What exists today from `establish-product-definition-foundation`: the methodology and manifesto,
-the normative [specification](specification/index.md), JSON Schemas and authoring templates, the
-repository's own product model under `docs/product/model`, conformance fixtures, and a minimal
-parsing and schema-validation core. Everything above is specified; none of it is executable yet.
+- **Claude Code hooks are not auto-wired.** The Claude integration renders the hook descriptors as
+  a ready-to-merge fragment at `.claude/hooks/product-definition.json`; merging it into
+  `.claude/settings.json` remains a manual step.
+- **Copilot hook rendering is documentation only.** GitHub Copilot has no hook runtime, so the
+  same guards render as conventions rather than enforcement. See
+  [OD-002](../OPEN-DECISIONS.md#od-002-hook-enforcement-for-github-copilot) and the design
+  limitation below.
+- **`recover-product` defines the workflow only.** The skill guides a human-driven recovery
+  session; there is no automated brownfield extraction.
+- **PRODUCT109 and PRODUCT110 are advisory.** The closure-quality diagnostics — a slice affecting
+  artifacts outside its requirements' closure, a handoff context outside the recomputed closure —
+  are warnings and never block on their own.
+- **`handoff status` needs Git history for moved artifacts.** Digest recomputation for artifacts
+  no longer in the working tree reads the handoff's recorded source revision, which a shallow or
+  partial clone may be unable to resolve. See
+  [OD-006](../OPEN-DECISIONS.md#od-006-handoff-resolution-in-shallow-or-partial-clones) and the
+  design limitation below.
 
 ## Deliberately excluded from v0.1
 

@@ -95,24 +95,42 @@ human explicitly promotes the Product Change, which applies it to the baseline. 
 
 ## Try it in five minutes
 
-The intended path — the CLI arrives with the `implement-product-graph-core` change and does not
-exist yet:
+The `product-definition` CLI is built from this repository — npm publication is deliberately
+pending, see [OD-005](OPEN-DECISIONS.md#od-005-npm-publication):
 
 ```bash
-product-definition init --ai claude --sdd openspec   # arrives in package-ai-and-sdd-integrations
-product-definition validate                          # arrives in implement-product-graph-core
-product-definition graph --format mermaid            # arrives in implement-product-graph-core
+git clone git@github.com:juangcarmona/product-definition-as-code.git
+cd product-definition-as-code
+pnpm install && pnpm build
 ```
 
-What you can do today:
+This repository defines itself with its own methodology, so the built CLI has a real product model
+to run against — 56 artifacts, zero diagnostics:
 
-- Read [the manifesto](docs/manifesto.md) and
+```bash
+node packages/cli/dist/cli.js validate
+node packages/cli/dist/cli.js graph --format mermaid
+node packages/cli/dist/cli.js inspect FR-COVERAGE-001
+node packages/cli/dist/cli.js impact BR-SDD-001 --direction incoming
+```
+
+For a new repository, scaffold the model plus the AI and SDD integrations with:
+
+```bash
+product-definition init --ai claude --sdd openspec
+```
+
+`product-definition` here means the built CLI binary: run it as `node packages/cli/dist/cli.js`,
+or make it a global command with `pnpm link --global` from `packages/cli`.
+
+What you can read alongside:
+
+- [The manifesto](docs/manifesto.md) and
   [the methodology overview](docs/methodology/overview.md) — the overview is a five-minute read.
-- Browse the self-hosted model under `docs/product/model`: this repository defines itself with its
-  own methodology, so every artifact kind has a real example.
-- Look at `schemas/` and `templates/` — the machine contracts and their conformant starting
-  points. You can author a valid product model by hand right now; the tooling that compiles and
-  validates it is what is still landing.
+- The self-hosted model under `docs/product/model`: this repository defines itself with its own
+  methodology, so every artifact kind has a real example.
+- `schemas/` and `templates/` — the machine contracts the CLI validates against, and a conformant
+  starting point for each artifact kind.
 
 Adoption guides for the four entry paths: [greenfield](docs/adoption/greenfield.md),
 [brownfield](docs/adoption/brownfield.md),
@@ -121,17 +139,24 @@ Adoption guides for the four entry paths: [greenfield](docs/adoption/greenfield.
 
 ## Current status
 
-v0.1 is being built in the open through four OpenSpec changes:
+v0.1 was built in the open through four OpenSpec changes, all complete:
 
 1. `establish-product-definition-foundation` — **done**: methodology and manifesto, the normative
    specification, JSON Schemas and templates, the self-hosted product model, conformance fixtures
    and a minimal parsing core.
-2. `implement-product-graph-core` — the `product-definition` CLI, graph compilation, deterministic
-   validation, inspect and impact.
-3. `implement-product-change-and-handoff` — change overlays, delivery slices, handoff generation,
-   staleness, coverage and promotion.
-4. `package-ai-and-sdd-integrations` — the six canonical AI skills, generated Claude Code and
-   GitHub Copilot integrations, hooks, the OpenSpec adapter, `integration` commands and `doctor`.
+2. `implement-product-graph-core` — **done**: the `product-definition` CLI with graph compilation,
+   derived reverse relationships, deterministic validation, `inspect` and structural `impact`.
+3. `implement-product-change-and-handoff` — **done**: Product Change overlay validation, delivery
+   slices, handoff generation with content digests, staleness detection, coverage checking and
+   explicit promotion.
+4. `package-ai-and-sdd-integrations` — **done**: the six canonical AI skills, seven `/product:*`
+   commands, four hook descriptors, generated Claude Code and GitHub Copilot integrations with
+   drift detection, the OpenSpec adapter, `init`, `integration add`/`update` and `doctor`.
+
+The repository has delivered one real Product Change through the complete loop —
+`CHG-TRACEABILITY-001`, handed off as `HOF-GITHUB-1` into a native OpenSpec change, implemented,
+covered with evidence and explicitly promoted into the baseline — and v0.1.0 is a release
+candidate, unpublished.
 
 Nothing is published to npm yet. Deliberately unresolved decisions — including the final public
 name, which is why there is no acronym anywhere — are in [OPEN-DECISIONS.md](OPEN-DECISIONS.md).

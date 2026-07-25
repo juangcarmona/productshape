@@ -28,7 +28,14 @@ const completedChangeDir = join(
   'completed',
   'chg-traceability-001',
 );
-const sddChangeDir = join(repoRoot, 'openspec', 'changes', 'add-coverage-validation');
+// The delivered SDD change was archived by OpenSpec's own lifecycle; the sidecars travel with it.
+const sddChangeDir = join(
+  repoRoot,
+  'openspec',
+  'changes',
+  'archive',
+  '2026-07-25-add-coverage-validation',
+);
 
 describe('dogfooded traceability chain', () => {
   it('walks from the actor to the implemented requirement in the promoted baseline', async () => {

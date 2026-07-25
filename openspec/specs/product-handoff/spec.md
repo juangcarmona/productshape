@@ -39,7 +39,9 @@ artifact's recomputed digest matches, `stale` naming each changed artifact, `inv
 malformed handoffs or unresolvable digests (PRODUCT041/PRODUCT042), and
 `source-revision-unavailable` when content is gone from the working tree and `source.revision`
 cannot be resolved. Digest recomputation SHALL resolve overlay-first from the working tree and
-fall back to the content at `source.revision`.
+fall back to the content at `source.revision`. When the handoff's Product Change and slice are
+still active, status SHALL additionally recompute the closure and warn (PRODUCT110) about listed
+artifacts outside it.
 
 #### Scenario: Relevant edit stales the handoff
 
@@ -50,3 +52,8 @@ fall back to the content at `source.revision`.
 
 - **WHEN** artifacts not listed in the handoff are edited or new commits land
 - **THEN** status still reports current
+
+#### Scenario: Tampered artifact list
+
+- **WHEN** a handoff lists an artifact outside its slice's recomputed closure while the change is still active
+- **THEN** status reports warning PRODUCT110 naming the artifact

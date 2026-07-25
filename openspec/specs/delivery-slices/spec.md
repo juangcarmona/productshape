@@ -12,7 +12,9 @@ Slice files under a change's `slices/` directory SHALL be schema-validated and t
 resolved against that change's overlay: `product-change` must name the containing change
 (PRODUCT030 otherwise), every `implements[].requirement` and `affects` entry must resolve in the
 overlay (PRODUCT006), partial coverage requires a `scope` (PRODUCT031), and `depends-on` must
-reference sibling slices without cycles (PRODUCT032).
+reference sibling slices without cycles (PRODUCT032). Additionally, slice validation SHALL warn
+(PRODUCT109) when a slice's `affects` names artifacts outside the closure computed from its
+implemented requirements.
 
 #### Scenario: Foreign change reference
 
@@ -28,3 +30,8 @@ reference sibling slices without cycles (PRODUCT032).
 
 - **WHEN** slice A depends on slice B and B depends on A
 - **THEN** PRODUCT032 is reported
+
+#### Scenario: Excessive unrelated coverage
+
+- **WHEN** a slice affects an artifact unreachable from its implemented requirements' closure
+- **THEN** PRODUCT109 is reported as a warning naming the artifact
