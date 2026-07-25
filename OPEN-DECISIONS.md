@@ -4,16 +4,23 @@ This file records genuine product and project decisions that are deliberately un
 Each entry explains why the decision matters and what the interim position is.
 Entries are removed when a decision is made and recorded (in an ADR, the specification, or a Product Change).
 
-## OD-001: Final brand, short command name and acronym
+## OD-001: Public brand of the reference implementation
 
 **Why it matters:** Public APIs, package names, diagnostic prefixes and command names become
 compatibility surfaces once adopted. Choosing a brand late is cheap; renaming an adopted API is not.
 
-**Interim position:** The full name "Product Definition as Code" is used in documentation.
-The development binary is `product-definition`, configuration lives under `.product/`, packages use
-the `@product-definition-as-code` scope, user-facing commands use the `/product:*` namespace, and
-diagnostics use the neutral `PRODUCT###` code family. No acronym (PDAC, PAC, ProDAC, ...) is part of
-any public API. No logo, slogan or alternative name is defined.
+**Direction under review (via [CHG-BRAND-001], not yet promoted):** the methodology keeps the name
+**Product Definition as Code**; its reference implementation adopts the public brand
+**ProductShape**. The project is evaluating:
+
+- **ProductShape** as the public brand (repository, website, documentation title, public references).
+- `@prodshape/*` as the npm scope (developer-friendly short form).
+- `prodshape` as the CLI binary, with `product-definition` retained only as a temporary v0.x alias.
+
+Deliberately kept methodology-level and unchanged: the `.product/` configuration directory, the
+`product-definition-as-code/...` schema identifiers, the `PRODUCT###` diagnostic codes and the
+canonical `/product:*` command namespace (with an optional `/ps:*` shorthand alias). No acronym is
+part of any public API. This entry is resolved when CHG-BRAND-001 is promoted.
 
 ## OD-002: Hook enforcement for GitHub Copilot
 
