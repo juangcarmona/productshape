@@ -54,8 +54,8 @@ Validation of any active change SHALL cross-check all other active changes and r
 
 ### Requirement: Approved changes with open questions warn
 
-A change whose status is `approved` or later while its `## Open Questions` section still contains
-unresolved entries SHALL produce warning PRODUCT108.
+Validation SHALL report warning PRODUCT108 for a change whose status is `approved` or later while
+its Open Questions body section still contains unresolved entries.
 
 #### Scenario: Approval with open questions
 

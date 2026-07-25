@@ -4,11 +4,12 @@
 
 ### Requirement: Handoffs generate deterministically from approved slices
 
-`product-definition handoff create --change <CHG> --slice <SLI> --work-item <ref> --out <dir>`
-SHALL generate `product-handoff.yaml` and `product-context.md` from an approved slice of a
-validated overlay, selecting the subgraph by the closure rule in
-`docs/specification/handoff-contract.md`, recording repository-relative artifact paths, content
-digests (sha256, LF-normalized) and the source Git revision, resolving artifacts overlay-first.
+The handoff generator SHALL produce `product-handoff.yaml` and `product-context.md` from an
+approved slice of a validated overlay (via
+`product-definition handoff create --change <CHG> --slice <SLI> --work-item <ref> --out <dir>`),
+selecting the subgraph by the closure rule in `docs/specification/handoff-contract.md`, recording
+repository-relative artifact paths, content digests (sha256, LF-normalized) and the source Git
+revision, resolving artifacts overlay-first.
 
 #### Scenario: Closure includes upstream context
 
