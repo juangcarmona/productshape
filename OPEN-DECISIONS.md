@@ -30,15 +30,6 @@ unsupported one) have no defined evidence format.
 validates coverage files referenced from handoffs generated for the change. Evidence policy for
 other SDD frameworks is deferred until a second adapter exists.
 
-## OD-005: npm publication
-
-**Why it matters:** Publishing creates a permanent public contract (names, scope, semver
-expectations).
-
-**Interim position:** The brand and scope are final: packages are laid out publish-ready under
-`@prodshape/*`. Publishing still requires per-package `publishConfig` and explicit human approval;
-nothing is published and no GitHub release is created without it.
-
 ## OD-006: Handoff resolution in shallow or partial clones
 
 **Why it matters:** Handoff staleness detection can fall back to reading artifact content at the
