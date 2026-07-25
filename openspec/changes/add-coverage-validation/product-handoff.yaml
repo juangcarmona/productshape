@@ -1,0 +1,94 @@
+schema: product-definition-as-code/handoff/v1alpha1
+id: HOF-GITHUB-1
+generated-at: 2026-07-25T07:10:40.748Z
+work-item:
+  provider: github
+  repository: jgcarmona-com/product-definition-as-code
+  id: "1"
+  title: Add requirement coverage validation to the OpenSpec adapter
+source:
+  repository: jgcarmona-com/product-definition-as-code
+  revision: af8a66868cb31546706fe8f7685457c82c62fdc8
+  product-change: CHG-TRACEABILITY-001
+  delivery-slice: SLI-TRACEABILITY-001
+implements:
+  - FR-COVERAGE-001
+affects:
+  - ACT-AI-ASSISTANT
+  - ACT-PRODUCT-ENGINEER
+  - BC-DELIVERY-INTEGRATION
+  - BR-AI-001
+  - BR-SDD-001
+  - CON-NO-WEB-UI
+  - CON-PUBLIC-GENERIC
+  - CON-SDD-AGNOSTIC
+  - JRN-SDD-HANDOFF-001
+  - TERM-DELIVERY-SLICE
+  - TERM-PRODUCT-CONTEXT
+  - TERM-PRODUCT-HANDOFF
+  - UC-COVERAGE-001
+  - UC-HANDOFF-001
+artifacts:
+  - id: ACT-AI-ASSISTANT
+    type: actor
+    path: docs/product/model/actors/act-ai-assistant.md
+    digest: sha256:7e67333c0153aeac20dd5504cf6f2a5a9986c4287e2f81d599a6a6be0b54cbdf
+  - id: ACT-PRODUCT-ENGINEER
+    type: actor
+    path: docs/product/model/actors/act-product-engineer.md
+    digest: sha256:facb8b5571bda0ea32376638317994cb514ad16a188b00c9d916d57f56d99c17
+  - id: BC-DELIVERY-INTEGRATION
+    type: bounded-context
+    path: docs/product/model/domain/bounded-contexts/bc-delivery-integration.md
+    digest: sha256:0379494ef3fb3fda5f2cfe37e9d84345b1a9bac6b7f64e0e0a1b10d7a4fb5029
+  - id: BR-AI-001
+    type: business-rule
+    path: docs/product/model/business-rules/br-ai-001.md
+    digest: sha256:7a10c9a5930d31835daf673467d26c59dd37db20497183c499096861e9ed251a
+  - id: BR-SDD-001
+    type: business-rule
+    path: docs/product/model/business-rules/br-sdd-001.md
+    digest: sha256:9ae434a3953fa46c8ceff8606bfa4ff866b6366f3e9ab0c19be09fe28c6d388e
+  - id: CON-NO-WEB-UI
+    type: constraint
+    path: docs/product/model/requirements/constraints/con-no-web-ui.md
+    digest: sha256:4277c073c7304f83bf3b10543feb8d8d311d468415e04fc6b397bd2f5aabe118
+  - id: CON-PUBLIC-GENERIC
+    type: constraint
+    path: docs/product/model/requirements/constraints/con-public-generic.md
+    digest: sha256:c871305cfb5afbe718ffc1ced0260be07b341c2b77a60bcf5b9edcad324de1e5
+  - id: CON-SDD-AGNOSTIC
+    type: constraint
+    path: docs/product/model/requirements/constraints/con-sdd-agnostic.md
+    digest: sha256:922bb0819fb6f72347d2a2688bdf782d41047bef3422408a2abc61874078b129
+  - id: FR-COVERAGE-001
+    type: functional-requirement
+    path: docs/product/changes/active/chg-traceability-001/proposed/requirements/functional/fr-coverage-001.md
+    digest: sha256:efa6ec14dc50b01b21cb3e76af40910a82c9962fcc8b76870d9564348de4a12c
+  - id: JRN-SDD-HANDOFF-001
+    type: journey
+    path: docs/product/changes/active/chg-traceability-001/proposed/journeys/jrn-sdd-handoff-001.md
+    digest: sha256:f866810adb2c220dee83c0fa600f0a5eb793564c5beb44c352fb8d3457f56eb7
+  - id: TERM-DELIVERY-SLICE
+    type: domain-term
+    path: docs/product/model/domain/terms/term-delivery-slice.md
+    digest: sha256:c1257519a4f6168299ce188d8aff05f36144faba33be9f7d44b201a88dd61f6a
+  - id: TERM-PRODUCT-CONTEXT
+    type: domain-term
+    path: docs/product/model/domain/terms/term-product-context.md
+    digest: sha256:ac01a98648da1b395e5347e228d1ff26ae18f2eac948b6b0c634d0462cebdc80
+  - id: TERM-PRODUCT-HANDOFF
+    type: domain-term
+    path: docs/product/model/domain/terms/term-product-handoff.md
+    digest: sha256:187b9d9de84c8c90e72cb387cbeba146f7115df815aeb9e98f42d0cb9b56ec48
+  - id: UC-COVERAGE-001
+    type: use-case
+    path: docs/product/changes/active/chg-traceability-001/proposed/use-cases/uc-coverage-001.md
+    digest: sha256:af57d6d5165249f4557e6274e2581715c9a497e91a02009149320b769d9c87a8
+  - id: UC-HANDOFF-001
+    type: use-case
+    path: docs/product/model/use-cases/uc-handoff-001.md
+    digest: sha256:8b36e9ccf8582a5d23415a51110a9e41296bae3039fac58144a2b34a30fb56fe
+context:
+  path: product-context.md
+  digest: sha256:004fb5a4be02bfd33d5c4ccf5ad11afe00a73210ccc65b1ee5e39089c374a968

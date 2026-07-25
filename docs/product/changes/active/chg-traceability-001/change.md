@@ -2,7 +2,7 @@
 id: CHG-TRACEABILITY-001
 type: product-change
 title: Add requirement coverage validation to the OpenSpec adapter
-status: approved
+status: implemented
 base-revision: ecce80445a5746d48a76a4e191448aa9de60f962
 operations:
   add:

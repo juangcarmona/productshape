@@ -1,0 +1,10 @@
+schema: product-definition-as-code/coverage/v1alpha1
+handoff: HOF-GITHUB-1
+requirements:
+  FR-COVERAGE-001:
+    status: covered
+    specification:
+      - openspec/changes/add-coverage-validation/specs/requirement-coverage/spec.md
+    verification:
+      - tests/openspec/coverage.test.ts
+      - packages/adapter-openspec/src/index.ts
