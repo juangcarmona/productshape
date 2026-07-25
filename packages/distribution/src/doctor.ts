@@ -51,16 +51,22 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
     ok: modelExists,
     detail: modelExists
       ? `${options.modelPath} present`
-      : `${options.modelPath} missing; run: product-definition init`,
+      : `${options.modelPath} missing; run: prodshape init`,
   });
 
-  const changesExists = await exists(root, `${options.changesPath}/active`);
+  // The changes home must exist. Its active/completed/rejected subdirectories are created on
+  // demand and are legitimately absent when empty — Git does not track empty directories, so a
+  // repository with no changes in a given state simply has no such subdirectory. Reporting that
+  // as broken structure is a false positive (it would fail on any repository whose last active
+  // change was just promoted), so the check verifies the changes home, not each subdirectory.
+  const changesExists = await exists(root, options.changesPath);
+  const activePresent = await exists(root, `${options.changesPath}/active`);
   checks.push({
     name: 'changes structure',
     ok: changesExists,
     detail: changesExists
-      ? `${options.changesPath}/active present`
-      : `${options.changesPath}/active missing; run: product-definition init`,
+      ? `${options.changesPath} present (active/ ${activePresent ? 'present' : 'empty — no active changes'})`
+      : `${options.changesPath} missing; run: prodshape init`,
   });
 
   const lock = await readLock(root);

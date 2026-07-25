@@ -148,4 +148,17 @@ describe('init and managed-file lifecycle (end to end)', () => {
     expect(result.out).toContain('FAIL sdd workspace');
     expect(result.code).toBe(1);
   });
+
+  it('doctor treats an absent (empty) changes/active as healthy, not broken structure', async () => {
+    // Git does not track empty directories, so a repository whose last active change was promoted
+    // has no changes/active on a fresh checkout. That is a healthy "no active changes" state.
+    await rm(join(workDir, 'docs', 'product', 'changes', 'active'), {
+      recursive: true,
+      force: true,
+    });
+    const result = await run(['doctor'], workDir);
+    expect(result.out).toContain('ok   changes structure');
+    expect(result.out).toContain('no active changes');
+    expect(result.out).not.toContain('FAIL changes structure');
+  });
 });
