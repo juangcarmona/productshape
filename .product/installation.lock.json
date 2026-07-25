@@ -1,0 +1,57 @@
+{
+  "schema": "product-definition-as-code/installation-lock/v1alpha1",
+  "version": "0.1.0",
+  "providers": {
+    "claude": {
+      "files": {
+        ".claude/commands/product/audit.md": "sha256:cb0884654781c9a0eaaf553685a5447ec14d48fa940c1e84b71b94ba3dd20e05",
+        ".claude/commands/product/change.md": "sha256:5043278c9d838eda9ad9aa3a468e7acfcb8e4fcffcdabf9959916a2e11ddb80d",
+        ".claude/commands/product/define.md": "sha256:1c33ff76ec54ef1b94edc13f7481e293d8fabb0b036e3ee428f1c672fe94b04f",
+        ".claude/commands/product/handoff.md": "sha256:94e92ae9703df853769e90488a212207c24bf33c95cd391f3b2c56086780130d",
+        ".claude/commands/product/impact.md": "sha256:02715b302acf49c535a4e2301b32f2724447bf3b58018a16dcff06df5f5196bd",
+        ".claude/commands/product/recover.md": "sha256:a131a8386efdca59336006e532515f24444e4b79baf605ff0e3085e0c66283e5",
+        ".claude/commands/product/slice.md": "sha256:57ab3ca2c8084e0883f3f95bb31526df54ec58b190f532ed699afe5ac5932b18",
+        ".claude/hooks/product-definition.json": "sha256:d03c04483277e9c24d3dede962ed70c971ab739462c7a146e1f28ac235978d1d",
+        ".claude/skills/analyze-product-change/references/operations-checklist.md": "sha256:5217a1ee61e95287ee3b4308fff563a89da9ec79f4b0fe065590aeddce9e96ea",
+        ".claude/skills/analyze-product-change/SKILL.md": "sha256:83f316f97878105353616e19c4c1889df2a40bd41e7c7553e3133746606393b9",
+        ".claude/skills/audit-product-model/references/finding-classification.md": "sha256:ea0ad7bb1a43b165cb411ef7b08d6e45017f458d8ec27ca2c7a8739f96f46f81",
+        ".claude/skills/audit-product-model/SKILL.md": "sha256:12a6094184f8211b93eb2d31e657a12f9219425b2e26703e84a17a0d14d34119",
+        ".claude/skills/define-product/references/authoring-order.md": "sha256:4f9b39e4543f7a09d05cf7f2b7857cba4d7d7ef04b0407330d2466e404786007",
+        ".claude/skills/define-product/SKILL.md": "sha256:f52ee5d6236366602c593a0c2a3650abcb0d62528281c9d8668d3079683e801f",
+        ".claude/skills/prepare-sdd-handoff/references/handoff-checklist.md": "sha256:34c6998bb069db0418403abe1b5b02b9a0bfdc0570854864f55007851415a5cb",
+        ".claude/skills/prepare-sdd-handoff/SKILL.md": "sha256:d416bda46ed82ce8ccf171ade43a0c22f933ec14494d412637756a96a6462abb",
+        ".claude/skills/recover-product/references/evidence-sources.md": "sha256:5a0c6807d1b9f437fdf4a525413408ea5a565fe228d3af3909688d4573a9bd2b",
+        ".claude/skills/recover-product/SKILL.md": "sha256:d0745de33760a9311872484283004ca3fdbc401c0c95f5b47a33a50da6b904ca",
+        ".claude/skills/slice-product-change/references/slicing-heuristics.md": "sha256:cf5b86a2b1184f9c54c31df99a4dfd223592aa3da7573c3a812538e513592787",
+        ".claude/skills/slice-product-change/SKILL.md": "sha256:20dc32ae3d91117e18a0a1095db18539f39d9e7bf3bde0cff4fcdcccaf79d1b8"
+      }
+    },
+    "copilot": {
+      "files": {
+        ".github/hooks/check-handoff-staleness.md": "sha256:3406fb57cf8ec537bcbe6f0d104173b01db3808c91d387c05bad05c1c697bad5",
+        ".github/hooks/validate-before-handoff.md": "sha256:b49f3a808ef0a1cace3b43de3205b280a24901ba99eb40fab325a88354910c60",
+        ".github/hooks/validate-product-change.md": "sha256:9a82996fdbab3f32302d0d820da95978585fa243433749f3f3d8dc65ec5b8b36",
+        ".github/hooks/verify-traceability.md": "sha256:0e2d43986f792a21bb1e866e9693094fcb3fadc0a2a5f33dddba94599948e18d",
+        ".github/prompts/product-audit.prompt.md": "sha256:cb0884654781c9a0eaaf553685a5447ec14d48fa940c1e84b71b94ba3dd20e05",
+        ".github/prompts/product-change.prompt.md": "sha256:5043278c9d838eda9ad9aa3a468e7acfcb8e4fcffcdabf9959916a2e11ddb80d",
+        ".github/prompts/product-define.prompt.md": "sha256:1c33ff76ec54ef1b94edc13f7481e293d8fabb0b036e3ee428f1c672fe94b04f",
+        ".github/prompts/product-handoff.prompt.md": "sha256:94e92ae9703df853769e90488a212207c24bf33c95cd391f3b2c56086780130d",
+        ".github/prompts/product-impact.prompt.md": "sha256:02715b302acf49c535a4e2301b32f2724447bf3b58018a16dcff06df5f5196bd",
+        ".github/prompts/product-recover.prompt.md": "sha256:a131a8386efdca59336006e532515f24444e4b79baf605ff0e3085e0c66283e5",
+        ".github/prompts/product-slice.prompt.md": "sha256:57ab3ca2c8084e0883f3f95bb31526df54ec58b190f532ed699afe5ac5932b18",
+        ".github/skills/analyze-product-change-references/operations-checklist.md": "sha256:5217a1ee61e95287ee3b4308fff563a89da9ec79f4b0fe065590aeddce9e96ea",
+        ".github/skills/analyze-product-change.md": "sha256:83f316f97878105353616e19c4c1889df2a40bd41e7c7553e3133746606393b9",
+        ".github/skills/audit-product-model-references/finding-classification.md": "sha256:ea0ad7bb1a43b165cb411ef7b08d6e45017f458d8ec27ca2c7a8739f96f46f81",
+        ".github/skills/audit-product-model.md": "sha256:12a6094184f8211b93eb2d31e657a12f9219425b2e26703e84a17a0d14d34119",
+        ".github/skills/define-product-references/authoring-order.md": "sha256:4f9b39e4543f7a09d05cf7f2b7857cba4d7d7ef04b0407330d2466e404786007",
+        ".github/skills/define-product.md": "sha256:f52ee5d6236366602c593a0c2a3650abcb0d62528281c9d8668d3079683e801f",
+        ".github/skills/prepare-sdd-handoff-references/handoff-checklist.md": "sha256:34c6998bb069db0418403abe1b5b02b9a0bfdc0570854864f55007851415a5cb",
+        ".github/skills/prepare-sdd-handoff.md": "sha256:d416bda46ed82ce8ccf171ade43a0c22f933ec14494d412637756a96a6462abb",
+        ".github/skills/recover-product-references/evidence-sources.md": "sha256:5a0c6807d1b9f437fdf4a525413408ea5a565fe228d3af3909688d4573a9bd2b",
+        ".github/skills/recover-product.md": "sha256:d0745de33760a9311872484283004ca3fdbc401c0c95f5b47a33a50da6b904ca",
+        ".github/skills/slice-product-change-references/slicing-heuristics.md": "sha256:cf5b86a2b1184f9c54c31df99a4dfd223592aa3da7573c3a812538e513592787",
+        ".github/skills/slice-product-change.md": "sha256:20dc32ae3d91117e18a0a1095db18539f39d9e7bf3bde0cff4fcdcccaf79d1b8"
+      }
+    }
+  }
+}

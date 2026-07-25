@@ -1,0 +1,86 @@
+{
+  "managed": {
+    "by": "product-definition",
+    "version": "0.1.0",
+    "source": "hooks/",
+    "note": "Generated fragment. Wire these deterministic commands into your hook configuration; do not edit by hand - run: product-definition integration update"
+  },
+  "hooks": [
+    {
+      "schema": "product-definition-as-code/hook/v1alpha1",
+      "name": "check-handoff-staleness",
+      "description": "Verify the Product Handoff is still current before implementation work begins on an SDD change.",
+      "triggers": [
+        {
+          "event": "before-implementation",
+          "run": [
+            "product-definition handoff status ${handoff}"
+          ]
+        }
+      ],
+      "blocking": true,
+      "notes": "Staleness is judged only by the digests of referenced artifacts; unrelated repository activity never blocks."
+    },
+    {
+      "schema": "product-definition-as-code/hook/v1alpha1",
+      "name": "validate-before-handoff",
+      "description": "Ensure the baseline and the Product Change overlay validate before a handoff is generated.",
+      "triggers": [
+        {
+          "event": "before-handoff-generation",
+          "run": [
+            "product-definition validate",
+            "product-definition change validate ${change}"
+          ]
+        }
+      ],
+      "blocking": true,
+      "notes": "A handoff generated from an invalid overlay would package broken product knowledge; this hook blocks on deterministic failure."
+    },
+    {
+      "schema": "product-definition-as-code/hook/v1alpha1",
+      "name": "validate-product-change",
+      "description": "Validate the product model after product files are edited, and the affected Product Change overlay before it is approved or sliced.",
+      "triggers": [
+        {
+          "event": "after-product-files-edited",
+          "paths": [
+            "docs/product/**"
+          ],
+          "run": [
+            "product-definition validate"
+          ]
+        },
+        {
+          "event": "before-change-approval-or-slicing",
+          "run": [
+            "product-definition change validate ${change}"
+          ]
+        }
+      ],
+      "blocking": true,
+      "notes": "Hooks run deterministic commands only. They never approve a change, approve a slice, promote, edit product semantics, create backlog items or archive SDD work."
+    },
+    {
+      "schema": "product-definition-as-code/hook/v1alpha1",
+      "name": "verify-traceability",
+      "description": "Verify every implemented product requirement has coverage evidence before SDD change closure, and dry-run the promotion before a Product Change is promoted.",
+      "triggers": [
+        {
+          "event": "before-sdd-closure",
+          "run": [
+            "product-definition coverage check ${sdd-change-dir}"
+          ]
+        },
+        {
+          "event": "before-promotion",
+          "run": [
+            "product-definition change promote ${change} --dry-run"
+          ]
+        }
+      ],
+      "blocking": true,
+      "notes": "The dry run reports the plan; executing the promotion remains an explicit human action and is never performed by a hook."
+    }
+  ]
+}

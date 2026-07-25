@@ -9,6 +9,7 @@ generated:
 integrations:
   ai:
     - claude
+    - copilot
   sdd:
     provider: openspec
 validation:
