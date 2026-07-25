@@ -1,0 +1,18 @@
+{
+  "schema": "product-definition-as-code/hook/v1alpha1",
+  "name": "validate-product-change",
+  "description": "Validate the product model after product files are edited, and the affected Product Change overlay before it is approved or sliced.",
+  "triggers": [
+    {
+      "event": "after-product-files-edited",
+      "paths": ["docs/product/**"],
+      "run": ["product-definition validate"]
+    },
+    {
+      "event": "before-change-approval-or-slicing",
+      "run": ["product-definition change validate ${change}"]
+    }
+  ],
+  "blocking": true,
+  "notes": "Hooks run deterministic commands only. They never approve a change, approve a slice, promote, edit product semantics, create backlog items or archive SDD work."
+}

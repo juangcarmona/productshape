@@ -1,0 +1,17 @@
+{
+  "schema": "product-definition-as-code/hook/v1alpha1",
+  "name": "verify-traceability",
+  "description": "Verify every implemented product requirement has coverage evidence before SDD change closure, and dry-run the promotion before a Product Change is promoted.",
+  "triggers": [
+    {
+      "event": "before-sdd-closure",
+      "run": ["product-definition coverage check ${sdd-change-dir}"]
+    },
+    {
+      "event": "before-promotion",
+      "run": ["product-definition change promote ${change} --dry-run"]
+    }
+  ],
+  "blocking": true,
+  "notes": "The dry run reports the plan; executing the promotion remains an explicit human action and is never performed by a hook."
+}
