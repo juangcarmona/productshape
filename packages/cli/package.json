@@ -4,6 +4,10 @@
   "description": "ProductShape CLI — the reference implementation of the Product Definition as Code methodology: a versioned graph of product artifacts with deterministic validation, change overlays, delivery slices and SDD handoffs.",
   "license": "Apache-2.0",
   "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "bin": {
     "prodshape": "dist/bin.js"
   },

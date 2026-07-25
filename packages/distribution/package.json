@@ -4,6 +4,15 @@
   "description": "Installation, provider-asset generation, managed-file lifecycle and doctor for Product Definition as Code.",
   "license": "Apache-2.0",
   "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juangcarmona/productshape.git",
+    "directory": "packages/distribution"
+  },
   "exports": {
     ".": {
       "types": "./src/index.ts",
@@ -12,6 +21,7 @@
   },
   "files": [
     "dist",
+    "src",
     "assets"
   ],
   "scripts": {

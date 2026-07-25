@@ -41,6 +41,21 @@ required.
    (`docs:`, `feat(core):`, `test:`, ...).
 4. All checks (`lint`, `typecheck`, `test`, `build`) must pass.
 
+## Releasing published packages
+
+The `@prodshape/*` packages are versioned with [Changesets](https://github.com/changesets/changesets)
+and published from GitHub Actions — never from a local machine. If your change affects a published
+package, add a changeset in the same PR:
+
+```bash
+pnpm changeset
+```
+
+Choose the affected packages and bump type and write a short, user-facing summary. Only packages
+that receive a changeset are released. A non-blocking CI check reminds you when a changeset is
+missing. The full release process, pre-release (alpha/beta) tracks and rollback are documented in
+[RELEASING.md](RELEASING.md).
+
 ## Unresolved decisions
 
 Deliberately open decisions are tracked in [OPEN-DECISIONS.md](OPEN-DECISIONS.md). Please do not
