@@ -44,7 +44,7 @@ and macOS.
   Claude Code and GitHub Copilot integrations with managed headers and lock-file drift detection,
   the OpenSpec adapter, `init`, `integration add`/`update` and `doctor`
   (`package-ai-and-sdd-integrations`).
-- End-to-end dogfooding: Product Change `CHG-TRACEABILITY-001` delivered through slice
+- End-to-end self-application: Product Change `CHG-TRACEABILITY-001` delivered through slice
   `SLI-TRACEABILITY-001` and handoff `HOF-GITHUB-1` into a native OpenSpec change, implemented,
   covered by `product-coverage.yaml` evidence and explicitly promoted into the baseline
   (56 artifacts, zero diagnostics), with a conformance test pinning the full traceability chain.

@@ -18,7 +18,7 @@ The framework is developed in the open while being exercised on real products in
 organizations. Those two facts must never mix: private product knowledge leaking into a public
 repository is a confidentiality breach, and organization-specific vocabulary or process baked into
 the framework would silently narrow it until it fits only its first adopters. Fixing this boundary
-protects the organizations that dogfood the framework and protects the framework's claim to be
+protects the organizations that self-apply the framework and protects the framework's claim to be
 generally adoptable.
 
 ## Consequences

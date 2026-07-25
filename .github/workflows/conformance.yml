@@ -21,7 +21,7 @@ jobs:
       # The packed-tarball test in the repo project installs the built CLI package.
       - run: pnpm build
       # Conformance fixtures, schema/template/example conformance, the self-hosted
-      # model and the dogfooding traceability fixture all live in the repo project.
+      # model and the end-to-end traceability fixture all live in the repo project.
       - run: npx vitest run --project repo
       # The OpenSpec CLI ships as @fission-ai/openspec; the bare `openspec` npm package is an
       # unrelated empty placeholder with no bin. Pin the real package for a reproducible check.
