@@ -8,7 +8,17 @@ import { repoRoot } from '../helpers.js';
 const execFileAsync = promisify(execFile);
 
 export async function git(cwd: string, ...args: string[]): Promise<string> {
-  const { stdout } = await execFileAsync('git', args, { cwd, encoding: 'utf8' });
+  const { stdout } = await execFileAsync('git', args, {
+    cwd,
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      // Deterministic commits: identical fixture content yields identical revisions,
+      // which keeps golden handoff snapshots stable across runs.
+      GIT_AUTHOR_DATE: '2026-01-01T00:00:00Z',
+      GIT_COMMITTER_DATE: '2026-01-01T00:00:00Z',
+    },
+  });
   return stdout.trim();
 }
 

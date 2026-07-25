@@ -51,4 +51,4 @@ artifacts:
     digest: sha256:d7a86cabd1cfdfa0a1eed45fb143289cbc3dc789d604a55c3160ccea33b09f20
 context:
   path: product-context.md
-  digest: sha256:43a87df822b57f6c9b610c5cd0481163f2632ee73cf7ef14c85c2a0c8d87a856
+  digest: sha256:666bd5c2a392d2481f863f5f577ec209e6249ebe13ae0a973e11f80f28d89e1d
