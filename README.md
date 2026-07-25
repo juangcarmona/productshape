@@ -168,8 +168,9 @@ candidate, unpublished.
 The reference implementation adopted the ProductShape brand via `CHG-BRAND-001` (delivery slice
 `SLI-BRAND-001`); the methodology name Product Definition as Code is retained.
 
-Nothing is published to npm yet. Deliberately unresolved decisions — including the final public
-name, which is why there is no acronym anywhere — are in [OPEN-DECISIONS.md](OPEN-DECISIONS.md).
+Nothing is published to npm yet. The public brand is final — ProductShape, the reference
+implementation of the Product Definition as Code methodology. Remaining open decisions are in
+[OPEN-DECISIONS.md](OPEN-DECISIONS.md).
 
 ## Outside v0.1
 
