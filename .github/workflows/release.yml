@@ -101,8 +101,13 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} # fallback; ignored when OIDC is configured
           NPM_CONFIG_PROVENANCE: 'true'
+      # `--follow-tags` only pushes annotated tags reachable from a ref this same invocation is
+      # advancing; this job never moves `main` itself (the Version Packages PR merge already did),
+      # so it always had nothing to "follow" and silently pushed no tags at all (confirmed:
+      # "Everything up-to-date" even after `changeset publish` created four new local tags).
+      # `--tags` pushes every local tag unconditionally; already-present tags are a no-op.
       - name: push tags
-        run: git push origin --follow-tags
+        run: git push origin --tags
       # Post-publish supply-chain verification.
       - name: verify signatures and provenance
         run: pnpm -r exec npm audit signatures || true
