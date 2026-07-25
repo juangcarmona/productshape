@@ -6,7 +6,7 @@ import { SchemaRegistry, compileGraph, loadModel, type HandoffDocument } from '@
 import { repoRoot } from '../helpers.js';
 
 /**
- * The dogfooding traceability fixture: the complete chain from actor to promoted
+ * The end-to-end traceability fixture: the complete chain from actor to promoted
  * baseline must stay demonstrable in this repository (founding success condition).
  *
  * ACT-PRODUCT-ENGINEER -> JRN-SDD-HANDOFF-001 -> UC-COVERAGE-001 -> BR-SDD-001
@@ -32,7 +32,7 @@ const sddChangeDir = join(
   '2026-07-25-add-coverage-validation',
 );
 
-describe('dogfooded traceability chain', () => {
+describe('verified end-to-end traceability chain', () => {
   it('walks from the actor to the implemented requirement in the promoted baseline', async () => {
     const registry = await SchemaRegistry.loadBundled();
     const model = await loadModel(join(repoRoot, 'docs', 'product', 'model'), repoRoot, registry);
