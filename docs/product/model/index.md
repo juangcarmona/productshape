@@ -49,7 +49,9 @@ Terms: [TERM-PRODUCT-ARTIFACT](domain/terms/term-product-artifact.md),
 [TERM-PRODUCT-CHANGE](domain/terms/term-product-change.md),
 [TERM-DELIVERY-SLICE](domain/terms/term-delivery-slice.md),
 [TERM-PRODUCT-HANDOFF](domain/terms/term-product-handoff.md),
-[TERM-PRODUCT-CONTEXT](domain/terms/term-product-context.md).
+[TERM-PRODUCT-CONTEXT](domain/terms/term-product-context.md),
+[TERM-METHODOLOGY](domain/terms/term-methodology.md),
+[TERM-REFERENCE-IMPLEMENTATION](domain/terms/term-reference-implementation.md).
 
 ## Requirements — derived obligations
 
@@ -78,4 +80,5 @@ Constraints: [CON-MARKDOWN-001](requirements/constraints/con-markdown-001.md),
 [CON-NO-GRAPH-DATABASE](requirements/constraints/con-no-graph-database.md),
 [CON-NO-WEB-UI](requirements/constraints/con-no-web-ui.md),
 [CON-SDD-AGNOSTIC](requirements/constraints/con-sdd-agnostic.md),
-[CON-PUBLIC-GENERIC](requirements/constraints/con-public-generic.md).
+[CON-PUBLIC-GENERIC](requirements/constraints/con-public-generic.md),
+[CON-BRAND-001](requirements/constraints/con-brand-001.md).

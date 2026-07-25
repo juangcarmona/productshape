@@ -1,9 +1,4 @@
-import {
-  analyzeImpact,
-  stableJson,
-  validateBaseline,
-  type ImpactDirection,
-} from '@product-definition-as-code/core';
+import { analyzeImpact, stableJson, validateBaseline, type ImpactDirection } from '@prodshape/core';
 import { CliError, exitCodes, resolveRepository, type CliIo } from '../context.js';
 
 export interface ImpactCliOptions {

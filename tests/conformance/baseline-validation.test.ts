@@ -8,7 +8,7 @@ import {
   loadModel,
   validateModel,
   type Diagnostic,
-} from '@product-definition-as-code/core';
+} from '@prodshape/core';
 import { listFilesRecursive, repoRoot, schemasDir } from '../helpers.js';
 
 async function validateFixtureModel(name: string): Promise<Diagnostic[]> {
@@ -35,7 +35,7 @@ describe('reference-level invalid models', () => {
 });
 
 describe('self-hosted model through the full pipeline', () => {
-  it('validates with zero errors and zero warnings under the repository configuration', async () => {
+  it('validates with zero errors under the repository configuration', async () => {
     const registry = await SchemaRegistry.loadBundled();
     const model = await loadModel(join(repoRoot, 'docs', 'product', 'model'), repoRoot, registry);
     const graph = compileGraph(model.artifacts);
@@ -44,8 +44,13 @@ describe('self-hosted model through the full pipeline', () => {
       ...model.diagnostics,
       ...validateModel(model.artifacts, graph, { config }),
     ];
-    expect(diagnostics).toEqual([]);
-    expect(graph.nodes).toHaveLength(56);
+    expect(diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    // The only warnings are the two accepted PRODUCT106 advisories for the brand terms
+    // (TERM-METHODOLOGY, TERM-REFERENCE-IMPLEMENTATION) added by CHG-BRAND-001; they are
+    // not yet referenced by any use case. See docs/product/changes/completed/chg-brand-001.
+    const warnings = diagnostics.filter((d) => d.severity === 'warning');
+    expect(warnings.map((d) => d.code)).toEqual(['PRODUCT106', 'PRODUCT106']);
+    expect(graph.nodes).toHaveLength(59);
     expect(graph.edges.length).toBeGreaterThan(60);
   });
 });

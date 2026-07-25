@@ -1,4 +1,4 @@
-import { runDoctor } from '@product-definition-as-code/distribution';
+import { runDoctor } from '@prodshape/distribution';
 import { exitCodes, formatDiagnosticLine, resolveRepository, type CliIo } from '../context.js';
 
 export async function runDoctorCommand(io: CliIo): Promise<number> {

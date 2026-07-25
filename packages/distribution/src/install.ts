@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { claudeRenderer } from '@product-definition-as-code/integration-claude';
-import { copilotRenderer } from '@product-definition-as-code/integration-copilot';
+import { claudeRenderer } from '@prodshape/integration-claude';
+import { copilotRenderer } from '@prodshape/integration-copilot';
 import type { CanonicalAssets, ProviderRenderer } from './assets.js';
 import { loadBundledAssets } from './assets.js';
 import { emptyLock, fileDigest, readLock, writeLock, type InstallationLock } from './lock.js';

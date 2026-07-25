@@ -117,5 +117,12 @@ A methodology and a toolkit for keeping a product definition the way we learned 
 versioned, reviewed, validated, and changed only through explicit, traceable deltas. Files you
 own, in a repository you already have, checked by tools that never guess.
 
+Two names carry this deliberately. **Product Definition as Code** is the methodology — the
+long-lived, implementation-independent concept and its normative specification. **ProductShape** is
+its reference implementation — the first shipped toolkit that realizes the methodology, exactly as
+OpenSpec is an implementation of Spec-Driven Development. The two names coexist on purpose: a
+methodology can have more than one implementation, and binding the ideas to one tool's name would
+quietly narrow both.
+
 The methodology starts in the [overview](methodology/overview.md). The contracts live in the
 [specification](specification/index.md).

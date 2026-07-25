@@ -2,10 +2,10 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { runCli } from '@product-definition-as-code/cli';
-import { checkIntegrations, loadBundledAssets } from '@product-definition-as-code/distribution';
-import { claudeRenderer } from '@product-definition-as-code/integration-claude';
-import { copilotRenderer } from '@product-definition-as-code/integration-copilot';
+import { runCli } from '@prodshape/cli';
+import { checkIntegrations, loadBundledAssets } from '@prodshape/distribution';
+import { claudeRenderer } from '@prodshape/integration-claude';
+import { copilotRenderer } from '@prodshape/integration-copilot';
 import { listFilesRecursive, repoRoot, toPosix } from '../helpers.js';
 
 let workDir: string;

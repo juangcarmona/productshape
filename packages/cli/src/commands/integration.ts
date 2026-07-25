@@ -3,7 +3,7 @@ import {
   installProvider,
   rendererFor,
   updateIntegrations,
-} from '@product-definition-as-code/distribution';
+} from '@prodshape/distribution';
 import {
   CliError,
   exitCodes,

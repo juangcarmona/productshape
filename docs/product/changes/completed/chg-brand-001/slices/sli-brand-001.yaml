@@ -1,7 +1,7 @@
 schema: product-definition-as-code/delivery-slice/v1alpha1
 id: SLI-BRAND-001
 title: Rename public assets to the ProductShape brand
-status: approved
+status: completed
 product-change: CHG-BRAND-001
 outcome: >-
   A newcomer meets the product publicly as ProductShape — the repository, the package namespace,

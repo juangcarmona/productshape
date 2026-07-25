@@ -2,12 +2,7 @@ import { access, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
-import {
-  SchemaRegistry,
-  compileGraph,
-  loadModel,
-  type HandoffDocument,
-} from '@product-definition-as-code/core';
+import { SchemaRegistry, compileGraph, loadModel, type HandoffDocument } from '@prodshape/core';
 import { repoRoot } from '../helpers.js';
 
 /**

@@ -6,7 +6,7 @@ import {
   slicesReferencing,
   stableJson,
   validateBaseline,
-} from '@product-definition-as-code/core';
+} from '@prodshape/core';
 import { CliError, exitCodes, resolveRepository, type CliIo } from '../context.js';
 import { loadActiveChanges } from './change.js';
 

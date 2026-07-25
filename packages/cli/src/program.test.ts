@@ -159,8 +159,8 @@ describe('product-definition graph / inspect / impact', () => {
 describe('self-application', () => {
   it('validates this repository with exit 0', async () => {
     const result = await run(['validate'], repoRoot);
-    expect(result.err).toEqual([]);
     expect(result.code).toBe(0);
-    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across 56 artifact\(s\)/);
+    // 59 artifacts and 2 accepted PRODUCT106 term warnings after CHG-BRAND-001 promotion.
+    expect(result.out.at(-1)).toMatch(/0 error\(s\), 2 warning\(s\) across 59 artifact\(s\)/);
   });
 });

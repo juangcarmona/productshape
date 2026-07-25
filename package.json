@@ -1,5 +1,5 @@
 {
-  "name": "product-definition-as-code",
+  "name": "productshape",
   "version": "0.1.0",
   "private": true,
   "description": "Define products as a versioned graph of Markdown artifacts. Project product knowledge into backlog and Spec-Driven Development through stable handoff contracts.",
@@ -18,8 +18,8 @@
     "build": "pnpm -r run build"
   },
   "devDependencies": {
-    "@product-definition-as-code/cli": "workspace:*",
-    "@product-definition-as-code/core": "workspace:*",
+    "@prodshape/cli": "workspace:*",
+    "@prodshape/core": "workspace:*",
     "@types/node": "^24.0.0",
     "yaml": "^2.5.0",
     "eslint": "^9.0.0",

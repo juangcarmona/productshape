@@ -36,6 +36,9 @@ const expectedIds: Record<string, string[]> = {
     'TERM-PRODUCT-HANDOFF',
     'TERM-PRODUCT-CONTEXT',
     'TERM-CURRENT-PRODUCT-MODEL',
+    // Added by CHG-BRAND-001 (ProductShape brand adoption).
+    'TERM-METHODOLOGY',
+    'TERM-REFERENCE-IMPLEMENTATION',
   ],
   'bounded-context': ['BC-PRODUCT-DEFINITION', 'BC-DELIVERY-INTEGRATION'],
   'functional-requirement': [
@@ -67,6 +70,8 @@ const expectedIds: Record<string, string[]> = {
     'CON-NO-WEB-UI',
     'CON-SDD-AGNOSTIC',
     'CON-PUBLIC-GENERIC',
+    // Added by CHG-BRAND-001 (ProductShape brand adoption).
+    'CON-BRAND-001',
   ],
 };
 

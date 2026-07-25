@@ -5,7 +5,7 @@ import {
   checkRequiredBodySections,
   parseArtifactDocument,
   type Diagnostic,
-} from '@product-definition-as-code/core';
+} from '@prodshape/core';
 
 export const repoRoot = join(import.meta.dirname, '..');
 export const schemasDir = join(repoRoot, 'schemas');

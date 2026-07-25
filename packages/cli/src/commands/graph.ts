@@ -5,7 +5,7 @@ import {
   stableJson,
   validateBaseline,
   writeGeneratedOutputs,
-} from '@product-definition-as-code/core';
+} from '@prodshape/core';
 import { exitCodes, formatDiagnosticLine, resolveRepository, type CliIo } from '../context.js';
 
 export interface GraphOptions {

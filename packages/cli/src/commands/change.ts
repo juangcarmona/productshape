@@ -9,7 +9,7 @@ import {
   validateChange,
   type LoadedChange,
   type ProductRepository,
-} from '@product-definition-as-code/core';
+} from '@prodshape/core';
 import {
   CliError,
   exitCodes,

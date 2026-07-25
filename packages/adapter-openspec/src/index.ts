@@ -1,7 +1,7 @@
 import { access, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parse } from 'yaml';
-import type { Diagnostic, HandoffDocument, SchemaRegistry } from '@product-definition-as-code/core';
+import type { Diagnostic, HandoffDocument, SchemaRegistry } from '@prodshape/core';
 
 /**
  * The OpenSpec adapter owns sidecar placement and coverage validation only.

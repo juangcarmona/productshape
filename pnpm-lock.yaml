@@ -8,10 +8,10 @@ importers:
 
   .:
     devDependencies:
-      '@product-definition-as-code/cli':
+      '@prodshape/cli':
         specifier: workspace:*
         version: link:packages/cli
-      '@product-definition-as-code/core':
+      '@prodshape/core':
         specifier: workspace:*
         version: link:packages/core
       '@types/node':
@@ -41,7 +41,7 @@ importers:
 
   packages/adapter-openspec:
     dependencies:
-      '@product-definition-as-code/core':
+      '@prodshape/core':
         specifier: workspace:*
         version: link:../core
       yaml:
@@ -54,13 +54,13 @@ importers:
 
   packages/cli:
     dependencies:
-      '@product-definition-as-code/adapter-openspec':
+      '@prodshape/adapter-openspec':
         specifier: workspace:*
         version: link:../adapter-openspec
-      '@product-definition-as-code/core':
+      '@prodshape/core':
         specifier: workspace:*
         version: link:../core
-      '@product-definition-as-code/distribution':
+      '@prodshape/distribution':
         specifier: workspace:*
         version: link:../distribution
       commander:
@@ -98,10 +98,10 @@ importers:
 
   packages/distribution:
     dependencies:
-      '@product-definition-as-code/integration-claude':
+      '@prodshape/integration-claude':
         specifier: workspace:*
         version: link:../integration-claude
-      '@product-definition-as-code/integration-copilot':
+      '@prodshape/integration-copilot':
         specifier: workspace:*
         version: link:../integration-copilot
     devDependencies:

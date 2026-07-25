@@ -1,7 +1,11 @@
-# Product Definition as Code
+# ProductShape
 
-A methodology and TypeScript toolkit that puts a canonical, versioned, machine-validatable product
-definition in front of your backlog and your Spec-Driven Development workflow.
+**ProductShape — Product Definition as Code.** ProductShape is the reference implementation of the
+Product Definition as Code methodology: it is to Product Definition as Code what OpenSpec is to
+Spec-Driven Development.
+
+A TypeScript toolkit that puts a canonical, versioned, machine-validatable product definition in
+front of your backlog and your Spec-Driven Development workflow.
 
 ## The problem
 
@@ -95,12 +99,12 @@ human explicitly promotes the Product Change, which applies it to the baseline. 
 
 ## Try it in five minutes
 
-The `product-definition` CLI is built from this repository — npm publication is deliberately
-pending, see [OD-005](OPEN-DECISIONS.md#od-005-npm-publication):
+The `prodshape` CLI is built from this repository — npm publication is deliberately pending, see
+[OD-005](OPEN-DECISIONS.md#od-005-npm-publication):
 
 ```bash
-git clone git@github.com:juangcarmona/product-definition-as-code.git
-cd product-definition-as-code
+git clone git@github.com:juangcarmona/productshape.git
+cd productshape
 pnpm install && pnpm build
 ```
 
@@ -117,11 +121,14 @@ node packages/cli/dist/cli.js impact BR-SDD-001 --direction incoming
 For a new repository, scaffold the model plus the AI and SDD integrations with:
 
 ```bash
-product-definition init --ai claude --sdd openspec
+prodshape init --ai claude --sdd openspec
 ```
 
-`product-definition` here means the built CLI binary: run it as `node packages/cli/dist/cli.js`,
-or make it a global command with `pnpm link --global` from `packages/cli`.
+`prodshape` here means the built CLI binary: run it as `node packages/cli/dist/cli.js`, or make it
+a global command with `pnpm link --global` from `packages/cli`. `product-definition` remains a
+temporary v0.x alias for `prodshape` — identical output — and is removed before v1. The
+`/product:*` commands stay canonical; `/ps:*` is an optional shorthand (`/ps:change`, `/ps:impact`,
+`/ps:handoff`).
 
 What you can read alongside:
 
@@ -157,6 +164,9 @@ The repository has delivered one real Product Change through the complete loop �
 `CHG-TRACEABILITY-001`, handed off as `HOF-GITHUB-1` into a native OpenSpec change, implemented,
 covered with evidence and explicitly promoted into the baseline — and v0.1.0 is a release
 candidate, unpublished.
+
+The reference implementation adopted the ProductShape brand via `CHG-BRAND-001` (delivery slice
+`SLI-BRAND-001`); the methodology name Product Definition as Code is retained.
 
 Nothing is published to npm yet. Deliberately unresolved decisions — including the final public
 name, which is why there is no acronym anywhere — are in [OPEN-DECISIONS.md](OPEN-DECISIONS.md).

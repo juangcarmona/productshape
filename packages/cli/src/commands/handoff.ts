@@ -11,7 +11,7 @@ import {
   validateChange,
   type Diagnostic,
   type HandoffDocument,
-} from '@product-definition-as-code/core';
+} from '@prodshape/core';
 import {
   CliError,
   exitCodes,

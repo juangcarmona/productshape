@@ -1,8 +1,4 @@
-import {
-  findRepositoryRoot,
-  openRepository,
-  type ProductRepository,
-} from '@product-definition-as-code/core';
+import { findRepositoryRoot, openRepository, type ProductRepository } from '@prodshape/core';
 
 /** Documented exit codes (docs/specification/validation.md). */
 export const exitCodes = {

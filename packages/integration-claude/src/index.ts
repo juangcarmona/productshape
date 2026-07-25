@@ -67,12 +67,12 @@ export const claudeRenderer = {
       }
     }
 
-    // Subdirectory namespacing exposes these as /product:<name>.
+    // Subdirectory namespacing exposes these as /product:<name>, with /ps:<name> as the
+    // optional ProductShape shorthand alias resolving to the same command.
     for (const command of assets.commands) {
-      files.push({
-        path: `.claude/commands/product/${command.name}.md`,
-        content: withHeader(command.content, assets.version, `commands/${command.name}.md`),
-      });
+      const rendered = withHeader(command.content, assets.version, `commands/${command.name}.md`);
+      files.push({ path: `.claude/commands/product/${command.name}.md`, content: rendered });
+      files.push({ path: `.claude/commands/ps/${command.name}.md`, content: rendered });
     }
 
     // Hooks render as a ready-to-merge fragment: user settings are never edited directly.

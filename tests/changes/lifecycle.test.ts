@@ -1,7 +1,7 @@
 import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { runCli } from '@product-definition-as-code/cli';
+import { runCli } from '@prodshape/cli';
 import {
   changeDoc,
   createLifecycleRepo,

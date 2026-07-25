@@ -1,10 +1,11 @@
 {
-  "name": "@product-definition-as-code/cli",
+  "name": "@prodshape/cli",
   "version": "0.1.0",
   "description": "The product-definition command-line interface for Product Definition as Code.",
   "license": "Apache-2.0",
   "type": "module",
   "bin": {
+    "prodshape": "./dist/cli.js",
     "product-definition": "./dist/cli.js"
   },
   "exports": {
@@ -21,9 +22,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@product-definition-as-code/adapter-openspec": "workspace:*",
-    "@product-definition-as-code/core": "workspace:*",
-    "@product-definition-as-code/distribution": "workspace:*",
+    "@prodshape/adapter-openspec": "workspace:*",
+    "@prodshape/core": "workspace:*",
+    "@prodshape/distribution": "workspace:*",
     "commander": "^12.0.0",
     "yaml": "^2.5.0"
   },

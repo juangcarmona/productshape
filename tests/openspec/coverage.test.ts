@@ -2,8 +2,8 @@ import { cp, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { checkCoverage, locateOpenSpecChange } from '@product-definition-as-code/adapter-openspec';
-import { SchemaRegistry } from '@product-definition-as-code/core';
+import { checkCoverage, locateOpenSpecChange } from '@prodshape/adapter-openspec';
+import { SchemaRegistry } from '@prodshape/core';
 import { repoRoot } from '../helpers.js';
 
 let root: string;

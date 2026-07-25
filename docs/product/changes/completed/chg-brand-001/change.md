@@ -2,7 +2,7 @@
 id: CHG-BRAND-001
 type: product-change
 title: Adopt ProductShape as the public brand of the reference implementation
-status: approved
+status: implemented
 base-revision: 077f9e5413ca46281af499697a2d0e96f216f645
 operations:
   add:
@@ -46,7 +46,7 @@ without dragging the other.
 The distinction earns first-class **terms** rather than living only inside a constraint: it is
 foundational vocabulary that the manifesto, the adoption guides and every AI skill lean on, so a
 reader or an assistant should be able to look it up as domain language. The **constraint** remains
-alongside the terms because the terms define meaning while the constraint fixes the *policy* — that
+alongside the terms because the terms define meaning while the constraint fixes the _policy_ — that
 public identity must keep the two names distinct and that the reference implementation ships under
 a settled brand. Definitions and policy are complementary, not redundant.
 

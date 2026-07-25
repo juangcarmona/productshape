@@ -9,6 +9,13 @@
 .github/prompts/product-impact.prompt.md
 .github/prompts/product-recover.prompt.md
 .github/prompts/product-slice.prompt.md
+.github/prompts/ps-audit.prompt.md
+.github/prompts/ps-change.prompt.md
+.github/prompts/ps-define.prompt.md
+.github/prompts/ps-handoff.prompt.md
+.github/prompts/ps-impact.prompt.md
+.github/prompts/ps-recover.prompt.md
+.github/prompts/ps-slice.prompt.md
 .github/skills/analyze-product-change-references/operations-checklist.md
 .github/skills/analyze-product-change.md
 .github/skills/audit-product-model-references/finding-classification.md

@@ -95,11 +95,11 @@ export const copilotRenderer = {
       }
     }
 
+    // /product:<name> canonical, with /ps:<name> as the optional ProductShape shorthand alias.
     for (const command of assets.commands) {
-      files.push({
-        path: `.github/prompts/product-${command.name}.prompt.md`,
-        content: withHeader(command.content, assets.version, `commands/${command.name}.md`),
-      });
+      const rendered = withHeader(command.content, assets.version, `commands/${command.name}.md`);
+      files.push({ path: `.github/prompts/product-${command.name}.prompt.md`, content: rendered });
+      files.push({ path: `.github/prompts/ps-${command.name}.prompt.md`, content: rendered });
     }
 
     for (const hook of assets.hooks) {

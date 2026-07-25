@@ -9,7 +9,7 @@ import {
   SchemaRegistry,
   validateChange,
   defaultConfig,
-} from '@product-definition-as-code/core';
+} from '@prodshape/core';
 import {
   changeDoc,
   createLifecycleRepo,

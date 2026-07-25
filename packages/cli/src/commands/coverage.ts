@@ -1,5 +1,5 @@
 import { isAbsolute, join, relative, sep } from 'node:path';
-import { checkCoverage, locateOpenSpecChange } from '@product-definition-as-code/adapter-openspec';
+import { checkCoverage, locateOpenSpecChange } from '@prodshape/adapter-openspec';
 import {
   CliError,
   exitCodes,

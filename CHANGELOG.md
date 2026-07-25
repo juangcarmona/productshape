@@ -29,3 +29,7 @@ OPEN-DECISIONS OD-005. 133 tests pass and CI runs on Linux, Windows and macOS.
   `SLI-TRACEABILITY-001` and handoff `HOF-GITHUB-1` into a native OpenSpec change, implemented,
   covered by `product-coverage.yaml` evidence and explicitly promoted into the baseline
   (56 artifacts, zero diagnostics), with a conformance test pinning the full traceability chain.
+- The reference implementation adopted the public brand ProductShape (the methodology name Product
+  Definition as Code is unchanged): npm scope `@prodshape/*`, binary `prodshape` with
+  `product-definition` kept as a temporary v0.x alias, and an optional `/ps:*` shorthand for the
+  canonical `/product:*` commands (`CHG-BRAND-001` / `SLI-BRAND-001`).

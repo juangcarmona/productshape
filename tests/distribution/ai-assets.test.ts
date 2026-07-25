@@ -1,7 +1,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { parseArtifactDocument } from '@product-definition-as-code/core';
+import { parseArtifactDocument } from '@prodshape/core';
 import { repoRoot } from '../helpers.js';
 
 const skillNames = [

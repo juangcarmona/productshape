@@ -8,7 +8,7 @@ import {
   compileGraph,
   loadModel,
   stableJson,
-} from '@product-definition-as-code/core';
+} from '@prodshape/core';
 import { repoRoot } from '../helpers.js';
 
 async function minimalGraph() {

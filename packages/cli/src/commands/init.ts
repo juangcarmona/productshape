@@ -1,4 +1,4 @@
-import { initRepository, rendererFor } from '@product-definition-as-code/distribution';
+import { initRepository, rendererFor } from '@prodshape/distribution';
 import { CliError, exitCodes, type CliIo } from '../context.js';
 
 export interface InitCliOptions {
