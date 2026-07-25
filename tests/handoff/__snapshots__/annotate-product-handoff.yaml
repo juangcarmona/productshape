@@ -1,0 +1,54 @@
+schema: product-definition-as-code/handoff/v1alpha1
+id: HOF-GITHUB-123
+generated-at: 2026-01-01T10:00:00.000Z
+work-item:
+  provider: github
+  repository: owner/repository
+  id: "123"
+  title: Annotate short links
+source:
+  repository: owner/repository
+  revision: <REVISION>
+  product-change: CHG-ANNOTATE-001
+  delivery-slice: SLI-ANNOTATE-001
+implements:
+  - FR-ANNOTATE-001
+affects:
+  - ACT-VISITOR
+  - BC-SHORTENING
+  - BR-VALID-URL-001
+  - CON-NO-TRACKING
+  - TERM-SHORT-LINK
+  - UC-ANNOTATE-001
+artifacts:
+  - id: ACT-VISITOR
+    type: actor
+    path: docs/product/model/actors/act-visitor.md
+    digest: sha256:d969b1c778c9501eaf481fdffe6cd61ef1c249ece4794e38a8a62264e8898022
+  - id: BC-SHORTENING
+    type: bounded-context
+    path: docs/product/model/domain/bounded-contexts/bc-shortening.md
+    digest: sha256:2fc58ad1fef23f881b1c918a77dc2ec3552a5ad136a62f74a068a315b07ba2c2
+  - id: BR-VALID-URL-001
+    type: business-rule
+    path: docs/product/model/business-rules/br-valid-url-001.md
+    digest: sha256:08a2beb833c78440ad392220d2aa29f77fed51da8b886ea0a2328a26f2ea42be
+  - id: CON-NO-TRACKING
+    type: constraint
+    path: docs/product/model/requirements/constraints/con-no-tracking.md
+    digest: sha256:89dc3f900ca0898141ccf7e2b96be5fd300d6a789b52ef6673d4bb97a3208671
+  - id: FR-ANNOTATE-001
+    type: functional-requirement
+    path: docs/product/changes/active/chg-annotate-001/proposed/requirements/functional/fr-annotate-001.md
+    digest: sha256:f622fcb595883df72df7c235d4f4ede2d686dc369792e4052714be9131a2975f
+  - id: TERM-SHORT-LINK
+    type: domain-term
+    path: docs/product/model/domain/terms/term-short-link.md
+    digest: sha256:ca3b4bc3f9a8842b3093f554957be158d615645330b83bc8e1238837029a89d4
+  - id: UC-ANNOTATE-001
+    type: use-case
+    path: docs/product/changes/active/chg-annotate-001/proposed/use-cases/uc-annotate-001.md
+    digest: sha256:d7a86cabd1cfdfa0a1eed45fb143289cbc3dc789d604a55c3160ccea33b09f20
+context:
+  path: product-context.md
+  digest: sha256:43a87df822b57f6c9b610c5cd0481163f2632ee73cf7ef14c85c2a0c8d87a856
