@@ -18,6 +18,8 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # The packed-tarball test in the repo project installs the built CLI package.
+      - run: pnpm build
       # Conformance fixtures, schema/template/example conformance, the self-hosted
       # model and the dogfooding traceability fixture all live in the repo project.
       - run: npx vitest run --project repo

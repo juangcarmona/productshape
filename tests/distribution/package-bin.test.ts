@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -43,6 +43,13 @@ async function runBin(name: string, args: string[], cwd = scratch) {
 beforeAll(async () => {
   scratch = await mkdtemp(join(tmpdir(), 'prodshape-package-'));
   const cliDir = join(repoRoot, 'packages', 'cli');
+  try {
+    await stat(join(cliDir, 'dist', 'bin.js'));
+  } catch {
+    throw new Error(
+      'packages/cli/dist/bin.js is missing: this test packs the BUILT package — run `pnpm build` before the test suite',
+    );
+  }
   await execFileAsync('npm', ['pack', '--pack-destination', scratch], {
     cwd: cliDir,
     encoding: 'utf8',
