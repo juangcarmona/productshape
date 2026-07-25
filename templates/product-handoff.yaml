@@ -13,7 +13,7 @@ work-item:
   title: Example work item title
 source:
   repository: owner/repository
-  revision: 0000000000000000000000000000000000000000
+  revision: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
   product-change: CHG-EXAMPLE-001
   delivery-slice: SLI-EXAMPLE-001
 implements:

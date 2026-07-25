@@ -3,7 +3,7 @@ id: CHG-EXAMPLE-001
 type: product-change
 title: Example Product Change
 status: draft
-base-revision: 0000000000000000000000000000000000000000
+base-revision: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 operations:
   add: []
   modify: []

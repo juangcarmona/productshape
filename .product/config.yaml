@@ -1,0 +1,17 @@
+schema: product-definition-as-code/config/v1alpha1
+product:
+  root: docs/product
+  model: docs/product/model
+  changes: docs/product/changes
+generated:
+  root: .product/generated
+  commit: false
+integrations:
+  ai:
+    - claude
+  sdd:
+    provider: openspec
+validation:
+  warnings-as-errors: false
+  require-journey-for-use-case: false
+  require-requirement-reachability: true
