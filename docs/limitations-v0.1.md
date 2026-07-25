@@ -55,8 +55,6 @@ These are scope decisions, not gaps. None of them is on the v0.1 path:
 - Marketplace, hosted service and telemetry
 - Universal plugin architecture (the adapter and provider seams exist, but only for the shipped
   integrations)
-- Final public brand and acronym (see
-  [OD-001](../OPEN-DECISIONS.md#od-001-final-brand-short-command-name-and-acronym))
 
 ## Known design limitations
 

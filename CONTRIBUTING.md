@@ -29,8 +29,8 @@ pnpm test
 pnpm build
 ```
 
-Node >= 22 (the current Node.js LTS lines; see [OPEN-DECISIONS.md](OPEN-DECISIONS.md) OD-007) and
-pnpm (see `packageManager` in `package.json`) are required.
+Node >= 22 (the current Node.js LTS lines) and pnpm (see `packageManager` in `package.json`) are
+required.
 
 ## Making changes
 

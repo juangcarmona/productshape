@@ -121,7 +121,7 @@ No command requires a generated file as input to rebuild it.
 
 ## Cross-platform requirements
 
-The toolkit runs identically on Windows, macOS and Linux (Node >= 20.10, OD-007):
+The toolkit runs identically on Windows, macOS and Linux (Node >= 22, the current LTS lines):
 
 - No path-separator assumptions: paths are handled through Node's path APIs internally and are
   always emitted with POSIX separators in diagnostics, handoffs and generated files.
