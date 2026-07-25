@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:product-definition-as-code:schema:actor:v1alpha1",
+  "title": "Actor frontmatter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "title", "status", "actor-kind"],
+  "properties": {
+    "id": { "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/actorId" },
+    "type": { "const": "actor" },
+    "title": { "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/title" },
+    "status": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/artifactStatus"
+    },
+    "actor-kind": {
+      "enum": ["human", "external-system", "scheduled-process", "product"]
+    }
+  }
+}

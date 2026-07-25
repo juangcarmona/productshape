@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:product-definition-as-code:schema:bounded-context:v1alpha1",
+  "title": "Bounded context frontmatter",
+  "description": "Term ownership is derived from Domain Term.defined-in; owns-terms is deliberately not an authored property.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "title", "status"],
+  "properties": {
+    "id": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/boundedContextId"
+    },
+    "type": { "const": "bounded-context" },
+    "title": { "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/title" },
+    "status": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/artifactStatus"
+    }
+  }
+}

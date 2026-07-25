@@ -1,5 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Ajv2020, type ValidateFunction } from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 import { idPrefixByType, isMarkdownDocumentType } from './artifact.js';
@@ -13,6 +14,11 @@ export class SchemaRegistry {
   private readonly validators = new Map<string, ValidateFunction>();
 
   private constructor(private readonly ajv: Ajv2020) {}
+
+  /** Load the schemas bundled with this package. */
+  static loadBundled(): Promise<SchemaRegistry> {
+    return SchemaRegistry.load(fileURLToPath(new URL('../schemas/', import.meta.url)));
+  }
 
   /** Load every *.schema.json file from a directory (typically the repository's schemas/). */
   static async load(schemaDir: string): Promise<SchemaRegistry> {

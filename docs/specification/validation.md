@@ -61,18 +61,18 @@ validation does not inspect managed files.
 
 ## Warning codes
 
-| Code         | Condition                                                                                                    |
-| ------------ | ------------------------------------------------------------------------------------------------------------ |
-| `PRODUCT101` | Artifact file name not aligned with its ID                                                                   |
-| `PRODUCT102` | Active use case not present in any journey                                                                   |
-| `PRODUCT103` | Requirement not reachable from any actor (see [Relationships → Reachability](relationships.md#reachability)) |
-| `PRODUCT104` | Deprecated artifact still referenced by an active artifact                                                   |
-| `PRODUCT105` | Business rule with no consumers                                                                              |
-| `PRODUCT106` | Domain term with no usage                                                                                    |
-| `PRODUCT107` | Bounded context with no owned domain language                                                                |
-| `PRODUCT108` | Product Change approved with unresolved open questions                                                       |
-| `PRODUCT109` | Delivery slice affecting artifacts outside its requirements' closure                                         |
-| `PRODUCT110` | Handoff context containing artifacts outside the recomputed closure                                          |
+| Code         | Condition                                                                                                                                                          |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `PRODUCT101` | Artifact file name not aligned with its ID                                                                                                                         |
+| `PRODUCT102` | Active use case not present in any journey                                                                                                                         |
+| `PRODUCT103` | Requirement not reachable from any actor (see [Relationships → Reachability](relationships.md#reachability)); product-wide constraints are reachable by definition |
+| `PRODUCT104` | Deprecated artifact still referenced by an active artifact                                                                                                         |
+| `PRODUCT105` | Business rule with no consumers                                                                                                                                    |
+| `PRODUCT106` | Domain term with no usage                                                                                                                                          |
+| `PRODUCT107` | Bounded context with no owned domain language                                                                                                                      |
+| `PRODUCT108` | Product Change approved with unresolved open questions                                                                                                             |
+| `PRODUCT109` | Delivery slice affecting artifacts outside its requirements' closure                                                                                               |
+| `PRODUCT110` | Handoff context containing artifacts outside the recomputed closure                                                                                                |
 
 ## Exit codes
 

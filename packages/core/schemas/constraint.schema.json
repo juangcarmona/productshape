@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:product-definition-as-code:schema:constraint:v1alpha1",
+  "title": "Constraint frontmatter",
+  "description": "When applies-to is absent the constraint applies to the entire product.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "title", "status"],
+  "properties": {
+    "id": { "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/constraintId" },
+    "type": { "const": "constraint" },
+    "title": { "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/title" },
+    "status": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/artifactStatus"
+    },
+    "applies-to": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/behaviourTargetId"
+      }
+    }
+  }
+}
