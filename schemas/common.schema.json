@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:product-definition-as-code:schema:common:v1alpha1",
+  "title": "Common definitions",
+  "description": "Shared identifier patterns and lifecycle enums. Lifecycles are deliberately separate definitions: artifacts, product changes and delivery slices each have their own state machine.",
+  "$defs": {
+    "artifactStatus": {
+      "description": "Lifecycle of a product artifact.",
+      "enum": ["draft", "active", "deprecated", "retired"]
+    },
+    "productChangeStatus": {
+      "description": "Lifecycle of a product change.",
+      "enum": [
+        "draft",
+        "proposed",
+        "approved",
+        "in-progress",
+        "implemented",
+        "rejected",
+        "superseded"
+      ]
+    },
+    "deliverySliceStatus": {
+      "description": "Lifecycle of a delivery slice.",
+      "enum": ["draft", "proposed", "approved", "in-progress", "completed", "cancelled"]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "actorId": {
+      "type": "string",
+      "pattern": "^ACT-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "journeyId": {
+      "type": "string",
+      "pattern": "^JRN-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "useCaseId": {
+      "type": "string",
+      "pattern": "^UC-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "businessRuleId": {
+      "type": "string",
+      "pattern": "^BR-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "domainTermId": {
+      "type": "string",
+      "pattern": "^TERM-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "boundedContextId": {
+      "type": "string",
+      "pattern": "^BC-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "functionalRequirementId": {
+      "type": "string",
+      "pattern": "^FR-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "qualityRequirementId": {
+      "type": "string",
+      "pattern": "^QR-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "constraintId": {
+      "type": "string",
+      "pattern": "^CON-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "productChangeId": {
+      "type": "string",
+      "pattern": "^CHG-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "deliverySliceId": {
+      "type": "string",
+      "pattern": "^SLI-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "productHandoffId": {
+      "type": "string",
+      "pattern": "^HOF-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "requirementId": {
+      "description": "A functional requirement, quality requirement or constraint.",
+      "type": "string",
+      "pattern": "^(FR|QR|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "behaviourTargetId": {
+      "description": "A journey, use case or bounded context.",
+      "type": "string",
+      "pattern": "^(JRN|UC|BC)-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "productArtifactId": {
+      "description": "Any artifact of the current product model.",
+      "type": "string",
+      "pattern": "^(ACT|JRN|UC|BR|TERM|BC|FR|QR|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "productArtifactType": {
+      "enum": [
+        "actor",
+        "journey",
+        "use-case",
+        "business-rule",
+        "domain-term",
+        "bounded-context",
+        "functional-requirement",
+        "quality-requirement",
+        "constraint"
+      ]
+    },
+    "gitRevision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{7,40}$"
+    },
+    "digest": {
+      "description": "SHA-256 over UTF-8 content with line endings normalized to LF.",
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "verificationScenarios": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["scenario"],
+        "properties": {
+          "scenario": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:product-definition-as-code:schema:functional-requirement:v1alpha1",
+  "title": "Functional requirement frontmatter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "title", "status", "derived-from", "verification"],
+  "properties": {
+    "id": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/functionalRequirementId"
+    },
+    "type": { "const": "functional-requirement" },
+    "title": { "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/title" },
+    "status": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/artifactStatus"
+    },
+    "derived-from": {
+      "description": "Traceability to the use cases, business rules or constraints this requirement originates from.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^(UC|BR|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$"
+      }
+    },
+    "verification": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/verificationScenarios"
+    }
+  }
+}

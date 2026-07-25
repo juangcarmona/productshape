@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:product-definition-as-code:schema:quality-requirement:v1alpha1",
+  "title": "Quality requirement frontmatter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "title", "status", "quality-attribute", "applies-to", "verification"],
+  "properties": {
+    "id": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/qualityRequirementId"
+    },
+    "type": { "const": "quality-requirement" },
+    "title": { "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/title" },
+    "status": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/artifactStatus"
+    },
+    "quality-attribute": {
+      "type": "string",
+      "minLength": 1
+    },
+    "applies-to": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/behaviourTargetId"
+      }
+    },
+    "verification": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/verificationScenarios"
+    }
+  }
+}

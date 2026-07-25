@@ -1,0 +1,30 @@
+# Product handoff: GENERATED contract between Product Definition and an SDD framework.
+# Do not author this file by hand; product-definition handoff create generates it from an
+# approved delivery slice. It carries product context and traceability only — never
+# technical design. Digests are sha256 over LF-normalized UTF-8 content.
+# Contract: docs/specification/handoff-contract.md
+schema: product-definition-as-code/handoff/v1alpha1
+id: HOF-EXAMPLE-001
+generated-at: 2026-01-01T10:00:00Z
+work-item:
+  provider: github
+  repository: owner/repository
+  id: '123'
+  title: Example work item title
+source:
+  repository: owner/repository
+  revision: 0000000000000000000000000000000000000000
+  product-change: CHG-EXAMPLE-001
+  delivery-slice: SLI-EXAMPLE-001
+implements:
+  - FR-EXAMPLE-001
+affects:
+  - UC-EXAMPLE-001
+artifacts:
+  - id: FR-EXAMPLE-001
+    type: functional-requirement
+    path: docs/product/changes/active/chg-example-001/proposed/requirements/functional/fr-example-001.md
+    digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+context:
+  path: product-context.md
+  digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
