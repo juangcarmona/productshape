@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@product-definition-as-code/cli':
+        specifier: workspace:*
+        version: link:packages/cli
       '@product-definition-as-code/core':
         specifier: workspace:*
         version: link:packages/core

@@ -1,10 +1,14 @@
 import {
+  changesAffecting,
+  handoffsReferencing,
   inspectArtifact,
   ownedTerms,
+  slicesReferencing,
   stableJson,
   validateBaseline,
 } from '@product-definition-as-code/core';
 import { CliError, exitCodes, resolveRepository, type CliIo } from '../context.js';
+import { loadActiveChanges } from './change.js';
 
 export interface InspectOptions {
   format?: 'text' | 'json';
@@ -18,6 +22,10 @@ export async function runInspect(io: CliIo, id: string, options: InspectOptions)
     throw new CliError(`Unknown artifact ID '${id}'`, exitCodes.validationErrors);
   }
   const report = inspectArtifact(graph, id);
+  const activeChanges = await loadActiveChanges(repo);
+  report.changes = changesAffecting(activeChanges, id);
+  report.slices = slicesReferencing(activeChanges, id);
+  report.handoffs = (await handoffsReferencing(repo.root, id)).map((h) => h.handoffId);
 
   if (options.format === 'json') {
     io.out(stableJson(report).trimEnd());
@@ -37,5 +45,8 @@ export async function runInspect(io: CliIo, id: string, options: InspectOptions)
   if (report.type === 'bounded-context') {
     io.out(`  owns-terms (derived): ${ownedTerms(graph, id).join(', ') || '(none)'}`);
   }
+  io.out(`  affecting changes: ${report.changes.join(', ') || '(none)'}`);
+  io.out(`  slices: ${report.slices.join(', ') || '(none)'}`);
+  io.out(`  handoffs: ${report.handoffs.join(', ') || '(none)'}`);
   return exitCodes.success;
 }

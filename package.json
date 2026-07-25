@@ -18,6 +18,7 @@
     "build": "pnpm -r run build"
   },
   "devDependencies": {
+    "@product-definition-as-code/cli": "workspace:*",
     "@product-definition-as-code/core": "workspace:*",
     "@types/node": "^24.0.0",
     "yaml": "^2.5.0",
