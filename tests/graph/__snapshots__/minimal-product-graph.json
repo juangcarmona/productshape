@@ -133,7 +133,9 @@
   ],
   "derived": {
     "owns-terms": {
-      "BC-SHORTENING": ["TERM-SHORT-LINK"]
+      "BC-SHORTENING": [
+        "TERM-SHORT-LINK"
+      ]
     }
   }
 }

@@ -1,0 +1,5 @@
+# Golden snapshots are byte-exact tool output; formatting them breaks the tests.
+**/__snapshots__/
+# Derived outputs are never formatted by hand.
+.product/generated/
+pnpm-lock.yaml
