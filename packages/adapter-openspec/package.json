@@ -4,6 +4,15 @@
   "description": "OpenSpec adapter for Product Definition as Code: sidecar placement and requirement-coverage validation.",
   "license": "Apache-2.0",
   "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juangcarmona/productshape.git",
+    "directory": "packages/adapter-openspec"
+  },
   "exports": {
     ".": {
       "types": "./src/index.ts",
@@ -11,7 +20,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "build": "tsup",

@@ -15,3 +15,8 @@ coverage/
 # Editor and OS noise
 .DS_Store
 Thumbs.db
+
+# Staged into the publishable CLI at build time (copies of canonical schemas/ and distribution assets).
+packages/cli/schemas/
+packages/cli/assets/
+packages/cli/*.tgz

@@ -1,3 +1,6 @@
+[![CI](https://github.com/juangcarmona/productshape/actions/workflows/ci.yml/badge.svg)](https://github.com/juangcarmona/productshape/actions/workflows/ci.yml)
+[![Conformance](https://github.com/juangcarmona/productshape/actions/workflows/conformance.yml/badge.svg)](https://github.com/juangcarmona/productshape/actions/workflows/conformance.yml)
+
 # ProductShape
 
 **ProductShape — Product Definition as Code.** ProductShape is the reference implementation of the

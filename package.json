@@ -15,9 +15,12 @@
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r run typecheck",
     "test": "vitest run",
-    "build": "pnpm -r run build"
+    "build": "pnpm -r run build",
+    "version": "changeset version",
+    "release": "changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.27.0",
     "@prodshape/cli": "workspace:*",
     "@prodshape/core": "workspace:*",
     "@types/node": "^24.0.0",

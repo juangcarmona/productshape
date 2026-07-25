@@ -26,15 +26,16 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
-      # Self-application: the repository must satisfy its own methodology.
-      - name: product-definition validate
-        run: node packages/cli/dist/cli.js validate
-      - name: product-definition graph
-        run: node packages/cli/dist/cli.js graph
-      - name: product-definition doctor
-        run: node packages/cli/dist/cli.js doctor
+      # Self-application: the repository must satisfy its own methodology. The built CLI bundles
+      # its data files, so it runs from dist/bin.js after `pnpm build`.
+      - name: prodshape validate
+        run: node packages/cli/dist/bin.js validate
+      - name: prodshape graph
+        run: node packages/cli/dist/bin.js graph
+      - name: prodshape doctor
+        run: node packages/cli/dist/bin.js doctor
       - name: managed integrations up to date
-        run: node packages/cli/dist/cli.js integration update --check
+        run: node packages/cli/dist/bin.js integration update --check
 
   quality:
     name: lint and format (docs-only checks run once)
@@ -49,3 +50,24 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm format:check
+
+  # Non-blocking reminder (OD-2): warn when a PR touches package source but adds no changeset.
+  # Never fails the check during v0.x — it only emits an annotation.
+  changesets:
+    name: changeset reminder (warn only)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: changeset status
+        run: |
+          pnpm changeset status --since=origin/${{ github.base_ref }} \
+            || echo "::warning::No changeset found for changed packages. Run 'pnpm changeset' if this change should be released."

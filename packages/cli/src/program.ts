@@ -12,9 +12,9 @@ import { runValidate } from './commands/validate.js';
 import { CliError, exitCodes, type CliIo } from './context.js';
 
 export function buildProgram(io: CliIo, capture: { code: number }): Command {
-  const program = new Command('product-definition');
+  const program = new Command('prodshape');
   program
-    .description('Product Definition as Code - deterministic product-definition tooling')
+    .description('ProductShape - the reference implementation of Product Definition as Code')
     .exitOverride()
     .configureOutput({
       writeOut: (str) => io.out(str.trimEnd()),

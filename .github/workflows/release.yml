@@ -1,0 +1,167 @@
+name: Release
+
+# Publishing happens only here, never from a developer machine. Authentication prefers npm
+# Trusted Publishing (OIDC) and falls back to the NPM_TOKEN secret while trusted publishers are
+# still being configured. See RELEASING.md for the full process, tracks and rollback.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      task:
+        description: What to run
+        type: choice
+        default: publish
+        options:
+          - publish # apply pending version bumps and publish (used for alpha/beta and recovery)
+          - pre-enter-alpha # start an alpha pre-release train
+          - pre-enter-beta # start a beta pre-release train
+          - pre-exit # return to the stable train
+
+# Never let two releases run at once; do not cancel an in-flight publish.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+# Least privilege by default; each job widens only what it needs.
+permissions: {}
+
+jobs:
+  # Keep the "Version Packages" PR up to date whenever changesets are pending on main.
+  version-pr:
+    name: maintain version PR
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # `version` only: this job manages the release PR and never publishes.
+      - uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1
+        with:
+          version: pnpm run version
+          commit: 'chore: Version Packages'
+          title: 'Version Packages'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Stable publish: runs only when a "Version Packages" release commit lands on main and the repo
+  # is not in pre-release mode. Gated by the protected `npm-publish` environment (OD-1).
+  publish-stable:
+    name: publish stable
+    if: >-
+      github.event_name == 'push' &&
+      contains(github.event.head_commit.message, 'Version Packages')
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    permissions:
+      contents: write # push git tags
+      id-token: write # OIDC trusted publishing
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      # Refuse to publish stable while a pre-release train is active.
+      - name: guard against pre mode
+        shell: bash
+        run: |
+          if [ -f .changeset/pre.json ]; then
+            echo "::error::.changeset/pre.json present — exit pre mode before a stable release"
+            exit 1
+          fi
+      # Green build is a hard gate for any publish.
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm test
+      # Publishes only packages whose version is ahead of npm, in dependency order, with provenance.
+      - name: publish
+        run: pnpm changeset publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} # fallback; ignored when OIDC is configured
+          NPM_CONFIG_PROVENANCE: 'true'
+      - name: push tags
+        run: git push origin --follow-tags
+      # Post-publish supply-chain verification.
+      - name: verify signatures and provenance
+        run: pnpm -r exec npm audit signatures || true
+
+  # Manual path: prerelease publishing (alpha/beta), recovery, and pre-mode management.
+  dispatch:
+    name: manual (${{ github.event.inputs.task }})
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # commit pre.json / push tags
+      id-token: write # OIDC trusted publishing
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      - name: configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # Enter / exit a pre-release train and commit the marker back to main.
+      - name: enter alpha
+        if: github.event.inputs.task == 'pre-enter-alpha'
+        run: |
+          pnpm changeset pre enter alpha
+          git add .changeset/pre.json
+          git commit -m "chore: enter alpha pre-release mode"
+          git push origin HEAD:main
+      - name: enter beta
+        if: github.event.inputs.task == 'pre-enter-beta'
+        run: |
+          pnpm changeset pre enter beta
+          git add .changeset/pre.json
+          git commit -m "chore: enter beta pre-release mode"
+          git push origin HEAD:main
+      - name: exit pre mode
+        if: github.event.inputs.task == 'pre-exit'
+        run: |
+          pnpm changeset pre exit
+          git add .changeset/pre.json
+          git commit -m "chore: exit pre-release mode"
+          git push origin HEAD:main
+
+      # Apply pending bumps and publish. In pre mode versions become x.y.z-<tag>.N and changeset
+      # publish sets the matching dist-tag automatically; otherwise it publishes to `latest`.
+      - name: version and publish
+        if: github.event.inputs.task == 'publish'
+        run: |
+          pnpm build
+          pnpm typecheck
+          pnpm test
+          pnpm changeset version
+          git add -A
+          git commit -m "chore: version prerelease packages" || echo "nothing to version"
+          pnpm changeset publish
+          git push origin HEAD:main --follow-tags
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} # fallback; ignored when OIDC is configured
+          NPM_CONFIG_PROVENANCE: 'true'

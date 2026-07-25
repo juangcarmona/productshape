@@ -1,9 +1,9 @@
 {
   "managed": {
-    "by": "product-definition",
-    "version": "0.1.0",
+    "by": "prodshape",
+    "version": "0.1.0-alpha.1",
     "source": "hooks/",
-    "note": "Generated fragment. Wire these deterministic commands into your hook configuration; do not edit by hand - run: product-definition integration update"
+    "note": "Generated fragment. Wire these deterministic commands into your hook configuration; do not edit by hand - run: prodshape integration update"
   },
   "hooks": [
     {

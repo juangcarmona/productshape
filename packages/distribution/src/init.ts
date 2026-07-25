@@ -63,7 +63,7 @@ Product Definition as Code.
   only by explicit promotion.
 - \`changes/active|completed|rejected/\` hold Product Changes.
 
-Validate with \`product-definition validate\`. Authoring templates are under
+Validate with \`prodshape validate\`. Authoring templates are under
 \`.product/templates/\`.
 `;
 
@@ -112,10 +112,10 @@ export async function initRepository(options: InitOptions): Promise<InitResult> 
 
   const nextSteps = [
     'Author your initial product model under docs/product/model (templates: .product/templates/).',
-    'Validate with: product-definition validate',
+    'Validate with: prodshape validate',
     'After the baseline is accepted, evolve it through Product Changes: /product:change or the analyze-product-change skill.',
     ...(sdd === 'openspec'
-      ? ['Hand increments to OpenSpec with: product-definition handoff create --adapter openspec']
+      ? ['Hand increments to OpenSpec with: prodshape handoff create --adapter openspec']
       : []),
   ];
 
