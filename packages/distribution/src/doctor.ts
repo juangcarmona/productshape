@@ -78,7 +78,7 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
       ok: versionOk,
       detail: versionOk
         ? `integrations generated with v${lock.version}`
-        : `integrations generated with v${lock.version}, installed v${version}; run: product-definition integration update`,
+        : `integrations generated with v${lock.version}, installed v${version}; run: prodshape integration update`,
     });
   } else {
     checks.push({
@@ -117,7 +117,7 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
     ok: true,
     detail: generatedExists
       ? '.product/generated present'
-      : '.product/generated absent (informational; run: product-definition graph)',
+      : '.product/generated absent (informational; run: prodshape graph)',
   });
 
   // Schema compatibility: the lock schema is the only versioned distribution artifact.

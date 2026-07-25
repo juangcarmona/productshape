@@ -54,18 +54,21 @@ importers:
 
   packages/cli:
     dependencies:
-      '@prodshape/adapter-openspec':
-        specifier: workspace:*
-        version: link:../adapter-openspec
-      '@prodshape/core':
-        specifier: workspace:*
-        version: link:../core
-      '@prodshape/distribution':
-        specifier: workspace:*
-        version: link:../distribution
+      ajv:
+        specifier: ^8.17.0
+        version: 8.20.0
+      ajv-formats:
+        specifier: ^3.0.0
+        version: 3.0.1(ajv@8.20.0)
       commander:
         specifier: ^12.0.0
         version: 12.1.0
+      fast-glob:
+        specifier: ^3.3.0
+        version: 3.3.3
+      gray-matter:
+        specifier: ^4.0.3
+        version: 4.0.3
       yaml:
         specifier: ^2.5.0
         version: 2.9.0

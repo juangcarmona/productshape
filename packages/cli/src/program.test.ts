@@ -39,7 +39,7 @@ afterAll(async () => {
   await rm(workDir, { recursive: true, force: true });
 });
 
-describe('product-definition validate', () => {
+describe('prodshape validate', () => {
   it('exits 0 on the minimal example', async () => {
     const result = await run(['validate'], workDir);
     expect(result.err).toEqual([]);
@@ -110,7 +110,7 @@ describe('product-definition validate', () => {
   });
 });
 
-describe('product-definition graph / inspect / impact', () => {
+describe('prodshape graph / inspect / impact', () => {
   it('graph prints a summary and writes generated outputs', async () => {
     const result = await run(['graph'], workDir);
     expect(result.code).toBe(0);

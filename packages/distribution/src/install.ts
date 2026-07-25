@@ -84,7 +84,7 @@ export async function checkIntegrations(root: string): Promise<IntegrationDiagno
         diagnostics.push({
           severity: 'error',
           code: 'PRODUCT052',
-          message: `Managed ${provider} file is missing; run: product-definition integration update`,
+          message: `Managed ${provider} file is missing; run: prodshape integration update`,
           file: path,
         });
         continue;
@@ -93,7 +93,7 @@ export async function checkIntegrations(root: string): Promise<IntegrationDiagno
         diagnostics.push({
           severity: 'error',
           code: 'PRODUCT051',
-          message: `Managed ${provider} file was modified by hand; edit the canonical asset and run: product-definition integration update`,
+          message: `Managed ${provider} file was modified by hand; edit the canonical asset and run: prodshape integration update`,
           file: path,
         });
       }

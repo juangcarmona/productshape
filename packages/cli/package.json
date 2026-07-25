@@ -1,31 +1,52 @@
 {
   "name": "@prodshape/cli",
-  "version": "0.1.0",
-  "description": "The product-definition command-line interface for Product Definition as Code.",
+  "version": "0.1.0-alpha.1",
+  "description": "ProductShape CLI — the reference implementation of the Product Definition as Code methodology: a versioned graph of product artifacts with deterministic validation, change overlays, delivery slices and SDD handoffs.",
   "license": "Apache-2.0",
   "type": "module",
   "bin": {
-    "prodshape": "./dist/cli.js",
-    "product-definition": "./dist/cli.js"
-  },
-  "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./dist/index.js"
-    }
+    "prodshape": "./dist/bin.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "schemas",
+    "assets",
+    "README.md",
+    "LICENSE"
   ],
+  "keywords": [
+    "productshape",
+    "product-definition-as-code",
+    "product-definition",
+    "product-management",
+    "spec-driven-development",
+    "openspec",
+    "ai",
+    "methodology",
+    "cli"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juangcarmona/productshape.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/juangcarmona/productshape#readme",
+  "bugs": {
+    "url": "https://github.com/juangcarmona/productshape/issues"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && node scripts/stage.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@prodshape/adapter-openspec": "workspace:*",
-    "@prodshape/core": "workspace:*",
-    "@prodshape/distribution": "workspace:*",
+    "ajv": "^8.17.0",
+    "ajv-formats": "^3.0.0",
     "commander": "^12.0.0",
+    "fast-glob": "^3.3.0",
+    "gray-matter": "^4.0.3",
     "yaml": "^2.5.0"
   },
   "devDependencies": {

@@ -51,9 +51,7 @@ export async function runIntegrationUpdate(
 
   const results = await updateIntegrations(repo.root);
   if (results.length === 0) {
-    io.out(
-      'No integrations installed; add one with: product-definition integration add <provider>',
-    );
+    io.out('No integrations installed; add one with: prodshape integration add <provider>');
     return exitCodes.success;
   }
   for (const result of results) {
