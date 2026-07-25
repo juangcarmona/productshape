@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change add-coverage-validation. Update Purpose after archive.
+Deterministic verification that implemented requirements carry resolvable specification and verification evidence.
 
 ## Requirements
 

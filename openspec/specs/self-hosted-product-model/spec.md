@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change establish-product-definition-foundation. Update Purpose after archive.
+This repository's own product model, keeping the reference implementation defined by its own methodology.
 
 ## Requirements
 

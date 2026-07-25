@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change establish-product-definition-foundation. Update Purpose after archive.
+The JSON Schema contracts every product artifact kind and change-flow document validates against.
 
 ## Requirements
 

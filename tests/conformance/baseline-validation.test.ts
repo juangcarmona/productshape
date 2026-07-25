@@ -45,11 +45,10 @@ describe('self-hosted model through the full pipeline', () => {
       ...validateModel(model.artifacts, graph, { config }),
     ];
     expect(diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
-    // The only warnings are the two accepted PRODUCT106 advisories for the brand terms
-    // (TERM-METHODOLOGY, TERM-REFERENCE-IMPLEMENTATION) added by CHG-BRAND-001; they are
-    // not yet referenced by any use case. See docs/product/changes/completed/chg-brand-001.
+    // Zero warnings: the CHG-BRAND-001 terms (TERM-METHODOLOGY,
+    // TERM-REFERENCE-IMPLEMENTATION) are referenced from UC-INIT-001.
     const warnings = diagnostics.filter((d) => d.severity === 'warning');
-    expect(warnings.map((d) => d.code)).toEqual(['PRODUCT106', 'PRODUCT106']);
+    expect(warnings).toEqual([]);
     expect(graph.nodes).toHaveLength(59);
     expect(graph.edges.length).toBeGreaterThan(60);
   });

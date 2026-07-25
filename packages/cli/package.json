@@ -9,7 +9,8 @@
     "provenance": true
   },
   "bin": {
-    "prodshape": "dist/bin.js"
+    "prodshape": "dist/bin.js",
+    "product-definition": "dist/bin.js"
   },
   "files": [
     "dist",

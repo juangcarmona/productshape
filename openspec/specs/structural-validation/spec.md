@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change implement-product-graph-core. Update Purpose after archive.
+Deterministic graph-level validation of the product model with stable diagnostic codes and configurable strictness.
 
 ## Requirements
 

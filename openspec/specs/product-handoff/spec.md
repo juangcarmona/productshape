@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change implement-product-change-and-handoff. Update Purpose after archive.
+Product Handoff generation with content digests, and digest-based staleness detection.
 
 ## Requirements
 

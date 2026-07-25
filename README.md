@@ -142,7 +142,7 @@ pnpm install && pnpm build
 ```
 
 This repository defines itself with its own methodology, so the built CLI has a real product model
-to run against — 56 artifacts, zero diagnostics:
+to run against — 59 artifacts, zero diagnostics:
 
 ```bash
 node packages/cli/dist/bin.js validate
@@ -157,9 +157,9 @@ For a new repository, scaffold the model plus the AI and SDD integrations with:
 prodshape init --ai claude --sdd openspec
 ```
 
-`prodshape` here means the built CLI binary: run it as `node packages/cli/dist/bin.js`, or make it
-a global command with `pnpm link --global` from `packages/cli`. `product-definition` remains a
-temporary v0.x alias for `prodshape` — identical output — and is removed before v1. The
+`prodshape` is the installed CLI (`npm install -g @prodshape/cli`); from a source checkout, run it
+as `node packages/cli/dist/bin.js`. The package installs `product-definition` alongside it — a
+v0.x compatibility alias with identical output, removed before v1. The
 `/product:*` commands stay canonical; `/ps:*` is an optional shorthand (`/ps:change`, `/ps:impact`,
 `/ps:handoff`).
 

@@ -26,9 +26,13 @@ expectations as documentation only, and the gap is recorded in `docs/limitations
 adapter, evidence is a validated `product-coverage.yaml`. Repositories using no SDD framework (or an
 unsupported one) have no defined evidence format.
 
-**Interim position:** v0.1 defines evidence through the adapter contract only. The promotion check
-validates coverage files referenced from handoffs generated for the change. Evidence policy for
-other SDD frameworks is deferred until a second adapter exists.
+**Interim position:** v0.1 defines evidence through the adapter contract only. With the OpenSpec
+adapter configured, promotion verifies coverage evidence discovered from the handoffs generated
+for the change and refuses without it (PRODUCT044). Without any SDD provider configured,
+promotion refuses unless the human passes `--accept-external-evidence`, which records a loud
+PRODUCT044 warning asserting that evidence exists outside the tooling; the flag has no effect
+when an adapter is configured. Evidence policy for other SDD frameworks is deferred until a
+second adapter exists.
 
 ## OD-006: Handoff resolution in shallow or partial clones
 

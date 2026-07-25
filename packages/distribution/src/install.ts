@@ -25,11 +25,32 @@ export interface InstallResult {
   written: string[];
 }
 
-/** Render and write one provider's managed files, recording hashes in the lock. */
+/** A refused installation: targets exist that the lock does not own, or were hand-edited. */
+export class InstallConflictError extends Error {
+  constructor(
+    readonly provider: string,
+    readonly conflicts: string[],
+  ) {
+    super(
+      `Refusing to overwrite ${conflicts.length} existing file(s) for the ${provider} integration ` +
+        `(not managed by the installation lock, or modified by hand):\n` +
+        conflicts.map((path) => `  ${path}`).join('\n') +
+        '\nReconcile the files (or re-run with --force to overwrite them).',
+    );
+  }
+}
+
+/**
+ * Render and write one provider's managed files, recording hashes in the lock.
+ * Preflights every target before writing anything: a target that exists but is
+ * not owned by the lock, or is owned but drifted, blocks the whole install
+ * unless force is set. A refused install leaves files and lock untouched.
+ */
 export async function installProvider(
   root: string,
   provider: string,
   assets?: CanonicalAssets,
+  force = false,
 ): Promise<InstallResult> {
   const renderer = rendererFor(provider);
   if (!renderer) {
@@ -39,6 +60,28 @@ export async function installProvider(
   const files = renderer.render(resolvedAssets);
 
   const lock: InstallationLock = (await readLock(root)) ?? emptyLock(resolvedAssets.version);
+
+  if (!force) {
+    const owned = new Map<string, string>();
+    for (const entry of Object.values(lock.providers)) {
+      for (const [path, digest] of Object.entries(entry.files)) owned.set(path, digest);
+    }
+    const conflicts: string[] = [];
+    for (const file of files) {
+      let existing: string;
+      try {
+        existing = await readFile(join(root, ...file.path.split('/')), 'utf8');
+      } catch {
+        continue; // Absent targets are always writable.
+      }
+      const ownedDigest = owned.get(file.path);
+      if (ownedDigest === undefined || fileDigest(existing) !== ownedDigest) {
+        conflicts.push(file.path);
+      }
+    }
+    if (conflicts.length > 0) throw new InstallConflictError(provider, conflicts);
+  }
+
   lock.version = resolvedAssets.version;
   lock.providers[provider] = { files: {} };
 
@@ -54,14 +97,14 @@ export async function installProvider(
   return { provider, written };
 }
 
-/** Regenerate every installed provider. */
-export async function updateIntegrations(root: string): Promise<InstallResult[]> {
+/** Regenerate every installed provider (refusing over drift unless force). */
+export async function updateIntegrations(root: string, force = false): Promise<InstallResult[]> {
   const lock = await readLock(root);
   if (!lock) return [];
   const assets = await loadBundledAssets();
   const results: InstallResult[] = [];
   for (const provider of Object.keys(lock.providers).sort()) {
-    results.push(await installProvider(root, provider, assets));
+    results.push(await installProvider(root, provider, assets, force));
   }
   return results;
 }

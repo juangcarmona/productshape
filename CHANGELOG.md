@@ -7,8 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-v0.1.0 release candidate. Not published to npm — the CLI is built from the repository; see
-OPEN-DECISIONS OD-005. 133 tests pass and CI runs on Linux, Windows and macOS.
+v0.1.0 release candidate. The `@prodshape/*` packages are published to npm (the CLI is at
+`0.1.0-alpha.1` pending the first stable release). 156 tests pass and CI runs on Linux, Windows
+and macOS.
+
+### Fixed
+
+- `change promote` now refuses without verifiable coverage evidence (FR-PROMOTE-001): evidence is
+  discovered from the SDD workspace per completed slice, missing or unverifiable evidence is
+  `PRODUCT044`, and repositories without an SDD adapter need an explicit
+  `--accept-external-evidence` (`fix-v01-conformance`).
+- The published CLI installs the `product-definition` alias its generated skills and hooks
+  invoke, guarded by a packed-tarball test of both binaries.
+- Coverage evidence is hardened: covered/partial entries require non-empty evidence arrays,
+  evidence paths cannot escape the repository, and entries for requirements the handoff does not
+  implement are rejected.
+- `init`, `integration add` and `integration update` preflight every target and refuse to
+  overwrite unmanaged or hand-edited files without `--force`.
+- Promotion applies its plan in two phases (preflight, then execute with the change-directory
+  move last), so a failed promotion no longer leaves a partially promoted baseline.
+- `validation.warnings-as-errors` is enforced uniformly across baseline validate, change
+  validate, handoff generation, graph generation and promotion.
 
 ### Added
 

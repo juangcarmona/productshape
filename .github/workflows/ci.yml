@@ -24,8 +24,10 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
-      - run: pnpm test
+      # Build before test: the packed-tarball test installs the built CLI package
+      # (dist/ + staged schemas/assets) into a clean directory and runs its binaries.
       - run: pnpm build
+      - run: pnpm test
       # Self-application: the repository must satisfy its own methodology. The built CLI bundles
       # its data files, so it runs from dist/bin.js after `pnpm build`.
       - name: prodshape validate

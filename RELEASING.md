@@ -30,6 +30,13 @@ that receive a changeset are versioned and published, in dependency order.
 - `GITHUB_TOKEN` — provided automatically by Actions; used to open the Version Packages PR and
   push tags.
 
+**Repository settings**
+
+- _Settings → Actions → General → Workflow permissions_: enable **"Allow GitHub Actions to create
+  and approve pull requests"**. Without it the release run fails at the "maintain version PR" step
+  with `GitHub Actions is not permitted to create or approve pull requests` — the version branch
+  is still force-pushed, but no Version Packages PR appears.
+
 **Environment**
 
 - `npm-publish` — a protected environment with required reviewers. The **stable** publish job runs
@@ -51,6 +58,10 @@ that receive a changeset are versioned and published, in dependency order.
 3. Review and merge that PR. The resulting release commit triggers the `publish-stable` job, which
    (after environment approval) builds, tests and runs `pnpm changeset publish` — publishing only
    the changed packages to the `latest` dist-tag, with provenance, and pushing git tags.
+
+Merging the Version Packages PR **is** the release decision: never merge it while a
+release-blocking defect is open, even if CI is green — the PR regenerates automatically as more
+changesets land, so waiting costs nothing.
 
 ## Pre-release (alpha / beta)
 

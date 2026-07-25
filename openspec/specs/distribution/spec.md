@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change package-ai-and-sdd-integrations. Update Purpose after archive.
+Repository scaffolding, managed provider assets, the installation lock and the doctor health check.
 
 ## Requirements
 

@@ -1,5 +1,6 @@
 import {
   buildGeneratedOutputs,
+  escalateWarnings,
   stableJson,
   validateBaseline,
   writeGeneratedOutputs,
@@ -12,7 +13,8 @@ export interface ValidateOptions {
 
 export async function runValidate(io: CliIo, options: ValidateOptions): Promise<number> {
   const repo = await resolveRepository(io);
-  const { graph, diagnostics } = await validateBaseline(repo);
+  const { graph, diagnostics: reported } = await validateBaseline(repo);
+  const diagnostics = escalateWarnings(reported, repo.config.validation['warnings-as-errors']);
 
   const errors = diagnostics.filter((d) => d.severity === 'error');
   const warnings = diagnostics.filter((d) => d.severity === 'warning');
@@ -35,9 +37,5 @@ export async function runValidate(io: CliIo, options: ValidateOptions): Promise<
   // Keep .product/generated/diagnostics.json in sync with the latest run.
   await writeGeneratedOutputs(repo.generatedDir, buildGeneratedOutputs(graph, diagnostics));
 
-  if (errors.length > 0) return exitCodes.validationErrors;
-  if (warnings.length > 0 && repo.config.validation['warnings-as-errors']) {
-    return exitCodes.validationErrors;
-  }
-  return exitCodes.success;
+  return errors.length > 0 ? exitCodes.validationErrors : exitCodes.success;
 }

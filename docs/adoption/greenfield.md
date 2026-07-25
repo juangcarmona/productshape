@@ -5,11 +5,10 @@ repository that has code scaffolding but no accumulated product behaviour to rec
 initialize the layout, author the initial product baseline with the Define operation, validate it,
 and then run your first Product Change.
 
-> **Milestone note.** The `product-definition` CLI does not exist yet. Commands shown here are the
-> v0.1 contract; `init`, `validate`, `graph`, `inspect` and `impact` arrive with the
-> `implement-product-graph-core` change, and the change, handoff and integration commands follow in
-> the two changes after it. Until then, every step marked "by hand" works today: the layout,
-> schemas and templates are all plain files. See [Limitations of v0.1](../limitations-v0.1.md).
+> The CLI ships as [`@prodshape/cli`](https://www.npmjs.com/package/@prodshape/cli) with two
+> equivalent binaries: `prodshape` (canonical) and `product-definition` (v0.x alias, used in the
+> commands below). Every step marked "by hand" also works without the CLI: the layout, schemas and
+> templates are all plain files. See [Limitations of v0.1](../limitations-v0.1.md).
 
 ## 1. Initialize the repository
 

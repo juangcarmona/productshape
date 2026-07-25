@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change implement-product-change-and-handoff. Update Purpose after archive.
+The explicit, precondition-gated operation that applies an implemented Product Change to the product baseline.
 
 ## Requirements
 

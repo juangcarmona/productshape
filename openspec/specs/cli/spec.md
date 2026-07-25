@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change implement-product-graph-core. Update Purpose after archive.
+The prodshape command-line surface: commands, options, exit codes and output contracts.
 
 ## Requirements
 

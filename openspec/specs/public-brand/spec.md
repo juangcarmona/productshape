@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change rename-to-productshape. Update Purpose after archive.
+The ProductShape public brand for the reference implementation, kept distinct from the methodology name Product Definition as Code.
 
 ## Requirements
 

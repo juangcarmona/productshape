@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change establish-product-definition-foundation. Update Purpose after archive.
+The manifesto and methodology documentation that explain Product Definition as Code to adopters.
 
 ## Requirements
 

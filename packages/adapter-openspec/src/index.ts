@@ -1,7 +1,7 @@
-import { access, readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { access, readFile, readdir } from 'node:fs/promises';
+import { isAbsolute, join, relative, sep } from 'node:path';
 import { parse } from 'yaml';
-import type { Diagnostic, HandoffDocument, SchemaRegistry } from '@prodshape/core';
+import type { Diagnostic, HandoffDocument, SchemaRegistry, SliceEvidence } from '@prodshape/core';
 
 /**
  * The OpenSpec adapter owns sidecar placement and coverage validation only.
@@ -115,6 +115,18 @@ export async function checkCoverage(
     );
   }
 
+  const implemented = new Set(handoff.implements);
+  for (const requirement of Object.keys(coverage.requirements).sort()) {
+    if (!implemented.has(requirement)) {
+      fail(
+        'PRODUCT043',
+        `Coverage entry '${requirement}' is unrelated: the handoff does not implement it`,
+        label.coverage,
+        { artifact: requirement, target: requirement },
+      );
+    }
+  }
+
   for (const requirement of handoff.implements) {
     const entry = coverage.requirements[requirement];
     if (!entry || entry.status === 'uncovered') {
@@ -142,6 +154,16 @@ export async function checkCoverage(
 
   for (const [requirement, entry] of Object.entries(coverage.requirements)) {
     for (const path of [...(entry.specification ?? []), ...(entry.verification ?? [])]) {
+      // Evidence must stay inside the repository: relative, no traversal.
+      if (isAbsolute(path) || path.includes('\\') || path.split('/').includes('..')) {
+        fail(
+          'PRODUCT043',
+          `Coverage evidence path '${path}' for '${requirement}' must be a forward-slash relative path inside the repository`,
+          label.coverage,
+          { artifact: requirement, field: 'evidence', target: path },
+        );
+        continue;
+      }
       const absolute = join(root, ...path.split('/'));
       const insideChange = join(sddChangeDir, ...path.split('/'));
       if (!(await exists(absolute)) && !(await exists(insideChange))) {
@@ -158,4 +180,86 @@ export async function checkCoverage(
   result.covered.sort();
   result.uncovered.sort();
   return result;
+}
+
+export interface DiscoveredHandoff {
+  /** Absolute path of the SDD change directory holding the sidecars. */
+  dir: string;
+  /** Repository-relative POSIX path, for diagnostic labels. */
+  relative: string;
+  handoff: HandoffDocument;
+}
+
+async function listChangeDirs(base: string): Promise<string[]> {
+  try {
+    const entries = await readdir(base, { withFileTypes: true });
+    return entries
+      .filter((e) => e.isDirectory() && e.name !== 'archive')
+      .map((e) => join(base, e.name))
+      .sort();
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Deterministically discover every SDD change directory whose handoff sidecar
+ * references the given Product Change, scanning openspec/changes/ and
+ * openspec/changes/archive/ in lexicographic order. Unparseable or schema-alien
+ * handoff files are skipped: discovery only answers "where might evidence be";
+ * checkCoverage judges it.
+ */
+export async function findChangeHandoffDirs(
+  root: string,
+  changeId: string,
+): Promise<DiscoveredHandoff[]> {
+  const bases = [join(root, 'openspec', 'changes'), join(root, 'openspec', 'changes', 'archive')];
+  const discovered: DiscoveredHandoff[] = [];
+  for (const base of bases) {
+    for (const dir of await listChangeDirs(base)) {
+      let handoff: HandoffDocument;
+      try {
+        handoff = parse(
+          await readFile(join(dir, 'product-handoff.yaml'), 'utf8'),
+        ) as HandoffDocument;
+      } catch {
+        continue;
+      }
+      if (handoff?.source?.['product-change'] === changeId) {
+        discovered.push({ dir, relative: relative(root, dir).split(sep).join('/'), handoff });
+      }
+    }
+  }
+  return discovered;
+}
+
+/**
+ * Coverage-evidence verdict for one delivery slice, for the promotion gate:
+ * a slice is evidenced when at least one handoff referencing it passes
+ * checkCoverage with zero errors (first passing directory in sort order wins).
+ * When every matching directory fails, all their diagnostics are surfaced.
+ */
+export async function checkSliceEvidence(
+  root: string,
+  changeId: string,
+  sliceId: string,
+  registry: SchemaRegistry,
+): Promise<SliceEvidence> {
+  const dirs = (await findChangeHandoffDirs(root, changeId)).filter(
+    (d) => d.handoff?.source?.['delivery-slice'] === sliceId,
+  );
+  if (dirs.length === 0) return { found: false, diagnostics: [], covered: [] };
+
+  const failures: Diagnostic[] = [];
+  for (const candidate of dirs) {
+    const result = await checkCoverage(root, candidate.dir, registry, {
+      handoff: `${candidate.relative}/product-handoff.yaml`,
+      coverage: `${candidate.relative}/product-coverage.yaml`,
+    });
+    if (!result.diagnostics.some((d) => d.severity === 'error')) {
+      return { found: true, diagnostics: result.diagnostics, covered: result.covered };
+    }
+    failures.push(...result.diagnostics);
+  }
+  return { found: true, diagnostics: failures, covered: [] };
 }

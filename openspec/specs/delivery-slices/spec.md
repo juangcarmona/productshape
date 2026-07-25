@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change implement-product-change-and-handoff. Update Purpose after archive.
+Vertical delivery increments that decompose an approved Product Change into implementable, verifiable slices.
 
 ## Requirements
 
