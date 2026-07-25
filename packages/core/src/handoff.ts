@@ -2,6 +2,7 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parse, stringify } from 'yaml';
 import type { LoadedChange, LoadedSlice } from './changes.js';
+import { computeClosureFromSeeds } from './closure.js';
 import { contentDigest } from './digest.js';
 import type { Diagnostic } from './diagnostics.js';
 import { gitHead, gitShow } from './git.js';
@@ -33,70 +34,15 @@ export function parseWorkItemRef(ref: string, title: string): WorkItemRef {
   };
 }
 
-/**
- * The deterministic closure rule (docs/specification/handoff-contract.md):
- * start from the slice's implements and affects, expand requirements, use cases
- * and terms, add containing journeys (one incoming hop) and applicable constraints.
- */
+/** The slice's closure: its implemented requirements and affected artifacts, expanded. */
 export function computeClosure(graph: ProductGraph, slice: LoadedSlice): string[] {
-  const included = new Set<string>();
-  const add = (id: string) => {
-    if (graph.nodeById.has(id)) included.add(id);
-  };
-
-  for (const entry of sliceImplements(slice)) {
-    if (typeof entry.requirement === 'string') add(entry.requirement);
-  }
-  for (const affected of sliceAffects(slice)) add(affected);
-
-  // Expand requirements via derived-from / applies-to.
-  for (const id of [...included]) {
-    const node = graph.nodeById.get(id);
-    if (!node) continue;
-    if (
-      node.type === 'functional-requirement' ||
-      node.type === 'quality-requirement' ||
-      node.type === 'constraint'
-    ) {
-      for (const edge of graph.outgoing.get(id) ?? []) add(edge.to);
-    }
-  }
-
-  // Expand use cases via their canonical outgoing relationships.
-  for (const id of [...included]) {
-    const node = graph.nodeById.get(id);
-    if (node?.type !== 'use-case') continue;
-    for (const edge of graph.outgoing.get(id) ?? []) add(edge.to);
-  }
-
-  // Expand domain terms via defined-in.
-  for (const id of [...included]) {
-    const node = graph.nodeById.get(id);
-    if (node?.type !== 'domain-term') continue;
-    for (const edge of graph.outgoing.get(id) ?? []) add(edge.to);
-  }
-
-  // One incoming hop: journeys containing an included use case, plus their actors.
-  for (const id of [...included]) {
-    const node = graph.nodeById.get(id);
-    if (node?.type !== 'use-case') continue;
-    for (const edge of graph.incoming.get(id) ?? []) {
-      if (edge.kind !== 'steps') continue;
-      add(edge.from);
-      for (const journeyEdge of graph.outgoing.get(edge.from) ?? []) {
-        if (journeyEdge.kind === 'primary-actor') add(journeyEdge.to);
-      }
-    }
-  }
-
-  // Constraints applying to included artifacts, and product-wide constraints.
-  for (const node of graph.nodes) {
-    if (node.type !== 'constraint') continue;
-    const targets = graph.outgoing.get(node.id) ?? [];
-    if (targets.length === 0 || targets.some((edge) => included.has(edge.to))) add(node.id);
-  }
-
-  return [...included].sort();
+  const seeds = [
+    ...sliceImplements(slice)
+      .map((e) => e.requirement)
+      .filter((r): r is string => typeof r === 'string'),
+    ...sliceAffects(slice),
+  ];
+  return computeClosureFromSeeds(graph, seeds);
 }
 
 export interface HandoffDocument {
@@ -322,6 +268,29 @@ function buildProductContext(inputs: ContextInputs): string {
   lines.push('');
 
   return lines.join('\n');
+}
+
+/**
+ * PRODUCT110: while the handoff's change and slice are still active, warn about
+ * listed artifacts that fall outside the recomputed closure (tampered lists).
+ */
+export function checkHandoffClosure(
+  handoff: HandoffDocument,
+  slice: LoadedSlice,
+  overlayGraph: ProductGraph,
+  file: string,
+): Diagnostic[] {
+  const closure = new Set(computeClosure(overlayGraph, slice));
+  return handoff.artifacts
+    .filter((artifact) => overlayGraph.nodeById.has(artifact.id) && !closure.has(artifact.id))
+    .map((artifact) => ({
+      severity: 'warning' as const,
+      code: 'PRODUCT110',
+      message: `Handoff lists '${artifact.id}', which is outside the recomputed closure of ${handoff.source['delivery-slice']}`,
+      file,
+      artifact: artifact.id,
+      target: artifact.id,
+    }));
 }
 
 export type HandoffState = 'current' | 'stale' | 'invalid' | 'source-revision-unavailable';

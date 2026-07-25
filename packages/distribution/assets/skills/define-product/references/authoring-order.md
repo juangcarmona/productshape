@@ -1,0 +1,22 @@
+# Authoring order
+
+The Define flow follows a conceptual dependency chain:
+
+1. Actors — who or what interacts with the product, identified before any feature is invented.
+2. Journeys — the end-to-end outcomes those actors pursue.
+3. Use cases — the concrete interactions inside journey steps.
+4. Business rules and domain terms — the constraints and language the use cases surface.
+5. Requirements — obligations derived from all of the above, each with `derived-from`.
+
+This order exists because each family gives the next its grounding: journeys without actors are
+screen flows, use cases without journeys are feature lists, requirements without derivation are
+decisions with no reason.
+
+It is NOT a mandatory sequence. The product model is a graph, not a waterfall, and discovery
+loops: drafting a use case reveals a missing actor; extracting a rule forces a term to be
+defined; writing a requirement sends you back to sharpen a journey. Start anywhere the intent is
+clearest and iterate — what matters is that the finished set satisfies the dependencies (every
+use case has its actor, every requirement its derivation), not that they were authored in order.
+
+Treat the numbered flow as the natural order of discovery and as the checklist for completeness,
+never as a gate that blocks going back.

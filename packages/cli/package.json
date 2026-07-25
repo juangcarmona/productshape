@@ -21,8 +21,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@product-definition-as-code/adapter-openspec": "workspace:*",
     "@product-definition-as-code/core": "workspace:*",
-    "commander": "^12.0.0"
+    "@product-definition-as-code/distribution": "workspace:*",
+    "commander": "^12.0.0",
+    "yaml": "^2.5.0"
   },
   "devDependencies": {
     "tsup": "^8.0.0"

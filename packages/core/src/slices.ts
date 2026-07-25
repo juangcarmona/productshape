@@ -1,4 +1,5 @@
 import type { LoadedChange, LoadedSlice } from './changes.js';
+import { computeClosureFromSeeds } from './closure.js';
 import type { Diagnostic } from './diagnostics.js';
 import type { ProductGraph } from './graph.js';
 
@@ -85,6 +86,23 @@ export function validateSlices(change: LoadedChange, overlayGraph: ProductGraph)
           severity: 'error',
           code: 'PRODUCT006',
           message: `Affected artifact '${affected}' does not resolve in the change overlay`,
+          field: 'affects',
+          target: affected,
+        });
+      }
+    }
+
+    // PRODUCT109: affects outside the closure of the implemented requirements.
+    const requirementSeeds = sliceImplements(slice)
+      .map((e) => e.requirement)
+      .filter((r): r is string => typeof r === 'string');
+    const closure = new Set(computeClosureFromSeeds(overlayGraph, requirementSeeds));
+    for (const affected of sliceAffects(slice)) {
+      if (overlayGraph.nodeById.has(affected) && !closure.has(affected)) {
+        push({
+          severity: 'warning',
+          code: 'PRODUCT109',
+          message: `Affected artifact '${affected}' lies outside the closure of the slice's implemented requirements`,
           field: 'affects',
           target: affected,
         });

@@ -1,0 +1,132 @@
+---
+name: audit-product-model
+description: Run a structural-plus-semantic review of an existing product model and produce a classified audit report; use when the user asks for a model review, quality check or audit.
+---
+
+# Audit Product Model
+
+## Purpose
+
+Review an existing product model on two levels: the deterministic structural baseline reported by
+the CLI, and the semantic quality only reasoning can assess — contradictions, ambiguity,
+duplication, implementation leakage, weak traceability. The output is a structured report that
+keeps graph-derived facts and AI interpretation clearly apart. This skill never fixes anything;
+it reports.
+
+## When to use
+
+- The user asks to audit, review, health-check or assess the quality of the product model.
+- Before a significant Product Change, to understand the state of the areas it will touch.
+- Periodically on a mature model to catch drift: orphaned knowledge, terminology divergence,
+  duplicated requirements.
+
+Do not use this skill to author artifacts (use `define-product`) or to reconstruct knowledge
+from a system (use `recover-product`).
+
+## Required inputs
+
+- A repository with a product model under `docs/product/model` (draft or active).
+- Optional scope from the user: whole model (default), one artifact family, one bounded context,
+  or the artifacts touched by a named Product Change.
+
+## Files to read
+
+- `docs/specification/artifacts.md` — the contracts semantic findings are judged against.
+- `docs/specification/validation.md` — diagnostic codes, so structural findings cite them.
+- `docs/specification/product-changes.md` — when auditing within or around an active change.
+- `references/finding-classification.md` in this skill — ERROR vs OBSERVATION vs QUESTION.
+- The artifact files in scope under `docs/product/model` — for semantic review only, after the
+  structural baseline is established by the CLI.
+
+## Deterministic commands
+
+Run these FIRST and treat their output as the authoritative structural baseline:
+
+- `product-definition validate --format json` — all structural diagnostics (PRODUCT0xx errors,
+  PRODUCT1xx warnings). Never re-derive by reading files anything this command reports:
+  duplicate IDs, unknown references, missing sections, orphaned use cases (PRODUCT102),
+  unreachable requirements (PRODUCT103), unused rules and terms (PRODUCT105, PRODUCT106).
+- `product-definition graph --format json` — the compiled graph for connectivity questions.
+- `product-definition impact <ID> [--depth n] [--direction incoming|outgoing|both]` — incoming
+  and outgoing reach of a suspect artifact.
+- `product-definition inspect <ID>` — the resolved view of a single artifact.
+- `product-definition change validate <CHG-ID>` — when the audit scope includes an active change.
+
+## Reasoning procedure
+
+1. Run `product-definition validate --format json`. Record every diagnostic as a structural
+   finding, citing its code, file and artifact. This is the baseline; do not second-guess it and
+   do not repeat its work manually.
+2. Build the semantic reading list: the in-scope artifacts, plus `graph` output to see how they
+   connect. Use `impact` on artifacts that look isolated or over-connected.
+3. Review semantically, looking for each of these classes:
+   - Orphaned product knowledge: artifacts formally connected (or flagged by PRODUCT102/103/
+     105/106) whose content no longer serves any journey or outcome.
+   - Contradictory business rules: two rules whose normative statements cannot both hold, or a
+     rule contradicted by a use case flow it governs.
+   - Ambiguous or overlapping domain terminology: terms whose definitions overlap, a definition
+     that merely repeats its title, or one concept split across synonymous terms in one context.
+   - Duplicate or near-duplicate requirements: obligations that restate each other with
+     different IDs, or differ only in wording.
+   - Implementation-shaped requirements: bodies naming classes, packages, frameworks, storage
+     or algorithms where the spec demands product behaviour.
+   - Missing failure behaviour: use cases whose `## Failure Conditions` or
+     `## Alternative Flows` are empty, trivial or ignore failures the main flow implies.
+   - Weak traceability: requirements whose `derived-from` is formally present but thin — one
+     tenuous source for a broad obligation, or derivation that does not actually support the
+     requirement's content.
+4. Classify every finding as exactly one of:
+   - ERROR — violates the specification (structural diagnostics, and semantic violations of a
+     MUST in `artifacts.md`, such as implementation design in a body).
+   - OBSERVATION — a quality concern the spec does not forbid (near-duplication, thin failure
+     coverage, vague rationale).
+   - QUESTION — needs a product decision a reviewer must make (which of two contradictory rules
+     is intended; whether an orphaned use case is still wanted).
+5. For each finding record: classification, artifact ID(s), file path, evidence (diagnostic code
+   or quoted text), and whether it is graph-derived fact or AI interpretation.
+6. Assemble the report (see Expected outputs) and present it to the human. Recommend follow-ups
+   (e.g. a Product Change to fix a contradiction) but change nothing.
+
+## Allowed modifications
+
+- None to the product model, changes, templates or configuration.
+- Writing the audit report is allowed only if the user explicitly asks for a file; otherwise
+  return the report as the response.
+
+## Forbidden actions
+
+- Rewriting, "fixing" or reformatting any artifact — the audit reports, humans decide, and fixes
+  after the baseline go through Product Changes.
+- Re-deriving structural facts by reading files when `validate` already reports them, or
+  contradicting the CLI's structural output with your own reading (BR-AI-001).
+- Presenting an interpretation as a fact: every semantic finding is labeled as interpretation.
+- Deciding QUESTION findings yourself — contradictions and orphan-intent calls are product
+  decisions.
+- Marking artifacts `active`, approving changes or slices, or promoting anything.
+
+## Human approval points
+
+- Confirm scope with the user if it is not the whole model and was not stated.
+- Deliver the report and stop. Every ERROR fix, every QUESTION resolution, and any follow-up
+  Product Change is a human decision; offer to draft a change only if the user asks.
+
+## Expected outputs
+
+A structured audit report containing:
+
+- Header: scope audited, commands run, date-free summary counts by classification.
+- Section 1 — Structural baseline (graph-derived facts): every `validate` diagnostic with code,
+  severity, file and artifact; explicitly labeled as tool output.
+- Section 2 — Semantic findings (AI interpretation): each with classification (ERROR /
+  OBSERVATION / QUESTION), artifact IDs and paths, evidence, and a one-line rationale.
+- Section 3 — Questions requiring a product decision, phrased as answerable questions.
+- Suggested next steps that respect the change workflow (never applied automatically).
+
+## Completion checks
+
+- `product-definition validate --format json` was executed and its diagnostics appear verbatim
+  in the structural section; none were dropped or paraphrased into interpretation.
+- Every finding carries exactly one classification and names its artifact(s) and evidence.
+- Graph-derived facts and AI interpretation are visually separated in the report.
+- No file in `docs/product/model` or `docs/product/changes` was modified.
+- The report was delivered to the human with no automatic fixes performed or queued.

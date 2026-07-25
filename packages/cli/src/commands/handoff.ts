@@ -1,11 +1,16 @@
+import { readFile } from 'node:fs/promises';
 import { isAbsolute, join, relative, sep } from 'node:path';
+import { parse } from 'yaml';
 import {
+  checkHandoffClosure,
   generateHandoff,
   handoffStatus,
   loadModel,
   parseWorkItemRef,
   stableJson,
   validateChange,
+  type Diagnostic,
+  type HandoffDocument,
 } from '@product-definition-as-code/core';
 import {
   CliError,
@@ -121,13 +126,35 @@ export async function runHandoffStatus(
 
   const report = await handoffStatus(repo.root, absolute, repo.registry, label);
 
+  // PRODUCT110: while the handoff's change and slice are still active, warn about
+  // listed artifacts outside the recomputed closure.
+  const closureWarnings: Diagnostic[] = [];
+  if (report.status !== 'invalid') {
+    try {
+      const handoff = parse(await readFile(absolute, 'utf8')) as HandoffDocument;
+      const changes = await loadActiveChanges(repo);
+      const change = changes.find((c) => c.id === handoff.source['product-change']);
+      const slice = change?.slices.find((s) => s.id === handoff.source['delivery-slice']);
+      if (change && slice) {
+        const model = await loadModel(repo.modelDir, repo.root, repo.registry);
+        const validation = validateChange(change, model.artifacts, changes, repo.config);
+        closureWarnings.push(
+          ...checkHandoffClosure(handoff, slice, validation.overlayGraph, label),
+        );
+      }
+    } catch {
+      // Closure checking is advisory; status already reported the handoff's state.
+    }
+  }
+
   if (options.format === 'json') {
-    io.out(stableJson(report).trimEnd());
+    io.out(stableJson({ ...report, closureWarnings }).trimEnd());
   } else {
     io.out(`${report.handoffId ?? path}: ${report.status}`);
     for (const id of report.staleArtifacts) io.out(`  stale: ${id}`);
     for (const id of report.unresolvedArtifacts) io.out(`  unresolved: ${id}`);
     for (const diagnostic of report.diagnostics) io.out(`  ${formatDiagnosticLine(diagnostic)}`);
+    for (const warning of closureWarnings) io.out(`  ${formatDiagnosticLine(warning)}`);
   }
   return report.status === 'current' ? exitCodes.success : exitCodes.validationErrors;
 }

@@ -1,8 +1,11 @@
 # delivery-slices Specification
 
 ## Purpose
+
 TBD - created by archiving change implement-product-change-and-handoff. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: Slices validate against their owning change's overlay
 
 Slice files under a change's `slices/` directory SHALL be schema-validated and their references
@@ -25,4 +28,3 @@ reference sibling slices without cycles (PRODUCT032).
 
 - **WHEN** slice A depends on slice B and B depends on A
 - **THEN** PRODUCT032 is reported
-

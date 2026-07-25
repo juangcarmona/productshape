@@ -14,9 +14,11 @@ export type { ConfigResult, ProductConfig } from './config.js';
 export { codes, sortDiagnostics } from './diagnostics.js';
 export type { Diagnostic, DiagnosticSeverity } from './diagnostics.js';
 export { contentDigest, normalizeToLf } from './digest.js';
+export { computeClosureFromSeeds } from './closure.js';
 export { gitHead, gitShow } from './git.js';
 export { compileGraph, ownedTerms } from './graph.js';
 export {
+  checkHandoffClosure,
   computeClosure,
   generateHandoff,
   handoffSchemaId,

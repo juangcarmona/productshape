@@ -1,8 +1,11 @@
 # promotion Specification
 
 ## Purpose
+
 TBD - created by archiving change implement-product-change-and-handoff. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: Promotion preconditions are enforced
 
 `product-definition change promote <ID>` SHALL require: change status `implemented`; every
@@ -38,4 +41,3 @@ preserving its contents, refuse to run from any implicit trigger, and never crea
 - **THEN** the baseline contains the future-state artifacts, removed files are gone, and the
   change directory now lives under changes/completed with its proposal, proposed artifacts and
   slices intact
-

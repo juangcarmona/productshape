@@ -1,8 +1,11 @@
 # product-changes Specification
 
 ## Purpose
+
 TBD - created by archiving change implement-product-change-and-handoff. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: Product Changes compile as overlays without touching the baseline
 
 `product-definition change validate <ID>` (and `validate --change <ID>`) SHALL compile an overlay
@@ -62,4 +65,3 @@ its Open Questions body section still contains unresolved entries.
 
 - **WHEN** an approved change's Open Questions section contains list entries
 - **THEN** PRODUCT108 is reported as a warning
-

@@ -1,8 +1,11 @@
 # product-handoff Specification
 
 ## Purpose
+
 TBD - created by archiving change implement-product-change-and-handoff. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: Handoffs generate deterministically from approved slices
 
 The handoff generator SHALL produce `product-handoff.yaml` and `product-context.md` from an
@@ -47,4 +50,3 @@ fall back to the content at `source.revision`.
 
 - **WHEN** artifacts not listed in the handoff are edited or new commits land
 - **THEN** status still reports current
-

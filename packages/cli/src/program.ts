@@ -1,6 +1,10 @@
 import { Command, CommanderError } from 'commander';
 import { runChangePromote, runChangeValidate } from './commands/change.js';
+import { runCoverageCheck } from './commands/coverage.js';
+import { runDoctorCommand } from './commands/doctor.js';
 import { runGraph } from './commands/graph.js';
+import { runInit } from './commands/init.js';
+import { runIntegrationAdd, runIntegrationUpdate } from './commands/integration.js';
 import { runHandoffCreate, runHandoffStatus } from './commands/handoff.js';
 import { runImpact } from './commands/impact.js';
 import { runInspect } from './commands/inspect.js';
@@ -26,6 +30,52 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
       capture.code = options.change
         ? await runChangeValidate(io, options.change, options)
         : await runValidate(io, options);
+    });
+
+  program
+    .command('init')
+    .description('Initialize Product Definition as Code in this repository')
+    .option('--ai <providers>', 'comma-separated AI integrations: claude, copilot')
+    .option('--sdd <provider>', 'SDD framework: openspec')
+    .option('--force', 'overwrite existing files')
+    .action(async (options: { ai?: string; sdd?: string; force?: boolean }) => {
+      capture.code = await runInit(io, options);
+    });
+
+  const integration = program
+    .command('integration')
+    .description('Manage generated AI provider integrations');
+  integration
+    .command('add')
+    .description('Install a provider integration (claude, copilot, openspec)')
+    .argument('<provider>', 'provider name')
+    .action(async (provider: string) => {
+      capture.code = await runIntegrationAdd(io, provider);
+    });
+  integration
+    .command('update')
+    .description('Regenerate all installed integrations (--check detects drift only)')
+    .option('--check', 'detect drift without writing')
+    .action(async (options: { check?: boolean }) => {
+      capture.code = await runIntegrationUpdate(io, options);
+    });
+
+  program
+    .command('doctor')
+    .description('Check repository structure, configuration and managed files')
+    .action(async () => {
+      capture.code = await runDoctorCommand(io);
+    });
+
+  const coverage = program
+    .command('coverage')
+    .description('Requirement-coverage evidence for SDD changes');
+  coverage
+    .command('check')
+    .description('Verify every implemented requirement has coverage evidence')
+    .argument('<target>', 'OpenSpec change name or SDD change directory')
+    .action(async (target: string) => {
+      capture.code = await runCoverageCheck(io, target);
     });
 
   const change = program.command('change').description('Work with Product Changes');

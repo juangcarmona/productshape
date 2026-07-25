@@ -1,0 +1,28 @@
+{
+  "name": "@product-definition-as-code/distribution",
+  "version": "0.1.0",
+  "description": "Installation, provider-asset generation, managed-file lifecycle and doctor for Product Definition as Code.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "assets"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@product-definition-as-code/integration-claude": "workspace:*",
+    "@product-definition-as-code/integration-copilot": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0"
+  }
+}

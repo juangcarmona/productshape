@@ -3,7 +3,9 @@
 ## Purpose
 
 TBD - created by archiving change implement-product-graph-core. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: Structural impact is deterministic and clearly labeled
 
 `product-definition impact <ID>` SHALL traverse the compiled graph distinguishing direct from
@@ -41,4 +43,3 @@ the handoffs referencing it, and SHALL fail clearly on an unknown ID.
 
 - **WHEN** an active change modifies the inspected artifact
 - **THEN** inspect lists that change ID under affecting changes
-
