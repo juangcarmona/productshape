@@ -3,6 +3,7 @@
 # technical layer, an endpoint or a screen. AI may propose slices; a human approves them.
 # When coverage is partial, the entry must include a precise scope field.
 # Contract: docs/specification/delivery-slices.md
+# Schema reference: docs/specification/frontmatter-reference.md#delivery-slice
 schema: product-definition-as-code/delivery-slice/v1alpha1
 id: SLI-EXAMPLE-001
 title: Example Delivery Slice

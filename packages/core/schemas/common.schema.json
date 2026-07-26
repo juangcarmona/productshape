@@ -127,6 +127,27 @@
           }
         }
       }
+    },
+    "provenance": {
+      "description": "Evidence behind recovered knowledge. Set on recovered (brownfield) artifacts only.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "confidence"],
+      "properties": {
+        "source": {
+          "description": "Where the knowledge came from: a file path, a URL, a ticket reference, or 'interview: <person>'.",
+          "type": "string",
+          "minLength": 1
+        },
+        "confidence": {
+          "description": "high: read directly from a specification scenario or a test. medium: inferred from structured prose. low: inferred from indirect evidence such as a variable name.",
+          "enum": ["high", "medium", "low"]
+        },
+        "recovered-from": {
+          "description": "How the knowledge was recovered from the evidence.",
+          "enum": ["observation", "inference", "interview", "documentation"]
+        }
+      }
     }
   }
 }

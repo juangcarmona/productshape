@@ -74,6 +74,7 @@ validation does not inspect managed files.
 | `PRODUCT108` | Product Change approved with unresolved open questions                                                                                                             |
 | `PRODUCT109` | Delivery slice affecting artifacts outside its requirements' closure                                                                                               |
 | `PRODUCT110` | Handoff context containing artifacts outside the recomputed closure                                                                                                |
+| `PRODUCT111` | Draft artifact whose `provenance.confidence` is `low`                                                                                                              |
 
 ## Exit codes
 

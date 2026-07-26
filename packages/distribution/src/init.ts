@@ -106,7 +106,7 @@ export async function initRepository(options: InitOptions): Promise<InitResult> 
   }
 
   for (const provider of ai) {
-    const result = await installProvider(root, provider, assets, force);
+    const result = await installProvider(root, provider, { assets, force });
     created.push(...result.written);
   }
 

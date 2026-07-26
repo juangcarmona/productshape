@@ -19,6 +19,9 @@
       "items": {
         "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/behaviourTargetId"
       }
+    },
+    "provenance": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/provenance"
     }
   }
 }

@@ -14,6 +14,9 @@
     },
     "actor-kind": {
       "enum": ["human", "external-system", "scheduled-process", "product"]
+    },
+    "provenance": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/provenance"
     }
   }
 }

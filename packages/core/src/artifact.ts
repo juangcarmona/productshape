@@ -69,6 +69,15 @@ export function isMarkdownDocumentType(value: unknown): value is MarkdownDocumen
   return typeof value === 'string' && (markdownDocumentTypes as readonly string[]).includes(value);
 }
 
+/**
+ * The file name an artifact with this ID must have. Single source of truth for the
+ * PRODUCT101 warning and for `prodshape fix --filenames`, so the check and the fix
+ * cannot disagree.
+ */
+export function expectedFileName(id: string): string {
+  return `${id.toLowerCase()}.md`;
+}
+
 export interface ParsedArtifact {
   file: string;
   frontmatter: Record<string, unknown>;

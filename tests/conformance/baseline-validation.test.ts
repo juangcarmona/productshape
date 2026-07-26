@@ -11,9 +11,9 @@ import {
 } from '@prodshape/core';
 import { listFilesRecursive, repoRoot, schemasDir } from '../helpers.js';
 
-async function validateFixtureModel(name: string): Promise<Diagnostic[]> {
+async function validateFixtureModel(name: string, group = 'invalid-models'): Promise<Diagnostic[]> {
   const registry = await SchemaRegistry.loadBundled();
-  const fixtureRoot = join(repoRoot, 'tests', 'fixtures', 'invalid-models', name);
+  const fixtureRoot = join(repoRoot, 'tests', 'fixtures', group, name);
   const model = await loadModel(join(fixtureRoot, 'model'), fixtureRoot, registry);
   const graph = compileGraph(model.artifacts);
   return [
@@ -31,6 +31,18 @@ describe('reference-level invalid models', () => {
   ])('%s produces %s', async (name, expectedCode) => {
     const diagnostics = await validateFixtureModel(name);
     expect(diagnostics.map((d) => d.code)).toContain(expectedCode);
+  });
+});
+
+// A model that is schema-valid but carries advisory warnings is not an invalid model, so it
+// lives outside invalid-models/ — that directory reads as an inventory of hard errors.
+describe('warning-level models', () => {
+  it('flags only the low-confidence draft (PRODUCT111), not the well-evidenced one', async () => {
+    const diagnostics = await validateFixtureModel('low-confidence-draft', 'warning-models');
+    expect(diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    expect(diagnostics.filter((d) => d.code === 'PRODUCT111').map((d) => d.artifact)).toEqual([
+      'ACT-RECOVERED-001',
+    ]);
   });
 });
 

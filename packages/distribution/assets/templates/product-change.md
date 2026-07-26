@@ -18,6 +18,7 @@ Product change: an explicit delta against the current product model.
 - operations.remove: listed IDs are removed at promotion; no tombstone files.
 - The baseline under docs/product/model must not change while this change is active.
 Contract: docs/specification/product-changes.md
+Schema reference: docs/specification/frontmatter-reference.md#product-change
 -->
 
 ## Problem
