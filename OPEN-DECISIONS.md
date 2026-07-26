@@ -41,3 +41,31 @@ recorded source revision. In shallow clones that revision may be absent.
 
 **Interim position:** `prodshape handoff status` reports `source-revision-unavailable` when the
 recorded revision cannot be resolved. Whether to add an optional remote-fetch fallback is deferred.
+
+## OD-007: Validation of nested configuration keys
+
+**Why it matters:** `.product/config.yaml` rejects unknown **top-level** keys as `PRODUCT050`, but
+keys nested inside `product`, `generated`, `integrations` and `validation` are read by name and
+otherwise ignored. A misspelling such as `shorthand-command` or `warnings-as-error` therefore does
+nothing at all, silently: the repository behaves as though the setting were absent, and no diagnostic
+says why. The narrower the setting's effect, the longer that goes unnoticed.
+
+**Interim position:** Unknown nested keys are ignored. The configuration reference lists every
+accepted key per section and warns that misspellings are silent, and a conformance test round-trips
+the configuration `init` generates through the parser so the two cannot disagree. Whether to reject
+unknown nested keys — and whether that is a `PRODUCT050` error or a new warning, given it would fail
+repositories that currently carry harmless extra keys — is deferred.
+
+## OD-008: Depth of installation-lock verification
+
+**Why it matters:** `integration update --check` verifies that every path the installation lock
+records exists and still matches its digest (`PRODUCT051` / `PRODUCT052`). It does not verify that
+the lock equals what the currently installed toolkit _would_ render. A lock that is internally
+consistent but stale relative to the renderer therefore passes.
+
+**Interim position:** The gap is currently unreachable for consumers: managed files are committed, so
+there is nothing to install in a fresh checkout; canonical assets ship inside the package and cannot
+be edited in place; and a framework-version mismatch is already reported by `doctor`. An npm-ci-style
+`install --frozen` was considered for this release and deferred as redundant on those grounds. If a
+second renderer or user-supplied canonical assets ever land, the right shape is a re-render comparison
+inside the existing `--check`, not a new command.

@@ -151,6 +151,13 @@ node packages/cli/dist/bin.js inspect FR-COVERAGE-001
 node packages/cli/dist/bin.js impact BR-SDD-001 --direction incoming
 ```
 
+The authoring contract is queryable, and needs no repository — useful before you have one:
+
+```bash
+prodshape schema use-case          # every allowed frontmatter property, from the schemas
+prodshape fix --filenames          # rename artifact files to match their IDs (resolves PRODUCT101)
+```
+
 For a new repository, scaffold the model plus the AI and SDD integrations with:
 
 ```bash
@@ -160,8 +167,9 @@ prodshape init --ai claude --sdd openspec
 `prodshape` is the installed CLI (`npm install -g @prodshape/cli`); from a source checkout, run it
 as `node packages/cli/dist/bin.js`. The package installs `product-definition` alongside it — a
 v0.x compatibility alias with identical output, removed before v1. The
-`/product:*` commands stay canonical; `/ps:*` is an optional shorthand (`/ps:change`, `/ps:impact`,
-`/ps:handoff`).
+`/product:*` commands stay canonical and are always generated; `/ps:*` is an opt-in shorthand
+(`/ps:change`, `/ps:impact`, `/ps:handoff`), enabled with `init --shorthand` or by setting
+`integrations.shorthand-commands: true`. This repository has it enabled.
 
 What you can read alongside:
 
