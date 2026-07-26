@@ -11,6 +11,14 @@ export interface InitOptions {
   force?: boolean;
   /** Scaffold the model directory without the per-kind subdirectories. */
   flat?: boolean;
+  /** Generate `/ps:<name>` shorthand aliases. Persisted into the generated configuration. */
+  shorthand?: boolean;
+  /**
+   * The shorthand setting already recorded in `.product/config.yaml`, supplied by the caller
+   * (configuration is parsed by core, which this package must not depend on). Takes precedence
+   * over `shorthand` when a configuration file exists and force is not set.
+   */
+  existingShorthand?: boolean;
 }
 
 export interface InitResult {
@@ -66,10 +74,12 @@ export interface InitPlan {
   actions: InitAction[];
   /** Targets that block the install; a plan with conflicts must not be applied. */
   conflicts: InitAction[];
+  /** The shorthand setting actually used, after existing configuration took precedence. */
+  shorthand: boolean;
   nextSteps: string[];
 }
 
-function configContent(ai: string[], sdd?: string): string {
+export function configContent(ai: string[], sdd?: string, shorthand = false): string {
   return [
     'schema: product-definition-as-code/config/v1alpha1',
     'product:',
@@ -82,6 +92,7 @@ function configContent(ai: string[], sdd?: string): string {
     'integrations:',
     ai.length > 0 ? `  ai:\n${ai.map((p) => `    - ${p}`).join('\n')}` : '  ai: []',
     ...(sdd ? ['  sdd:', `    provider: ${sdd}`] : []),
+    `  shorthand-commands: ${shorthand}`,
     'validation:',
     '  warnings-as-errors: false',
     '  require-journey-for-use-case: false',
@@ -126,6 +137,13 @@ export async function planInit(options: InitOptions): Promise<InitPlan> {
   const { root, ai, sdd, force = false, flat = false } = options;
   const actions: InitAction[] = [];
 
+  // Existing configuration wins over the flag unless --force. Otherwise `init --shorthand` in an
+  // already-configured repository would render aliases the preserved config.yaml does not declare,
+  // and the next `integration update` would silently delete them again.
+  const configExists = await exists(join(root, '.product', 'config.yaml'));
+  const shorthand =
+    configExists && !force ? (options.existingShorthand ?? false) : (options.shorthand ?? false);
+
   const add = async (
     path: string,
     source: InitAction['source'],
@@ -157,7 +175,7 @@ export async function planInit(options: InitOptions): Promise<InitPlan> {
     await add(`${dir}/.gitkeep`, 'scaffold', '', { preserveAlways: true });
   }
 
-  await add('.product/config.yaml', 'config', configContent(ai, sdd));
+  await add('.product/config.yaml', 'config', configContent(ai, sdd, shorthand));
   await add('docs/product/README.md', 'readme', productReadme);
 
   const assets: CanonicalAssets = await loadBundledAssets();
@@ -166,7 +184,11 @@ export async function planInit(options: InitOptions): Promise<InitPlan> {
   }
 
   for (const provider of ai) {
-    const plan = await planProvider(root, provider, { assets, force });
+    const plan = await planProvider(root, provider, {
+      assets,
+      force,
+      render: { shorthandCommands: shorthand },
+    });
     const source = `provider:${provider}` as const;
     const contentByPath = new Map(plan.files.map((f) => [f.path, f.content]));
     for (const path of plan.created) {
@@ -216,6 +238,7 @@ export async function planInit(options: InitOptions): Promise<InitPlan> {
     root,
     actions,
     conflicts: actions.filter((a) => a.kind === 'conflict'),
+    shorthand,
     nextSteps,
   };
 }

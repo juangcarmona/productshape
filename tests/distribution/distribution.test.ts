@@ -10,6 +10,11 @@ import { listFilesRecursive, repoRoot, toPosix } from '../helpers.js';
 
 let workDir: string;
 
+/** `.claude/commands/ps/<name>.md` or `.github/prompts/ps-<name>.prompt.md`. */
+function isShorthandPath(path: string): boolean {
+  return path.includes('/commands/ps/') || path.includes('/prompts/ps-');
+}
+
 async function run(argv: string[], cwd: string) {
   const out: string[] = [];
   const err: string[] = [];
@@ -73,6 +78,50 @@ describe('provider renderers', () => {
     await expect(index).toMatchFileSnapshot('__snapshots__/copilot-file-index.txt');
     const hookDoc = files.find((f) => f.path === '.github/hooks/verify-traceability.md');
     await expect(hookDoc?.content).toMatchFileSnapshot('__snapshots__/copilot-hook-doc.md');
+  });
+
+  it('generates no ps aliases by default', async () => {
+    const assets = { ...(await loadBundledAssets()), version: '0.0.0-test' };
+    for (const renderer of [claudeRenderer, copilotRenderer]) {
+      const paths = renderer.render(assets).map((f) => f.path);
+      expect.soft(paths.filter(isShorthandPath), renderer.provider).toEqual([]);
+      // The canonical namespace is never conditional.
+      expect
+        .soft(
+          paths.some((p) => p.includes('product')),
+          renderer.provider,
+        )
+        .toBe(true);
+    }
+  });
+
+  it('generates ps aliases with identical content when opted in', async () => {
+    const assets = { ...(await loadBundledAssets()), version: '0.0.0-test' };
+    for (const renderer of [claudeRenderer, copilotRenderer]) {
+      const files = renderer.render(assets, { shorthandCommands: true });
+      const shorthand = files.filter((f) => isShorthandPath(f.path));
+      // Structural typing accepts a renderer that ignores the option, so the compiler cannot
+      // catch one that forgets it: assert behaviourally that the option changes the output.
+      expect.soft(shorthand, renderer.provider).toHaveLength(assets.commands.length);
+      for (const alias of shorthand) {
+        const canonical = files.find(
+          (f) => !isShorthandPath(f.path) && f.content === alias.content,
+        );
+        expect.soft(canonical, `${renderer.provider}: ${alias.path}`).toBeDefined();
+      }
+    }
+  });
+
+  it('shorthand output is stable', async () => {
+    const assets = { ...(await loadBundledAssets()), version: '0.0.0-test' };
+    const claude = claudeRenderer.render(assets, { shorthandCommands: true });
+    await expect(claude.map((f) => f.path).join('\n')).toMatchFileSnapshot(
+      '__snapshots__/claude-file-index-shorthand.txt',
+    );
+    const copilot = copilotRenderer.render(assets, { shorthandCommands: true });
+    await expect(copilot.map((f) => f.path).join('\n')).toMatchFileSnapshot(
+      '__snapshots__/copilot-file-index-shorthand.txt',
+    );
   });
 
   it('rendered skill content preserves canonical meaning (frontmatter + sections intact)', async () => {
@@ -155,6 +204,102 @@ describe('init --dry-run', () => {
       expect(result.out).toContain('Conflicts (1)');
       expect(result.out).toContain('.github/prompts/product-change.prompt.md');
       expect(await readFile(claimed, 'utf8')).toBe('my own prompt\n');
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('shorthand command aliases', () => {
+  it('init generates none by default and --shorthand persists the choice', async () => {
+    const off = await mkdtemp(join(tmpdir(), 'prodshape-shorthand-off-'));
+    const on = await mkdtemp(join(tmpdir(), 'prodshape-shorthand-on-'));
+    try {
+      await run(['init', '--ai', 'copilot'], off);
+      const offPaths = (await listFilesRecursive(join(off, '.github', 'prompts'), '.md')).map((f) =>
+        toPosix(f),
+      );
+      expect(offPaths.filter((p) => p.includes('/ps-'))).toEqual([]);
+      expect(offPaths.some((p) => p.includes('/product-'))).toBe(true);
+      expect(await readFile(join(off, '.product', 'config.yaml'), 'utf8')).toContain(
+        'shorthand-commands: false',
+      );
+
+      await run(['init', '--ai', 'copilot', '--shorthand'], on);
+      const onPaths = (await listFilesRecursive(join(on, '.github', 'prompts'), '.md')).map((f) =>
+        toPosix(f),
+      );
+      expect(onPaths.filter((p) => p.includes('/ps-'))).toHaveLength(7);
+      // Persisted, not just applied: `integration update` re-renders from configuration.
+      expect(await readFile(join(on, '.product', 'config.yaml'), 'utf8')).toContain(
+        'shorthand-commands: true',
+      );
+      const update = await run(['integration', 'update'], on);
+      expect(update.code).toBe(0);
+      expect(
+        (await listFilesRecursive(join(on, '.github', 'prompts'), '.md')).filter((f) =>
+          toPosix(f).includes('/ps-'),
+        ),
+      ).toHaveLength(7);
+    } finally {
+      await rm(off, { recursive: true, force: true });
+      await rm(on, { recursive: true, force: true });
+    }
+  });
+
+  it('opting out removes the aliases it previously generated', async () => {
+    // Without this, dropping the aliases from the lock would strand them on disk forever: they
+    // would no longer be checked by `integration update --check`, and nothing would delete them.
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-shorthand-migrate-'));
+    try {
+      await run(['init', '--ai', 'copilot', '--shorthand'], scratch);
+      const prompts = join(scratch, '.github', 'prompts');
+      expect(
+        (await listFilesRecursive(prompts, '.md')).filter((f) => toPosix(f).includes('/ps-')),
+      ).toHaveLength(7);
+
+      const config = join(scratch, '.product', 'config.yaml');
+      const current = await readFile(config, 'utf8');
+      await writeFile(
+        config,
+        current.replace('shorthand-commands: true', 'shorthand-commands: false'),
+        'utf8',
+      );
+
+      const update = await run(['integration', 'update'], scratch);
+      expect(update.code).toBe(0);
+      expect(update.out).toContain('Removed 7 managed file(s)');
+      expect(
+        (await listFilesRecursive(prompts, '.md')).filter((f) => toPosix(f).includes('/ps-')),
+      ).toEqual([]);
+
+      const check = await run(['integration', 'update', '--check'], scratch);
+      expect(check.code).toBe(0);
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+
+  it('leaves a hand-edited alias in place rather than deleting it', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-shorthand-edited-'));
+    try {
+      await run(['init', '--ai', 'copilot', '--shorthand'], scratch);
+      const edited = join(scratch, '.github', 'prompts', 'ps-change.prompt.md');
+      await writeFile(edited, 'my own version\n', 'utf8');
+
+      const config = join(scratch, '.product', 'config.yaml');
+      const current = await readFile(config, 'utf8');
+      await writeFile(
+        config,
+        current.replace('shorthand-commands: true', 'shorthand-commands: false'),
+        'utf8',
+      );
+
+      const update = await run(['integration', 'update', '--force'], scratch);
+      expect(update.code).toBe(0);
+      // Deletion is digest-guarded: we only remove what we can prove is ours and unmodified.
+      expect(await readFile(edited, 'utf8')).toBe('my own version\n');
+      expect(update.out).toContain('Removed 6 managed file(s)');
     } finally {
       await rm(scratch, { recursive: true, force: true });
     }

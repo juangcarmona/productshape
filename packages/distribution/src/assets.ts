@@ -19,10 +19,21 @@ export interface CanonicalAssets {
   templates: CanonicalAsset[];
 }
 
-/** The structural renderer contract; provider packages export compatible objects. */
+/** Rendering choices passed to every provider renderer. */
+export interface RenderOptions {
+  shorthandCommands?: boolean;
+}
+
+/**
+ * The structural renderer contract; provider packages export compatible objects.
+ *
+ * Note that TypeScript's structural assignability accepts a one-argument `render`, so a renderer
+ * that forgets `options` still type-checks. The guard is behavioural: a test flips the option and
+ * asserts every renderer's output changes.
+ */
 export interface ProviderRenderer {
   provider: string;
-  render(assets: CanonicalAssets): { path: string; content: string }[];
+  render(assets: CanonicalAssets, options?: RenderOptions): { path: string; content: string }[];
 }
 
 const assetsRoot = fileURLToPath(new URL('../assets/', import.meta.url));

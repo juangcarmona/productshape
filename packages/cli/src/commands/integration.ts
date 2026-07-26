@@ -34,7 +34,10 @@ export async function runIntegrationAdd(
   }
   let result;
   try {
-    result = await installProvider(repo.root, provider, { force: options?.force });
+    result = await installProvider(repo.root, provider, {
+      force: options?.force,
+      render: { shorthandCommands: repo.config.integrations['shorthand-commands'] },
+    });
   } catch (error) {
     if (error instanceof InstallConflictError) {
       throw new CliError(error.message, exitCodes.validationErrors);
@@ -64,7 +67,10 @@ export async function runIntegrationUpdate(
 
   let results;
   try {
-    results = await updateIntegrations(repo.root, { force: options.force });
+    results = await updateIntegrations(repo.root, {
+      force: options.force,
+      render: { shorthandCommands: repo.config.integrations['shorthand-commands'] },
+    });
   } catch (error) {
     if (error instanceof InstallConflictError) {
       throw new CliError(error.message, exitCodes.validationErrors);

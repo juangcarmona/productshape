@@ -1,3 +1,5 @@
+import { join } from 'node:path';
+import { loadConfig } from '@prodshape/core';
 import {
   applyInitPlan,
   InstallConflictError,
@@ -14,6 +16,7 @@ export interface InitCliOptions {
   sdd?: string;
   force?: boolean;
   flat?: boolean;
+  shorthand?: boolean;
   dryRun?: boolean;
 }
 
@@ -77,12 +80,18 @@ export async function runInit(io: CliIo, options: InitCliOptions): Promise<numbe
     );
   }
 
+  // Read any existing configuration first, so a preserved config.yaml keeps deciding what is
+  // rendered rather than a flag silently disagreeing with it.
+  const existing = await loadConfig(join(io.cwd, '.product', 'config.yaml'), io.cwd);
+
   const plan = await planInit({
     root: io.cwd,
     ai,
+    existingShorthand: existing.config.integrations['shorthand-commands'],
     ...(options.sdd ? { sdd: options.sdd } : {}),
     ...(options.force !== undefined ? { force: options.force } : {}),
     ...(options.flat !== undefined ? { flat: options.flat } : {}),
+    ...(options.shorthand !== undefined ? { shorthand: options.shorthand } : {}),
   });
 
   if (options.dryRun) return reportPlan(io, plan);

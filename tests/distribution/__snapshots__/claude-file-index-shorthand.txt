@@ -5,6 +5,13 @@
 .claude/commands/product/impact.md
 .claude/commands/product/recover.md
 .claude/commands/product/slice.md
+.claude/commands/ps/audit.md
+.claude/commands/ps/change.md
+.claude/commands/ps/define.md
+.claude/commands/ps/handoff.md
+.claude/commands/ps/impact.md
+.claude/commands/ps/recover.md
+.claude/commands/ps/slice.md
 .claude/hooks/product-definition.json
 .claude/skills/analyze-product-change/references/operations-checklist.md
 .claude/skills/analyze-product-change/SKILL.md

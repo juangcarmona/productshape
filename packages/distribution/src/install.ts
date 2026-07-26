@@ -2,7 +2,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { claudeRenderer } from '@prodshape/integration-claude';
 import { copilotRenderer } from '@prodshape/integration-copilot';
-import type { CanonicalAssets, ProviderRenderer } from './assets.js';
+import type { CanonicalAssets, ProviderRenderer, RenderOptions } from './assets.js';
 import { loadBundledAssets } from './assets.js';
 import { emptyLock, fileDigest, readLock, writeLock, type InstallationLock } from './lock.js';
 
@@ -30,6 +30,8 @@ export interface InstallResult {
 export interface InstallOptions {
   assets?: CanonicalAssets;
   force?: boolean;
+  /** Passed through to the provider renderer; see ProviderRenderer. */
+  render?: RenderOptions;
 }
 
 /**
@@ -87,7 +89,7 @@ export async function planProvider(
     throw new Error(`Unknown AI provider '${provider}' (supported: claude, copilot)`);
   }
   const resolvedAssets = options.assets ?? (await loadBundledAssets());
-  const files = renderer.render(resolvedAssets);
+  const files = renderer.render(resolvedAssets, options.render ?? {});
   const lock: InstallationLock = (await readLock(root)) ?? emptyLock(resolvedAssets.version);
 
   const owned = new Map<string, string>();

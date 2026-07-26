@@ -41,6 +41,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .option('--sdd <provider>', 'SDD framework: openspec')
     .option('--force', 'overwrite existing files')
     .option('--flat', 'scaffold the model directory without per-kind subdirectories')
+    .option('--shorthand', 'also generate the /ps:<name> aliases for /product:<name>')
     .option('--dry-run', 'report what init would do, without writing anything')
     .action(
       async (options: {
@@ -48,6 +49,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
         sdd?: string;
         force?: boolean;
         flat?: boolean;
+        shorthand?: boolean;
         dryRun?: boolean;
       }) => {
         capture.code = await runInit(io, options);
