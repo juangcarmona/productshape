@@ -1,0 +1,30 @@
+schema: product-definition-as-code/delivery-slice/v1alpha1
+id: SLI-FIX-001
+title: Repair filename misalignment on any filesystem
+status: draft
+product-change: CHG-CLI-POLISH-001
+outcome: >-
+  A Product Engineer can resolve every reported filename misalignment in one explicit step, including
+  the case-only renames that are impossible by hand on Windows and macOS, with ambiguous cases refused
+  rather than guessed and no possibility of a half-renamed model.
+implements:
+  - requirement: FR-FIX-001
+    coverage: full
+affects:
+  - UC-FIX-001
+depends-on: []
+verification:
+  - A file differing from its required name only in letter case is renamed successfully on a
+    case-insensitive filesystem, and validation then reports no misalignment.
+  - Running the repair a second time renames nothing and reports the model as aligned.
+  - An ambiguous rename — required name held by another artifact, or two artifacts requiring one name
+    — refuses the entire repair and reports each case with its reason.
+  - A repair interrupted between its steps is completed by the next run, and no file is left under an
+    intermediate name.
+  - Reporting the plan without applying it writes nothing and is distinguishable from an already
+    aligned model, so it can gate an automated check.
+  - Requesting repair without naming one is reported as an invalid request.
+out-of-scope:
+  - Automating the repair of any other diagnostic; the remaining warnings need judgement about the
+    model's meaning.
+  - Changing the identifier or file-naming rule itself.
