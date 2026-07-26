@@ -1,0 +1,29 @@
+schema: product-definition-as-code/delivery-slice/v1alpha1
+id: SLI-SCHEMA-001
+title: Expose the frontmatter contract of every artifact kind
+status: completed
+product-change: CHG-CLI-POLISH-001
+outcome: >-
+  A Product Engineer can ask what frontmatter an artifact kind accepts and get the complete answer —
+  required and optional properties, permitted values, required body sections — before authoring
+  anything, without a product repository present, and derived from the definitions validation
+  enforces so it cannot go stale.
+implements:
+  - requirement: FR-SCHEMA-001
+    coverage: full
+affects:
+  - UC-SCHEMA-001
+depends-on: []
+verification:
+  - Asking for a kind's contract lists its required and optional properties with permitted values and
+    identifier patterns, its nested properties, and its required body sections in order.
+  - The contract is obtainable in a directory containing no product definition.
+  - The answer and the enforced definitions are the same source; a definition change that is not
+    reflected fails an automated check.
+  - Asking with no kind lists every kind; asking for an unrecognised kind is reported as an invalid
+    request naming the kinds that exist.
+  - A machine-readable form is available under a stable schema identifier.
+out-of-scope:
+  - Making the frontmatter contract extensible; it stays closed, and an unrecognised property stays
+    an error.
+  - Exposing contracts for anything other than document kinds that have a definition.

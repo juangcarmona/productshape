@@ -3,6 +3,7 @@ export {
   markdownDocumentTypes,
   idPrefixByType,
   requiredBodySections,
+  expectedFileName,
   isMarkdownDocumentType,
 } from './artifact.js';
 export type { ProductArtifactType, MarkdownDocumentType, ParsedArtifact } from './artifact.js';
@@ -15,6 +16,28 @@ export { codes, escalateWarnings, sortDiagnostics } from './diagnostics.js';
 export type { Diagnostic, DiagnosticSeverity } from './diagnostics.js';
 export { contentDigest, normalizeToLf } from './digest.js';
 export { computeClosureFromSeeds } from './closure.js';
+export {
+  applyFilenameFixes,
+  discoverFixTempFiles,
+  fixTempSuffix,
+  planFilenameFixes,
+  recoverFilenameFixes,
+} from './fix-filenames.js';
+export type {
+  FilenameBlockReason,
+  FilenameFix,
+  FilenamePlan,
+  FilenameRecovery,
+  RenameFs,
+} from './fix-filenames.js';
+export {
+  describeAllKinds,
+  describeKind,
+  frontmatterTableHeader,
+  renderKindMarkdownTable,
+  renderKindText,
+} from './frontmatter-reference.js';
+export type { FieldDescriptor, FieldKind, KindDescriptor } from './frontmatter-reference.js';
 export { gitHead, gitShow } from './git.js';
 export { compileGraph, ownedTerms } from './graph.js';
 export {
@@ -76,7 +99,7 @@ export type { Edge, RelationshipSpec } from './relationships.js';
 export { findRepositoryRoot, openRepository, validateBaseline } from './repository.js';
 export type { BaselineValidation, ProductRepository } from './repository.js';
 export { SchemaRegistry } from './schema-registry.js';
-export type { YamlDocumentKind } from './schema-registry.js';
+export type { RawSchema, YamlDocumentKind } from './schema-registry.js';
 export { sliceAffects, sliceImplements, validateSlices } from './slices.js';
 export { validateModel } from './validate.js';
 export type { ValidateModelOptions } from './validate.js';

@@ -10,8 +10,18 @@ import { codes } from './diagnostics.js';
 /** Document kinds validated by schema but keyed by file kind rather than frontmatter type. */
 export type YamlDocumentKind = 'delivery-slice' | 'product-handoff' | 'product-coverage';
 
+/** A loaded JSON Schema document, keyed by kind. Retained so the schemas can be described. */
+export type RawSchema = Record<string, unknown>;
+
 export class SchemaRegistry {
   private readonly validators = new Map<string, ValidateFunction>();
+
+  /**
+   * The parsed schema documents, including `common`. Retained because the schemas are the
+   * single source of truth for the frontmatter reference: `prodshape schema` and the
+   * reference document are both derived from these rather than restating them.
+   */
+  private readonly sources = new Map<string, RawSchema>();
 
   private constructor(private readonly ajv: Ajv2020) {}
 
@@ -38,6 +48,7 @@ export class SchemaRegistry {
     }
     // Compile in a second pass so cross-schema $refs (all via common) resolve.
     for (const [kind, schema] of schemas) {
+      registry.sources.set(kind, schema);
       if (kind === 'common') continue;
       registry.validators.set(kind, ajv.compile({ $ref: schema.$id as string }));
     }
@@ -46,6 +57,21 @@ export class SchemaRegistry {
 
   has(kind: string): boolean {
     return this.validators.has(kind);
+  }
+
+  /** Every validatable document kind, sorted. Excludes `common`, which is definitions only. */
+  kinds(): string[] {
+    return [...this.validators.keys()].sort();
+  }
+
+  /** The parsed schema document for a kind, or undefined when the kind is unknown. */
+  rawSchema(kind: string): RawSchema | undefined {
+    return this.sources.get(kind);
+  }
+
+  /** Every parsed schema document, including `common` so `$ref`s can be resolved. */
+  rawSchemas(): ReadonlyMap<string, RawSchema> {
+    return this.sources;
   }
 
   /**

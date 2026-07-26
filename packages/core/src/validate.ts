@@ -1,7 +1,8 @@
 import { basename } from 'node:path';
+import { expectedFileName } from './artifact.js';
 import type { ProductConfig } from './config.js';
 import type { Diagnostic } from './diagnostics.js';
-import { sortDiagnostics } from './diagnostics.js';
+import { codes, sortDiagnostics } from './diagnostics.js';
 import type { ProductGraph } from './graph.js';
 import type { LoadedArtifact } from './model.js';
 import { allowedTargets } from './relationships.js';
@@ -104,7 +105,7 @@ export function validateModel(
   // PRODUCT101: file-name alignment.
   for (const artifact of artifacts) {
     if (!artifact.id) continue;
-    const expected = `${artifact.id.toLowerCase()}.md`;
+    const expected = expectedFileName(artifact.id);
     if (basename(artifact.file) !== expected) {
       diagnostics.push({
         severity: 'warning',
@@ -114,6 +115,24 @@ export function validateModel(
         artifact: artifact.id,
       });
     }
+  }
+
+  // PRODUCT111: a draft resting on low-confidence evidence needs human validation. Unlike
+  // PRODUCT102/103 this is not configuration-gated: it reports what the artifact says about
+  // itself, not a model-shape policy a repository may reasonably reject.
+  for (const artifact of artifacts) {
+    if (artifact.status !== 'draft') continue;
+    const provenance = artifact.frontmatter.provenance;
+    if (typeof provenance !== 'object' || provenance === null) continue;
+    if ((provenance as Record<string, unknown>).confidence !== 'low') continue;
+    diagnostics.push({
+      severity: 'warning',
+      code: codes.lowConfidenceDraft,
+      message: `Draft artifact rests on low-confidence provenance and needs human validation`,
+      file: artifact.file,
+      artifact: artifact.id,
+      field: 'provenance.confidence',
+    });
   }
 
   // PRODUCT102: active use case in no journey (configuration-gated).

@@ -15,15 +15,18 @@ methodology and this specification appear to disagree, this specification wins.
 1. [Terminology](terminology.md) — definitions of the terms used normatively.
 2. [Artifacts](artifacts.md) — artifact types, frontmatter contracts, required body sections,
    lifecycle states.
-3. [Identifiers](identifiers.md) — stable immutable IDs, prefixes, grammar, file naming.
-4. [Relationships](relationships.md) — canonical relationship vocabulary and derivation rules.
-5. [Product Changes](product-changes.md) — change structure, operations, overlay validation,
+3. [Frontmatter reference](frontmatter-reference.md) — the exhaustive per-kind field tables
+   (generated from the schemas): required and optional fields, allowed values, provenance.
+4. [Identifiers](identifiers.md) — stable immutable IDs, prefixes, grammar, file naming.
+5. [Relationships](relationships.md) — canonical relationship vocabulary and derivation rules.
+6. [Product Changes](product-changes.md) — change structure, operations, overlay validation,
    lifecycle, promotion, the initial-baseline bootstrap exception.
-6. [Delivery Slices](delivery-slices.md) — slice structure, coverage declarations, lifecycle.
-7. [Handoff Contract](handoff-contract.md) — the Product Handoff and Product Context contracts,
+7. [Delivery Slices](delivery-slices.md) — slice structure, coverage declarations, lifecycle.
+8. [Handoff Contract](handoff-contract.md) — the Product Handoff and Product Context contracts,
    subgraph selection, staleness.
-8. [Validation](validation.md) — deterministic diagnostics, stable codes, exit codes.
-9. [Conformance](conformance.md) — what it means for a repository and an implementation to conform.
+9. [Validation](validation.md) — deterministic diagnostics, stable codes, exit codes.
+10. [Conformance](conformance.md) — what it means for a repository and an implementation to
+    conform.
 
 ## Canonical authority
 

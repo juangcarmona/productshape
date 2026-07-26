@@ -10,6 +10,11 @@ import { listFilesRecursive, repoRoot, toPosix } from '../helpers.js';
 
 let workDir: string;
 
+/** `.claude/commands/ps/<name>.md` or `.github/prompts/ps-<name>.prompt.md`. */
+function isShorthandPath(path: string): boolean {
+  return path.includes('/commands/ps/') || path.includes('/prompts/ps-');
+}
+
 async function run(argv: string[], cwd: string) {
   const out: string[] = [];
   const err: string[] = [];
@@ -75,6 +80,50 @@ describe('provider renderers', () => {
     await expect(hookDoc?.content).toMatchFileSnapshot('__snapshots__/copilot-hook-doc.md');
   });
 
+  it('generates no ps aliases by default', async () => {
+    const assets = { ...(await loadBundledAssets()), version: '0.0.0-test' };
+    for (const renderer of [claudeRenderer, copilotRenderer]) {
+      const paths = renderer.render(assets).map((f) => f.path);
+      expect.soft(paths.filter(isShorthandPath), renderer.provider).toEqual([]);
+      // The canonical namespace is never conditional.
+      expect
+        .soft(
+          paths.some((p) => p.includes('product')),
+          renderer.provider,
+        )
+        .toBe(true);
+    }
+  });
+
+  it('generates ps aliases with identical content when opted in', async () => {
+    const assets = { ...(await loadBundledAssets()), version: '0.0.0-test' };
+    for (const renderer of [claudeRenderer, copilotRenderer]) {
+      const files = renderer.render(assets, { shorthandCommands: true });
+      const shorthand = files.filter((f) => isShorthandPath(f.path));
+      // Structural typing accepts a renderer that ignores the option, so the compiler cannot
+      // catch one that forgets it: assert behaviourally that the option changes the output.
+      expect.soft(shorthand, renderer.provider).toHaveLength(assets.commands.length);
+      for (const alias of shorthand) {
+        const canonical = files.find(
+          (f) => !isShorthandPath(f.path) && f.content === alias.content,
+        );
+        expect.soft(canonical, `${renderer.provider}: ${alias.path}`).toBeDefined();
+      }
+    }
+  });
+
+  it('shorthand output is stable', async () => {
+    const assets = { ...(await loadBundledAssets()), version: '0.0.0-test' };
+    const claude = claudeRenderer.render(assets, { shorthandCommands: true });
+    await expect(claude.map((f) => f.path).join('\n')).toMatchFileSnapshot(
+      '__snapshots__/claude-file-index-shorthand.txt',
+    );
+    const copilot = copilotRenderer.render(assets, { shorthandCommands: true });
+    await expect(copilot.map((f) => f.path).join('\n')).toMatchFileSnapshot(
+      '__snapshots__/copilot-file-index-shorthand.txt',
+    );
+  });
+
   it('rendered skill content preserves canonical meaning (frontmatter + sections intact)', async () => {
     const assets = await loadBundledAssets();
     const files = claudeRenderer.render(assets);
@@ -83,6 +132,198 @@ describe('provider renderers', () => {
     expect(skill?.content).toContain('MANAGED FILE');
     for (const section of ['## Purpose', '## Forbidden actions', '## Completion checks']) {
       expect(skill?.content).toContain(section);
+    }
+  });
+});
+
+describe('init --dry-run', () => {
+  it('reports what it would create and writes nothing', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-dryrun-'));
+    try {
+      const result = await run(
+        ['init', '--ai', 'copilot', '--sdd', 'openspec', '--dry-run'],
+        scratch,
+      );
+      expect(result.code).toBe(0);
+      expect(result.out).toContain('Would create');
+      expect(result.out).toContain('docs/product/model/actors/.gitkeep');
+      expect(result.out).toContain('.github/prompts/product-change.prompt.md');
+      expect(result.out).toContain('Would overwrite (0)');
+      expect(result.out).toContain('Conflicts (0)');
+      expect(result.out).toContain('Dry run: nothing was changed.');
+      expect(await listFilesRecursive(scratch, '')).toEqual([]);
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+
+  it('reports the same file count that applying it produces', async () => {
+    // The point of the plan/apply split: a dry run that could disagree with the real run would be
+    // worse than no dry run at all.
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-dryrun-parity-'));
+    try {
+      const dry = await run(['init', '--ai', 'copilot', '--dry-run'], scratch);
+      const planned = Number(/Would create \((\d+)\)/.exec(dry.out)?.[1]);
+      const real = await run(['init', '--ai', 'copilot'], scratch);
+      const applied = Number(/\((\d+) file\(s\) created\)/.exec(real.out)?.[1]);
+      expect(planned).toBe(applied);
+      expect(await listFilesRecursive(scratch, '')).toHaveLength(planned);
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+
+  it('answers the populated-repository question: preserve and regenerate, never overwrite', async () => {
+    // The question that blocked a real adoption: does init refuse outright, or destroy things?
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-dryrun-populated-'));
+    try {
+      await run(['init', '--ai', 'copilot', '--sdd', 'openspec'], scratch);
+      const again = await run(
+        ['init', '--ai', 'copilot', '--sdd', 'openspec', '--dry-run'],
+        scratch,
+      );
+      expect(again.code).toBe(0);
+      expect(again.out).toContain('Would preserve');
+      expect(again.out).toContain('Would regenerate');
+      expect(again.out).toContain('Would overwrite (0)');
+      expect(again.out).toContain('Conflicts (0)');
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+
+  it('reports a conflict, and exits 1, without writing', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-dryrun-conflict-'));
+    try {
+      const claimed = join(scratch, '.github', 'prompts', 'product-change.prompt.md');
+      await mkdir(dirname(claimed), { recursive: true });
+      await writeFile(claimed, 'my own prompt\n', 'utf8');
+
+      const result = await run(['init', '--ai', 'copilot', '--dry-run'], scratch);
+      expect(result.code).toBe(1);
+      expect(result.out).toContain('Conflicts (1)');
+      expect(result.out).toContain('.github/prompts/product-change.prompt.md');
+      expect(await readFile(claimed, 'utf8')).toBe('my own prompt\n');
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('shorthand command aliases', () => {
+  it('init generates none by default and --shorthand persists the choice', async () => {
+    const off = await mkdtemp(join(tmpdir(), 'prodshape-shorthand-off-'));
+    const on = await mkdtemp(join(tmpdir(), 'prodshape-shorthand-on-'));
+    try {
+      await run(['init', '--ai', 'copilot'], off);
+      const offPaths = (await listFilesRecursive(join(off, '.github', 'prompts'), '.md')).map((f) =>
+        toPosix(f),
+      );
+      expect(offPaths.filter((p) => p.includes('/ps-'))).toEqual([]);
+      expect(offPaths.some((p) => p.includes('/product-'))).toBe(true);
+      expect(await readFile(join(off, '.product', 'config.yaml'), 'utf8')).toContain(
+        'shorthand-commands: false',
+      );
+
+      await run(['init', '--ai', 'copilot', '--shorthand'], on);
+      const onPaths = (await listFilesRecursive(join(on, '.github', 'prompts'), '.md')).map((f) =>
+        toPosix(f),
+      );
+      expect(onPaths.filter((p) => p.includes('/ps-'))).toHaveLength(7);
+      // Persisted, not just applied: `integration update` re-renders from configuration.
+      expect(await readFile(join(on, '.product', 'config.yaml'), 'utf8')).toContain(
+        'shorthand-commands: true',
+      );
+      const update = await run(['integration', 'update'], on);
+      expect(update.code).toBe(0);
+      expect(
+        (await listFilesRecursive(join(on, '.github', 'prompts'), '.md')).filter((f) =>
+          toPosix(f).includes('/ps-'),
+        ),
+      ).toHaveLength(7);
+    } finally {
+      await rm(off, { recursive: true, force: true });
+      await rm(on, { recursive: true, force: true });
+    }
+  });
+
+  it('opting out removes the aliases it previously generated', async () => {
+    // Without this, dropping the aliases from the lock would strand them on disk forever: they
+    // would no longer be checked by `integration update --check`, and nothing would delete them.
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-shorthand-migrate-'));
+    try {
+      await run(['init', '--ai', 'copilot', '--shorthand'], scratch);
+      const prompts = join(scratch, '.github', 'prompts');
+      expect(
+        (await listFilesRecursive(prompts, '.md')).filter((f) => toPosix(f).includes('/ps-')),
+      ).toHaveLength(7);
+
+      const config = join(scratch, '.product', 'config.yaml');
+      const current = await readFile(config, 'utf8');
+      await writeFile(
+        config,
+        current.replace('shorthand-commands: true', 'shorthand-commands: false'),
+        'utf8',
+      );
+
+      const update = await run(['integration', 'update'], scratch);
+      expect(update.code).toBe(0);
+      expect(update.out).toContain('Removed 7 managed file(s)');
+      expect(
+        (await listFilesRecursive(prompts, '.md')).filter((f) => toPosix(f).includes('/ps-')),
+      ).toEqual([]);
+
+      const check = await run(['integration', 'update', '--check'], scratch);
+      expect(check.code).toBe(0);
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+
+  it('leaves a hand-edited alias in place rather than deleting it', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-shorthand-edited-'));
+    try {
+      await run(['init', '--ai', 'copilot', '--shorthand'], scratch);
+      const edited = join(scratch, '.github', 'prompts', 'ps-change.prompt.md');
+      await writeFile(edited, 'my own version\n', 'utf8');
+
+      const config = join(scratch, '.product', 'config.yaml');
+      const current = await readFile(config, 'utf8');
+      await writeFile(
+        config,
+        current.replace('shorthand-commands: true', 'shorthand-commands: false'),
+        'utf8',
+      );
+
+      const update = await run(['integration', 'update', '--force'], scratch);
+      expect(update.code).toBe(0);
+      // Deletion is digest-guarded: we only remove what we can prove is ours and unmodified.
+      expect(await readFile(edited, 'utf8')).toBe('my own version\n');
+      expect(update.out).toContain('Removed 6 managed file(s)');
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('init --flat', () => {
+  it('omits the per-kind subdirectories but keeps a validatable model directory', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-flat-'));
+    try {
+      const result = await run(['init', '--flat'], scratch);
+      expect(result.code).toBe(0);
+      const files = (await listFilesRecursive(scratch, '.gitkeep')).map((f) =>
+        toPosix(f).slice(toPosix(scratch).length + 1),
+      );
+      expect(files).toContain('docs/product/model/.gitkeep');
+      expect(files.filter((f) => f.startsWith('docs/product/model/'))).toHaveLength(1);
+      // Change lifecycle states are not taxonomy: discovery and promotion read them.
+      expect(files).toContain('docs/product/changes/active/.gitkeep');
+
+      const validate = await run(['validate'], scratch);
+      expect(validate.code).toBe(0);
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
     }
   });
 });

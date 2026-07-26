@@ -1,0 +1,13 @@
+schema: product-definition-as-code/coverage/v1alpha1
+handoff: HOF-GITHUB-13
+requirements:
+  FR-FIX-001:
+    status: covered
+    specification:
+      - openspec/specs/cli/spec.md
+      - docs/specification/validation.md
+    verification:
+      - packages/core/src/fix-filenames.test.ts
+      - packages/core/src/fix-filenames.ts
+      - packages/cli/src/commands/fix.ts
+      - packages/cli/src/program.test.ts

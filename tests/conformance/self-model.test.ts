@@ -19,6 +19,9 @@ const expectedIds: Record<string, string[]> = {
     'UC-HANDOFF-STATUS-001',
     'UC-COVERAGE-001',
     'UC-PROMOTE-001',
+    // Added by CHG-CLI-POLISH-001 (adoption improvements).
+    'UC-SCHEMA-001',
+    'UC-FIX-001',
   ],
   'business-rule': [
     'BR-CANONICAL-001',
@@ -57,6 +60,9 @@ const expectedIds: Record<string, string[]> = {
     'FR-DISTRIBUTION-001',
     'FR-OPENSPEC-001',
     'FR-COVERAGE-001',
+    // Added by CHG-CLI-POLISH-001 (adoption improvements).
+    'FR-SCHEMA-001',
+    'FR-FIX-001',
   ],
   'quality-requirement': [
     'QR-PORTABILITY-001',

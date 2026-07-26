@@ -20,11 +20,19 @@ status: active # artifact lifecycle state
 - `type` MUST be one of: `actor`, `journey`, `use-case`, `business-rule`, `domain-term`,
   `bounded-context`, `functional-requirement`, `quality-requirement`, `constraint`.
 - Frontmatter MUST validate against the JSON Schema for its `type`
-  (`schemas/<type>.schema.json`). Unknown frontmatter properties are invalid.
+  (`schemas/<type>.schema.json`). Unknown frontmatter properties are invalid. The exhaustive
+  per-kind field tables — required and optional properties, allowed values, ID patterns — are in
+  the [Frontmatter reference](frontmatter-reference.md), generated from those schemas.
 - The Markdown body MUST contain the required sections for its type as `##` headings, in the
   order listed. Additional sections MAY follow the required ones.
-- Artifacts MUST NOT carry author, owner, date, version or review metadata. Git history provides
-  provenance.
+- Every artifact type additionally accepts the optional `provenance` object
+  ([Frontmatter reference → Provenance](frontmatter-reference.md#provenance)).
+- Artifacts MUST NOT carry author, owner, date, version or review metadata; Git history is the
+  record of who changed what and when. `provenance` is not an exception to this rule but a
+  different concern: it records the **evidence** behind recovered knowledge — its source, the
+  confidence that evidence supports, and how it was recovered. Provenance is an epistemic property
+  of the claim, not a record of authorship, and it SHOULD be set only on artifacts recovered from
+  an existing system.
 - Artifact bodies describe product behaviour and obligations. They MUST NOT contain implementation
   design (class names, package names, algorithms, framework or storage choices) unless naming an
   externally imposed, externally visible constraint is unavoidable.

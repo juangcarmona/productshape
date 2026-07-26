@@ -22,7 +22,9 @@ generated index.
 
 Adoption: [UC-INIT-001](use-cases/uc-init-001.md), [UC-DEFINE-001](use-cases/uc-define-001.md).
 Understanding the model: [UC-VALIDATE-001](use-cases/uc-validate-001.md),
-[UC-INSPECT-001](use-cases/uc-inspect-001.md), [UC-IMPACT-001](use-cases/uc-impact-001.md).
+[UC-INSPECT-001](use-cases/uc-inspect-001.md), [UC-IMPACT-001](use-cases/uc-impact-001.md),
+[UC-SCHEMA-001](use-cases/uc-schema-001.md).
+Keeping it tidy: [UC-FIX-001](use-cases/uc-fix-001.md).
 Evolving it: [UC-CHANGE-001](use-cases/uc-change-001.md), [UC-SLICE-001](use-cases/uc-slice-001.md).
 Delivering: [UC-HANDOFF-001](use-cases/uc-handoff-001.md),
 [UC-HANDOFF-STATUS-001](use-cases/uc-handoff-status-001.md),
@@ -69,7 +71,9 @@ Functional: [FR-INIT-001](requirements/functional/fr-init-001.md),
 [FR-PROMOTE-001](requirements/functional/fr-promote-001.md),
 [FR-DISTRIBUTION-001](requirements/functional/fr-distribution-001.md),
 [FR-OPENSPEC-001](requirements/functional/fr-openspec-001.md),
-[FR-COVERAGE-001](requirements/functional/fr-coverage-001.md).
+[FR-COVERAGE-001](requirements/functional/fr-coverage-001.md),
+[FR-SCHEMA-001](requirements/functional/fr-schema-001.md),
+[FR-FIX-001](requirements/functional/fr-fix-001.md).
 
 Quality: [QR-PORTABILITY-001](requirements/quality/qr-portability-001.md),
 [QR-DETERMINISM-001](requirements/quality/qr-determinism-001.md),

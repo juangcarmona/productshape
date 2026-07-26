@@ -25,6 +25,7 @@ export const codes = {
   disallowedTargetType: 'PRODUCT007',
   activeReferencesRetired: 'PRODUCT008',
   missingBodySection: 'PRODUCT009',
+  lowConfidenceDraft: 'PRODUCT111',
 } as const;
 
 /**

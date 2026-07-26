@@ -16,6 +16,15 @@ export interface ProductConfig {
   integrations: {
     ai: string[];
     sdd: { provider?: string };
+    /**
+     * Emit `/ps:<name>` shorthand aliases alongside the canonical `/product:<name>` commands.
+     * Off by default: for a single-assistant repository the aliases double the prompt namespace
+     * without adding a capability.
+     *
+     * A persisted setting rather than only an `init` flag, because `integration update`
+     * re-renders from configuration and would otherwise undo the choice.
+     */
+    'shorthand-commands': boolean;
   };
   validation: {
     'warnings-as-errors': boolean;
@@ -41,6 +50,7 @@ export function defaultConfig(): ProductConfig {
     integrations: {
       ai: [],
       sdd: {},
+      'shorthand-commands': false,
     },
     validation: {
       'warnings-as-errors': false,
@@ -150,6 +160,12 @@ export function parseConfig(content: string, file: string): ConfigResult {
         config.integrations.ai = ai as string[];
       }
     }
+    readBoolean(
+      integrations,
+      'integrations',
+      'shorthand-commands',
+      (v) => (config.integrations['shorthand-commands'] = v),
+    );
     const sdd = integrations.sdd;
     if (sdd !== undefined) {
       if (typeof sdd !== 'object' || sdd === null || Array.isArray(sdd)) {

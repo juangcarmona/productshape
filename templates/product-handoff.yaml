@@ -3,6 +3,7 @@
 # approved delivery slice. It carries product context and traceability only — never
 # technical design. Digests are sha256 over LF-normalized UTF-8 content.
 # Contract: docs/specification/handoff-contract.md
+# Schema reference: docs/specification/frontmatter-reference.md#product-handoff
 schema: product-definition-as-code/handoff/v1alpha1
 id: HOF-EXAMPLE-001
 generated-at: 2026-01-01T10:00:00Z

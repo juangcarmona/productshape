@@ -47,6 +47,25 @@ Every recovered candidate carries:
 Candidates without provenance are opinions. The human validating recovery must be able to follow
 every claim back to its evidence.
 
+This is recorded in the artifact's own frontmatter, in the optional `provenance` object, so it can
+be queried and validated rather than living only in prose:
+
+```yaml
+provenance:
+  source: src/orders/validation.ts (limit check), tests/orders/limits.spec.ts
+  confidence: high
+  recovered-from: observation
+```
+
+`source` and `confidence` are required whenever provenance is present; `recovered-from` classifies
+the recovery method (`observation`, `inference`, `interview`, `documentation`) and may be omitted
+when the evidence is genuinely more than one of them. The full contract is in the
+[Frontmatter reference](../specification/frontmatter-reference.md#provenance).
+
+A `draft` candidate whose confidence is `low` is reported as `PRODUCT111`, so the review queue is
+derivable from `prodshape validate` rather than maintained by hand. Greenfield artifacts authored
+from intent leave `provenance` unset: there is no evidence to cite.
+
 ## Contradictions are findings, not noise
 
 Recovery routinely surfaces conflicts: the code does one thing, the documentation claims another,

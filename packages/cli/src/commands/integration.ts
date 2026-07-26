@@ -34,7 +34,10 @@ export async function runIntegrationAdd(
   }
   let result;
   try {
-    result = await installProvider(repo.root, provider, undefined, options?.force);
+    result = await installProvider(repo.root, provider, {
+      force: options?.force,
+      render: { shorthandCommands: repo.config.integrations['shorthand-commands'] },
+    });
   } catch (error) {
     if (error instanceof InstallConflictError) {
       throw new CliError(error.message, exitCodes.validationErrors);
@@ -64,7 +67,10 @@ export async function runIntegrationUpdate(
 
   let results;
   try {
-    results = await updateIntegrations(repo.root, options.force);
+    results = await updateIntegrations(repo.root, {
+      force: options.force,
+      render: { shorthandCommands: repo.config.integrations['shorthand-commands'] },
+    });
   } catch (error) {
     if (error instanceof InstallConflictError) {
       throw new CliError(error.message, exitCodes.validationErrors);
@@ -79,6 +85,12 @@ export async function runIntegrationUpdate(
     io.out(
       `Regenerated ${result.provider} integration (${result.written.length} managed file(s)).`,
     );
+    if (result.removed.length > 0) {
+      io.out(
+        `Removed ${result.removed.length} managed file(s) the ${result.provider} integration no longer generates:`,
+      );
+      for (const path of result.removed) io.out(`  ${path}`);
+    }
   }
   return exitCodes.success;
 }

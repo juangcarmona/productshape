@@ -24,15 +24,35 @@ you can add integrations later with `product-definition integration add`.
 ```text
 docs/product/
 ├── model/                  # the current product model (canonical, empty at first)
+│   ├── actors/
+│   ├── journeys/
+│   ├── use-cases/
+│   ├── business-rules/
+│   ├── domain/{terms,bounded-contexts}/
+│   └── requirements/{functional,quality,constraints}/
 └── changes/
     ├── active/
     ├── completed/
     └── rejected/
 .product/
 ├── config.yaml             # repository configuration (canonical)
-├── installation.lock.json
-├── generated/              # compiled graph, indexes, diagrams (regenerable)
-└── cache/
+├── installation.lock.json  # digests of the generated managed files; commit it
+└── templates/              # authoring templates, one per artifact kind
+```
+
+The model subdirectories are a **recommendation, not a rule**: artifact discovery walks the model
+directory recursively and keys on the frontmatter `type`, so any layout validates. Taking the
+recommended one means not having to invent a taxonomy; `--flat` opts out. Each directory gets a
+`.gitkeep` so the structure survives a commit — Git does not track empty directories.
+
+`.product/generated/` and `.product/cache/` appear later, when a command writes them. They are
+regenerable and non-canonical, so add them to your `.gitignore`; `init` does not modify that file
+for you.
+
+Preview all of this against your repository before running it for real:
+
+```bash
+product-definition init --ai claude --sdd openspec --dry-run
 ```
 
 If you requested AI integrations, `init` also generates managed files under `.claude/` or
@@ -51,7 +71,18 @@ requirements and constraints. The artifact contracts are specified in
 [Artifacts](../specification/artifacts.md); the human-facing walkthrough is
 [Define](../methodology/define.md).
 
-Two ways to run it:
+Before authoring, read the
+[Frontmatter reference](../specification/frontmatter-reference.md): it lists every allowed property
+per artifact kind with its permitted values. Frontmatter is a closed contract — an unrecognised
+property is a `PRODUCT002` error — so it is worth knowing what is accepted rather than discovering it
+by trial and error. The same information is available per kind from the command line, and needs no
+repository:
+
+```bash
+product-definition schema use-case
+```
+
+Two ways to run Define:
 
 - **With the `define-product` skill.** In a repository with the Claude Code or GitHub Copilot
   integration installed, the skill interviews you about the product and drafts schema-conformant
@@ -92,7 +123,7 @@ product-definition validate --format json   # machine-readable diagnostics
 
 Validation is deterministic: schema conformance, ID and prefix rules, reference resolution,
 relationship target types, lifecycle interactions and required body sections, with stable
-diagnostic codes (`PRODUCT001`–`PRODUCT110`). Errors block; warnings inform (a repository may
+diagnostic codes (`PRODUCT001`–`PRODUCT111`). Errors block; warnings inform (a repository may
 escalate them with `validation.warnings-as-errors`). See
 [Validation](../specification/validation.md).
 

@@ -1,6 +1,6 @@
 import { access } from 'node:fs/promises';
 import { join } from 'node:path';
-import { frameworkVersion } from './assets.js';
+import { frameworkVersion, loadBundledAssets } from './assets.js';
 import { checkIntegrations, type IntegrationDiagnostic } from './install.js';
 import { readLock } from './lock.js';
 
@@ -32,6 +32,12 @@ export interface DoctorOptions {
   modelPath: string;
   changesPath: string;
   sddProvider?: string;
+  /**
+   * Model-validation verdict supplied by the caller. Injected rather than computed here because
+   * this package must not depend on core; omit it and the check is simply not reported, so a
+   * library consumer that never runs validation does not get a phantom failure.
+   */
+  validation?: { errors: number; warnings: number; artifacts: number };
 }
 
 /** Repository health checks: structure, configuration, versions, managed files, SDD workspace. */
@@ -45,6 +51,15 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
     detail: options.configDetail,
   });
 
+  if (options.validation) {
+    const { errors, warnings, artifacts } = options.validation;
+    checks.push({
+      name: 'model validation',
+      ok: errors === 0,
+      detail: `${errors} error(s), ${warnings} warning(s) across ${artifacts} artifact(s)`,
+    });
+  }
+
   const modelExists = await exists(root, options.modelPath);
   checks.push({
     name: 'product structure',
@@ -53,6 +68,37 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
       ? `${options.modelPath} present`
       : `${options.modelPath} missing; run: prodshape init`,
   });
+
+  // Authoring templates. Deliberately three states rather than present/absent: a repository that
+  // authors artifacts by hand (this one included) legitimately has no .product/templates, so a
+  // hard presence check would report health as failure. A *partial* set is the real defect —
+  // an interrupted init, or a template deleted by hand.
+  const templateNames = (await loadBundledAssets()).templates.map((t) => t.name);
+  const missingTemplates: string[] = [];
+  for (const name of templateNames) {
+    if (!(await exists(root, `.product/templates/${name}`))) missingTemplates.push(name);
+  }
+  if (missingTemplates.length === templateNames.length) {
+    checks.push({
+      name: 'authoring templates',
+      ok: true,
+      detail: '.product/templates absent (informational; run: prodshape init)',
+    });
+  } else if (missingTemplates.length === 0) {
+    checks.push({
+      name: 'authoring templates',
+      ok: true,
+      detail: `${templateNames.length} authoring template(s) present`,
+    });
+  } else {
+    checks.push({
+      name: 'authoring templates',
+      ok: false,
+      detail:
+        `${missingTemplates.length} of ${templateNames.length} authoring template(s) missing ` +
+        `(${missingTemplates.join(', ')}); run: prodshape init`,
+    });
+  }
 
   // The changes home must exist. Its active/completed/rejected subdirectories are created on
   // demand and are legitimately absent when empty — Git does not track empty directories, so a

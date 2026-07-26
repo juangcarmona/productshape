@@ -13,6 +13,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "docs:frontmatter": "tsx scripts/generate-frontmatter-reference.mts && prettier --write docs/specification/frontmatter-reference.md",
     "typecheck": "pnpm -r run typecheck",
     "test": "vitest run",
     "build": "pnpm -r run build",

@@ -107,6 +107,45 @@ describe('validateModel warnings', () => {
     expect(ungated.filter((d) => d.code === 'PRODUCT103')).toHaveLength(0);
   });
 
+  describe('low-confidence drafts (PRODUCT111)', () => {
+    const provenance = (confidence: string) => ({
+      source: 'src/legacy/orders.ts',
+      confidence,
+      'recovered-from': 'inference',
+    });
+
+    it('warns on a draft whose provenance confidence is low', () => {
+      const draft = artifact('ACT-RECOVERED', 'actor', {
+        status: 'draft',
+        provenance: provenance('low'),
+      });
+      const diagnostics = run([draft]).filter((d) => d.code === 'PRODUCT111');
+      expect(diagnostics).toEqual([
+        expect.objectContaining({
+          severity: 'warning',
+          artifact: 'ACT-RECOVERED',
+          field: 'provenance.confidence',
+        }),
+      ]);
+    });
+
+    it('stays silent for higher confidence, for accepted artifacts and with no provenance', () => {
+      const confident = artifact('ACT-A', 'actor', {
+        status: 'draft',
+        provenance: provenance('high'),
+      });
+      // Accepting a low-confidence candidate into the baseline is the human decision the
+      // warning exists to prompt; once made, it must not keep firing.
+      const accepted = artifact('ACT-B', 'actor', {
+        status: 'active',
+        provenance: provenance('low'),
+      });
+      const greenfield = artifact('ACT-C', 'actor', { status: 'draft' });
+      const diagnostics = run([confident, accepted, greenfield]);
+      expect(diagnostics.filter((d) => d.code === 'PRODUCT111')).toEqual([]);
+    });
+  });
+
   it('flags orphaned rules, terms and contexts (PRODUCT105-107)', () => {
     const rule = artifact('BR-LONE', 'business-rule');
     const term = artifact('TERM-LONE', 'domain-term', { 'defined-in': 'BC-LONE' });

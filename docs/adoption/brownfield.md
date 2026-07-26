@@ -16,6 +16,17 @@ analytical work; the methodology structures it, it does not eliminate it.
 
 ## 1. Initialize
 
+A brownfield repository usually already has a populated `docs/`, so check what `init` would do
+before it does it:
+
+```bash
+product-definition init --ai claude --sdd openspec --dry-run
+```
+
+The dry run writes nothing and reports every path it would create, preserve, regenerate or
+overwrite, plus any conflict — a file that already exists and is not managed by the installation
+lock. Nothing is overwritten without `--force`, and existing files are reported as preserved.
+
 ```bash
 product-definition init --ai claude --sdd openspec
 ```
@@ -23,6 +34,10 @@ product-definition init --ai claude --sdd openspec
 This creates `docs/product/` and `.product/` and touches nothing else — your source code, build
 and existing documentation are untouched. Details of what `init` creates and the authority rules
 are in [Installing into an existing repository](existing-repository.md).
+
+`init` scaffolds one directory per artifact kind under `docs/product/model/`. The layout is a
+recommendation, not a rule — discovery walks the model directory recursively and keys on the
+frontmatter `type` — but taking it means not having to invent a taxonomy. Use `--flat` to opt out.
 
 ## 2. Recover a candidate model
 
@@ -38,7 +53,26 @@ with the people who operate and maintain the system.
 schema-conformant draft that records where the knowledge came from (which files, tests, tickets or
 conversations) and how confident the recovery is in it. A business rule read directly from a
 validation test is not the same as one inferred from a variable name, and the candidate must say
-so.
+so — in frontmatter, so it can be queried:
+
+```yaml
+provenance:
+  source: src/orders/validation.ts (limit check), tests/orders/limits.spec.ts
+  confidence: high
+  recovered-from: observation
+```
+
+`source` and `confidence` are required whenever `provenance` is present. The full contract, and the
+allowed frontmatter for every artifact kind, is in the
+[Frontmatter reference](../specification/frontmatter-reference.md#provenance) — read it before
+authoring, or query it per kind without leaving the terminal:
+
+```bash
+product-definition schema business-rule
+```
+
+Frontmatter is a closed contract: an unrecognised property is a `PRODUCT002` error, so inventing a
+field to hold something the schema does not model will fail validation. Put such things in the body.
 
 **A human validates before anything becomes active.** Candidates enter the model with status
 `draft`. A person who understands the product reviews each candidate — confirming, correcting or
@@ -65,6 +99,20 @@ Fix errors; review warnings. Warnings like `PRODUCT105` (business rule with no c
 `PRODUCT103` (requirement unreachable from any actor) are common in recovered models and usually
 point at knowledge you have not finished connecting — see
 [Validation](../specification/validation.md).
+
+`PRODUCT111` is the recovery-specific one: a `draft` candidate whose `provenance.confidence` is
+`low`. It is not a defect to fix but a queue to work through — every artifact resting on weak
+evidence, listed by the tool rather than tracked by hand. It stops firing when the candidate is
+accepted into the baseline or its evidence improves.
+
+If validation reports `PRODUCT101` (file name not aligned with its ID), fix every occurrence at
+once:
+
+```bash
+product-definition fix --filenames
+```
+
+This works on Windows and macOS, where a casing-only rename is otherwise a silent no-op.
 
 ## 4. Set honest expectations
 

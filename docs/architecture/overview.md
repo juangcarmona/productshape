@@ -11,7 +11,7 @@ canonical product knowledge, and nothing under `docs/product` may reference pack
 dependencies described here.
 
 The founding constraints behind this architecture were fixed at Gate 0 and are recorded as
-[architecture decision records](decisions/0001-markdown-is-canonical.md) 0001–0008. Where this
+[architecture decision records](decisions/0001-markdown-is-canonical.md) 0001–0009. Where this
 overview and an ADR appear to disagree, the ADR wins.
 
 ## Monorepo layout
@@ -143,3 +143,4 @@ The toolkit runs identically on Windows, macOS and Linux (Node >= 22, the curren
 | [0006](decisions/0006-product-handoff-is-the-integration-contract.md)       | The Product Handoff is the integration contract   |
 | [0007](decisions/0007-deterministic-core-and-ai-reasoning-are-separated.md) | Deterministic core and AI reasoning are separated |
 | [0008](decisions/0008-vendor-assets-are-generated.md)                       | Vendor assets are generated                       |
+| [0009](decisions/0009-reference-documentation-is-generated.md)              | Reference documentation is generated              |

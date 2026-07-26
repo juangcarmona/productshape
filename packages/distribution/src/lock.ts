@@ -18,8 +18,11 @@ export function fileDigest(content: string): string {
   return `sha256:${createHash('sha256').update(content.replace(/\r\n?/g, '\n'), 'utf8').digest('hex')}`;
 }
 
+/** Repository-relative lock path, POSIX separators. */
+export const lockRelativePath = '.product/installation.lock.json';
+
 export function lockPath(root: string): string {
-  return join(root, '.product', 'installation.lock.json');
+  return join(root, ...lockRelativePath.split('/'));
 }
 
 export async function readLock(root: string): Promise<InstallationLock | undefined> {

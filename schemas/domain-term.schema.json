@@ -19,6 +19,9 @@
     "synonyms": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 }
+    },
+    "provenance": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/provenance"
     }
   }
 }
