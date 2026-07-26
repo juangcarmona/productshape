@@ -1,7 +1,7 @@
 schema: product-definition-as-code/delivery-slice/v1alpha1
 id: SLI-SCHEMA-001
 title: Expose the frontmatter contract of every artifact kind
-status: draft
+status: completed
 product-change: CHG-CLI-POLISH-001
 outcome: >-
   A Product Engineer can ask what frontmatter an artifact kind accepts and get the complete answer —

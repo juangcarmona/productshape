@@ -2,7 +2,7 @@
 id: CHG-CLI-POLISH-001
 type: product-change
 title: Make the authoring contract discoverable and mechanically repairable
-status: draft
+status: implemented
 base-revision: 6101919cb510eae461df0c5871465a0f5b721c27
 operations:
   add:

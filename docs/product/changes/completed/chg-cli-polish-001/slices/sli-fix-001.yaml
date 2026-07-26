@@ -1,7 +1,7 @@
 schema: product-definition-as-code/delivery-slice/v1alpha1
 id: SLI-FIX-001
 title: Repair filename misalignment on any filesystem
-status: draft
+status: completed
 product-change: CHG-CLI-POLISH-001
 outcome: >-
   A Product Engineer can resolve every reported filename misalignment in one explicit step, including

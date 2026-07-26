@@ -2,7 +2,7 @@
 id: UC-FIX-001
 type: use-case
 title: Repair filename misalignment across the model
-status: draft
+status: active
 primary-actor: ACT-PRODUCT-ENGINEER
 supporting-actors: []
 bounded-context: BC-PRODUCT-DEFINITION

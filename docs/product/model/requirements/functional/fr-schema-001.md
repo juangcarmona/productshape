@@ -2,7 +2,7 @@
 id: FR-SCHEMA-001
 type: functional-requirement
 title: Expose the frontmatter contract of every artifact kind
-status: draft
+status: active
 derived-from:
   - UC-SCHEMA-001
 verification:

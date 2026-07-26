@@ -1,0 +1,15 @@
+schema: product-definition-as-code/coverage/v1alpha1
+handoff: HOF-GITHUB-13
+requirements:
+  FR-SCHEMA-001:
+    status: covered
+    specification:
+      - openspec/specs/normative-specification/spec.md
+      - openspec/specs/cli/spec.md
+      - docs/specification/frontmatter-reference.md
+    verification:
+      - tests/conformance/frontmatter-reference.test.ts
+      - packages/core/src/frontmatter-reference.test.ts
+      - packages/core/src/frontmatter-reference.ts
+      - packages/cli/src/commands/schema.ts
+      - scripts/generate-frontmatter-reference.mts

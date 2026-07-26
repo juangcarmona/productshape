@@ -2,7 +2,7 @@
 id: FR-FIX-001
 type: functional-requirement
 title: Repair filename misalignment mechanically and without partial results
-status: draft
+status: active
 derived-from:
   - UC-FIX-001
   - BR-IDENTITY-001

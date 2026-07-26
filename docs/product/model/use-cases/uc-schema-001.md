@@ -2,7 +2,7 @@
 id: UC-SCHEMA-001
 type: use-case
 title: Discover the allowed frontmatter for an artifact kind
-status: draft
+status: active
 primary-actor: ACT-PRODUCT-ENGINEER
 supporting-actors: []
 bounded-context: BC-PRODUCT-DEFINITION
