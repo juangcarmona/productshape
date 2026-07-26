@@ -69,3 +69,29 @@ be edited in place; and a framework-version mismatch is already reported by `doc
 `install --frozen` was considered for this release and deferred as redundant on those grounds. If a
 second renderer or user-supplied canonical assets ever land, the right shape is a re-render comparison
 inside the existing `--check`, not a new command.
+
+## OD-009: Product Handoff identity when one work item delivers several slices
+
+**Why it matters:** A Product Handoff ID is derived only from the work-item reference —
+`HOF-<provider>-<work-item id>` — so the delivery slice is not part of it. One work item covering two
+slices therefore produces two distinct handoffs carrying the same ID, and nothing rejects it. The
+symptom is visible: after promoting `CHG-CLI-POLISH-001`, whose two slices were both delivered by pull
+request 13, `prodshape inspect BR-IDENTITY-001` reports
+`handoffs: HOF-GITHUB-13, HOF-GITHUB-13`. Two different packages, one name, no way to tell them
+apart. That sits badly with `BR-IDENTITY-001`, which makes stable IDs the identity of everything else
+in the model.
+
+What is **not** affected: evidence discovery never resolves a handoff by ID. The coverage check reads
+`product-handoff.yaml` from the SDD change directory it was given, and promotion matches sidecars on
+`source.product-change` and `source.delivery-slice`. So coverage, promotion and staleness detection are
+unambiguous today; the collision is confined to human-facing identity and to the `handoff:` field in
+`product-coverage.yaml`, which names an ID that is no longer unique.
+
+**Interim position:** One work item per delivery slice is the intended shape, and it keeps IDs unique.
+The collision is reachable whenever a single pull request or ticket delivers several slices, which is
+a reasonable thing to do and which this repository has now done once. Three candidate fixes are open,
+each with a cost: include the slice in the ID (unique, but the ID stops naming the work-item link,
+which is its purpose); append a disambiguating sequence (unique and stable-ish, but the number carries
+no meaning); or refuse to generate a second handoff for a work item that already has one (forces the
+intended shape, but blocks a legitimate workflow). Deferred until a second SDD adapter or real
+multi-slice usage shows which property matters most.
