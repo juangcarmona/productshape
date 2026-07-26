@@ -99,6 +99,7 @@ describe('describeKind', () => {
       'status',
       'defined-in',
       'synonyms',
+      'provenance',
     ]);
   });
 

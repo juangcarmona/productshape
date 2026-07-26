@@ -8,6 +8,7 @@ import { runIntegrationAdd, runIntegrationUpdate } from './commands/integration.
 import { runHandoffCreate, runHandoffStatus } from './commands/handoff.js';
 import { runImpact } from './commands/impact.js';
 import { runInspect } from './commands/inspect.js';
+import { runSchema } from './commands/schema.js';
 import { runValidate } from './commands/validate.js';
 import { CliError, exitCodes, type CliIo } from './context.js';
 
@@ -38,9 +39,19 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .option('--ai <providers>', 'comma-separated AI integrations: claude, copilot')
     .option('--sdd <provider>', 'SDD framework: openspec')
     .option('--force', 'overwrite existing files')
-    .action(async (options: { ai?: string; sdd?: string; force?: boolean }) => {
-      capture.code = await runInit(io, options);
-    });
+    .option('--flat', 'scaffold the model directory without per-kind subdirectories')
+    .option('--dry-run', 'report what init would do, without writing anything')
+    .action(
+      async (options: {
+        ai?: string;
+        sdd?: string;
+        force?: boolean;
+        flat?: boolean;
+        dryRun?: boolean;
+      }) => {
+        capture.code = await runInit(io, options);
+      },
+    );
 
   const integration = program
     .command('integration')
@@ -150,6 +161,15 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .option('--format <format>', 'output format: text or json', 'text')
     .action(async (id: string, options: { format: 'text' | 'json' }) => {
       capture.code = await runInspect(io, id, options);
+    });
+
+  program
+    .command('schema')
+    .description('Print the allowed frontmatter for a document kind')
+    .argument('[kind]', 'document kind or ID prefix; omit to list every kind')
+    .option('--format <format>', 'output format: text or json', 'text')
+    .action(async (kind: string | undefined, options: { format: 'text' | 'json' }) => {
+      capture.code = await runSchema(io, kind, options);
     });
 
   program

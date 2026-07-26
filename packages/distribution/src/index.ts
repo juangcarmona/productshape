@@ -7,8 +7,14 @@ export type {
 } from './assets.js';
 export { runDoctor } from './doctor.js';
 export type { DoctorCheck, DoctorOptions, DoctorReport } from './doctor.js';
-export { initRepository } from './init.js';
-export type { InitOptions, InitResult } from './init.js';
+export {
+  applyInitPlan,
+  changeScaffoldDirs,
+  initRepository,
+  modelScaffoldDirs,
+  planInit,
+} from './init.js';
+export type { InitAction, InitActionKind, InitOptions, InitPlan, InitResult } from './init.js';
 export {
   applyProviderPlan,
   checkIntegrations,
@@ -25,5 +31,13 @@ export type {
   IntegrationDiagnostic,
   ProviderPlan,
 } from './install.js';
-export { emptyLock, fileDigest, lockPath, lockSchemaId, readLock, writeLock } from './lock.js';
+export {
+  emptyLock,
+  fileDigest,
+  lockPath,
+  lockRelativePath,
+  lockSchemaId,
+  readLock,
+  writeLock,
+} from './lock.js';
 export type { InstallationLock } from './lock.js';

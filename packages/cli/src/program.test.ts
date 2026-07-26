@@ -156,6 +156,69 @@ describe('prodshape graph / inspect / impact', () => {
   });
 });
 
+describe('prodshape schema', () => {
+  it('lists every kind with its ID prefix', async () => {
+    const result = await run(['schema'], workDir);
+    expect(result.code).toBe(0);
+    const text = result.out.join('\n');
+    expect(text).toMatch(/^actor\s+ACT-\s+Actor frontmatter$/m);
+    expect(text).toMatch(/^delivery-slice\s+SLI-/m);
+    expect(text).toContain("Run 'prodshape schema <kind>' for the full field reference.");
+  });
+
+  it('prints the field reference for a kind', async () => {
+    const result = await run(['schema', 'use-case'], workDir);
+    expect(result.code).toBe(0);
+    const text = result.out.join('\n');
+    expect(text).toContain('use-case (UC-)');
+    expect(text).toContain('primary-actor');
+    expect(text).toContain('provenance.confidence');
+    expect(text).toContain('Required body sections: Goal, Trigger');
+    expect(text).toContain('Unknown properties are rejected (PRODUCT002).');
+  });
+
+  it('accepts an ID prefix as an alias, case-insensitively', async () => {
+    for (const alias of ['ACT', 'act']) {
+      const result = await run(['schema', alias], workDir);
+      expect(result.code).toBe(0);
+      expect(result.out[0]).toBe('actor (ACT-)');
+    }
+  });
+
+  it('emits a schema-identified descriptor with --format json', async () => {
+    const result = await run(['schema', 'actor', '--format', 'json'], workDir);
+    expect(result.code).toBe(0);
+    const parsed = JSON.parse(result.out.join('\n')) as {
+      schema: string;
+      kind: string;
+      fields: { name: string; required: boolean }[];
+    };
+    expect(parsed.schema).toBe('product-definition-as-code/frontmatter-reference/v1alpha1');
+    expect(parsed.kind).toBe('actor');
+    expect(parsed.fields.find((f) => f.name === 'provenance')).toMatchObject({ required: false });
+  });
+
+  it('rejects an unknown kind with exit 2 and lists what is known', async () => {
+    const result = await run(['schema', 'usecase'], workDir);
+    expect(result.code).toBe(2);
+    expect(result.err.join('\n')).toMatch(/Unknown kind 'usecase'\. Known kinds: actor,/);
+  });
+
+  it('works outside a product repository', async () => {
+    // The moment someone needs this is before `init`, deciding what to author. Requiring a
+    // repository would make the command useless exactly then.
+    const empty = await mkdtemp(join(tmpdir(), 'prodshape-schema-empty-'));
+    try {
+      const result = await run(['schema', 'actor'], empty);
+      expect(result.err).toEqual([]);
+      expect(result.code).toBe(0);
+      expect(result.out[0]).toBe('actor (ACT-)');
+    } finally {
+      await rm(empty, { recursive: true, force: true });
+    }
+  });
+});
+
 describe('self-application', () => {
   it('validates this repository with exit 0', async () => {
     const result = await run(['validate'], repoRoot);

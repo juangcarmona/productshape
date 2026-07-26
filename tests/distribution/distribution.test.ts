@@ -87,6 +87,102 @@ describe('provider renderers', () => {
   });
 });
 
+describe('init --dry-run', () => {
+  it('reports what it would create and writes nothing', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-dryrun-'));
+    try {
+      const result = await run(
+        ['init', '--ai', 'copilot', '--sdd', 'openspec', '--dry-run'],
+        scratch,
+      );
+      expect(result.code).toBe(0);
+      expect(result.out).toContain('Would create');
+      expect(result.out).toContain('docs/product/model/actors/.gitkeep');
+      expect(result.out).toContain('.github/prompts/product-change.prompt.md');
+      expect(result.out).toContain('Would overwrite (0)');
+      expect(result.out).toContain('Conflicts (0)');
+      expect(result.out).toContain('Dry run: nothing was changed.');
+      expect(await listFilesRecursive(scratch, '')).toEqual([]);
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+
+  it('reports the same file count that applying it produces', async () => {
+    // The point of the plan/apply split: a dry run that could disagree with the real run would be
+    // worse than no dry run at all.
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-dryrun-parity-'));
+    try {
+      const dry = await run(['init', '--ai', 'copilot', '--dry-run'], scratch);
+      const planned = Number(/Would create \((\d+)\)/.exec(dry.out)?.[1]);
+      const real = await run(['init', '--ai', 'copilot'], scratch);
+      const applied = Number(/\((\d+) file\(s\) created\)/.exec(real.out)?.[1]);
+      expect(planned).toBe(applied);
+      expect(await listFilesRecursive(scratch, '')).toHaveLength(planned);
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+
+  it('answers the populated-repository question: preserve and regenerate, never overwrite', async () => {
+    // The question that blocked a real adoption: does init refuse outright, or destroy things?
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-dryrun-populated-'));
+    try {
+      await run(['init', '--ai', 'copilot', '--sdd', 'openspec'], scratch);
+      const again = await run(
+        ['init', '--ai', 'copilot', '--sdd', 'openspec', '--dry-run'],
+        scratch,
+      );
+      expect(again.code).toBe(0);
+      expect(again.out).toContain('Would preserve');
+      expect(again.out).toContain('Would regenerate');
+      expect(again.out).toContain('Would overwrite (0)');
+      expect(again.out).toContain('Conflicts (0)');
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+
+  it('reports a conflict, and exits 1, without writing', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-dryrun-conflict-'));
+    try {
+      const claimed = join(scratch, '.github', 'prompts', 'product-change.prompt.md');
+      await mkdir(dirname(claimed), { recursive: true });
+      await writeFile(claimed, 'my own prompt\n', 'utf8');
+
+      const result = await run(['init', '--ai', 'copilot', '--dry-run'], scratch);
+      expect(result.code).toBe(1);
+      expect(result.out).toContain('Conflicts (1)');
+      expect(result.out).toContain('.github/prompts/product-change.prompt.md');
+      expect(await readFile(claimed, 'utf8')).toBe('my own prompt\n');
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('init --flat', () => {
+  it('omits the per-kind subdirectories but keeps a validatable model directory', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-flat-'));
+    try {
+      const result = await run(['init', '--flat'], scratch);
+      expect(result.code).toBe(0);
+      const files = (await listFilesRecursive(scratch, '.gitkeep')).map((f) =>
+        toPosix(f).slice(toPosix(scratch).length + 1),
+      );
+      expect(files).toContain('docs/product/model/.gitkeep');
+      expect(files.filter((f) => f.startsWith('docs/product/model/'))).toHaveLength(1);
+      // Change lifecycle states are not taxonomy: discovery and promotion read them.
+      expect(files).toContain('docs/product/changes/active/.gitkeep');
+
+      const validate = await run(['validate'], scratch);
+      expect(validate.code).toBe(0);
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+});
+
 describe('init and managed-file lifecycle (end to end)', () => {
   it('init creates the consumer structure with integrations and next steps', async () => {
     const result = await run(['init', '--ai', 'claude,copilot', '--sdd', 'openspec'], workDir);
