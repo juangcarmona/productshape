@@ -28,7 +28,7 @@
         ".claude/skills/prepare-sdd-handoff/references/handoff-checklist.md": "sha256:05d2202bc02c571124d1eea90be90d85f05ebe6e77194b087877eadcaa6b6dad",
         ".claude/skills/prepare-sdd-handoff/SKILL.md": "sha256:3f67dea045b1fe2682b7792a4ecd17b299402c3307c0521344a9ec014a4decc1",
         ".claude/skills/recover-product/references/evidence-sources.md": "sha256:4393e3f23a153bb39cd34ba5ec77373e660ebfa6ed4b506134a062993775e708",
-        ".claude/skills/recover-product/SKILL.md": "sha256:5b1e179284aca2ff766bdc3a3ba22dc01776004a686062ad2e47a01c59d3e07a",
+        ".claude/skills/recover-product/SKILL.md": "sha256:ee4f1fde7e5009d9c2fa08962881c53323317c85a86d4a2c4e2e739c94d1dd27",
         ".claude/skills/slice-product-change/references/slicing-heuristics.md": "sha256:c69733d16cd34279b675c5732e26efce1644a8aebb94cbfd3f8d13e3321bce9e",
         ".claude/skills/slice-product-change/SKILL.md": "sha256:6ba06c54265083877d9abe877486e62eecc20c9df1f45138115d0f3855c490ae"
       }
@@ -62,7 +62,7 @@
         ".github/skills/prepare-sdd-handoff-references/handoff-checklist.md": "sha256:05d2202bc02c571124d1eea90be90d85f05ebe6e77194b087877eadcaa6b6dad",
         ".github/skills/prepare-sdd-handoff.md": "sha256:3f67dea045b1fe2682b7792a4ecd17b299402c3307c0521344a9ec014a4decc1",
         ".github/skills/recover-product-references/evidence-sources.md": "sha256:4393e3f23a153bb39cd34ba5ec77373e660ebfa6ed4b506134a062993775e708",
-        ".github/skills/recover-product.md": "sha256:5b1e179284aca2ff766bdc3a3ba22dc01776004a686062ad2e47a01c59d3e07a",
+        ".github/skills/recover-product.md": "sha256:ee4f1fde7e5009d9c2fa08962881c53323317c85a86d4a2c4e2e739c94d1dd27",
         ".github/skills/slice-product-change-references/slicing-heuristics.md": "sha256:c69733d16cd34279b675c5732e26efce1644a8aebb94cbfd3f8d13e3321bce9e",
         ".github/skills/slice-product-change.md": "sha256:6ba06c54265083877d9abe877486e62eecc20c9df1f45138115d0f3855c490ae"
       }

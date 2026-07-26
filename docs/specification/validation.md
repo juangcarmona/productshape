@@ -76,6 +76,15 @@ validation does not inspect managed files.
 | `PRODUCT110` | Handoff context containing artifacts outside the recomputed closure                                                                                                |
 | `PRODUCT111` | Draft artifact whose `provenance.confidence` is `low`                                                                                                              |
 
+`PRODUCT101` is resolved mechanically by `prodshape fix --filenames`, which renames each file to
+`<id.toLowerCase()>.md`. It renames through a temporary name so it also works on case-insensitive
+filesystems, where a casing-only rename is otherwise a silent no-op. `--dry-run` reports the plan and
+exits non-zero when anything would change, which makes it usable as a CI gate: `PRODUCT101` is a
+warning, so it is not otherwise caught unless `warnings-as-errors` is set.
+
+`PRODUCT111` marks recovered knowledge that needs human validation rather than a defect to repair;
+see [Frontmatter reference → Provenance](frontmatter-reference.md#provenance).
+
 ## Exit codes
 
 | Code | Meaning                                                 |

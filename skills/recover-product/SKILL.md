@@ -38,6 +38,8 @@ model (use `audit-product-model`).
 
 - `docs/methodology/recover.md` — the recovery contract this skill implements.
 - `docs/specification/artifacts.md` — target artifact contracts and required body sections.
+- `docs/specification/frontmatter-reference.md` — the exact allowed frontmatter per artifact kind,
+  including the `provenance` object and its permitted values.
 - `docs/specification/product-changes.md` — recovery-change structure and operations.
 - Artifact templates in the framework's `templates/` (installed copies may be under
   `.product/templates/`).
@@ -51,6 +53,7 @@ model (use `audit-product-model`).
 - `product-definition change validate <CHG-ID>` — overlay validation of a recovery change.
 - `product-definition graph --format json` — the existing graph, to attach candidates correctly.
 - `product-definition inspect <ID>` — existing artifact detail before referencing or modifying.
+- `product-definition schema <kind>` — the allowed frontmatter for a kind, read from the schemas.
 
 Structural facts come from these commands, never from your own judgement (BR-AI-001).
 
@@ -67,16 +70,22 @@ Structural facts come from these commands, never from your own judgement (BR-AI-
 4. Assign provenance and confidence to every candidate claim: which evidence produced it, and
    high, medium or low support. A rule enforced by code and pinned by tests is high; a meaning
    guessed from a column name is low.
-5. Record provenance and confidence inside the draft body, not in frontmatter — the schemas
-   reject unknown fields. After the artifact's last required section, add a subsection:
+5. Record provenance in the frontmatter of every candidate, so it is queryable and validated
+   rather than buried in prose:
 
-   ```markdown
-   ## Recovery Provenance
-
-   - Provenance: src/orders/validation.ts (limit check), tests/orders/limits.spec.ts
-   - Confidence: high (observed) / low (inferred intent)
-   - Claim kind: observed behaviour | inferred intent
+   ```yaml
+   provenance:
+     source: src/orders/validation.ts (limit check), tests/orders/limits.spec.ts
+     confidence: high
+     recovered-from: observation
    ```
+
+   `source` and `confidence` are required whenever provenance is present; `recovered-from` is
+   `observation`, `inference`, `interview` or `documentation`, and may be omitted when the evidence
+   is genuinely more than one of these. Keep the reasoning — which claim is observed, which is
+   inferred, and what the evidence does not settle — in the artifact body. A draft whose confidence
+   is `low` is reported as `PRODUCT111`, so the queue of candidates needing human validation is
+   derivable from validation output rather than tracked by hand.
 
 6. Surface contradictions as open questions. When code disagrees with documentation, tests
    contradict stakeholders, or one term carries two meanings, record the conflict and both
@@ -106,7 +115,8 @@ Structural facts come from these commands, never from your own judgement (BR-AI-
 - Presenting inferred intent as observed behaviour, or emitting a candidate without provenance —
   candidates without provenance are opinions.
 - Resolving contradictions between evidence sources yourself; they remain open questions.
-- Inventing frontmatter fields for provenance or confidence; use the body subsection.
+- Inventing frontmatter fields: only `provenance` and its defined sub-fields are accepted, and
+  anything else is rejected as `PRODUCT002`. Check with `schema <kind>` rather than guessing.
 - Marking artifacts `active`, approving changes or slices, or promoting.
 - Replacing deterministic validation with your own reading of files (BR-AI-001).
 
@@ -121,8 +131,9 @@ Structural facts come from these commands, never from your own judgement (BR-AI-
 
 ## Expected outputs
 
-- Draft candidate artifacts (or a recovery Product Change containing them), each with a
-  `## Recovery Provenance` body subsection stating provenance, confidence and claim kind.
+- Draft candidate artifacts (or a recovery Product Change containing them), each carrying
+  `provenance` frontmatter with its source, its confidence, and where classifiable the recovery
+  method, and labelling each body claim observed or inferred.
 - Every contradiction between evidence sources recorded as an explicit open question.
 - A clean structural validation run (`validate` or `change validate <CHG-ID>`).
 - A recovery summary for the human: candidates by confidence level, unresolved contradictions,
@@ -130,8 +141,8 @@ Structural facts come from these commands, never from your own judgement (BR-AI-
 
 ## Completion checks
 
-- Every candidate states its provenance and confidence and labels each claim observed or
-  inferred; no unlabeled mixtures.
+- Every candidate carries `provenance` frontmatter with a source and a confidence, and labels each
+  body claim observed or inferred; no unlabeled mixtures.
 - No contradiction was silently resolved; all appear as open questions.
 - All candidates are `status: draft`; nothing was marked active, approved or promoted.
 - `product-definition validate` (or `change validate <CHG-ID>`) was run after the last edit and
