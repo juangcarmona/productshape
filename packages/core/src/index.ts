@@ -17,6 +17,20 @@ export type { Diagnostic, DiagnosticSeverity } from './diagnostics.js';
 export { contentDigest, normalizeToLf } from './digest.js';
 export { computeClosureFromSeeds } from './closure.js';
 export {
+  applyFilenameFixes,
+  discoverFixTempFiles,
+  fixTempSuffix,
+  planFilenameFixes,
+  recoverFilenameFixes,
+} from './fix-filenames.js';
+export type {
+  FilenameBlockReason,
+  FilenameFix,
+  FilenamePlan,
+  FilenameRecovery,
+  RenameFs,
+} from './fix-filenames.js';
+export {
   describeAllKinds,
   describeKind,
   frontmatterTableHeader,

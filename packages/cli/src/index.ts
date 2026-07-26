@@ -1,3 +1,4 @@
+export { runFix, fixPlanSchemaId } from './commands/fix.js';
 export { runGraph } from './commands/graph.js';
 export { runImpact } from './commands/impact.js';
 export { runInspect } from './commands/inspect.js';

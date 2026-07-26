@@ -1,4 +1,4 @@
-import { cp, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -153,6 +153,97 @@ describe('prodshape graph / inspect / impact', () => {
   it('unknown commands exit 2', async () => {
     const result = await run(['definitely-not-a-command'], workDir);
     expect(result.code).toBe(2);
+  });
+});
+
+describe('prodshape fix --filenames', () => {
+  // Its own working directory: the shared workDir above is order-dependent.
+  let fixDir: string;
+
+  beforeAll(async () => {
+    fixDir = await mkdtemp(join(tmpdir(), 'prodshape-fix-'));
+    await mkdir(join(fixDir, 'docs', 'product'), { recursive: true });
+    await cp(
+      join(repoRoot, 'examples', 'minimal', 'model'),
+      join(fixDir, 'docs', 'product', 'model'),
+      {
+        recursive: true,
+      },
+    );
+  });
+
+  afterAll(async () => {
+    await rm(fixDir, { recursive: true, force: true });
+  });
+
+  it('reports nothing to do on an aligned model, and exits 0', async () => {
+    const result = await run(['fix', '--filenames'], fixDir);
+    expect(result.code).toBe(0);
+    expect(result.out.join('\n')).toContain('0 fix(es)');
+  });
+
+  it('requires a fixer to be named, with exit 2', async () => {
+    const result = await run(['fix'], fixDir);
+    expect(result.code).toBe(2);
+    expect(result.err.join('\n')).toContain('--filenames');
+  });
+
+  it('renames a misnamed file and clears the PRODUCT101 warning', async () => {
+    const model = join(fixDir, 'docs', 'product', 'model', 'use-cases');
+    await rename(join(model, 'uc-shorten-001.md'), join(model, 'renamed-by-hand.md'));
+
+    const before = await run(['validate'], fixDir);
+    expect(before.out.join('\n')).toContain('PRODUCT101');
+
+    // --dry-run exits 1 when anything would change, so it works as a CI gate on filename drift.
+    const dry = await run(['fix', '--filenames', '--dry-run'], fixDir);
+    expect(dry.code).toBe(1);
+    expect(dry.out.join('\n')).toContain('Dry run: nothing was changed.');
+    expect(dry.out.join('\n')).toContain('renamed-by-hand.md -> ');
+
+    const fixed = await run(['fix', '--filenames'], fixDir);
+    expect(fixed.code).toBe(0);
+    expect(fixed.out.join('\n')).toMatch(/Renamed 1 file\(s\)/);
+
+    const after = await run(['validate'], fixDir);
+    expect(after.code).toBe(0);
+    expect(after.out.join('\n')).not.toContain('PRODUCT101');
+  });
+
+  it('is idempotent: a second run changes nothing', async () => {
+    const again = await run(['fix', '--filenames'], fixDir);
+    expect(again.code).toBe(0);
+    expect(again.out.join('\n')).toContain('0 fix(es)');
+  });
+
+  it('completes a rename interrupted between its two steps', async () => {
+    const model = join(fixDir, 'docs', 'product', 'model', 'use-cases');
+    const destination = join(model, 'uc-shorten-001.md');
+    // Simulate a crash after the first rename: the file sits at its temporary name, which encodes
+    // where it was going. Discovery globs *.md, so the artifact is currently missing.
+    await rename(destination, `${destination}.prodshape-fix-tmp`);
+
+    const result = await run(['fix', '--filenames'], fixDir);
+    expect(result.code).toBe(0);
+    expect(result.out.join('\n')).toContain(
+      'recovered docs/product/model/use-cases/uc-shorten-001.md',
+    );
+
+    const validate = await run(['validate'], fixDir);
+    expect(validate.code).toBe(0);
+  });
+
+  it('emits a machine-readable plan with --format json', async () => {
+    const result = await run(['fix', '--filenames', '--format', 'json'], fixDir);
+    expect(result.code).toBe(0);
+    const parsed = JSON.parse(result.out.join('\n')) as {
+      schema: string;
+      fixes: unknown[];
+      blocked: unknown[];
+    };
+    expect(parsed.schema).toBe('product-definition-as-code/fix-plan/v1alpha1');
+    expect(parsed.fixes).toEqual([]);
+    expect(parsed.blocked).toEqual([]);
   });
 });
 

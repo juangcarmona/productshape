@@ -2,6 +2,7 @@ import { Command, CommanderError } from 'commander';
 import { runChangePromote, runChangeValidate } from './commands/change.js';
 import { runCoverageCheck } from './commands/coverage.js';
 import { runDoctorCommand } from './commands/doctor.js';
+import { runFix } from './commands/fix.js';
 import { runGraph } from './commands/graph.js';
 import { runInit } from './commands/init.js';
 import { runIntegrationAdd, runIntegrationUpdate } from './commands/integration.js';
@@ -161,6 +162,16 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .option('--format <format>', 'output format: text or json', 'text')
     .action(async (id: string, options: { format: 'text' | 'json' }) => {
       capture.code = await runInspect(io, id, options);
+    });
+
+  program
+    .command('fix')
+    .description('Apply a mechanical, idempotent repair to the product model')
+    .option('--filenames', 'rename artifact files to match their ID casing (resolves PRODUCT101)')
+    .option('--dry-run', 'report what would change; exits 1 when anything would')
+    .option('--format <format>', 'output format: text or json', 'text')
+    .action(async (options: { filenames?: boolean; dryRun?: boolean; format: 'text' | 'json' }) => {
+      capture.code = await runFix(io, options);
     });
 
   program
