@@ -57,6 +57,12 @@ The generator:
 4. MUST NOT include unrelated graph regions or reproduce the entire product repository.
 5. MUST record artifact paths, content digests and the source Git revision.
 6. MUST generate a readable `product-context.md` marked as generated and non-canonical.
+7. MUST derive the handoff `id` from the work-item reference, as `HOF-<provider>-<work-item id>`.
+
+Because the identifier is derived from the work item alone, one work item that delivers more than
+one slice produces several handoffs sharing an `id`. The intended shape is one work item per slice;
+the gap is recorded as `OD-009`. Consumers MUST therefore resolve a handoff by its recorded
+`source.product-change` and `source.delivery-slice`, never by `id` alone.
 
 ### Closure rule
 

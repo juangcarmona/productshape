@@ -38,7 +38,10 @@ to review an existing model (use `audit-product-model`).
 ## Files to read
 
 - `docs/methodology/define.md` — the Define flow this skill implements.
-- `docs/specification/artifacts.md` — frontmatter contracts, required body sections, lifecycle.
+- `docs/specification/artifacts.md` — what each artifact type means, its required body sections
+  and lifecycle.
+- `docs/specification/frontmatter-reference.md` — the exhaustive per-kind field tables: which
+  properties are allowed, which are required, and what values they accept.
 - `docs/specification/identifiers.md` — ID prefixes and naming rules.
 - `docs/specification/product-changes.md` — change structure, bootstrap exception.
 - Artifact templates: the framework's `templates/` directory (installed copies may live under
@@ -53,6 +56,8 @@ to review an existing model (use `audit-product-model`).
 - `prodshape graph --format json` — the compiled product graph, for reuse checks.
 - `prodshape inspect <ID>` — details of an existing artifact before referencing it.
 - `prodshape impact <ID>` — what an existing artifact touches, before extending near it.
+- `prodshape schema <kind>` — the allowed frontmatter for a kind, read from the schemas. Use it
+  instead of guessing; it needs no repository.
 
 Never substitute your own judgement for these commands. If the CLI reports a structural fact,
 that fact is authoritative (BR-AI-001).
@@ -101,7 +106,8 @@ use case reveals a missing actor or a rule forces a term. See `references/author
 - Setting any artifact `status` to `active`, or any change status to `approved` or beyond.
 - Inventing product decisions: if the intent does not answer a question, it becomes an open
   question, not an assumption.
-- Adding frontmatter fields not defined in the artifact's schema (schemas reject unknown fields).
+- Adding frontmatter fields the artifact's schema does not define: frontmatter is a closed
+  contract and an unrecognised property is rejected as PRODUCT002. Check with `schema <kind>`.
 - Writing implementation design into artifact bodies (class names, frameworks, storage choices).
 - Replacing deterministic validation with your own reading of the files (BR-AI-001).
 - Running promotion, or creating Git commits, unless the user explicitly asks.

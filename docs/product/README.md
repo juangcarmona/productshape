@@ -30,6 +30,12 @@ docs/product/
 The authority rules for these paths are normative in
 [the specification](../specification/index.md#canonical-authority).
 
+Validate the model with `prodshape validate`. The allowed frontmatter of any artifact kind is
+printed by `prodshape schema <kind>` and enumerated in the
+[frontmatter reference](../specification/frontmatter-reference.md); in an adopting repository, `init`
+also installs an authoring template per kind under `.product/templates/`. This repository authors
+from the specification directly, so it has none.
+
 ## How this baseline came to exist
 
 This initial model was authored directly under the **initial-baseline bootstrap exception**:

@@ -37,6 +37,9 @@ handoff (use `prepare-sdd-handoff`), or to edit the baseline directly (never don
   `modify`/`remove` sets early (overlap is validation error PRODUCT025).
 - `templates/product-change.md` — the change.md template, including required body sections.
 - `docs/specification/product-changes.md` — the normative contract for operations and lifecycle.
+- `docs/specification/artifacts.md` and `docs/specification/frontmatter-reference.md` — what each
+  artifact kind means, and the exhaustive field contract every proposed future-state artifact must
+  satisfy.
 - `skills/analyze-product-change/references/operations-checklist.md` — the pitfall checklist for
   operations and proposed/ completeness.
 
@@ -49,6 +52,8 @@ handoff (use `prepare-sdd-handoff`), or to edit the baseline directly (never don
 - `git rev-parse HEAD` — the current baseline revision, recorded as `base-revision`.
 - `prodshape change validate <CHG-ID>` — compile and validate the change's overlay.
 - `prodshape validate --change <CHG-ID> --format json` — machine-readable diagnostics.
+- `prodshape schema <kind>` — the allowed frontmatter for a kind, before authoring a proposed
+  artifact of that kind.
 
 ## Reasoning procedure
 

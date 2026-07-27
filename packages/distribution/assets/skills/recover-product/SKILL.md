@@ -115,8 +115,9 @@ Structural facts come from these commands, never from your own judgement (BR-AI-
 - Presenting inferred intent as observed behaviour, or emitting a candidate without provenance —
   candidates without provenance are opinions.
 - Resolving contradictions between evidence sources yourself; they remain open questions.
-- Inventing frontmatter fields: only `provenance` and its defined sub-fields are accepted, and
-  anything else is rejected as `PRODUCT002`. Check with `schema <kind>` rather than guessing.
+- Inventing frontmatter fields. Each kind accepts exactly the properties its schema defines —
+  `provenance` is the one recovery adds, and it accepts only its own defined sub-fields. Anything
+  outside that is rejected as `PRODUCT002`. Check with `schema <kind>` rather than guessing.
 - Marking artifacts `active`, approving changes or slices, or promoting.
 - Replacing deterministic validation with your own reading of files (BR-AI-001).
 

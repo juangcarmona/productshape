@@ -1,17 +1,20 @@
-# Limitations of v0.1
+# Limitations
 
-An honest account of what v0.1 does not do: where the implemented scope has operational limits,
-what is deliberately excluded, and where the design has known limits. Genuinely open decisions are tracked separately in
-[OPEN-DECISIONS.md](../OPEN-DECISIONS.md).
+An honest account of what the toolkit does not do: where the implemented scope has operational
+limits, what is deliberately excluded, and where the design has known limits. Genuinely open
+decisions are tracked separately in [OPEN-DECISIONS.md](../OPEN-DECISIONS.md).
+
+> Current as of 0.2. This file is deliberately unversioned: a limitations document named after one
+> release stops describing the product at the next one.
 
 ## Implementation status
 
-v0.1 is complete as scoped. All four founding OpenSpec changes —
-`establish-product-definition-foundation`, `implement-product-graph-core`,
-`implement-product-change-and-handoff` and `package-ai-and-sdd-integrations` — are implemented:
-the `prodshape` CLI (with its `product-definition` alias), the graph compiler, change overlays,
-handoffs, coverage checking, promotion and the AI and SDD integrations all work today. The
-`@prodshape/*` packages are published to npm and the CLI can also be built from the repository.
+Everything the methodology describes is implemented: the `prodshape` CLI (with its
+`product-definition` alias), the graph compiler, change overlays, delivery slices, handoffs,
+coverage checking, promotion, and the AI and SDD integrations. The `@prodshape/*` packages are
+published to npm and the CLI can also be built from the repository. The loop is not theoretical here
+— this repository defines itself with its own methodology and has taken several Product Changes
+through it end to end.
 
 Honest operational limitations within that scope:
 
@@ -23,19 +26,26 @@ Honest operational limitations within that scope:
   [OD-002](../OPEN-DECISIONS.md#od-002-hook-enforcement-for-github-copilot) and the design
   limitation below.
 - **`recover-product` defines the workflow only.** The skill guides a human-driven recovery
-  session; there is no automated brownfield extraction.
-- **PRODUCT109 and PRODUCT110 are advisory.** The closure-quality diagnostics — a slice affecting
-  artifacts outside its requirements' closure, a handoff context outside the recomputed closure —
-  are warnings and never block on their own.
+  session; there is no automated brownfield extraction. Its _output_ is now typed rather than
+  prose — candidates carry a validated `provenance` object — and low-confidence drafts are
+  reported as `PRODUCT111`, so the human review queue is derivable from validation output. The
+  analysis itself is still yours to do.
+- **PRODUCT109, PRODUCT110 and PRODUCT111 are advisory.** The closure-quality diagnostics — a slice
+  affecting artifacts outside its requirements' closure, a handoff context outside the recomputed
+  closure — and the low-confidence-draft warning are warnings, and never block on their own.
+- **Unknown nested configuration keys are ignored silently.** Only unknown _top-level_ keys in
+  `.product/config.yaml` are rejected, so a misspelling inside `integrations` or `validation` does
+  nothing at all, with no diagnostic. See
+  [OD-007](../OPEN-DECISIONS.md#od-007-validation-of-nested-configuration-keys).
 - **`handoff status` needs Git history for moved artifacts.** Digest recomputation for artifacts
   no longer in the working tree reads the handoff's recorded source revision, which a shallow or
   partial clone may be unable to resolve. See
   [OD-006](../OPEN-DECISIONS.md#od-006-handoff-resolution-in-shallow-or-partial-clones) and the
   design limitation below.
 
-## Deliberately excluded from v0.1
+## Deliberately excluded
 
-These are scope decisions, not gaps. None of them is on the v0.1 path:
+These are scope decisions, not gaps. None of them is on the current path:
 
 - Graph database (the graph is compiled from Markdown, held in memory, serialized to files)
 - Web UI and visual editor
@@ -69,9 +79,15 @@ These are scope decisions, not gaps. None of them is on the v0.1 path:
   unresolvable, and `handoff status` reports `source-revision-unavailable` rather than an answer.
   See [OD-006](../OPEN-DECISIONS.md#od-006-handoff-resolution-in-shallow-or-partial-clones).
 - **Coverage evidence is defined only for OpenSpec.** Promotion requires traceability evidence,
-  and v0.1 defines its format solely through the OpenSpec adapter (`product-coverage.yaml`).
+  and its format is defined solely through the OpenSpec adapter (`product-coverage.yaml`).
   Repositories using no SDD framework, or an unsupported one, have no defined evidence format.
   See [OD-003](../OPEN-DECISIONS.md#od-003-coverage-evidence-policy-without-an-sdd-adapter).
+- **Handoff identifiers are not unique when one work item delivers several slices.** A handoff ID
+  is derived from the work-item reference alone, so two slices delivered by one pull request or
+  ticket produce two distinct handoffs sharing an ID, and nothing rejects it. Evidence discovery is
+  unaffected — it matches on the recorded change and slice, not the ID — so the consequence is
+  human-facing identity. One work item per slice keeps IDs unique. See
+  [OD-009](../OPEN-DECISIONS.md#od-009-product-handoff-identity-when-one-work-item-delivers-several-slices).
 
 ## Methodology limits
 
