@@ -70,6 +70,28 @@ describe('describeKind', () => {
     expect(operations.properties?.every((p) => p.required)).toBe(true);
   });
 
+  it('descends into pattern-keyed maps, recording the pattern on the map itself', () => {
+    // product-coverage.requirements is keyed by requirement ID. Before this was handled the
+    // reference rendered a bare `object` row, silently describing an opaque value where the
+    // schema actually enforces a closed entry contract.
+    const requirements = field('product-coverage', 'requirements');
+    expect(requirements.kind).toBe('object');
+    expect(requirements.keyPatterns).toEqual(['^(FR|QR|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$']);
+    expect(requirements.minProperties).toBe(1);
+    expect(requirements.properties?.map((p) => p.name)).toEqual(['requirements.<key>']);
+
+    const entry = requirements.properties?.[0];
+    expect(entry?.properties?.map((p) => p.name)).toEqual([
+      'requirements.<key>.status',
+      'requirements.<key>.specification',
+      'requirements.<key>.verification',
+    ]);
+    expect(entry?.properties?.[0]).toMatchObject({
+      required: true,
+      values: ['covered', 'partial', 'uncovered'],
+    });
+  });
+
   it('handles arrays whose items are a $ref rather than an inline object', () => {
     const affects = field('delivery-slice', 'affects');
     expect(affects.kind).toBe('array');

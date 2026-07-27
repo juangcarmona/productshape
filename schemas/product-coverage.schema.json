@@ -23,11 +23,13 @@
           "properties": {
             "status": { "enum": ["covered", "partial", "uncovered"] },
             "specification": {
+              "description": "Required when status is covered or partial.",
               "type": "array",
               "minItems": 1,
               "items": { "type": "string", "minLength": 1 }
             },
             "verification": {
+              "description": "Required when status is covered or partial.",
               "type": "array",
               "minItems": 1,
               "items": { "type": "string", "minLength": 1 }

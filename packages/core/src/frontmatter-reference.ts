@@ -30,6 +30,9 @@ export interface FieldDescriptor {
   pattern?: string;
   minLength?: number;
   minItems?: number;
+  minProperties?: number;
+  /** For pattern-keyed maps: the regular expressions the keys must match. */
+  keyPatterns?: string[];
   description?: string;
   /** For arrays: the element contract. Named `<field>[]`. */
   items?: FieldDescriptor;
@@ -135,6 +138,26 @@ function describeField(
       describeField(`${name}.${key}`, value, nestedRequired.has(key), schemas),
     );
   }
+  // A map keyed by pattern rather than by fixed names — product-coverage's `requirements` is one.
+  // Without this the entry contract is invisible and the reference silently describes an opaque
+  // object, which is the opposite of what the schema enforces. The pattern constrains the *key*,
+  // so it is recorded on the map itself and the entries are named `<key>` to stay readable.
+  if (descriptor.kind === 'object' && isObject(schema.patternProperties)) {
+    const entries = Object.entries(schema.patternProperties);
+    descriptor.keyPatterns = entries.map(([pattern]) => pattern);
+    descriptor.properties = [
+      ...(descriptor.properties ?? []),
+      ...entries.map(([, value], index) =>
+        describeField(
+          `${name}.<${entries.length === 1 ? 'key' : `key${index + 1}`}>`,
+          value,
+          false,
+          schemas,
+        ),
+      ),
+    ];
+  }
+  if (typeof schema.minProperties === 'number') descriptor.minProperties = schema.minProperties;
   return descriptor;
 }
 
@@ -221,6 +244,14 @@ function notes(field: FieldDescriptor): string[] {
   if (field.minLength !== undefined && field.minLength > 0 && field.kind === 'string') {
     parts.push('Must not be empty.');
   }
+  if (field.keyPatterns) {
+    parts.push(`Keys match ${field.keyPatterns.map((p) => `\`${p}\``).join(' or ')}.`);
+  }
+  if (field.minProperties !== undefined) {
+    parts.push(
+      field.minProperties === 1 ? 'At least one key.' : `At least ${field.minProperties} keys.`,
+    );
+  }
   return parts;
 }
 
@@ -272,7 +303,10 @@ export function renderKindText(descriptor: KindDescriptor): string[] {
         .filter(Boolean)
         .join('  ');
       lines.push(`  ${field.name.padEnd(width)}  ${detail}`.trimEnd());
-      for (const note of notes(field)) lines.push(`  ${' '.repeat(width)}  ${note}`);
+      // Backticks are Markdown scaffolding; in a terminal they are noise.
+      for (const note of notes(field)) {
+        lines.push(`  ${' '.repeat(width)}  ${note.replaceAll('`', '')}`);
+      }
     }
     lines.push('');
   };
