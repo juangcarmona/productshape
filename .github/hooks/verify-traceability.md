@@ -11,13 +11,13 @@ below yourself (or in CI) at the described moments.
 ## before-sdd-closure
 
 ```bash
-product-definition coverage check ${sdd-change-dir}
+prodshape coverage check ${sdd-change-dir}
 ```
 
 ## before-promotion
 
 ```bash
-product-definition change promote ${change} --dry-run
+prodshape change promote ${change} --dry-run
 ```
 
 The dry run reports the plan; executing the promotion remains an explicit human action and is never performed by a hook.

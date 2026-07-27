@@ -22,7 +22,7 @@ direction.
 
 ## Trigger
 
-The Product Engineer runs `product-definition impact <ID>`, optionally bounding the traversal by
+The Product Engineer runs `prodshape impact <ID>`, optionally bounding the traversal by
 depth or restricting it to one direction.
 
 ## Preconditions
@@ -31,7 +31,7 @@ depth or restricting it to one direction.
 
 ## Main Flow
 
-1. The engineer runs `product-definition impact <ID>` with any depth or direction options.
+1. The engineer runs `prodshape impact <ID>` with any depth or direction options.
 2. The product graph is traversed deterministically from the artifact.
 3. Connected artifacts are reported, distinguishing direct from transitive connections and
    incoming from outgoing relationships.

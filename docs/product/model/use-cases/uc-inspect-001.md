@@ -21,7 +21,7 @@ it references, what references it, and what work currently touches it.
 
 ## Trigger
 
-The Product Engineer runs `product-definition inspect <ID>`, typically before proposing a
+The Product Engineer runs `prodshape inspect <ID>`, typically before proposing a
 modification or while reviewing someone else's.
 
 ## Preconditions
@@ -30,7 +30,7 @@ modification or while reviewing someone else's.
 
 ## Main Flow
 
-1. The engineer runs `product-definition inspect <ID>`.
+1. The engineer runs `prodshape inspect <ID>`.
 2. The artifact's metadata is shown: type, title, status and its canonical path in the
    repository.
 3. Its outgoing relationships are listed — everything the artifact declares in its frontmatter.

@@ -42,20 +42,20 @@ handoff (use `prepare-sdd-handoff`), or to edit the baseline directly (never don
 
 ## Deterministic commands
 
-- `product-definition graph` — compile the current product graph.
-- `product-definition inspect <ID>` — show one artifact and its direct relationships.
-- `product-definition impact <ID> [--depth n] [--direction incoming|outgoing|both]` — structural
+- `prodshape graph` — compile the current product graph.
+- `prodshape inspect <ID>` — show one artifact and its direct relationships.
+- `prodshape impact <ID> [--depth n] [--direction incoming|outgoing|both]` — structural
   impact of touching or removing an artifact.
 - `git rev-parse HEAD` — the current baseline revision, recorded as `base-revision`.
-- `product-definition change validate <CHG-ID>` — compile and validate the change's overlay.
-- `product-definition validate --change <CHG-ID> --format json` — machine-readable diagnostics.
+- `prodshape change validate <CHG-ID>` — compile and validate the change's overlay.
+- `prodshape validate --change <CHG-ID> --format json` — machine-readable diagnostics.
 
 ## Reasoning procedure
 
 1. Read the request. Restate it in one or two sentences of product behaviour. If you cannot,
    the request is a question, not a change — stop and ask.
-2. Inspect the current graph. Run `product-definition inspect` on every candidate artifact and
-   `product-definition impact` on artifacts the change would modify or remove. Treat the tool
+2. Inspect the current graph. Run `prodshape inspect` on every candidate artifact and
+   `prodshape impact` on artifacts the change would modify or remove. Treat the tool
    output as the certain, structural impact; your judgment about which connected artifacts are
    _meaningfully_ affected is semantic interpretation layered on top. Keep the two distinct and
    say which is which when you report.
@@ -77,7 +77,7 @@ handoff (use `prepare-sdd-handoff`), or to edit the baseline directly (never don
 8. Record open questions honestly. Every product decision the request raises but does not answer
    goes into `## Open Questions` — verbatim, visible, unanswered. Do not invent an answer to make
    the change look complete.
-9. Run `product-definition change validate <CHG-ID>`. Fix every structural error (PRODUCT001–009,
+9. Run `prodshape change validate <CHG-ID>`. Fix every structural error (PRODUCT001–009,
    PRODUCT020–026) by correcting operations or proposed artifacts, then re-run until errors are
    gone. Report remaining warnings; do not silence them by weakening the change.
 10. If a semantic product decision is missing — a behaviour with two defensible interpretations, a
@@ -96,12 +96,12 @@ handoff (use `prepare-sdd-handoff`), or to edit the baseline directly (never don
   the change's `proposed/` directory.
 - Never set the change status to `approved`, `in-progress` or `implemented`; leave it `draft` (or
   `proposed` if the human asks for it to be put forward).
-- Never run `product-definition change promote` — promotion is human-only.
+- Never run `prodshape change promote` — promotion is human-only.
 - Never invent product decisions; unresolved questions stay visible in `## Open Questions`.
 - Never create delivery slices or backlog items at this stage; the change must be structurally
   coherent and approved first.
 - Never write proposed artifacts as diffs or partial edits; every proposed file is complete.
-- Never substitute your own judgment for `product-definition change validate` output.
+- Never substitute your own judgment for `prodshape change validate` output.
 
 ## Human approval points
 
@@ -121,7 +121,7 @@ handoff (use `prepare-sdd-handoff`), or to edit the baseline directly (never don
 
 ## Completion checks
 
-- `product-definition change validate <CHG-ID>` exits 0 with no errors; warnings are reported.
+- `prodshape change validate <CHG-ID>` exits 0 with no errors; warnings are reported.
 - Every ID in `operations.add`/`modify` has exactly one complete file under `proposed/`, and
   nothing under `proposed/` is unlisted.
 - `base-revision` equals the `git rev-parse HEAD` value at creation time.

@@ -10,9 +10,9 @@ Recover workflow — a defined, human-driven process — and the `recover-produc
 assists it. No tool will scan your codebase and emit a product model. Plan for recovery to be real
 analytical work; the methodology structures it, it does not eliminate it.
 
-> The CLI ships as [`@prodshape/cli`](https://www.npmjs.com/package/@prodshape/cli); the
-> `product-definition` commands below run through the installed v0.x alias (identical to
-> `prodshape`). See [Limitations of v0.1](../limitations-v0.1.md).
+> The CLI ships as [`@prodshape/cli`](https://www.npmjs.com/package/@prodshape/cli). The commands
+> below use `prodshape`; the `product-definition` alias is equivalent through v0.x. See
+> [Limitations](../limitations.md).
 
 ## 1. Initialize
 
@@ -20,7 +20,7 @@ A brownfield repository usually already has a populated `docs/`, so check what `
 before it does it:
 
 ```bash
-product-definition init --ai claude --sdd openspec --dry-run
+prodshape init --ai claude --sdd openspec --dry-run
 ```
 
 The dry run writes nothing and reports every path it would create, preserve, regenerate or
@@ -28,7 +28,7 @@ overwrite, plus any conflict — a file that already exists and is not managed b
 lock. Nothing is overwritten without `--force`, and existing files are reported as preserved.
 
 ```bash
-product-definition init --ai claude --sdd openspec
+prodshape init --ai claude --sdd openspec
 ```
 
 This creates `docs/product/` and `.product/` and touches nothing else — your source code, build
@@ -68,7 +68,7 @@ allowed frontmatter for every artifact kind, is in the
 authoring, or query it per kind without leaving the terminal:
 
 ```bash
-product-definition schema business-rule
+prodshape schema business-rule
 ```
 
 Frontmatter is a closed contract: an unrecognised property is a `PRODUCT002` error, so inventing a
@@ -92,7 +92,7 @@ are authored directly into `docs/product/model` as the first accepted baseline, 
 Change. Validate it:
 
 ```bash
-product-definition validate
+prodshape validate
 ```
 
 Fix errors; review warnings. Warnings like `PRODUCT105` (business rule with no consumers) or
@@ -109,7 +109,7 @@ If validation reports `PRODUCT101` (file name not aligned with its ID), fix ever
 once:
 
 ```bash
-product-definition fix --filenames
+prodshape fix --filenames
 ```
 
 This works on Windows and macOS, where a casing-only rename is otherwise a silent no-op.

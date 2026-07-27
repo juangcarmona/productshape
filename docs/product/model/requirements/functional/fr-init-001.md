@@ -32,7 +32,7 @@ tree into a starting point: the maintainer knows immediately what to author and 
 
 ## Acceptance Scenarios
 
-- In a repository with no product structure, `product-definition init` creates the product tree,
+- In a repository with no product structure, `prodshape init` creates the product tree,
   writes a valid configuration and renders the artifact templates; afterwards the repository
   validates cleanly with an empty model.
 - Initialization is run where a file it would create already exists with user content. The command

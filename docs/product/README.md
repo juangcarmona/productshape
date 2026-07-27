@@ -40,7 +40,7 @@ This initial model was authored directly under the **initial-baseline bootstrap 
 
 That exception has been used — once. From here on, every semantic change to `model/` goes through
 a Product Change under `changes/` and reaches the baseline only by explicit promotion
-(`product-definition change promote`). See [Product Changes](../specification/product-changes.md).
+(`prodshape change promote`). See [Product Changes](../specification/product-changes.md).
 
 ## Scope of this model
 

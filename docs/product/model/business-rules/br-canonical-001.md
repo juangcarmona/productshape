@@ -25,7 +25,7 @@ nothing an assistant or a tool generates downstream can silently become authorit
 
 ## Examples
 
-- A team member edits a generated managed file to "fix" a description. `product-definition doctor`
+- A team member edits a generated managed file to "fix" a description. `prodshape doctor`
   detects the manual modification and reports it; the fix belongs in the authored artifact, after
   which regeneration reproduces the corrected output.
 - All generated output — the compiled product graph, reverse indexes, diagrams, product-context

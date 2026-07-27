@@ -24,7 +24,7 @@ satisfies every structural contract, or a precise list of diagnostics says exact
 
 ## Trigger
 
-The Product Engineer runs `product-definition validate` — directly, from a repository hook, or in
+The Product Engineer runs `prodshape validate` — directly, from a repository hook, or in
 a continuous integration pipeline. The AI Assistant runs it after drafting to check its own
 output.
 
@@ -34,7 +34,7 @@ output.
 
 ## Main Flow
 
-1. The actor runs `product-definition validate`.
+1. The actor runs `prodshape validate`.
 2. All product artifacts are discovered from their canonical locations.
 3. Each artifact is checked for structural conformance: frontmatter contract, required body
    sections, identity rules.

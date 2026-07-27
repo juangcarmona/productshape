@@ -28,7 +28,7 @@ the product graph through canonical relationships declared in its frontmatter.
 
 ## Usage
 
-Product artifacts are what `product-definition validate` checks, what the graph compiler turns
+Product artifacts are what `prodshape validate` checks, what the graph compiler turns
 into nodes, what Product Changes add, modify or remove, and what Product Handoffs reference by ID
 and digest. When the methodology says "artifact" without qualification, it means a product
 artifact in the current product model.

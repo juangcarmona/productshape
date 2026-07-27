@@ -91,7 +91,7 @@ Runtime and tooling dependencies are limited to this list. Anything else require
 
 | Dependency                   | Justification                                                                           |
 | ---------------------------- | --------------------------------------------------------------------------------------- |
-| `commander`                  | CLI argument parsing and command tree for the `product-definition` binary.              |
+| `commander`                  | CLI argument parsing and command tree for the `prodshape` binary.                       |
 | `gray-matter`                | Extracting YAML frontmatter from Markdown artifacts.                                    |
 | `yaml`                       | Parsing and serializing standalone YAML files (slices, handoffs, coverage, lock files). |
 | `ajv` + `ajv-formats`        | JSON Schema (2020-12) validation of frontmatter and YAML documents.                     |

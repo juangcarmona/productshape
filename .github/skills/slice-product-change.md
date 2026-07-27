@@ -46,12 +46,12 @@ change front-runs approval point 1. Do not use it to generate handoffs (use `pre
 
 ## Deterministic commands
 
-- `product-definition inspect <ID>` — relationships of any artifact you are grouping into a slice.
-- `product-definition impact <ID> --direction both` — what an artifact's inclusion drags along.
-- `product-definition change validate <CHG-ID>` — validates the overlay and the slice files:
+- `prodshape inspect <ID>` — relationships of any artifact you are grouping into a slice.
+- `prodshape impact <ID> --direction both` — what an artifact's inclusion drags along.
+- `prodshape change validate <CHG-ID>` — validates the overlay and the slice files:
   references resolve (PRODUCT006), slices name their containing change (PRODUCT030), partial
   coverage has a scope (PRODUCT031), dependencies do not cycle (PRODUCT032).
-- `product-definition validate --change <CHG-ID> --format json` — machine-readable diagnostics.
+- `prodshape validate --change <CHG-ID> --format json` — machine-readable diagnostics.
 
 ## Reasoning procedure
 
@@ -80,7 +80,7 @@ change front-runs approval point 1. Do not use it to generate handoffs (use `pre
 8. Write one YAML file per slice under `docs/product/changes/active/<chg-id>/slices/`, from
    `templates/delivery-slice.yaml`: `id: SLI-<AREA>-<NNN>`, `status: draft` (or `proposed` when
    the human asks the slicing to be put forward), `product-change: <CHG-ID>`.
-9. Run `product-definition change validate <CHG-ID>`. Fix every error, re-run until clean.
+9. Run `prodshape change validate <CHG-ID>`. Fix every error, re-run until clean.
    Report warnings — notably PRODUCT109 (slice affecting artifacts outside its requirements'
    closure) — and either justify or correct them.
 10. Present the slicing rationale to the human: each slice's outcome, why the cut lines fall
@@ -98,13 +98,13 @@ change front-runs approval point 1. Do not use it to generate handoffs (use `pre
 - Never set any slice status to `approved`, `in-progress` or `completed` — approval is human-only.
 - Never modify `docs/product/model`, the change's operations, or its `proposed/` artifacts to
   make slicing easier; if the change itself needs revision, report it instead.
-- Never run `product-definition change promote`.
+- Never run `prodshape change promote`.
 - Never slice by technical layer, endpoint or screen.
 - Never declare `partial` coverage without a precise `scope`, and never declare `full` coverage
   you cannot defend.
 - Never create backlog items or handoffs; those follow slice approval.
 - Never invent product decisions to close a coverage gap; record the question instead.
-- Never substitute your own judgment for `product-definition change validate` output.
+- Never substitute your own judgment for `prodshape change validate` output.
 
 ## Human approval points
 
@@ -125,7 +125,7 @@ change front-runs approval point 1. Do not use it to generate handoffs (use `pre
 
 ## Completion checks
 
-- `product-definition change validate <CHG-ID>` exits 0 with no errors; warnings are reported
+- `prodshape change validate <CHG-ID>` exits 0 with no errors; warnings are reported
   with a justification or a fix.
 - Every slice's `outcome` names something an actor can do, not a system property.
 - Every requirement added or modified by the change appears in at least one slice's `implements`,

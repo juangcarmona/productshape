@@ -21,14 +21,14 @@ and `templates/`. Provider files under `.claude/` and `.github/` are generated f
 
 Every generated provider file carries a managed-file header — a marker, the framework version, the
 canonical source and a content hash — and is recorded in `installation.lock.json`.
-`product-definition integration update` regenerates managed files; `product-definition doctor`
+`prodshape integration update` regenerates managed files; `prodshape doctor`
 compares actual content hashes against the lock file and reports hand-edited (`PRODUCT051`) or
 missing (`PRODUCT052`) managed files. No manually maintained provider duplicates exist.
 
 The providers are not symmetric. Claude Code has a native hook runtime, so the Claude integration
 renders executable hooks. GitHub Copilot offers no equivalent mechanism (OPEN-DECISIONS OD-002),
 so the Copilot integration renders the hook expectations as documentation only; the enforcement
-gap is recorded in `docs/limitations-v0.1.md`.
+gap is recorded in `docs/limitations.md`.
 
 ## Consequences
 

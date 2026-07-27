@@ -25,7 +25,7 @@ stay distinguishable from the very first command.
 
 ## Trigger
 
-The Repository Maintainer runs `product-definition init`, optionally selecting AI providers and
+The Repository Maintainer runs `prodshape init`, optionally selecting AI providers and
 an SDD framework through command options or interactive prompts.
 
 ## Preconditions
@@ -35,7 +35,7 @@ an SDD framework through command options or interactive prompts.
 
 ## Main Flow
 
-1. The maintainer runs `product-definition init` and chooses AI providers and an SDD framework,
+1. The maintainer runs `prodshape init` and chooses AI providers and an SDD framework,
    or none.
 2. The product tree is created under `docs/product`, with places for the current model, changes,
    slices and handoffs.

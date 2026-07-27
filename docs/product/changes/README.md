@@ -10,6 +10,6 @@ under `slices/`. The contract is normative in
 - `completed/` — changes that were explicitly promoted into the baseline. Kept for traceability.
 - `rejected/` — changes that were declined. Kept for the record; their IDs are never reused.
 
-Validate a change with `product-definition change validate <CHG-ID>`; promote one, after
-implementation and verification, with `product-definition change promote <CHG-ID>` (dry-run
+Validate a change with `prodshape change validate <CHG-ID>`; promote one, after
+implementation and verification, with `prodshape change promote <CHG-ID>` (dry-run
 first). Promotion is always explicit and human-triggered.

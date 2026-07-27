@@ -5,7 +5,7 @@
   "triggers": [
     {
       "event": "before-implementation",
-      "run": ["product-definition handoff status ${handoff}"]
+      "run": ["prodshape handoff status ${handoff}"]
     }
   ],
   "blocking": true,

@@ -84,7 +84,7 @@ is explained in [Delivery slicing](delivery-slicing.md), backlog references in
 
 ## Division of responsibility
 
-- **Deterministic tooling** (the `product-definition` CLI) enforces structure: schemas, IDs,
+- **Deterministic tooling** (the `prodshape` CLI) enforces structure: schemas, IDs,
   relationships, lifecycle, overlay validation, digests. Same input, same result, every platform.
 - **AI skills** do semantic reasoning: drafting, impact interpretation, slice proposals. AI
   preserves unanswered questions and never invents product decisions.

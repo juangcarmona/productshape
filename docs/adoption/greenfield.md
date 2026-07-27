@@ -6,18 +6,19 @@ initialize the layout, author the initial product baseline with the Define opera
 and then run your first Product Change.
 
 > The CLI ships as [`@prodshape/cli`](https://www.npmjs.com/package/@prodshape/cli) with two
-> equivalent binaries: `prodshape` (canonical) and `product-definition` (v0.x alias, used in the
-> commands below). Every step marked "by hand" also works without the CLI: the layout, schemas and
-> templates are all plain files. See [Limitations of v0.1](../limitations-v0.1.md).
+> equivalent binaries: `prodshape` (canonical, used below) and `product-definition` (a v0.x
+> compatibility alias with identical output, removed before v1). Every step marked "by hand" also
+> works without the CLI: the layout, schemas and templates are all plain files. See
+> [Limitations](../limitations.md).
 
 ## 1. Initialize the repository
 
 ```bash
-product-definition init --ai claude --sdd openspec
+prodshape init --ai claude --sdd openspec
 ```
 
 `--ai` accepts `claude` or `copilot` (repeatable); `--sdd` accepts `openspec`. Both are optional —
-you can add integrations later with `product-definition integration add`.
+you can add integrations later with `prodshape integration add`.
 
 `init` creates:
 
@@ -52,7 +53,7 @@ for you.
 Preview all of this against your repository before running it for real:
 
 ```bash
-product-definition init --ai claude --sdd openspec --dry-run
+prodshape init --ai claude --sdd openspec --dry-run
 ```
 
 If you requested AI integrations, `init` also generates managed files under `.claude/` or
@@ -79,7 +80,7 @@ by trial and error. The same information is available per kind from the command 
 repository:
 
 ```bash
-product-definition schema use-case
+prodshape schema use-case
 ```
 
 Two ways to run Define:
@@ -117,8 +118,8 @@ normative: see
 ## 4. Validate the baseline
 
 ```bash
-product-definition validate
-product-definition validate --format json   # machine-readable diagnostics
+prodshape validate
+prodshape validate --format json   # machine-readable diagnostics
 ```
 
 Validation is deterministic: schema conformance, ID and prefix rules, reference resolution,
@@ -130,9 +131,9 @@ escalate them with `validation.warnings-as-errors`). See
 Once the model compiles cleanly, explore it:
 
 ```bash
-product-definition graph --format mermaid   # render the product graph
-product-definition inspect UC-EXAMPLE-001   # one artifact with its derived relationships
-product-definition impact BR-EXAMPLE-001    # structural impact of a change to this rule
+prodshape graph --format mermaid   # render the product graph
+prodshape inspect UC-EXAMPLE-001   # one artifact with its derived relationships
+prodshape impact BR-EXAMPLE-001    # structural impact of a change to this rule
 ```
 
 ## 5. Run your first Product Change
@@ -144,13 +145,13 @@ From now on, evolution is explicit. To change the product:
    `analyze-product-change` skill helps draft this; the contract is
    [Product Changes](../specification/product-changes.md).
 2. Validate the change as an overlay on the baseline:
-   `product-definition change validate CHG-EXAMPLE-001`.
+   `prodshape change validate CHG-EXAMPLE-001`.
 3. After approval, decompose it into delivery slices under `slices/`
    (the `slice-product-change` skill, contract in
    [Delivery Slices](../specification/delivery-slices.md)), project slices to backlog items, and
-   generate Product Handoffs for your SDD framework with `product-definition handoff create`.
+   generate Product Handoffs for your SDD framework with `prodshape handoff create`.
 4. When every slice is completed or explicitly cancelled and coverage evidence exists, promote:
-   `product-definition change promote CHG-EXAMPLE-001 --dry-run`, then without `--dry-run`.
+   `prodshape change promote CHG-EXAMPLE-001 --dry-run`, then without `--dry-run`.
    Promotion applies the operations to the baseline and moves the change to `changes/completed/`.
    It is never triggered implicitly.
 

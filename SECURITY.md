@@ -19,4 +19,4 @@ and the affected version or commit.
 - The toolkit executes locally against repository files. It does not run a server, collect
   telemetry, or transmit data.
 - Generated provider integration files are written into consumer repositories; tampering with
-  managed files is detected by `product-definition doctor` but is not a security boundary.
+  managed files is detected by `prodshape doctor` but is not a security boundary.

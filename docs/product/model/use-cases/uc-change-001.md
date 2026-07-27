@@ -39,7 +39,7 @@ Product Change to carry it, usually with the AI Assistant executing the Change s
    as a diff or an instruction; each removal names the artifact it retires.
 4. The rationale for the change is recorded, along with every open question the intent leaves
    unanswered.
-5. The engineer runs `product-definition change validate <ID>`, which checks the model as it
+5. The engineer runs `prodshape change validate <ID>`, which checks the model as it
    would look with the change applied.
 6. Diagnostics are resolved until the overlay validates cleanly.
 7. A human reviews the change and approves it, moving it to approved.

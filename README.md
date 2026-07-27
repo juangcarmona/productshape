@@ -218,7 +218,7 @@ open decisions are in [OPEN-DECISIONS.md](OPEN-DECISIONS.md).
 Deliberately out of scope, among others: graph databases, web UIs, MCP servers, Jira integration,
 multi-repository graphs, automatic brownfield recovery, roadmaps and OKRs, hosted services and
 telemetry. The full list, plus known design limitations, is in
-[Limitations of v0.1](docs/limitations-v0.1.md).
+[Limitations](docs/limitations.md).
 
 ## Contributing
 

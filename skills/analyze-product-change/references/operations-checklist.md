@@ -1,6 +1,6 @@
 # Operations checklist
 
-Work through this before running `product-definition change validate`. Each entry names the
+Work through this before running `prodshape change validate`. Each entry names the
 diagnostic that fires when the check is skipped.
 
 ## Deciding add vs modify vs remove
@@ -17,7 +17,7 @@ diagnostic that fires when the check is skipped.
 
 - No two artifacts in the overlay may share an ID; an `add` colliding with another active
   change's addition, or duplicated proposed files, is PRODUCT023.
-- For every `remove`, run `product-definition impact <ID> --direction incoming` and give each
+- For every `remove`, run `prodshape impact <ID> --direction incoming` and give each
   active referrer a proposed future state that drops the reference, or the removal dangles
   (PRODUCT024).
 - Check other active changes' `modify`/`remove` lists; any overlap with yours is PRODUCT025

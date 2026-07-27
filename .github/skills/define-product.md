@@ -51,11 +51,11 @@ to review an existing model (use `audit-product-model`).
 
 ## Deterministic commands
 
-- `product-definition validate --format json` — structural validation of the model.
-- `product-definition change validate <CHG-ID>` — overlay validation of a Product Change.
-- `product-definition graph --format json` — the compiled product graph, for reuse checks.
-- `product-definition inspect <ID>` — details of an existing artifact before referencing it.
-- `product-definition impact <ID>` — what an existing artifact touches, before extending near it.
+- `prodshape validate --format json` — structural validation of the model.
+- `prodshape change validate <CHG-ID>` — overlay validation of a Product Change.
+- `prodshape graph --format json` — the compiled product graph, for reuse checks.
+- `prodshape inspect <ID>` — details of an existing artifact before referencing it.
+- `prodshape impact <ID>` — what an existing artifact touches, before extending near it.
 
 Never substitute your own judgement for these commands. If the CLI reports a structural fact,
 that fact is authoritative (BR-AI-001).
@@ -122,7 +122,7 @@ use case reveals a missing actor or a rule forces a term. See `references/author
   in the correct location for the mode.
 - For post-baseline work: a Product Change directory with `change.md` (operations listing every
   proposed artifact) and the drafts under `proposed/`.
-- A clean run of `product-definition validate` (or `change validate <CHG-ID>`) — zero errors;
+- A clean run of `prodshape validate` (or `change validate <CHG-ID>`) — zero errors;
   remaining warnings explained to the human.
 - A summary for the human: what was drafted, the traceability chain, and every open question.
 
@@ -132,6 +132,6 @@ use case reveals a missing actor or a rule forces a term. See `references/author
 - Every use case names an existing `primary-actor`; every journey's steps reference existing use
   cases.
 - Every unresolved question appears explicitly as an open question; none were silently answered.
-- `product-definition validate` (or `change validate <CHG-ID>`) was run after the last edit and
+- `prodshape validate` (or `change validate <CHG-ID>`) was run after the last edit and
   reports no errors.
 - No artifact was marked `active`; no change was approved; the human review request was issued.

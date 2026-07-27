@@ -23,7 +23,7 @@ the work is still open.
 
 ## Trigger
 
-The Product Engineer runs `product-definition coverage check <sdd-change>` — directly, from a
+The Product Engineer runs `prodshape coverage check <sdd-change>` — directly, from a
 hook before SDD closure, or in a continuous integration pipeline. The AI Assistant runs it before
 reporting an increment as ready.
 

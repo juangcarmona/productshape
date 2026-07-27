@@ -86,7 +86,7 @@ marker naming the handoff ID and MUST NOT introduce content absent from the cano
 
 ## Status and staleness
 
-`product-definition handoff status <path>` reports one of:
+`prodshape handoff status <path>` reports one of:
 
 | Status                        | Meaning                                                                                                                          |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |

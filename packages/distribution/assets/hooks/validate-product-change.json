@@ -6,11 +6,11 @@
     {
       "event": "after-product-files-edited",
       "paths": ["docs/product/**"],
-      "run": ["product-definition validate"]
+      "run": ["prodshape validate"]
     },
     {
       "event": "before-change-approval-or-slicing",
-      "run": ["product-definition change validate ${change}"]
+      "run": ["prodshape change validate ${change}"]
     }
   ],
   "blocking": true,

@@ -45,19 +45,19 @@ from a system (use `recover-product`).
 
 Run these FIRST and treat their output as the authoritative structural baseline:
 
-- `product-definition validate --format json` — all structural diagnostics (PRODUCT0xx errors,
+- `prodshape validate --format json` — all structural diagnostics (PRODUCT0xx errors,
   PRODUCT1xx warnings). Never re-derive by reading files anything this command reports:
   duplicate IDs, unknown references, missing sections, orphaned use cases (PRODUCT102),
   unreachable requirements (PRODUCT103), unused rules and terms (PRODUCT105, PRODUCT106).
-- `product-definition graph --format json` — the compiled graph for connectivity questions.
-- `product-definition impact <ID> [--depth n] [--direction incoming|outgoing|both]` — incoming
+- `prodshape graph --format json` — the compiled graph for connectivity questions.
+- `prodshape impact <ID> [--depth n] [--direction incoming|outgoing|both]` — incoming
   and outgoing reach of a suspect artifact.
-- `product-definition inspect <ID>` — the resolved view of a single artifact.
-- `product-definition change validate <CHG-ID>` — when the audit scope includes an active change.
+- `prodshape inspect <ID>` — the resolved view of a single artifact.
+- `prodshape change validate <CHG-ID>` — when the audit scope includes an active change.
 
 ## Reasoning procedure
 
-1. Run `product-definition validate --format json`. Record every diagnostic as a structural
+1. Run `prodshape validate --format json`. Record every diagnostic as a structural
    finding, citing its code, file and artifact. This is the baseline; do not second-guess it and
    do not repeat its work manually.
 2. Build the semantic reading list: the in-scope artifacts, plus `graph` output to see how they
@@ -127,7 +127,7 @@ A structured audit report containing:
 
 ## Completion checks
 
-- `product-definition validate --format json` was executed and its diagnostics appear verbatim
+- `prodshape validate --format json` was executed and its diagnostics appear verbatim
   in the structural section; none were dropped or paraphrased into interpretation.
 - Every finding carries exactly one classification and names its artifact(s) and evidence.
 - Graph-derived facts and AI interpretation are visually separated in the report.

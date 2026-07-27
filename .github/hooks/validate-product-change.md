@@ -11,13 +11,13 @@ below yourself (or in CI) at the described moments.
 ## after-product-files-edited
 
 ```bash
-product-definition validate
+prodshape validate
 ```
 
 ## before-change-approval-or-slicing
 
 ```bash
-product-definition change validate ${change}
+prodshape change validate ${change}
 ```
 
 Hooks run deterministic commands only. They never approve a change, approve a slice, promote, edit product semantics, create backlog items or archive SDD work.

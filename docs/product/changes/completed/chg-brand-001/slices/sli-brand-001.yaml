@@ -19,7 +19,7 @@ verification:
     distinct layers.
   - The primary binary is prodshape; product-definition still works as a v0.x compatibility alias
     producing identical output.
-  - product-definition validate and doctor stay green on this repository, and the artifact and
+  - prodshape validate and doctor stay green on this repository, and the artifact and
     graph semantics are unchanged.
   - The .product/ directory, the product-definition-as-code/... schema identifiers and the
     PRODUCT### diagnostic codes are unchanged.
