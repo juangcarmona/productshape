@@ -27,6 +27,14 @@ export default defineConfig({
         test: {
           name: 'repo',
           include: ['tests/**/*.test.ts'],
+          // These are end-to-end filesystem tests, not unit tests: a single case can run `init`
+          // for two providers (writing ~58 files and hashing every one of them) and then
+          // regenerate the lot through `integration update`. On a slow Windows runner that
+          // exceeds vitest's 5s default, which showed up as intermittent timeouts on
+          // windows-latest while every other matrix combination passed. The work is real, so the
+          // budget is raised rather than the tests trimmed; the unit projects keep the default.
+          testTimeout: 30_000,
+          hookTimeout: 30_000,
         },
       },
       'packages/*/vitest.config.ts',

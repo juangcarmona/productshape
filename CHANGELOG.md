@@ -7,8 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- The stable publish job now configures a git identity before `changeset publish`. Without one, the
+  annotated tags changesets creates (`git tag <name> -m <name>`) failed for every package, and the
+  failure was silent because `tagPublish` discards what `git.tag` returns. The v0.2.0 release
+  published six packages and pushed zero tags without failing. The push step now also verifies that
+  every published version has a tag on the remote, rather than trusting a push that reports
+  `Everything up-to-date` whether or not there was anything to push.
+
+## [0.2.0]
+
 The first round of improvements from adoption outside this repository, plus the audit pass that
 followed merging them. 226 tests pass and CI runs on Linux, Windows and macOS across Node 22 and 24.
+
+Published as `@prodshape/cli` 0.2.0, `core` and `distribution` 0.3.0, `integration-claude` and
+`integration-copilot` 0.2.0, and `adapter-openspec` 0.2.1 — the packages are versioned
+independently, so they carry different numbers.
 
 ### Added
 
@@ -123,5 +138,6 @@ followed merging them. 226 tests pass and CI runs on Linux, Windows and macOS ac
 - `validation.warnings-as-errors` is enforced uniformly across baseline validate, change
   validate, handoff generation, graph generation and promotion.
 
-[unreleased]: https://github.com/juangcarmona/productshape/compare/v0.1.0...HEAD
+[unreleased]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.2.0...HEAD
+[0.2.0]: https://github.com/juangcarmona/productshape/releases/tag/@prodshape/cli@0.2.0
 [0.1.0]: https://github.com/juangcarmona/productshape/releases/tag/v0.1.0
