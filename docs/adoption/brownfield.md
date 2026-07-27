@@ -80,10 +80,10 @@ discarding it — before it is promoted to `active`. Recovered knowledge is neve
 the tool and the skill propose, the human decides. This boundary is deliberate and permanent, not
 a v0.1 gap.
 
-The `recover-product` skill (available once AI integrations ship in
-`package-ai-and-sdd-integrations`) drives this loop: it reads evidence you point it at, drafts
-candidates with provenance and confidence noted, and queues them for your review. Without the
-skill, the same workflow works by hand using the templates in `templates/`.
+The `recover-product` skill drives this loop: it reads evidence you point it at, drafts candidates
+with provenance and confidence recorded, and queues them for your review. It is installed by
+`init --ai`. Without it, the same workflow works by hand using the templates in
+`.product/templates/`.
 
 ## 3. Establish the baseline
 

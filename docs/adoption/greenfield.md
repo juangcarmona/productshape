@@ -17,8 +17,9 @@ and then run your first Product Change.
 prodshape init --ai claude --sdd openspec
 ```
 
-`--ai` accepts `claude` or `copilot` (repeatable); `--sdd` accepts `openspec`. Both are optional —
-you can add integrations later with `prodshape integration add`.
+`--ai` accepts a comma-separated list of `claude` and `copilot` (`--ai claude,copilot`); `--sdd`
+accepts `openspec`. Both are optional — you can add integrations later with
+`prodshape integration add`.
 
 `init` creates:
 
@@ -61,8 +62,8 @@ If you requested AI integrations, `init` also generates managed files under `.cl
 must never be edited by hand — see
 [Installing into an existing repository](existing-repository.md) for the authority rules.
 
-Until the CLI exists, create the directories above manually and copy the configuration shape from
-[Installing into an existing repository](existing-repository.md#configuration).
+Everything above can also be created by hand: the layout is plain directories and the configuration
+shape is in [Installing into an existing repository](existing-repository.md#configuration).
 
 ## 2. Author the initial baseline with Define
 
@@ -88,10 +89,11 @@ Two ways to run Define:
 - **With the `define-product` skill.** In a repository with the Claude Code or GitHub Copilot
   integration installed, the skill interviews you about the product and drafts schema-conformant
   artifacts for review. AI drafts; you decide what becomes part of the model.
-- **By hand from `templates/`.** Every artifact type has a template that conforms to its JSON
-  Schema in `schemas/`. Copy the template, assign a stable ID
+- **By hand from `.product/templates/`.** `init` installs a template per artifact kind, each
+  conformant to its schema. Copy the template, assign a stable ID
   (see [Identifiers](../specification/identifiers.md)), fill in the frontmatter relationships and
-  the required body sections.
+  the required body sections. `prodshape schema <kind>` prints the field contract if the template's
+  comments leave anything unclear.
 
 A workable authoring order, because relationships point upstream:
 

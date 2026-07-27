@@ -7,11 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-v0.1.0 release candidate plus the first round of improvements from real-world adoption. The
-`@prodshape/*` packages are published to npm (the CLI is at `0.1.0-alpha.1` pending the first stable
-release). 222 tests pass and CI runs on Linux, Windows and macOS.
+The first round of improvements from adoption outside this repository, plus the audit pass that
+followed merging them. 226 tests pass and CI runs on Linux, Windows and macOS across Node 22 and 24.
 
-### Added — from the first adoption outside this repository
+### Added
 
 - Artifacts accept an optional `provenance` object recording the evidence behind recovered
   knowledge (`source` and `confidence` required, `recovered-from` optional). A `draft` artifact
@@ -49,7 +48,7 @@ release). 222 tests pass and CI runs on Linux, Windows and macOS.
   instead of positional arguments, and `InstallResult` gains `removed`. CLI behaviour is unchanged
   apart from the new commands and flags.
 
-### Fixed — documentation
+### Fixed
 
 - `docs/adoption/existing-repository.md` claimed `init` creates `.product/generated/` and
   `.product/cache/` (it does not — they appear when a command writes them), that it adds two lines
@@ -61,24 +60,26 @@ release). 222 tests pass and CI runs on Linux, Windows and macOS.
   provenance records the evidence behind a claim.
 - The role of `.product/installation.lock.json` is documented — what it records, that it is
   committed, what verifies it, and what breaks without it.
+- `prodshape fix --filenames --dry-run` wrote to disk and then reported that it had not: recovery of
+  an interrupted rename ran before the dry-run check. Recovery is now a plan/apply pair, a dry run
+  renames nothing, and the pending recovery still counts toward the non-zero exit.
+- The frontmatter reference rendered `product-coverage.requirements` as an opaque object: the
+  describer ignored `patternProperties`, so the entry contract was invisible in the document and in
+  `prodshape schema`.
+- The `product-definition` → `prodshape` rename is finished across the documentation and the
+  generated AI assets (131 invocations). Both binaries still ship; the alias remains valid through
+  v0.x.
+- `docs/limitations-v0.1.md` is now `docs/limitations.md`, so a version-named file stops documenting
+  a different version each release.
+- Corrections found by auditing the release: `--ai` is comma-separated and was documented as
+  repeatable; `coverage check` was shown without its required argument; two guides pointed at
+  `templates/` and `schemas/` paths that do not exist in an adopting repository; two carried
+  pre-release text claiming the CLI and the skills had not shipped; the architecture overview still
+  said `.product/generated/` was gitignored by default; and ADR 0009 was attributed to Gate 0.
+- `docs/specification/identifiers.md` claimed IDs are unique across all kinds, which the generated
+  `HOF-` derivation contradicts; the derivation and the collision are now documented (`OD-009`).
 
-### Fixed
-
-- `change promote` now refuses without verifiable coverage evidence (FR-PROMOTE-001): evidence is
-  discovered from the SDD workspace per completed slice, missing or unverifiable evidence is
-  `PRODUCT044`, and repositories without an SDD adapter need an explicit
-  `--accept-external-evidence` (`fix-v01-conformance`).
-- The published CLI installs the `product-definition` alias its generated skills and hooks
-  invoke, guarded by a packed-tarball test of both binaries.
-- Coverage evidence is hardened: covered/partial entries require non-empty evidence arrays,
-  evidence paths cannot escape the repository, and entries for requirements the handoff does not
-  implement are rejected.
-- `init`, `integration add` and `integration update` preflight every target and refuse to
-  overwrite unmanaged or hand-edited files without `--force`.
-- Promotion applies its plan in two phases (preflight, then execute with the change-directory
-  move last), so a failed promotion no longer leaves a partially promoted baseline.
-- `validation.warnings-as-errors` is enforced uniformly across baseline validate, change
-  validate, handoff generation, graph generation and promotion.
+## [0.1.0]
 
 ### Added
 
@@ -103,3 +104,24 @@ release). 222 tests pass and CI runs on Linux, Windows and macOS.
   Definition as Code is unchanged): npm scope `@prodshape/*`, binary `prodshape` with
   `product-definition` kept as a temporary v0.x alias, and an optional `/ps:*` shorthand for the
   canonical `/product:*` commands (`CHG-BRAND-001` / `SLI-BRAND-001`).
+
+### Fixed
+
+- `change promote` now refuses without verifiable coverage evidence (FR-PROMOTE-001): evidence is
+  discovered from the SDD workspace per completed slice, missing or unverifiable evidence is
+  `PRODUCT044`, and repositories without an SDD adapter need an explicit
+  `--accept-external-evidence` (`fix-v01-conformance`).
+- The published CLI installs the `product-definition` alias its generated skills and hooks
+  invoke, guarded by a packed-tarball test of both binaries.
+- Coverage evidence is hardened: covered/partial entries require non-empty evidence arrays,
+  evidence paths cannot escape the repository, and entries for requirements the handoff does not
+  implement are rejected.
+- `init`, `integration add` and `integration update` preflight every target and refuse to
+  overwrite unmanaged or hand-edited files without `--force`.
+- Promotion applies its plan in two phases (preflight, then execute with the change-directory
+  move last), so a failed promotion no longer leaves a partially promoted baseline.
+- `validation.warnings-as-errors` is enforced uniformly across baseline validate, change
+  validate, handoff generation, graph generation and promotion.
+
+[unreleased]: https://github.com/juangcarmona/productshape/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/juangcarmona/productshape/releases/tag/v0.1.0

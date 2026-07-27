@@ -40,8 +40,9 @@ that receive a changeset are versioned and published, in dependency order.
 **Environment**
 
 - `npm-publish` — a protected environment with required reviewers. The **stable** publish job runs
-  inside it; alpha/beta and manual dispatch do not (OD-1). Create it under
-  _Settings → Environments_ and add reviewers before the first stable release.
+  inside it; alpha/beta trains and manual dispatch deliberately do not, so maintainer-driven
+  prereleases are not gated on a review each time. Create it under _Settings → Environments_ and add
+  reviewers before the first stable release.
 
 **npm configuration (npmjs.com)**
 

@@ -49,11 +49,30 @@ through its native lifecycle, including archive.
 ## Coverage checking before archive
 
 `product-coverage.yaml` is the evidence that promotion later relies on: every requirement a
-delivery slice implements must have a coverage mapping (`PRODUCT043` otherwise). Before archiving
-an OpenSpec change, run:
+delivery slice implements must have a coverage mapping (`PRODUCT043` otherwise). You write it
+during the OpenSpec work; the adapter reads and validates it. Its shape:
+
+```yaml
+schema: product-definition-as-code/coverage/v1alpha1
+handoff: HOF-GITHUB-42
+requirements:
+  FR-EXAMPLE-001:
+    status: covered # covered | partial | uncovered
+    specification:
+      - openspec/specs/<capability>/spec.md
+    verification:
+      - tests/example/covers-fr-example-001.test.ts
+```
+
+`specification` and `verification` are required when `status` is `covered` or `partial`, and every
+path must resolve. The full field contract is in the
+[Frontmatter reference](../specification/frontmatter-reference.md#product-coverage), or run
+`prodshape schema product-coverage`.
+
+Before archiving an OpenSpec change, run the check against it by name:
 
 ```bash
-prodshape coverage check
+prodshape coverage check <openspec-change-name>
 ```
 
 Two rules keep the lifecycles independent:
@@ -61,7 +80,11 @@ Two rules keep the lifecycles independent:
 - **Archiving never promotes.** Completing and archiving the OpenSpec change is OpenSpec's
   decision and only OpenSpec's. The product baseline is modified solely by an explicit
   `prodshape change promote`, run by a human, after all slices of the Product Change are
-  completed or cancelled and coverage evidence is in place.
+  completed or cancelled and coverage evidence is in place. Promotion does not take your word for
+  that: it discovers the evidence itself, matching handoff sidecars across the SDD workspace —
+  including the archive — against each completed slice, and verifying each one with the same
+  coverage check. A completed slice with no discoverable or no error-free evidence fails promotion
+  with `PRODUCT044`. This is why sidecars travel with the change directory into the archive.
 - **Handoffs go stale honestly.** If canonical artifacts change while the OpenSpec work is in
   flight, `prodshape handoff status` reports exactly which referenced artifacts changed —
   unrelated repository activity never marks a handoff stale.
