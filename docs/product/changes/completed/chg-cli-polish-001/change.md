@@ -106,5 +106,4 @@ is already shipped and already the target of promotion; the gap was that it was 
   derivable from the ID; the remaining warnings require judgement about the model's meaning.
 - Making the frontmatter contract extensible. It stays closed: the value of `PRODUCT002` is that an
   unrecognised field is an error rather than a silently ignored one.
-- Delivery slice approval, handoff generation and promotion: this change stays `draft` pending
-  review.
+- Automating the repair of any diagnostic other than PRODUCT101.

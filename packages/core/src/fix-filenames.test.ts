@@ -7,8 +7,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyFilenameFixes,
+  applyFilenameRecovery,
   fixTempSuffix,
   planFilenameFixes,
+  planFilenameRecovery,
   recoverFilenameFixes,
   type RenameFs,
 } from './fix-filenames.js';
@@ -148,6 +150,33 @@ describe('applyFilenameFixes', () => {
     };
     await expect(applyFilenameFixes('/repo', plan, fs)).rejects.toThrow(/simulated crash/);
     expect(step).toBe(2);
+  });
+});
+
+describe('planFilenameRecovery', () => {
+  it('classifies without renaming anything', async () => {
+    // The bug this guards: the CLI once recovered before checking for --dry-run, so asking what
+    // would happen performed a rename and then reported that nothing had changed.
+    const { fs, calls } = recordingFs(['/repo/model/taken.md']);
+    const plan = await planFilenameRecovery(
+      '/repo',
+      [`model/free.md${fixTempSuffix}`, `model/taken.md${fixTempSuffix}`],
+      fs,
+    );
+    expect(calls).toEqual([]);
+    expect(plan.recoverable.map((e) => e.to)).toEqual(['model/free.md']);
+    expect(plan.blocked.map((e) => e.blocked)).toEqual(['stale-temp-file']);
+  });
+
+  it('applies only what it classified as recoverable', async () => {
+    const { fs, calls } = recordingFs(['/repo/model/taken.md']);
+    const plan = await planFilenameRecovery(
+      '/repo',
+      [`model/free.md${fixTempSuffix}`, `model/taken.md${fixTempSuffix}`],
+      fs,
+    );
+    expect(await applyFilenameRecovery('/repo', plan, fs)).toEqual(['model/free.md']);
+    expect(calls).toEqual([[`/repo/model/free.md${fixTempSuffix}`, '/repo/model/free.md']]);
   });
 });
 

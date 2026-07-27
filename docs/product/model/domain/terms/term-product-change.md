@@ -29,6 +29,6 @@ operations — and alters the baseline only when it is explicitly promoted.
 ## Usage
 
 Product Changes live under the changes area of the product root, move through their own lifecycle
-distinct from the artifact lifecycle, and are the unit that `product-definition validate` checks
+distinct from the artifact lifecycle, and are the unit that `prodshape validate` checks
 as an overlay. Approved changes are carved into Delivery Slices, and promotion moves a completed
 change into the completed area while applying its operations to the baseline.

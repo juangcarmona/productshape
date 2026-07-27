@@ -145,11 +145,71 @@ export async function discoverFixTempFiles(modelDir: string, repoRoot: string): 
   return entries.map((path) => toPosixRelative(repoRoot, path)).sort();
 }
 
+export interface FilenameRecoveryPlan {
+  /** Leftovers whose destination is free: renaming them completes an interrupted repair. */
+  recoverable: FilenameFix[];
+  /** Leftovers whose destination is already taken; a human must decide. */
+  blocked: FilenameFix[];
+}
+
 export interface FilenameRecovery {
   /** Renames completed from a leftover temporary file. */
   recovered: string[];
   /** Leftovers whose destination is already taken; a human must decide. */
   blocked: FilenameFix[];
+}
+
+/**
+ * Classify leftover temporary files without touching the filesystem.
+ *
+ * Split from the apply step so a caller reporting what it *would* do never performs a rename as a
+ * side effect of asking. That is not hypothetical: the first implementation recovered before
+ * checking whether it was a dry run, and then reported that nothing had changed.
+ */
+export async function planFilenameRecovery(
+  repoRoot: string,
+  leftovers: string[],
+  fs: RenameFs = nodeFs,
+): Promise<FilenameRecoveryPlan> {
+  const recoverable: FilenameFix[] = [];
+  const blocked: FilenameFix[] = [];
+  for (const leftover of [...leftovers].sort()) {
+    const destination = leftover.slice(0, -fixTempSuffix.length);
+    const entry: FilenameFix = {
+      from: leftover,
+      to: destination,
+      artifact: basename(destination),
+    };
+    let destinationExists = true;
+    try {
+      await fs.stat(join(repoRoot, ...destination.split('/')));
+    } catch {
+      destinationExists = false;
+    }
+    if (destinationExists) {
+      blocked.push({ ...entry, blocked: 'stale-temp-file' });
+      continue;
+    }
+    recoverable.push(entry);
+  }
+  return { recoverable, blocked };
+}
+
+/** Complete the renames a recovery plan classified as recoverable. */
+export async function applyFilenameRecovery(
+  repoRoot: string,
+  plan: FilenameRecoveryPlan,
+  fs: RenameFs = nodeFs,
+): Promise<string[]> {
+  const recovered: string[] = [];
+  for (const entry of plan.recoverable) {
+    await fs.rename(
+      join(repoRoot, ...entry.from.split('/')),
+      join(repoRoot, ...entry.to.split('/')),
+    );
+    recovered.push(entry.to);
+  }
+  return recovered;
 }
 
 /**
@@ -163,28 +223,7 @@ export async function recoverFilenameFixes(
   leftovers: string[],
   fs: RenameFs = nodeFs,
 ): Promise<FilenameRecovery> {
-  const recovered: string[] = [];
-  const blocked: FilenameFix[] = [];
-  for (const leftover of [...leftovers].sort()) {
-    const destination = leftover.slice(0, -fixTempSuffix.length);
-    const absoluteDestination = join(repoRoot, ...destination.split('/'));
-    let destinationExists = true;
-    try {
-      await fs.stat(absoluteDestination);
-    } catch {
-      destinationExists = false;
-    }
-    if (destinationExists) {
-      blocked.push({
-        from: leftover,
-        to: destination,
-        artifact: basename(destination),
-        blocked: 'stale-temp-file',
-      });
-      continue;
-    }
-    await fs.rename(join(repoRoot, ...leftover.split('/')), absoluteDestination);
-    recovered.push(destination);
-  }
-  return { recovered, blocked };
+  const plan = await planFilenameRecovery(repoRoot, leftovers, fs);
+  const recovered = await applyFilenameRecovery(repoRoot, plan, fs);
+  return { recovered, blocked: plan.blocked };
 }

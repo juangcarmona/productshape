@@ -6,6 +6,20 @@
 Reliability differs by source. Typical confidence assumes the evidence is current and directly
 examined; adjust down when it is stale, partial or second-hand.
 
+`provenance.confidence` accepts exactly `high`, `medium` or `low` — the values below are those
+values, not a scale to interpolate on. `provenance.recovered-from` classifies how the knowledge was
+obtained; the mapping from these sources is:
+
+| Source                                                 | `recovered-from` |
+| ------------------------------------------------------ | ---------------- |
+| Source code, tests, API surfaces, production behaviour | `observation`    |
+| Database schemas, user interfaces                      | `inference`      |
+| Documentation, tickets and history                     | `documentation`  |
+| Stakeholder knowledge                                  | `interview`      |
+
+A claim drawn from more than one kind of source is often genuinely more than one of these; the field
+is optional precisely so it is not guessed. Omit it rather than pick arbitrarily.
+
 - **Source code** — what the system actually does, including behaviour nobody remembers deciding.
   Good for observed behaviour and enforced rules. Typical confidence: high (observed), but says
   nothing about intent.
@@ -19,9 +33,9 @@ examined; adjust down when it is stale, partial or second-hand.
 - **Database schemas** — entities, invariants and constraints the product assumes. Good for
   domain terms and business rules. Typical confidence: medium; column names invite inference.
 - **Production behaviour** — logs, traces, usage. Good for which paths are real and which
-  journeys matter. Typical confidence: medium-high for frequency, low for meaning.
+  journeys matter. Typical confidence: high for frequency, low for meaning.
 - **Documentation** — of any age; treat claims as dated, not as current truth. Good for past
-  intent and vocabulary. Typical confidence: low-medium; always cross-check against code.
+  intent and vocabulary. Typical confidence: low; always cross-check against code.
 - **Tickets and history** — why things changed and what was rejected. Good for rationale and
   rejected alternatives. Typical confidence: medium for intent at the time.
 - **Stakeholder knowledge** — undocumented rules and meanings in people's heads; often the only

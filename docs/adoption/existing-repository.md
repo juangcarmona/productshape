@@ -5,15 +5,15 @@ owns each path, and how to configure it. For how to build the model itself, foll
 [greenfield](greenfield.md) or [brownfield](brownfield.md) guide; if the repository already uses
 OpenSpec, also read [Adopting in an existing OpenSpec repository](existing-openspec-repository.md).
 
-> The CLI ships as [`@prodshape/cli`](https://www.npmjs.com/package/@prodshape/cli); the
-> `product-definition` commands below run through the installed v0.x alias (identical to
-> `prodshape`). The layout and configuration below are the fixed v0.1 contract and can also be
-> created by hand. See [Limitations of v0.1](../limitations-v0.1.md).
+> The CLI ships as [`@prodshape/cli`](https://www.npmjs.com/package/@prodshape/cli). The commands
+> below use `prodshape`; the `product-definition` alias is equivalent through v0.x. The layout and
+> configuration below are a fixed contract and can also be created by hand. See
+> [Limitations](../limitations.md).
 
 ## What init touches
 
 ```bash
-product-definition init [--ai claude|copilot] [--sdd openspec] [--flat] [--shorthand] [--dry-run]
+prodshape init [--ai claude|copilot] [--sdd openspec] [--flat] [--shorthand] [--dry-run]
 ```
 
 `init` adds exactly three areas and modifies nothing else:
@@ -41,7 +41,7 @@ a file that might be yours.
 To see exactly what would happen before anything is written:
 
 ```bash
-product-definition init --dry-run
+prodshape init --dry-run
 ```
 
 It reports every path it would create, preserve, regenerate (a managed file it owns, rewritten
@@ -57,14 +57,14 @@ so no layout is enforced.
 Every path has exactly one owner. The full authority model is in the
 [specification](../specification/index.md#canonical-authority); the installation-level view:
 
-| Path                                     | Authority  | Rules                                                                                                                                                                              |
-| ---------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `docs/product/**`                        | Canonical  | Authored by humans (AI may assist). The source of truth for product semantics.                                                                                                     |
-| `.product/config.yaml`                   | Canonical  | Authored configuration; see below.                                                                                                                                                 |
-| `.product/generated/**`                  | Generated  | Compiled graph, indexes, diagrams. Regenerable from canonical files at any time; never hand-edit.                                                                                  |
-| `.product/cache/**`                      | Disposable | Safe to delete.                                                                                                                                                                    |
-| `.claude/**`, `.github/**` managed files | Generated  | Carry a managed-file header. Never hand-edit: `product-definition integration update` regenerates them, and `product-definition doctor` reports hand modification as `PRODUCT051`. |
-| Your source code                         | Yours      | Never touched by any `product-definition` command.                                                                                                                                 |
+| Path                                     | Authority  | Rules                                                                                                                                                            |
+| ---------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/product/**`                        | Canonical  | Authored by humans (AI may assist). The source of truth for product semantics.                                                                                   |
+| `.product/config.yaml`                   | Canonical  | Authored configuration; see below.                                                                                                                               |
+| `.product/generated/**`                  | Generated  | Compiled graph, indexes, diagrams. Regenerable from canonical files at any time; never hand-edit.                                                                |
+| `.product/cache/**`                      | Disposable | Safe to delete.                                                                                                                                                  |
+| `.claude/**`, `.github/**` managed files | Generated  | Carry a managed-file header. Never hand-edit: `prodshape integration update` regenerates them, and `prodshape doctor` reports hand modification as `PRODUCT051`. |
+| Your source code                         | Yours      | Never touched by any `prodshape` command.                                                                                                                        |
 
 Managed integration files are generated from canonical assets (skills, command definitions, hook
 descriptors) shipped with the toolkit. If a generated file is wrong, fix the canonical asset or

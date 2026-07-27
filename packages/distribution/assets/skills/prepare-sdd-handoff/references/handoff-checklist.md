@@ -5,7 +5,7 @@
 - Slice file read; `status: approved` confirmed — never generate from `draft`/`proposed`
   (PRODUCT040), never edit the status to unblock generation.
 - Slice's `product-change` matches the change directory containing it.
-- `product-definition change validate <CHG-ID>` exits 0; errors stop the handoff.
+- `prodshape change validate <CHG-ID>` exits 0; errors stop the handoff.
 - Work-item reference confirmed in `<provider>:<owner>/<repo>#<id>` form, pointing at a backlog
   item the team already created; no tracker API calls.
 - Destination confirmed with the human: `--out <dir>`, or the adapter plus the exact native SDD
@@ -15,7 +15,7 @@
 
 ## Post-flight (after `handoff create`)
 
-- `product-definition handoff status <path>` reports `current`; `stale` or `invalid` right after
+- `prodshape handoff status <path>` reports `current`; `stale` or `invalid` right after
   generation means an upstream problem — report the named artifacts, do not patch files by hand.
 - Generated files present at the destination: `product-handoff.yaml`, `product-context.md`, and
   `product-coverage.yaml` when the adapter placed sidecars.

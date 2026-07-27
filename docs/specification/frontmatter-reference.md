@@ -401,10 +401,16 @@ implemented, and checked before archive. See
 
 <!-- BEGIN GENERATED: product-coverage -->
 
-| Field          | Required | Type   | Allowed values                                 | Notes |
-| -------------- | -------- | ------ | ---------------------------------------------- | ----- |
-| `schema`       | yes      | const  | `product-definition-as-code/coverage/v1alpha1` |       |
-| `handoff`      | yes      | string | `^HOF-[A-Z0-9]+(-[A-Z0-9]+)*$`                 |       |
-| `requirements` | yes      | object |                                                |       |
+| Field                                | Required | Type            | Allowed values                                 | Notes                                                                  |
+| ------------------------------------ | -------- | --------------- | ---------------------------------------------- | ---------------------------------------------------------------------- |
+| `schema`                             | yes      | const           | `product-definition-as-code/coverage/v1alpha1` |                                                                        |
+| `handoff`                            | yes      | string          | `^HOF-[A-Z0-9]+(-[A-Z0-9]+)*$`                 |                                                                        |
+| `requirements`                       | yes      | object          |                                                | Keys match `^(FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$`. At least one key. |
+| `requirements.<key>`                 | no       | object          |                                                |                                                                        |
+| `requirements.<key>.status`          | yes      | enum            | `covered`, `partial`, `uncovered`              |                                                                        |
+| `requirements.<key>.specification`   | no       | array of string |                                                | Required when status is covered or partial. At least one entry.        |
+| `requirements.<key>.specification[]` | yes      | string          |                                                | Must not be empty.                                                     |
+| `requirements.<key>.verification`    | no       | array of string |                                                | Required when status is covered or partial. At least one entry.        |
+| `requirements.<key>.verification[]`  | yes      | string          |                                                | Must not be empty.                                                     |
 
 <!-- END GENERATED: product-coverage -->

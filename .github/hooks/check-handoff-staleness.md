@@ -11,7 +11,7 @@ below yourself (or in CI) at the described moments.
 ## before-implementation
 
 ```bash
-product-definition handoff status ${handoff}
+prodshape handoff status ${handoff}
 ```
 
 Staleness is judged only by the digests of referenced artifacts; unrelated repository activity never blocks.

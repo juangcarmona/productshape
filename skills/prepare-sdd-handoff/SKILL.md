@@ -45,15 +45,15 @@ tracker issues, or to do any SDD-side work (proposal, specs, design, tasks) — 
 
 ## Deterministic commands
 
-- `product-definition change validate <CHG-ID>` — the overlay must validate before generating.
-- `product-definition handoff create --change <CHG-ID> --slice <SLI-ID>
+- `prodshape change validate <CHG-ID>` — the overlay must validate before generating.
+- `prodshape handoff create --change <CHG-ID> --slice <SLI-ID>
 --work-item <provider:owner/repo#id> [--title <t>] (--out <dir> | --adapter openspec
 --sdd-change <name>)` — generate the handoff. With the openspec adapter, the sidecar files
   (`product-handoff.yaml`, `product-context.md`, `product-coverage.yaml`) are placed inside the
   named native SDD change directory.
-- `product-definition handoff status <path>` — verify the generated handoff: `current`, `stale`,
+- `prodshape handoff status <path>` — verify the generated handoff: `current`, `stale`,
   `invalid` or `source-revision-unavailable`.
-- `product-definition coverage check <path>` — later in the flow, validates the
+- `prodshape coverage check <path>` — later in the flow, validates the
   requirement-coverage evidence in an SDD change directory; run it when asked to check coverage,
   not as part of generation.
 
@@ -62,15 +62,15 @@ tracker issues, or to do any SDD-side work (proposal, specs, design, tasks) — 
 1. Read the slice file. Confirm `status: approved` and that `product-change` names the containing
    change. If the slice is not approved, stop and report — do not change its status, do not
    generate.
-2. Run `product-definition change validate <CHG-ID>`. If there are errors, stop and report them;
+2. Run `prodshape change validate <CHG-ID>`. If there are errors, stop and report them;
    an invalid overlay has no business feeding an implementation.
 3. Confirm the work-item reference. It must be in `<provider>:<owner>/<repo>#<id>` form and refer
    to a backlog item the team already created. If none exists, stop and ask the human to create
    the backlog item and supply the reference — this skill never calls tracker APIs.
 4. Work through the pre-flight section of `references/handoff-checklist.md`.
-5. Run `product-definition handoff create` with the change, slice, work-item reference and the
+5. Run `prodshape handoff create` with the change, slice, work-item reference and the
    configured destination (adapter or `--out`). Record the command and its output verbatim.
-6. Run `product-definition handoff status <path>` on the result. Require `current`. If `invalid`
+6. Run `prodshape handoff status <path>` on the result. Require `current`. If `invalid`
    or `stale` immediately after generation, something is wrong upstream — stop, report the named
    artifacts and diagnostics, and do not patch the files.
 7. Read the generated `product-context.md`. Verify it begins with the generated marker naming the
@@ -87,7 +87,7 @@ tracker issues, or to do any SDD-side work (proposal, specs, design, tasks) — 
 
 ## Allowed modifications
 
-- Run `product-definition handoff create`, which writes the generated files at the destination.
+- Run `prodshape handoff create`, which writes the generated files at the destination.
 - Write the handoff summary where the human asks for it (chat, or a file inside the SDD change if
   requested).
 
@@ -102,7 +102,7 @@ tracker issues, or to do any SDD-side work (proposal, specs, design, tasks) — 
   the handoff summary.
 - Never create tracker issues through provider APIs; the work-item reference is recorded, not
   automated, in v0.1.
-- Never run `product-definition change promote`; archiving or completing SDD work never triggers
+- Never run `prodshape change promote`; archiving or completing SDD work never triggers
   promotion.
 - Never answer the change's open questions on the SDD side's behalf; carry them, verbatim.
 - Preserve stable IDs everywhere in the SDD workspace: refer to `CHG-`, `SLI-`, `FR-`, `UC-` and
@@ -126,8 +126,8 @@ tracker issues, or to do any SDD-side work (proposal, specs, design, tasks) — 
 
 ## Completion checks
 
-- `product-definition change validate <CHG-ID>` exited 0 before generation.
-- `product-definition handoff status <path>` reports `current`.
+- `prodshape change validate <CHG-ID>` exited 0 before generation.
+- `prodshape handoff status <path>` reports `current`.
 - The generated files exist at the intended destination and were not hand-edited.
 - `product-context.md` starts with the generated marker and contains the implemented
   requirements' acceptance content and the change's open questions.

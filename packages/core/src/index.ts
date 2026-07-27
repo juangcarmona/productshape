@@ -18,9 +18,11 @@ export { contentDigest, normalizeToLf } from './digest.js';
 export { computeClosureFromSeeds } from './closure.js';
 export {
   applyFilenameFixes,
+  applyFilenameRecovery,
   discoverFixTempFiles,
   fixTempSuffix,
   planFilenameFixes,
+  planFilenameRecovery,
   recoverFilenameFixes,
 } from './fix-filenames.js';
 export type {
@@ -28,6 +30,7 @@ export type {
   FilenameFix,
   FilenamePlan,
   FilenameRecovery,
+  FilenameRecoveryPlan,
   RenameFs,
 } from './fix-filenames.js';
 export {

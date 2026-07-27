@@ -1,0 +1,109 @@
+schema: product-definition-as-code/handoff/v1alpha1
+id: HOF-GITHUB-15
+generated-at: 2026-07-27T05:42:12.073Z
+work-item:
+  provider: github
+  repository: juangcarmona/productshape
+  id: '15'
+  title: Make the baseline describe the shipped initialization and distribution behaviour
+source:
+  repository: juangcarmona/productshape
+  revision: 67c883728d969c719feb06f1688363dd1ab800b0
+  product-change: CHG-MODEL-TRUEUP-001
+  delivery-slice: SLI-TRUEUP-001
+implements:
+  - FR-DISTRIBUTION-001
+  - FR-DOCTOR-001
+  - FR-INIT-001
+affects:
+  - ACT-REPOSITORY-MAINTAINER
+  - BC-PRODUCT-DEFINITION
+  - BR-AI-001
+  - BR-CANONICAL-001
+  - CON-BRAND-001
+  - CON-MARKDOWN-001
+  - CON-NO-GRAPH-DATABASE
+  - CON-NO-WEB-UI
+  - CON-PUBLIC-GENERIC
+  - JRN-ADOPT-001
+  - TERM-CURRENT-PRODUCT-MODEL
+  - TERM-METHODOLOGY
+  - TERM-PRODUCT-ARTIFACT
+  - TERM-REFERENCE-IMPLEMENTATION
+  - UC-INIT-001
+artifacts:
+  - id: ACT-REPOSITORY-MAINTAINER
+    type: actor
+    path: docs/product/model/actors/act-repository-maintainer.md
+    digest: sha256:072f9e014d90d3f9689563890793b15428347f4012eb3cb53b9f02e76892f16b
+  - id: BC-PRODUCT-DEFINITION
+    type: bounded-context
+    path: docs/product/model/domain/bounded-contexts/bc-product-definition.md
+    digest: sha256:3b8a90d2714f6e8cb9b1083f83ae727bdcd2e74d46c55029fc637fdfe0e96150
+  - id: BR-AI-001
+    type: business-rule
+    path: docs/product/model/business-rules/br-ai-001.md
+    digest: sha256:0670af8ef219713b5da04e9233db0556a5c3a9e202018c397e604fc98f199a69
+  - id: BR-CANONICAL-001
+    type: business-rule
+    path: docs/product/model/business-rules/br-canonical-001.md
+    digest: sha256:f715ea8ef355cd555df5ff899b1890495b6d3ff06e2125dccbe5cbe0984b7f62
+  - id: CON-BRAND-001
+    type: constraint
+    path: docs/product/model/requirements/constraints/con-brand-001.md
+    digest: sha256:a3a7e7e51852cdcfa03a3f1387fe65fd38ce2019959ecf78eee5d28708ef1017
+  - id: CON-MARKDOWN-001
+    type: constraint
+    path: docs/product/model/requirements/constraints/con-markdown-001.md
+    digest: sha256:a81f6ae689141269893f729e36703480b3957ee6631cf9623abe9153221e6163
+  - id: CON-NO-GRAPH-DATABASE
+    type: constraint
+    path: docs/product/model/requirements/constraints/con-no-graph-database.md
+    digest: sha256:044eb896ee587071889e9e3eed109e17e814914541c3ef5b675964ef42a0bd48
+  - id: CON-NO-WEB-UI
+    type: constraint
+    path: docs/product/model/requirements/constraints/con-no-web-ui.md
+    digest: sha256:4277c073c7304f83bf3b10543feb8d8d311d468415e04fc6b397bd2f5aabe118
+  - id: CON-PUBLIC-GENERIC
+    type: constraint
+    path: docs/product/model/requirements/constraints/con-public-generic.md
+    digest: sha256:2f8fcaea49733be091f1fd350d4257d774e3e8c05fc7041466c0df0917f37e09
+  - id: FR-DISTRIBUTION-001
+    type: functional-requirement
+    path: docs/product/changes/active/chg-model-trueup-001/proposed/requirements/functional/fr-distribution-001.md
+    digest: sha256:c35aca9b289b79535795d475e49dedf1de47f42eb97213e51fdf08370cfdf616
+  - id: FR-DOCTOR-001
+    type: functional-requirement
+    path: docs/product/changes/active/chg-model-trueup-001/proposed/requirements/functional/fr-doctor-001.md
+    digest: sha256:ba55b2853de866b2b3f6cad24fa003d98cfe22f7f99dfc979a1607384eec17ac
+  - id: FR-INIT-001
+    type: functional-requirement
+    path: docs/product/changes/active/chg-model-trueup-001/proposed/requirements/functional/fr-init-001.md
+    digest: sha256:7d85e30d81c211db48db054d000189e2c09fc3edf23037e448a4ea69375716b9
+  - id: JRN-ADOPT-001
+    type: journey
+    path: docs/product/model/journeys/jrn-adopt-001.md
+    digest: sha256:154dc6644fd48dc7c7b0c64731d6c25f8385322846b07fa4d504a99cfd30d596
+  - id: TERM-CURRENT-PRODUCT-MODEL
+    type: domain-term
+    path: docs/product/model/domain/terms/term-current-product-model.md
+    digest: sha256:fd4c0fd2095b12c4ba4f39866ffd4c0dfe194f658071b7f29400c632da72bb61
+  - id: TERM-METHODOLOGY
+    type: domain-term
+    path: docs/product/model/domain/terms/term-methodology.md
+    digest: sha256:159f44f578e031fcf785246fa856247d0bffdfe11442bbf0dd39e847df2fd4a9
+  - id: TERM-PRODUCT-ARTIFACT
+    type: domain-term
+    path: docs/product/model/domain/terms/term-product-artifact.md
+    digest: sha256:0157eb3b46f817fb2e1f7cc4d4292d784ecb65ae6426342e3837e1efefc7e2e4
+  - id: TERM-REFERENCE-IMPLEMENTATION
+    type: domain-term
+    path: docs/product/model/domain/terms/term-reference-implementation.md
+    digest: sha256:cfdb6fdaf14fa0dc445371470db5446355fce1719b037144dff7a1e8c2c82874
+  - id: UC-INIT-001
+    type: use-case
+    path: docs/product/changes/active/chg-model-trueup-001/proposed/use-cases/uc-init-001.md
+    digest: sha256:c0f68870879655350c3839b96a0d43a2b1a7b590782584bc4ffcd7f3bc15c315
+context:
+  path: product-context.md
+  digest: sha256:5fc17ae0a5f6c67ba8f8b6ba23c3867b5e3b3a5a768160475bf4127c8f2805af

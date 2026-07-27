@@ -1,8 +1,9 @@
 # Product Definition as Code — Specification
 
-This is the normative specification for Product Definition as Code v0.1. It defines the artifact
-contracts, identity rules, relationship vocabulary, Product Change semantics, delivery slices, the
-Product Handoff contract, deterministic validation and conformance criteria.
+This is the normative specification for Product Definition as Code. It defines the terminology, the
+artifact contracts and their exhaustive frontmatter, identity rules, relationship vocabulary,
+Product Change semantics, delivery slices, the Product Handoff contract, deterministic validation
+and conformance criteria.
 
 The key words **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT** and **MAY** in these documents are
 to be interpreted as described in [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119).

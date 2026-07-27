@@ -49,11 +49,11 @@ model (use `audit-product-model`).
 
 ## Deterministic commands
 
-- `product-definition validate --format json` — structural validation of draft candidates.
-- `product-definition change validate <CHG-ID>` — overlay validation of a recovery change.
-- `product-definition graph --format json` — the existing graph, to attach candidates correctly.
-- `product-definition inspect <ID>` — existing artifact detail before referencing or modifying.
-- `product-definition schema <kind>` — the allowed frontmatter for a kind, read from the schemas.
+- `prodshape validate --format json` — structural validation of draft candidates.
+- `prodshape change validate <CHG-ID>` — overlay validation of a recovery change.
+- `prodshape graph --format json` — the existing graph, to attach candidates correctly.
+- `prodshape inspect <ID>` — existing artifact detail before referencing or modifying.
+- `prodshape schema <kind>` — the allowed frontmatter for a kind, read from the schemas.
 
 Structural facts come from these commands, never from your own judgement (BR-AI-001).
 
@@ -115,8 +115,9 @@ Structural facts come from these commands, never from your own judgement (BR-AI-
 - Presenting inferred intent as observed behaviour, or emitting a candidate without provenance —
   candidates without provenance are opinions.
 - Resolving contradictions between evidence sources yourself; they remain open questions.
-- Inventing frontmatter fields: only `provenance` and its defined sub-fields are accepted, and
-  anything else is rejected as `PRODUCT002`. Check with `schema <kind>` rather than guessing.
+- Inventing frontmatter fields. Each kind accepts exactly the properties its schema defines —
+  `provenance` is the one recovery adds, and it accepts only its own defined sub-fields. Anything
+  outside that is rejected as `PRODUCT002`. Check with `schema <kind>` rather than guessing.
 - Marking artifacts `active`, approving changes or slices, or promoting.
 - Replacing deterministic validation with your own reading of files (BR-AI-001).
 
@@ -145,6 +146,6 @@ Structural facts come from these commands, never from your own judgement (BR-AI-
   body claim observed or inferred; no unlabeled mixtures.
 - No contradiction was silently resolved; all appear as open questions.
 - All candidates are `status: draft`; nothing was marked active, approved or promoted.
-- `product-definition validate` (or `change validate <CHG-ID>`) was run after the last edit and
+- `prodshape validate` (or `change validate <CHG-ID>`) was run after the last edit and
   reports no errors.
 - The human validation handover was issued, including confidence breakdown and evidence gaps.

@@ -11,8 +11,9 @@ canonical product knowledge, and nothing under `docs/product` may reference pack
 dependencies described here.
 
 The founding constraints behind this architecture were fixed at Gate 0 and are recorded as
-[architecture decision records](decisions/0001-markdown-is-canonical.md) 0001–0009. Where this
-overview and an ADR appear to disagree, the ADR wins.
+[architecture decision records](decisions/0001-markdown-is-canonical.md) 0001–0008; 0009 was added
+later, in response to the first adoption outside this repository. Where this overview and an ADR
+appear to disagree, the ADR wins.
 
 ## Monorepo layout
 
@@ -91,7 +92,7 @@ Runtime and tooling dependencies are limited to this list. Anything else require
 
 | Dependency                   | Justification                                                                           |
 | ---------------------------- | --------------------------------------------------------------------------------------- |
-| `commander`                  | CLI argument parsing and command tree for the `product-definition` binary.              |
+| `commander`                  | CLI argument parsing and command tree for the `prodshape` binary.                       |
 | `gray-matter`                | Extracting YAML frontmatter from Markdown artifacts.                                    |
 | `yaml`                       | Parsing and serializing standalone YAML files (slices, handoffs, coverage, lock files). |
 | `ajv` + `ajv-formats`        | JSON Schema (2020-12) validation of frontmatter and YAML documents.                     |
@@ -111,7 +112,8 @@ the problem does not need.
 Everything the toolkit computes is derived and rebuildable (ADRs 0001 and 0002):
 
 - Graph outputs (`product-graph.json`, indexes, Mermaid diagrams, traceability reports) are written
-  under `.product/generated/`, which is gitignored by default.
+  under `.product/generated/`. They are regenerable and non-canonical, so adopters are advised to
+  ignore them in Git; `init` does not modify a repository's ignore rules on its behalf.
 - Product Handoffs and Product Context documents are generated into their change's sidecar
   locations and are non-canonical.
 - Provider assets under `.claude/` and `.github/` are generated with managed-file headers and

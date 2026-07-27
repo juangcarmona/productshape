@@ -7,7 +7,7 @@ Review the product model structurally and semantically.
 
 Use the `audit-product-model` skill.
 
-- Start from `product-definition validate --format json`; never re-derive structural facts the
+- Start from `prodshape validate --format json`; never re-derive structural facts the
   tool already reports.
 - Review orphaned knowledge, contradictory rules, ambiguous terms, duplicate or
   implementation-shaped requirements, missing failure behaviour and weak traceability.

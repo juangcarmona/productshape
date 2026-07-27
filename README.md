@@ -77,6 +77,14 @@ Product Handoffs (`HOF-`). Contracts, required sections and lifecycles are norma
 [the specification](docs/specification/artifacts.md); `templates/` has a conformant starting point
 for each kind.
 
+Frontmatter is a **closed** contract — an unrecognised property is an error, never silently
+ignored — so the allowed fields of every kind are enumerated in the
+[frontmatter reference](docs/specification/frontmatter-reference.md), generated from the schemas and
+drift-tested against them. Artifacts recovered from an existing system may carry an optional
+`provenance` object recording the evidence behind them (its source, how strongly it supports the
+claim, and how it was recovered), so a reviewer can tell a rule read from a test apart from one
+inferred from a variable name.
+
 ## The product graph
 
 Each relationship is authored exactly once, in one direction, on one artifact
@@ -84,8 +92,8 @@ Each relationship is authored exactly once, in one direction, on one artifact
 graph from those declarations and derives all reverse views — a bounded context's owned terms, a
 rule's consumers, a use case's derived requirements — so nobody maintains reciprocal references.
 Validation over the graph is deterministic: unresolved references, disallowed target types,
-duplicate IDs and lifecycle violations are errors with stable codes; unused rules or unreachable
-requirements are warnings. Structural impact analysis (`impact <ID>`) answers "what is connected to
+duplicate IDs and lifecycle violations are errors with stable codes; unused rules, unreachable
+requirements and draft artifacts resting on low-confidence evidence are warnings. Structural impact analysis (`impact <ID>`) answers "what is connected to
 this, how far, in which direction" — deterministically, with no semantic claims. See
 [the product graph](docs/methodology/product-graph.md) and
 [relationships](docs/specification/relationships.md).
@@ -142,7 +150,7 @@ pnpm install && pnpm build
 ```
 
 This repository defines itself with its own methodology, so the built CLI has a real product model
-to run against — 63 artifacts, zero diagnostics:
+to run against — 64 artifacts, zero diagnostics:
 
 ```bash
 node packages/cli/dist/bin.js validate
@@ -154,15 +162,24 @@ node packages/cli/dist/bin.js impact BR-SDD-001 --direction incoming
 The authoring contract is queryable, and needs no repository — useful before you have one:
 
 ```bash
-prodshape schema use-case          # every allowed frontmatter property, from the schemas
-prodshape fix --filenames          # rename artifact files to match their IDs (resolves PRODUCT101)
+prodshape schema                              # every document kind, with its ID prefix
+prodshape schema use-case                     # the allowed frontmatter, straight from the schemas
+prodshape schema use-case --format json       # the same contract, machine-readable
+prodshape fix --filenames --dry-run           # what would be renamed to match its ID; exits 1 if any
+prodshape fix --filenames                     # rename them (resolves PRODUCT101)
 ```
 
 For a new repository, scaffold the model plus the AI and SDD integrations with:
 
 ```bash
-prodshape init --ai claude --sdd openspec
+prodshape init --ai claude --sdd openspec --dry-run   # report every path, write nothing
+prodshape init --ai claude --sdd openspec             # then apply it
+prodshape doctor                                      # check the result is healthy
 ```
+
+`--ai` takes a comma-separated list (`--ai claude,copilot`). `--dry-run` reports what would be
+created, preserved, regenerated or overwritten and exits non-zero on a conflict, so it is worth
+running first in a repository that already has content — and it works as a CI precheck.
 
 `prodshape` is the installed CLI (`npm install -g @prodshape/cli`); from a source checkout, run it
 as `node packages/cli/dist/bin.js`. The package installs `product-definition` alongside it — a
@@ -177,6 +194,9 @@ What you can read alongside:
   [the methodology overview](docs/methodology/overview.md) — the overview is a five-minute read.
 - The self-hosted model under `docs/product/model`: this repository defines itself with its own
   methodology, so every artifact kind has a real example.
+- [The specification](docs/specification/index.md) — normative, ten chapters. Start with
+  [Artifacts](docs/specification/artifacts.md) for what each kind means and the
+  [frontmatter reference](docs/specification/frontmatter-reference.md) for what you may write in one.
 - `schemas/` and `templates/` — the machine contracts the CLI validates against, and a conformant
   starting point for each artifact kind.
 
@@ -187,38 +207,35 @@ Adoption guides for the four entry paths: [greenfield](docs/adoption/greenfield.
 
 ## Current status
 
-v0.1 was built in the open through four OpenSpec changes, all complete:
+v0.1 established the whole loop: the methodology and normative specification, the graph core with
+deterministic validation, Product Changes with overlay validation and explicit promotion, the six AI
+skills with generated Claude Code and GitHub Copilot integrations, and the OpenSpec adapter. It is
+published to npm under the `@prodshape/*` scope, and the public brand is settled — ProductShape, the
+reference implementation of the Product Definition as Code methodology.
 
-1. `establish-product-definition-foundation` — **done**: methodology and manifesto, the normative
-   specification, JSON Schemas and templates, the self-hosted product model, conformance fixtures
-   and a minimal parsing core.
-2. `implement-product-graph-core` — **done**: the `product-definition` CLI with graph compilation,
-   derived reverse relationships, deterministic validation, `inspect` and structural `impact`.
-3. `implement-product-change-and-handoff` — **done**: Product Change overlay validation, delivery
-   slices, handoff generation with content digests, staleness detection, coverage checking and
-   explicit promotion.
-4. `package-ai-and-sdd-integrations` — **done**: the six canonical AI skills, seven `/product:*`
-   commands, four hook descriptors, generated Claude Code and GitHub Copilot integrations with
-   drift detection, the OpenSpec adapter, `init`, `integration add`/`update` and `doctor`.
+v0.2 is the first round of improvements driven by adoption outside this repository. That adoption
+tried to record provenance on recovered artifacts, discovered the schema had nowhere to put it, and
+could not find out from anywhere what the schema _did_ accept. So v0.2 makes the authoring contract
+discoverable — an optional `provenance` object on every artifact kind, a
+[frontmatter reference](docs/specification/frontmatter-reference.md) generated from the schemas, and
+`prodshape schema <kind>` — and makes two reported problems fixable: `prodshape fix --filenames` for
+filename drift that was unfixable by hand on Windows, and `prodshape init --dry-run` for the "what
+will this do to my repository?" question that has to be answered before running anything.
 
-The repository has delivered one real Product Change through the complete loop —
-`CHG-TRACEABILITY-001`, handed off as `HOF-GITHUB-1` into a native OpenSpec change, implemented,
-covered with evidence and explicitly promoted into the baseline — and the v0.1 packages are
-published to npm under the `@prodshape/*` scope.
+The loop is not a diagram here; the repository runs on it. Three Product Changes have gone through
+it end to end — `CHG-TRACEABILITY-001`, `CHG-BRAND-001` and `CHG-CLI-POLISH-001` — each sliced,
+handed off into a native OpenSpec change, implemented, covered with evidence and explicitly promoted.
+The model that results is the one the CLI validates above.
 
-The reference implementation adopted the ProductShape brand via `CHG-BRAND-001` (delivery slice
-`SLI-BRAND-001`); the methodology name Product Definition as Code is retained.
+Remaining open decisions are in [OPEN-DECISIONS.md](OPEN-DECISIONS.md), and what is deliberately not
+built is below.
 
-The v0.1 packages are published to npm under the `@prodshape/*` scope. The public brand is final —
-ProductShape, the reference implementation of the Product Definition as Code methodology. Remaining
-open decisions are in [OPEN-DECISIONS.md](OPEN-DECISIONS.md).
-
-## Outside v0.1
+## Outside the current scope
 
 Deliberately out of scope, among others: graph databases, web UIs, MCP servers, Jira integration,
 multi-repository graphs, automatic brownfield recovery, roadmaps and OKRs, hosted services and
 telemetry. The full list, plus known design limitations, is in
-[Limitations of v0.1](docs/limitations-v0.1.md).
+[Limitations](docs/limitations.md).
 
 ## Contributing
 

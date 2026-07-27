@@ -1,5 +1,5 @@
 # Product handoff: GENERATED contract between Product Definition and an SDD framework.
-# Do not author this file by hand; product-definition handoff create generates it from an
+# Do not author this file by hand; prodshape handoff create generates it from an
 # approved delivery slice. It carries product context and traceability only — never
 # technical design. Digests are sha256 over LF-normalized UTF-8 content.
 # Contract: docs/specification/handoff-contract.md

@@ -28,7 +28,7 @@ deterministic toolchain remains the sole judge of whether the result is structur
 ## Examples
 
 - An AI assistant drafts a new business-rule artifact. The draft passes through the same
-  `product-definition validate` command as any human-authored file; the assistant's confidence
+  `prodshape validate` command as any human-authored file; the assistant's confidence
   counts for nothing if a reference does not resolve.
 - Repository hooks that guard the product model run deterministic commands such as validation and
   doctor checks. No hook ever asks a model to judge whether an artifact is valid.

@@ -5,7 +5,7 @@
   "triggers": [
     {
       "event": "before-handoff-generation",
-      "run": ["product-definition validate", "product-definition change validate ${change}"]
+      "run": ["prodshape validate", "prodshape change validate ${change}"]
     }
   ],
   "blocking": true,

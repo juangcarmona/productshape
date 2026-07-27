@@ -53,8 +53,8 @@ jobs:
       - run: pnpm lint
       - run: pnpm format:check
 
-  # Non-blocking reminder (OD-2): warn when a PR touches package source but adds no changeset.
-  # Never fails the check during v0.x — it only emits an annotation.
+  # Warn when a PR touches package source but adds no changeset. Deliberately never fails during
+  # v0.x — it only emits an annotation.
   changesets:
     name: changeset reminder (warn only)
     if: github.event_name == 'pull_request'

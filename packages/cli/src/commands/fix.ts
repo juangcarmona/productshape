@@ -1,11 +1,12 @@
 import {
   applyFilenameFixes,
+  applyFilenameRecovery,
   discoverFixTempFiles,
   loadModel,
   planFilenameFixes,
-  recoverFilenameFixes,
+  planFilenameRecovery,
   stableJson,
-  type FilenamePlan,
+  type FilenameFix,
 } from '@prodshape/core';
 import { CliError, exitCodes, resolveRepository, type CliIo } from '../context.js';
 
@@ -30,57 +31,68 @@ export async function runFix(io: CliIo, options: FixOptions): Promise<number> {
   }
 
   const repo = await resolveRepository(io);
+  const dryRun = options.dryRun === true;
 
-  // Finish any rename interrupted between its two steps before planning, so a crashed run
-  // self-heals rather than leaving an artifact invisible to discovery.
+  // Classify any rename interrupted between its two steps. Planning is read-only; the renames
+  // happen below, and only when this is not a dry run.
   const leftovers = await discoverFixTempFiles(repo.modelDir, repo.root);
-  const recovery = await recoverFilenameFixes(repo.root, leftovers);
+  const recoveryPlan = await planFilenameRecovery(repo.root, leftovers);
+
+  // A recovered file lands at the name its ID requires, so it never produces a fix of its own.
+  // Outside a dry run the renames happen first anyway, so the model below already includes them
+  // and target collisions are detected against the real tree.
+  const recovered = dryRun ? [] : await applyFilenameRecovery(repo.root, recoveryPlan);
 
   // loadModel, not validateBaseline: no graph is needed, and a file that fails to parse yields no
   // artifact and is correctly left alone.
   const model = await loadModel(repo.modelDir, repo.root, repo.registry);
   const plan = planFilenameFixes(model.artifacts);
 
-  const blocked = [...recovery.blocked, ...plan.blocked];
+  const blocked = [...recoveryPlan.blocked, ...plan.blocked];
+  const wouldRecover = dryRun ? recoveryPlan.recoverable.map((entry) => entry.to) : [];
+  const pending = plan.fixes.length + wouldRecover.length;
+
   if (options.format === 'json') {
     io.out(
       stableJson({
         schema: fixPlanSchemaId,
-        dryRun: options.dryRun === true,
-        recovered: recovery.recovered,
+        dryRun,
+        recovered,
+        wouldRecover,
         fixes: plan.fixes,
         blocked,
       }).trimEnd(),
     );
-    return exitCode(plan, blocked, options);
+    return resolveExitCode({ blocked, dryRun, pending });
   }
 
-  for (const path of recovery.recovered) {
-    io.out(`recovered ${path} from an interrupted rename`);
-  }
+  for (const path of recovered) io.out(`recovered ${path} from an interrupted rename`);
+  for (const path of wouldRecover) io.out(`would recover ${path} from an interrupted rename`);
+
   if (blocked.length > 0) {
     io.out(`${blocked.length} file(s) need attention before any rename can run:`);
     for (const fix of blocked) io.out(`  ${fix.from} -> ${fix.to} (${fix.blocked})`);
-  }
-  if (plan.fixes.length === 0 && blocked.length === 0) {
-    io.out(
-      recovery.recovered.length > 0
-        ? 'All file names are aligned with their IDs.'
-        : '0 fix(es): all file names are already aligned with their IDs.',
-    );
-    return exitCodes.success;
+    return exitCodes.validationErrors;
   }
 
-  if (blocked.length > 0) return exitCodes.validationErrors;
+  if (plan.fixes.length === 0) {
+    if (pending === 0) {
+      io.out(
+        recovered.length > 0
+          ? 'All file names are aligned with their IDs.'
+          : '0 fix(es): all file names are already aligned with their IDs.',
+      );
+    } else {
+      io.out('Dry run: nothing was changed.');
+    }
+    return resolveExitCode({ blocked, dryRun, pending });
+  }
 
-  if (options.dryRun) {
+  if (dryRun) {
     io.out(`Would rename ${plan.fixes.length} file(s) to match their ID casing:`);
     for (const fix of plan.fixes) io.out(`  ${fix.from} -> ${fix.to}  [${fix.artifact}]`);
     io.out('Dry run: nothing was changed.');
-    // Non-zero when anything would change, so this is usable as a CI gate. PRODUCT101 is a
-    // warning and repositories default to warnings-as-errors: false, so without this there is no
-    // gate on filename drift at all. Matches `integration update --check`.
-    return exitCodes.validationErrors;
+    return resolveExitCode({ blocked, dryRun, pending });
   }
 
   await applyFilenameFixes(repo.root, plan);
@@ -90,8 +102,15 @@ export async function runFix(io: CliIo, options: FixOptions): Promise<number> {
   return exitCodes.success;
 }
 
-function exitCode(plan: FilenamePlan, blocked: unknown[], options: FixOptions): number {
-  if (blocked.length > 0) return exitCodes.validationErrors;
-  if (options.dryRun && plan.fixes.length > 0) return exitCodes.validationErrors;
+function resolveExitCode(state: {
+  blocked: FilenameFix[];
+  dryRun: boolean;
+  pending: number;
+}): number {
+  if (state.blocked.length > 0) return exitCodes.validationErrors;
+  // Non-zero when anything would change, so this is usable as a CI gate. PRODUCT101 is a warning
+  // and repositories default to warnings-as-errors: false, so without this there is no gate on
+  // filename drift at all. Matches `integration update --check`.
+  if (state.dryRun && state.pending > 0) return exitCodes.validationErrors;
   return exitCodes.success;
 }

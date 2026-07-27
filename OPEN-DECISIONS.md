@@ -18,7 +18,7 @@ providers.
 
 **Interim position:** Canonical hooks are provider-neutral JSON descriptors in `hooks/`. The Claude
 integration renders executable Claude Code hooks. The Copilot integration renders the hook
-expectations as documentation only, and the gap is recorded in `docs/limitations-v0.1.md`.
+expectations as documentation only, and the gap is recorded in `docs/limitations.md`.
 
 ## OD-003: Coverage-evidence policy without an SDD adapter
 

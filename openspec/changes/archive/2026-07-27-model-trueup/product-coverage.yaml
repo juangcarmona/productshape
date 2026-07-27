@@ -1,0 +1,29 @@
+schema: product-definition-as-code/coverage/v1alpha1
+handoff: HOF-GITHUB-15
+requirements:
+  FR-DOCTOR-001:
+    status: covered
+    specification:
+      - openspec/changes/model-trueup/specs/self-hosted-product-model/spec.md
+    verification:
+      - packages/distribution/src/doctor.ts
+      - packages/cli/src/commands/doctor.ts
+      - tests/distribution/distribution.test.ts
+  FR-DISTRIBUTION-001:
+    status: covered
+    specification:
+      - openspec/changes/model-trueup/specs/self-hosted-product-model/spec.md
+      - docs/architecture/decisions/0008-vendor-assets-are-generated.md
+    verification:
+      - packages/distribution/src/install.ts
+      - tests/distribution/distribution.test.ts
+      - tests/conformance/config-roundtrip.test.ts
+  FR-INIT-001:
+    status: covered
+    specification:
+      - openspec/changes/model-trueup/specs/self-hosted-product-model/spec.md
+      - docs/adoption/existing-repository.md
+    verification:
+      - packages/distribution/src/init.ts
+      - tests/distribution/distribution.test.ts
+      - tests/conformance/layout.test.ts

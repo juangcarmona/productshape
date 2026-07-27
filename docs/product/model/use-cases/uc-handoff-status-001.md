@@ -19,7 +19,7 @@ matches the product model — so delivery never proceeds unknowingly on outdated
 
 ## Trigger
 
-The Product Engineer runs `product-definition handoff status <path>`, most often automatically
+The Product Engineer runs `prodshape handoff status <path>`, most often automatically
 from a hook before implementation work starts in the SDD workflow.
 
 ## Preconditions
@@ -28,7 +28,7 @@ from a hook before implementation work starts in the SDD workflow.
 
 ## Main Flow
 
-1. The actor or hook runs `product-definition handoff status <path>`.
+1. The actor or hook runs `prodshape handoff status <path>`.
 2. The artifacts the handoff references are compared, by content, against their current state in
    the product model.
 3. The verdict is reported: the handoff is current, and implementation can proceed on it.

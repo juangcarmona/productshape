@@ -77,4 +77,9 @@ after bootstrap is a Product Change like any other, however small.
 A validated, human-approved baseline under `docs/product/model`: the reference point every future
 [Change](change.md) is a delta against, and the source every [handoff](sdd-handoff.md) draws its
 context from. The artifact contracts it must satisfy are in
-[Artifacts](../specification/artifacts.md) and [Identifiers](../specification/identifiers.md).
+[Artifacts](../specification/artifacts.md) for what each kind means,
+[Frontmatter reference](../specification/frontmatter-reference.md) for the exact fields each one
+accepts, and [Identifiers](../specification/identifiers.md) for how they are named. Frontmatter is a
+closed contract, so it is worth reading the field tables — or running `prodshape schema <kind>`,
+which prints the same contract and needs no repository — before authoring rather than discovering
+the boundaries from validation errors.

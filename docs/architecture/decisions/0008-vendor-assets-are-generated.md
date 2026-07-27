@@ -21,14 +21,30 @@ and `templates/`. Provider files under `.claude/` and `.github/` are generated f
 
 Every generated provider file carries a managed-file header — a marker, the framework version, the
 canonical source and a content hash — and is recorded in `installation.lock.json`.
-`product-definition integration update` regenerates managed files; `product-definition doctor`
+`prodshape integration update` regenerates managed files; `prodshape doctor`
 compares actual content hashes against the lock file and reports hand-edited (`PRODUCT051`) or
 missing (`PRODUCT052`) managed files. No manually maintained provider duplicates exist.
 
 The providers are not symmetric. Claude Code has a native hook runtime, so the Claude integration
 renders executable hooks. GitHub Copilot offers no equivalent mechanism (OPEN-DECISIONS OD-002),
 so the Copilot integration renders the hook expectations as documentation only; the enforcement
-gap is recorded in `docs/limitations-v0.1.md`.
+gap is recorded in `docs/limitations.md`.
+
+Ownership extends to absence. A managed file the current assets and configuration no longer produce
+is removed, conditional on its content still matching the recorded hash; a file that has diverged is
+kept and reported instead. Without this a file dropped from the lock would persist unreferenced and
+unchecked — never regenerated, never reported as drifted, indistinguishable from something the user
+wrote — which is a worse outcome than deleting it.
+
+A rendering choice may make the output set depend on repository configuration as well as on the
+canonical assets: the `/ps:*` command aliases are generated only when the repository opts in. Such a
+choice is recorded in configuration rather than passed per invocation, because regeneration reads
+configuration and would otherwise silently reverse a decision the repository had already made. It is
+the interaction between this and removal above that makes opting out safe.
+
+[ADR 0009](0009-reference-documentation-is-generated.md) extends the same principle to reference
+documentation: vendor assets are derived from canonical assets, and reference documentation is
+derived from the contracts.
 
 ## Consequences
 

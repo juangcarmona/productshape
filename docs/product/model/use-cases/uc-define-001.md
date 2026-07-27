@@ -44,7 +44,7 @@ against stated product intent, or manually from the installed templates.
 7. Requirements are derived from use cases, rules and constraints, each traceable to its source.
 8. Every point the intent does not answer is preserved as an open question, never resolved by
    invention.
-9. The engineer runs `product-definition validate` and resolves the reported diagnostics.
+9. The engineer runs `prodshape validate` and resolves the reported diagnostics.
 10. A human reviews the draft artifacts and marks the accepted ones active.
 
 ## Alternative Flows

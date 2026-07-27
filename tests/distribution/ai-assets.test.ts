@@ -91,9 +91,9 @@ describe('canonical hooks', () => {
     expect(hook.triggers.length).toBeGreaterThanOrEqual(1);
     for (const trigger of hook.triggers) {
       for (const command of trigger.run) {
-        expect(command, `${name}: only product-definition commands`).toMatch(
-          /^product-definition /,
-        );
+        // Hooks invoke the canonical binary. `product-definition` remains a working v0.x alias,
+        // but generated assets are what users read, so they name the brand.
+        expect(command, `${name}: only prodshape commands`).toMatch(/^prodshape /);
       }
     }
     const promoteCommands = hook.triggers

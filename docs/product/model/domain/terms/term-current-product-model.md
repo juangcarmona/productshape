@@ -28,7 +28,7 @@ a change's operations to without modifying it.
 
 ## Usage
 
-The current product model is what `product-definition validate` checks when no change is in
+The current product model is what `prodshape validate` checks when no change is in
 scope, the baseline that every overlay is applied to, the source from which Product Handoffs
 package subgraphs, and the reference against which handoff staleness is judged. Promotion is
 defined as the only operation, after the initial bootstrap, that modifies it.

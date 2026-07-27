@@ -11,11 +11,11 @@ below yourself (or in CI) at the described moments.
 ## before-handoff-generation
 
 ```bash
-product-definition validate
+prodshape validate
 ```
 
 ```bash
-product-definition change validate ${change}
+prodshape change validate ${change}
 ```
 
 A handoff generated from an invalid overlay would package broken product knowledge; this hook blocks on deterministic failure.
