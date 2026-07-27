@@ -2,7 +2,7 @@
 id: CHG-MODEL-TRUEUP-001
 type: product-change
 title: Make the model describe what initialization and distribution actually do
-status: approved
+status: implemented
 base-revision: b4dbba1bf92d234fe83f8a3c3cc46cef2d74dfce
 operations:
   add:

@@ -150,7 +150,7 @@ pnpm install && pnpm build
 ```
 
 This repository defines itself with its own methodology, so the built CLI has a real product model
-to run against — 63 artifacts, zero diagnostics:
+to run against — 64 artifacts, zero diagnostics:
 
 ```bash
 node packages/cli/dist/bin.js validate

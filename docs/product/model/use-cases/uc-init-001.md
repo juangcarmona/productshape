@@ -37,8 +37,10 @@ an SDD framework through command options or interactive prompts.
 
 1. The maintainer runs `prodshape init` and chooses AI providers and an SDD framework,
    or none.
-2. The product tree is created under `docs/product`, with places for the current model, changes,
-   slices and handoffs.
+2. The product tree is created under `docs/product`: a home for the current model, with a directory
+   per artifact kind, and a home for Product Changes with one directory per lifecycle state. The
+   per-kind layout is a recommendation the maintainer can decline; artifacts are discovered wherever
+   they sit under the model directory.
 3. The repository configuration is written, recording the chosen integrations.
 4. Artifact templates are rendered into the repository so authors start from the contracts
    rather than blank files.
@@ -53,6 +55,10 @@ an SDD framework through command options or interactive prompts.
   initialization again.
 - Re-initialization: running the command in an already initialized repository adds what is
   missing and leaves existing user content alone.
+- Report only: the maintainer asks what initialization would do without doing it. Every path is
+  reported by what would happen to it — created, preserved, regenerated, overwritten, or in
+  conflict — and nothing is written. This is the usual first step in a repository that already has
+  content, where the maintainer needs to know the answer before accepting the risk.
 
 ## Failure Conditions
 

@@ -63,6 +63,8 @@ const expectedIds: Record<string, string[]> = {
     // Added by CHG-CLI-POLISH-001 (adoption improvements).
     'FR-SCHEMA-001',
     'FR-FIX-001',
+    // Added by CHG-MODEL-TRUEUP-001 (baseline corrected against shipped behaviour).
+    'FR-DOCTOR-001',
   ],
   'quality-requirement': [
     'QR-PORTABILITY-001',

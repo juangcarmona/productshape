@@ -1,7 +1,7 @@
 schema: product-definition-as-code/delivery-slice/v1alpha1
 id: SLI-TRUEUP-001
 title: Make the baseline describe the shipped initialization and distribution behaviour
-status: approved
+status: completed
 product-change: CHG-MODEL-TRUEUP-001
 outcome: >-
   The baseline stops describing behaviour the product does not have and starts describing behaviour

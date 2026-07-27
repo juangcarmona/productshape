@@ -74,7 +74,8 @@ Functional: [FR-INIT-001](requirements/functional/fr-init-001.md),
 [FR-OPENSPEC-001](requirements/functional/fr-openspec-001.md),
 [FR-COVERAGE-001](requirements/functional/fr-coverage-001.md),
 [FR-SCHEMA-001](requirements/functional/fr-schema-001.md),
-[FR-FIX-001](requirements/functional/fr-fix-001.md).
+[FR-FIX-001](requirements/functional/fr-fix-001.md),
+[FR-DOCTOR-001](requirements/functional/fr-doctor-001.md).
 
 Quality: [QR-PORTABILITY-001](requirements/quality/qr-portability-001.md),
 [QR-DETERMINISM-001](requirements/quality/qr-determinism-001.md),

@@ -10,6 +10,8 @@ verification:
   - scenario: Init in a fresh repository creates the product structure, configuration and templates
   - scenario: Init refuses to overwrite an existing user file without confirmation or --force
   - scenario: Init finishes by printing what was created and the recommended next steps
+  - scenario: Init can report what it would do to every path without writing anything
+  - scenario: What a report says would be created matches what applying it creates
 ---
 
 ## Requirement
@@ -21,6 +23,12 @@ confirmation or passes `--force`. Re-running initialization in an already initia
 MUST add only what is missing and leave existing user content untouched. On success the command
 MUST print a summary of what was created together with the recommended next steps.
 
+The product MUST be able to report what initialization would do to every path — create, preserve,
+regenerate, overwrite, or refuse as a conflict — without writing anything. The report MUST agree with
+what applying it produces; a report that could differ from the outcome is worse than none, because it
+is trusted. Initialization MUST NOT modify any file the user owns outside the paths it creates, and
+in particular MUST NOT edit the repository's ignore rules on the user's behalf.
+
 ## Rationale
 
 Adoption begins with initialization, and adopters run it inside repositories that already contain
@@ -29,6 +37,12 @@ destroy their files, the methodology loses trust before a single artifact is aut
 authored files are canonical, protecting them at initialization time is not a convenience but a
 direct obligation of the canonical-source rule. A printed next-step guide turns a bare directory
 tree into a starting point: the maintainer knows immediately what to author and how to validate it.
+
+Reporting without acting is the other half of that trust, and it is a distinct obligation rather than
+a convenience: the question "what will this do to my repository?" is the one an adopter must answer
+before running anything, and answering it by running the command and inspecting the damage is not an
+answer. Requiring the report to agree with the outcome is what makes it worth having — an approximate
+preview would be consulted once, found wrong, and never trusted again.
 
 ## Acceptance Scenarios
 
@@ -40,3 +54,8 @@ tree into a starting point: the maintainer knows immediately what to author and 
   byte-identical and the command reports which files were skipped.
 - Initialization completes and the output names every created file and directory, followed by the
   recommended next steps: define the initial product model, then run validation.
+- A maintainer asks what initialization would do in a repository that already contains documentation.
+  Every path is reported by outcome, no file is written, and the repository is byte-identical
+  afterwards.
+- The same repository is then initialized for real. The number of files the report said would be
+  created equals the number created.
