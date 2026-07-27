@@ -1,0 +1,38 @@
+schema: product-definition-as-code/delivery-slice/v1alpha1
+id: SLI-TRUEUP-001
+title: Make the baseline describe the shipped initialization and distribution behaviour
+status: approved
+product-change: CHG-MODEL-TRUEUP-001
+outcome: >-
+  The baseline stops describing behaviour the product does not have and starts describing behaviour
+  it does: removal of managed files it no longer generates, reproducibility that accounts for
+  configuration, repository health as a named obligation, the directories initialization actually
+  creates, and reporting an action without performing it.
+implements:
+  - requirement: FR-DOCTOR-001
+    coverage: full
+  - requirement: FR-DISTRIBUTION-001
+    coverage: full
+  - requirement: FR-INIT-001
+    coverage: full
+affects:
+  - UC-INIT-001
+depends-on: []
+verification:
+  - The model authorises removing a managed file the current assets and configuration no longer
+    produce, and states that a diverged file is kept and reported rather than deleted.
+  - The reproducibility obligation names configuration alongside assets and target, so it is not
+    falsified by a rendering choice, and states that the choice is recorded in configuration rather
+    than supplied per invocation.
+  - Repository health is a named requirement, independent of asset generation, stating that
+    reporting changes nothing and that an absent optional component is not a failure.
+  - The initialization use case describes only directories that are created, and no longer claims
+    places for slices or handoffs under the product tree.
+  - Reporting initialization without applying it is an obligation with the agreement guarantee, as
+    it already is for filename repair.
+out-of-scope:
+  - Changing any described behaviour. This slice is corrective; the implementation is already right.
+  - Enumerating individual health checks in the requirement; which checks exist is implementation
+    detail that will keep changing.
+  - The handoff identity collision recorded as OD-009, which needs a decision before it can be
+    modelled.
