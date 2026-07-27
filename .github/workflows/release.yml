@@ -61,7 +61,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Stable publish: runs only when a "Version Packages" release commit lands on main and the repo
-  # is not in pre-release mode. Gated by the protected `npm-publish` environment (OD-1).
+  # is not in pre-release mode. Gated by the protected `npm-publish` environment, which requires a
+  # maintainer to approve the deployment before anything reaches npm.
   publish-stable:
     name: publish stable
     if: >-
@@ -95,19 +96,43 @@ jobs:
       - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm test
+      # `changeset publish` tags each published package with `git tag <name> -m <name>` — an
+      # ANNOTATED tag, which git refuses to create without a committer identity. This job has its
+      # own checkout and configures none, so every tag creation failed; `tagPublish` discards the
+      # boolean `git.tag` returns, so it failed silently after already logging "New tag:". The
+      # v0.2.0 release published six packages and pushed zero tags, and the log looked clean.
+      - name: configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       # Publishes only packages whose version is ahead of npm, in dependency order, with provenance.
       - name: publish
         run: pnpm changeset publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} # fallback; ignored when OIDC is configured
           NPM_CONFIG_PROVENANCE: 'true'
-      # `--follow-tags` only pushes annotated tags reachable from a ref this same invocation is
-      # advancing; this job never moves `main` itself (the Version Packages PR merge already did),
-      # so it always had nothing to "follow" and silently pushed no tags at all (confirmed:
-      # "Everything up-to-date" even after `changeset publish` created four new local tags).
-      # `--tags` pushes every local tag unconditionally; already-present tags are a no-op.
+      # `--tags` rather than `--follow-tags`: this job never advances `main` (the Version Packages
+      # merge already did), so there is no ref for tags to "follow". Already-present tags are a
+      # no-op.
+      #
+      # Then verify rather than trust. A push that reports "Everything up-to-date" is
+      # indistinguishable from a successful one, which is exactly how the silent failure above
+      # survived a previous attempt to fix it: the push flag was corrected while the real fault was
+      # that no tags existed to push.
       - name: push tags
-        run: git push origin --tags
+        shell: bash
+        run: |
+          git push origin --tags
+          missing=0
+          while read -r name version; do
+            tag="${name}@${version}"
+            if ! git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
+              echo "::error::published ${tag} but its tag is not on the remote"
+              missing=1
+            fi
+          done < <(pnpm -r --json list --depth -1 2>/dev/null \
+            | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{for(const p of JSON.parse(s))if(p.name&&p.name.startsWith("@prodshape/"))console.log(p.name,p.version)})')
+          exit "$missing"
       # Post-publish supply-chain verification.
       - name: verify signatures and provenance
         run: pnpm -r exec npm audit signatures || true
