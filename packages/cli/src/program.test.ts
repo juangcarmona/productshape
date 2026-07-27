@@ -1,4 +1,4 @@
-import { cp, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
+import { access, cp, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -214,6 +214,33 @@ describe('prodshape fix --filenames', () => {
     const again = await run(['fix', '--filenames'], fixDir);
     expect(again.code).toBe(0);
     expect(again.out.join('\n')).toContain('0 fix(es)');
+  });
+
+  it('does not recover an interrupted rename during a dry run', async () => {
+    // Regression: recovery used to run before the dry-run check, so asking what would happen
+    // renamed the file and then printed "Dry run: nothing was changed."
+    const model = join(fixDir, 'docs', 'product', 'model', 'use-cases');
+    const destination = join(model, 'uc-shorten-001.md');
+    const leftover = `${destination}.prodshape-fix-tmp`;
+    await rename(destination, leftover);
+
+    const dry = await run(['fix', '--filenames', '--dry-run'], fixDir);
+    expect(dry.out.join('\n')).toContain('would recover');
+    expect(dry.out.join('\n')).toContain('Dry run: nothing was changed.');
+    // Anything pending, including a recovery, keeps the CI gate non-zero.
+    expect(dry.code).toBe(1);
+    // The claim the output makes must be true: the file is untouched.
+    await access(leftover);
+    await expect(access(destination)).rejects.toThrow();
+
+    // The same state, applied for real, completes the rename.
+    const applied = await run(['fix', '--filenames'], fixDir);
+    expect(applied.code).toBe(0);
+    expect(applied.out.join('\n')).toContain(
+      'recovered docs/product/model/use-cases/uc-shorten-001.md',
+    );
+    await access(destination);
+    await expect(access(leftover)).rejects.toThrow();
   });
 
   it('completes a rename interrupted between its two steps', async () => {
