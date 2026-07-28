@@ -1,7 +1,7 @@
 schema: product-definition-as-code/delivery-slice/v1alpha1
 id: SLI-SNAPSHOT-001
 title: A readable Product Snapshot in one shareable file
-status: in-progress
+status: completed
 product-change: CHG-SNAPSHOT-001
 outcome: >-
   A Product Explorer can open a single HTML file someone shared with them — in a browser, with no
