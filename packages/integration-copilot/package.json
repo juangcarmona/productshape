@@ -1,6 +1,6 @@
 {
   "name": "@prodshape/integration-copilot",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "GitHub Copilot renderer for Product Definition as Code canonical assets.",
   "license": "Apache-2.0",
   "type": "module",
