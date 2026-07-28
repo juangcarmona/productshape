@@ -98,7 +98,13 @@ this, how far, in which direction" — deterministically, with no semantic claim
 [the product graph](docs/methodology/product-graph.md) and
 [relationships](docs/specification/relationships.md).
 
-## From Product Change to SDD increment
+## From idea to SDD increment
+
+When the idea is fuzzy, `/ps:explore` is the entry point: it reads the product graph, reasons
+from a structural high-altitude view (surfacing gaps, inconsistencies and affected artifacts),
+and helps clarify the request before committing to a change. When the model is new or minimal it
+explains the artifact vocabulary instead. It ends with an explicit offer to proceed to
+`/ps:change`.
 
 A modification request never edits the model directly. It becomes a Product Change: a delta with
 rationale, operations (`add`/`modify`/`remove`) and complete proposed future-state artifacts,
@@ -185,7 +191,7 @@ running first in a repository that already has content — and it works as a CI 
 as `node packages/cli/dist/bin.js`. The package installs `product-definition` alongside it — a
 v0.x compatibility alias with identical output, removed before v1. The
 `/product:*` commands stay canonical and are always generated; `/ps:*` is an opt-in shorthand
-(`/ps:change`, `/ps:impact`, `/ps:handoff`), enabled with `init --shorthand` or by setting
+(`/ps:explore`, `/ps:change`, `/ps:impact`, `/ps:handoff`), enabled with `init --shorthand` or by setting
 `integrations.shorthand-commands: true`. This repository has it enabled.
 
 What you can read alongside:
