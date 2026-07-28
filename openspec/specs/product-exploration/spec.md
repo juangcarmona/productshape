@@ -1,4 +1,11 @@
-## ADDED Requirements
+## Purpose
+
+Specify the `ps:explore` skill: a product-graph-aware thinking partner that helps engineers
+clarify a fuzzy product idea before committing to a `ps:change`. The skill reads the full
+product model upfront, reasons from a high-altitude structural view, and ends with an explicit
+handoff offer to `ps:change`.
+
+## Requirements
 
 ### Requirement: Skill activation and thinking-partner stance
 
