@@ -14,9 +14,9 @@ thinking — this gap makes the workflow feel abrupt and produces weaker change 
   surfacing gaps, inconsistencies, and affected nodes to sharpen the questions it asks.
 - When the product model is empty or minimal, the skill switches to greenfield mode: it explains
   how ProductShape structures a product and guides the user toward valid artifact families.
-- The skill ends with a natural handoff: *"I'd say we now have a clear enough idea of what
+- The skill ends with a natural handoff: _"I'd say we now have a clear enough idea of what
   should change and why — want me to turn this into a Product Change, or is there anything you'd
-  like to refine first?"* — bridging directly to `ps:change`.
+  like to refine first?"_ — bridging directly to `ps:change`.
 - The skill serves a mixed audience (product owners and developers equally); language is
   business-level by default but uses artifact vocabulary when helpful.
 - Documenting the `ps:explore` → `ps:change` entry path in the README and product docs.

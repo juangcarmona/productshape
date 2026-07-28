@@ -76,8 +76,8 @@ is conversational, not deterministic — it belongs in the AI skill layer, not i
 
 **Rationale**: The user must decide when they're ready. An auto-transition would skip the
 validation that exploration is complete and the change request is actually clear. The exact
-phrasing — *"I'd say we now have a clear enough idea of what should change and why — want me to
-turn this into a Product Change, or is there anything you'd like to refine first?"* — keeps
+phrasing — _"I'd say we now have a clear enough idea of what should change and why — want me to
+turn this into a Product Change, or is there anything you'd like to refine first?"_ — keeps
 agency with the user while making the next step obvious.
 
 ## Risks / Trade-offs

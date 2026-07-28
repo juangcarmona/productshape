@@ -5,6 +5,7 @@
 .github/prompts/product-audit.prompt.md
 .github/prompts/product-change.prompt.md
 .github/prompts/product-define.prompt.md
+.github/prompts/product-explore.prompt.md
 .github/prompts/product-handoff.prompt.md
 .github/prompts/product-impact.prompt.md
 .github/prompts/product-recover.prompt.md
@@ -12,6 +13,7 @@
 .github/prompts/ps-audit.prompt.md
 .github/prompts/ps-change.prompt.md
 .github/prompts/ps-define.prompt.md
+.github/prompts/ps-explore.prompt.md
 .github/prompts/ps-handoff.prompt.md
 .github/prompts/ps-impact.prompt.md
 .github/prompts/ps-recover.prompt.md
@@ -22,6 +24,7 @@
 .github/skills/audit-product-model.md
 .github/skills/define-product-references/authoring-order.md
 .github/skills/define-product.md
+.github/skills/explore-product.md
 .github/skills/prepare-sdd-handoff-references/handoff-checklist.md
 .github/skills/prepare-sdd-handoff.md
 .github/skills/recover-product-references/evidence-sources.md
