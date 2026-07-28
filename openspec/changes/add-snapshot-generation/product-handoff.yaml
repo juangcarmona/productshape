@@ -1,0 +1,189 @@
+schema: product-definition-as-code/handoff/v1alpha1
+id: HOF-GITHUB-19
+generated-at: 2026-07-28T16:09:28.429Z
+work-item:
+  provider: github
+  repository: juangcarmona/productshape
+  id: "19"
+  title: "SLI-SNAPSHOT-001: A readable Product Snapshot in one shareable file"
+source:
+  repository: juangcarmona/productshape
+  revision: e29c7a984e43289ab092a26f453141d4779d5103
+  product-change: CHG-SNAPSHOT-001
+  delivery-slice: SLI-SNAPSHOT-001
+implements:
+  - FR-SNAPSHOT-001
+  - FR-SNAPSHOT-002
+  - QR-DETERMINISM-001
+affects:
+  - ACT-AI-ASSISTANT
+  - ACT-PRODUCT-ENGINEER
+  - ACT-PRODUCT-EXPLORER
+  - ACT-REPOSITORY-MAINTAINER
+  - BC-DELIVERY-INTEGRATION
+  - BC-PRODUCT-DEFINITION
+  - BR-AI-001
+  - BR-CANONICAL-001
+  - BR-IDENTITY-001
+  - BR-RELATIONSHIPS-001
+  - BR-SDD-001
+  - CON-BRAND-001
+  - CON-MARKDOWN-001
+  - CON-NO-GRAPH-DATABASE
+  - CON-NO-WEB-UI
+  - CON-PUBLIC-GENERIC
+  - CON-SDD-AGNOSTIC
+  - JRN-ADOPT-001
+  - JRN-CHANGE-001
+  - JRN-SDD-HANDOFF-001
+  - JRN-SNAPSHOT-001
+  - TERM-CURRENT-PRODUCT-MODEL
+  - TERM-PRODUCT-ARTIFACT
+  - TERM-PRODUCT-GRAPH
+  - TERM-PRODUCT-HANDOFF
+  - TERM-PRODUCT-SNAPSHOT
+  - UC-HANDOFF-STATUS-001
+  - UC-IMPACT-001
+  - UC-SNAPSHOT-001
+  - UC-SNAPSHOT-EXPLORE-001
+  - UC-VALIDATE-001
+artifacts:
+  - id: ACT-AI-ASSISTANT
+    type: actor
+    path: docs/product/model/actors/act-ai-assistant.md
+    digest: sha256:7e67333c0153aeac20dd5504cf6f2a5a9986c4287e2f81d599a6a6be0b54cbdf
+  - id: ACT-PRODUCT-ENGINEER
+    type: actor
+    path: docs/product/model/actors/act-product-engineer.md
+    digest: sha256:facb8b5571bda0ea32376638317994cb514ad16a188b00c9d916d57f56d99c17
+  - id: ACT-PRODUCT-EXPLORER
+    type: actor
+    path: docs/product/changes/active/chg-snapshot-001/proposed/actors/act-product-explorer.md
+    digest: sha256:ff275bbb65232f407e390307efb9613af98c93070712993ead3db06e3c15256a
+  - id: ACT-REPOSITORY-MAINTAINER
+    type: actor
+    path: docs/product/model/actors/act-repository-maintainer.md
+    digest: sha256:072f9e014d90d3f9689563890793b15428347f4012eb3cb53b9f02e76892f16b
+  - id: BC-DELIVERY-INTEGRATION
+    type: bounded-context
+    path: docs/product/model/domain/bounded-contexts/bc-delivery-integration.md
+    digest: sha256:0379494ef3fb3fda5f2cfe37e9d84345b1a9bac6b7f64e0e0a1b10d7a4fb5029
+  - id: BC-PRODUCT-DEFINITION
+    type: bounded-context
+    path: docs/product/model/domain/bounded-contexts/bc-product-definition.md
+    digest: sha256:3b8a90d2714f6e8cb9b1083f83ae727bdcd2e74d46c55029fc637fdfe0e96150
+  - id: BR-AI-001
+    type: business-rule
+    path: docs/product/model/business-rules/br-ai-001.md
+    digest: sha256:0670af8ef219713b5da04e9233db0556a5c3a9e202018c397e604fc98f199a69
+  - id: BR-CANONICAL-001
+    type: business-rule
+    path: docs/product/model/business-rules/br-canonical-001.md
+    digest: sha256:f715ea8ef355cd555df5ff899b1890495b6d3ff06e2125dccbe5cbe0984b7f62
+  - id: BR-IDENTITY-001
+    type: business-rule
+    path: docs/product/model/business-rules/br-identity-001.md
+    digest: sha256:8d7b89f2908cca7e362cc3e885ff686c906fd343bcffe4a729f64d39ff897a69
+  - id: BR-RELATIONSHIPS-001
+    type: business-rule
+    path: docs/product/model/business-rules/br-relationships-001.md
+    digest: sha256:bec999afdbe41ca10a1545b57b1f55d506ae953e6de3aa645698339e9fb93610
+  - id: BR-SDD-001
+    type: business-rule
+    path: docs/product/model/business-rules/br-sdd-001.md
+    digest: sha256:9ae434a3953fa46c8ceff8606bfa4ff866b6366f3e9ab0c19be09fe28c6d388e
+  - id: CON-BRAND-001
+    type: constraint
+    path: docs/product/model/requirements/constraints/con-brand-001.md
+    digest: sha256:a3a7e7e51852cdcfa03a3f1387fe65fd38ce2019959ecf78eee5d28708ef1017
+  - id: CON-MARKDOWN-001
+    type: constraint
+    path: docs/product/model/requirements/constraints/con-markdown-001.md
+    digest: sha256:a81f6ae689141269893f729e36703480b3957ee6631cf9623abe9153221e6163
+  - id: CON-NO-GRAPH-DATABASE
+    type: constraint
+    path: docs/product/model/requirements/constraints/con-no-graph-database.md
+    digest: sha256:044eb896ee587071889e9e3eed109e17e814914541c3ef5b675964ef42a0bd48
+  - id: CON-NO-WEB-UI
+    type: constraint
+    path: docs/product/changes/active/chg-snapshot-001/proposed/requirements/constraints/con-no-web-ui.md
+    digest: sha256:a21182095c5c20866891731b18a4732771d49207a90202faa7bcd7ed08007af6
+  - id: CON-PUBLIC-GENERIC
+    type: constraint
+    path: docs/product/model/requirements/constraints/con-public-generic.md
+    digest: sha256:2f8fcaea49733be091f1fd350d4257d774e3e8c05fc7041466c0df0917f37e09
+  - id: CON-SDD-AGNOSTIC
+    type: constraint
+    path: docs/product/model/requirements/constraints/con-sdd-agnostic.md
+    digest: sha256:922bb0819fb6f72347d2a2688bdf782d41047bef3422408a2abc61874078b129
+  - id: FR-SNAPSHOT-001
+    type: functional-requirement
+    path: docs/product/changes/active/chg-snapshot-001/proposed/requirements/functional/fr-snapshot-001.md
+    digest: sha256:edfb03e55ea350f598e4acc37a23d24995ef934e393f61fa939f8cbf86798f59
+  - id: FR-SNAPSHOT-002
+    type: functional-requirement
+    path: docs/product/changes/active/chg-snapshot-001/proposed/requirements/functional/fr-snapshot-002.md
+    digest: sha256:6235dd9e4c418cc5b2cc3f8d07a4f6435aeac0024930dfc28bbbdf5b980a440f
+  - id: JRN-ADOPT-001
+    type: journey
+    path: docs/product/model/journeys/jrn-adopt-001.md
+    digest: sha256:154dc6644fd48dc7c7b0c64731d6c25f8385322846b07fa4d504a99cfd30d596
+  - id: JRN-CHANGE-001
+    type: journey
+    path: docs/product/model/journeys/jrn-change-001.md
+    digest: sha256:83617a551e2bcacb903a1e35c32c44761aaecbe34077524ba2ec8c7a4e5e767a
+  - id: JRN-SDD-HANDOFF-001
+    type: journey
+    path: docs/product/model/journeys/jrn-sdd-handoff-001.md
+    digest: sha256:f866810adb2c220dee83c0fa600f0a5eb793564c5beb44c352fb8d3457f56eb7
+  - id: JRN-SNAPSHOT-001
+    type: journey
+    path: docs/product/changes/active/chg-snapshot-001/proposed/journeys/jrn-snapshot-001.md
+    digest: sha256:3a7c038e85472a90d544659fc3b744fc64317f335cde01cd9e16fbdea2be38bf
+  - id: QR-DETERMINISM-001
+    type: quality-requirement
+    path: docs/product/changes/active/chg-snapshot-001/proposed/requirements/quality/qr-determinism-001.md
+    digest: sha256:6a75f6c0954ad4da6b0e8d8c8364204a10e1a877dad5cf65fa9251ae9e81be3f
+  - id: TERM-CURRENT-PRODUCT-MODEL
+    type: domain-term
+    path: docs/product/model/domain/terms/term-current-product-model.md
+    digest: sha256:fd4c0fd2095b12c4ba4f39866ffd4c0dfe194f658071b7f29400c632da72bb61
+  - id: TERM-PRODUCT-ARTIFACT
+    type: domain-term
+    path: docs/product/model/domain/terms/term-product-artifact.md
+    digest: sha256:0157eb3b46f817fb2e1f7cc4d4292d784ecb65ae6426342e3837e1efefc7e2e4
+  - id: TERM-PRODUCT-GRAPH
+    type: domain-term
+    path: docs/product/model/domain/terms/term-product-graph.md
+    digest: sha256:05cf76832e946885bac73b4e1b22ed565dc4e406b130ecc7af49da4956eab618
+  - id: TERM-PRODUCT-HANDOFF
+    type: domain-term
+    path: docs/product/model/domain/terms/term-product-handoff.md
+    digest: sha256:187b9d9de84c8c90e72cb387cbeba146f7115df815aeb9e98f42d0cb9b56ec48
+  - id: TERM-PRODUCT-SNAPSHOT
+    type: domain-term
+    path: docs/product/changes/active/chg-snapshot-001/proposed/domain/terms/term-product-snapshot.md
+    digest: sha256:ab127c7fc7549bafb74cc5b6660ed37b5191ac1d651b7d0171b6e3304edc486f
+  - id: UC-HANDOFF-STATUS-001
+    type: use-case
+    path: docs/product/model/use-cases/uc-handoff-status-001.md
+    digest: sha256:00ffa2dc1e45f5d8d3b78f7945e537719d613a286e544eb2843efd74b82d4160
+  - id: UC-IMPACT-001
+    type: use-case
+    path: docs/product/model/use-cases/uc-impact-001.md
+    digest: sha256:237f4b5a27f1813ec0866c70dc87268871f677777fbc77ce39deedbe1c9f9714
+  - id: UC-SNAPSHOT-001
+    type: use-case
+    path: docs/product/changes/active/chg-snapshot-001/proposed/use-cases/uc-snapshot-001.md
+    digest: sha256:5013cedf98971751e7912ace47f36e62a8ad2f666c8e9327219ed18dd4825cc7
+  - id: UC-SNAPSHOT-EXPLORE-001
+    type: use-case
+    path: docs/product/changes/active/chg-snapshot-001/proposed/use-cases/uc-snapshot-explore-001.md
+    digest: sha256:45f53871c9d1f4e740be173649c419a6f132e67d8a4d83c2a2ed55b7d6cb01b4
+  - id: UC-VALIDATE-001
+    type: use-case
+    path: docs/product/model/use-cases/uc-validate-001.md
+    digest: sha256:c1b894153899b8d5f5841e988ed24212a36a2c8317387ca78ec08a82e2447fac
+context:
+  path: product-context.md
+  digest: sha256:21d71fc7d3b23d8e9fe4fe7f2b106ecf21b47a5d70e7c6adeb478a686c61ceb3

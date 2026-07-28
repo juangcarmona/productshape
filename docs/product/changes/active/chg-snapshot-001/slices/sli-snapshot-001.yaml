@@ -1,0 +1,48 @@
+schema: product-definition-as-code/delivery-slice/v1alpha1
+id: SLI-SNAPSHOT-001
+title: A readable Product Snapshot in one shareable file
+status: approved
+product-change: CHG-SNAPSHOT-001
+outcome: >-
+  A Product Explorer can open a single HTML file someone shared with them — in a browser, with no
+  repository, no tooling, no server and no network — and read every product artifact organized by
+  kind, each with its status visibly badged, knowing exactly which model revision the page
+  reflects.
+implements:
+  - requirement: FR-SNAPSHOT-001
+    coverage: full
+  - requirement: FR-SNAPSHOT-002
+    coverage: partial
+    scope: >-
+      Browsing artifacts by kind, reading each artifact's rendered content, and displaying each
+      artifact's status visibly. Relationship links, the graph visualization and search are
+      covered by SLI-SNAPSHOT-002.
+  - requirement: QR-DETERMINISM-001
+    coverage: partial
+    scope: >-
+      The snapshot-generation determinism this change adds: regenerating the page from identical
+      model content yields a byte-identical file across runs and platforms. The requirement's
+      pre-existing obligations on validation, impact analysis and handoff status are already
+      implemented and are not this slice's work.
+affects:
+  - UC-SNAPSHOT-001
+  - TERM-PRODUCT-SNAPSHOT
+depends-on: []
+verification:
+  - Running the graph command with the HTML format in a repository with a valid model produces
+    exactly one HTML file under the generated-output area.
+  - The file opens from local disk in a browser with networking disabled, and every artifact of
+    the model is present, organized by kind, with rendered content and a visible status badge.
+  - The page displays the source revision of the model it was generated from where a reader
+    finds it without searching.
+  - Generating twice from the same commit produces byte-identical files, on more than one
+    platform.
+  - Making one artifact file unparseable causes generation to report a diagnostic naming the
+    file rather than emitting a page that silently omits the artifact.
+  - Nothing on the page accepts input that creates, edits or approves anything.
+out-of-scope:
+  - Navigable relationship links between artifacts, the graph visualization and client-side
+    search; SLI-SNAPSHOT-002 delivers them.
+  - Structural impact views, active Product Changes, Delivery Slices and Product Handoffs on
+    the page.
+  - Any hosting, serving or publishing mechanism for the generated file.
