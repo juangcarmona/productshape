@@ -4,8 +4,8 @@ generated-at: 2026-07-28T16:09:28.429Z
 work-item:
   provider: github
   repository: juangcarmona/productshape
-  id: "19"
-  title: "SLI-SNAPSHOT-001: A readable Product Snapshot in one shareable file"
+  id: '19'
+  title: 'SLI-SNAPSHOT-001: A readable Product Snapshot in one shareable file'
 source:
   repository: juangcarmona/productshape
   revision: e29c7a984e43289ab092a26f453141d4779d5103
