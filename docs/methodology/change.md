@@ -8,6 +8,16 @@ validated, human-approved delta. The normative contract is
 
 ## The path, step by step
 
+### 0. Explore the idea (optional)
+
+When the request is fuzzy — an idea that hasn't reached "what should be different and why" —
+`ps:explore` is the recommended first step. It reads the full product graph upfront, reasons
+from a high-altitude structural view to surface gaps and affected areas, and through conversation
+sharpens the idea into a well-formed change request. It ends by offering to hand off to
+`ps:change`. Engineers with a clear request may skip this step and begin at step 1 directly.
+If `ps:change` detects that the intent is unclear, it will warn the user and recommend
+`ps:explore` before proceeding.
+
 ### 1. A change is requested
 
 An idea, a stakeholder request, a defect that turns out to be a definition gap, findings reported

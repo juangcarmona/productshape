@@ -43,6 +43,9 @@ Details in [The product graph](product-graph.md).
 - **[Recover](recover.md)** — brownfield. Reconstruct candidate product knowledge from an
   existing system, with provenance and confidence, for a human to validate. Automated recovery is
   out of scope in v0.1; the workflow and its extension point are defined.
+- **[Explore](change.md#0-explore-the-idea-optional)** — pre-change. A product-graph-aware
+  thinking partner (`ps:explore`) that helps clarify a fuzzy idea against the existing model
+  before committing to a change. Optional: engineers with a clear request skip it.
 - **[Change](change.md)** — the center of v0.1, working end to end. Every semantic evolution
   after the initial baseline goes through an explicit, validated, human-approved Product Change.
 
@@ -51,6 +54,13 @@ Details in [The product graph](product-graph.md).
 The Change operation carries a modification from request to canonical definition:
 
 ```text
+Fuzzy idea
+        │
+        ▼ (optional)
+ps:explore ──────── reads the product graph; surfaces gaps and affected
+        │           areas; sharpens the idea through conversation
+        │
+        ▼
 Product Definition (baseline)
         │
         ▼
