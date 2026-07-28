@@ -2,7 +2,7 @@
 id: CHG-SNAPSHOT-001
 type: product-change
 title: Static product snapshot page for exploring the product graph without the repository
-status: approved
+status: in-progress
 base-revision: 'e29c7a984e43289ab092a26f453141d4779d5103'
 operations:
   add:

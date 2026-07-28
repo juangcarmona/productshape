@@ -77,6 +77,8 @@ export {
   writeGeneratedOutputs,
 } from './outputs.js';
 export type { GeneratedOutputs } from './outputs.js';
+export { escapeHtml, renderMarkdown } from './markdown.js';
+export { buildSnapshotHtml } from './snapshot.js';
 export {
   applyOverlay,
   validateChange,
