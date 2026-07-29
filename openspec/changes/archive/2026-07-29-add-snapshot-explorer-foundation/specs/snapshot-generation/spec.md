@@ -1,44 +1,6 @@
-## Purpose
+# snapshot-generation — delta
 
-Specify the generation of the Product Snapshot: a static, self-contained, read-only HTML page
-projecting the whole product model for people without the repository, produced by
-`prodshape graph --format html` — self-containment, determinism, revision stamping, honest
-diagnostics, and readable by-kind rendering with status badges.
-
-## Requirements
-
-### Requirement: HTML is an output format of the graph command
-
-The system SHALL generate a Product Snapshot when the graph command is invoked with the HTML
-format (`prodshape graph --format html`). Generation SHALL produce exactly one self-contained
-HTML file under the generated-output area and SHALL report the output path. Generation SHALL
-never modify any authored file.
-
-#### Scenario: Engineer generates a snapshot
-
-- **WHEN** an engineer runs `prodshape graph --format html` in a repository with a valid product model
-- **THEN** exactly one HTML file is written under the generated-output area and its path is reported
-
-#### Scenario: Generation is read-only towards the model
-
-- **WHEN** a snapshot is generated
-- **THEN** no file under the product model directory is created, modified or deleted
-
-### Requirement: The snapshot is one self-contained file
-
-The generated page SHALL function completely when opened from local disk with no server and no
-network access: no external scripts, styles, fonts, images or data are referenced. All CSS and
-any data the page needs SHALL be embedded in the single file.
-
-#### Scenario: Offline open from local disk
-
-- **WHEN** the generated file is opened in a browser from `file://` with networking disabled
-- **THEN** every capability of the page works and no network request is attempted
-
-#### Scenario: No external references in the output
-
-- **WHEN** the generated HTML is inspected
-- **THEN** it contains no `http(s)://` resource references required for rendering
+## MODIFIED Requirements
 
 ### Requirement: Every artifact is rendered, organized by kind, with a status badge
 
@@ -79,78 +41,6 @@ the selected one is rendered.
 - **THEN** the list and the artifact detail are usable as separate navigable states with no horizontal
   page scrolling
 
-### Requirement: The source revision is stamped on the page
-
-The page SHALL display the source revision of the model it was generated from, placed where a
-reader finds it without searching.
-
-#### Scenario: Reader checks currency
-
-- **WHEN** a reader opens the snapshot
-- **THEN** the model's source revision is visible on the page without scrolling into artifact content
-
-### Requirement: Generation is deterministic
-
-Identical model content SHALL yield a byte-identical HTML file across runs and platforms. Output
-SHALL NOT embed timestamps, random values, or environment-dependent content; artifact ordering
-SHALL be stable; line endings SHALL be normalized.
-
-#### Scenario: Double generation is byte-identical
-
-- **WHEN** the snapshot is generated twice from the same commit
-- **THEN** the two files are byte-identical
-
-#### Scenario: Cross-platform stability
-
-- **WHEN** the snapshot is generated from the same content on different platforms
-- **THEN** the files are byte-identical
-
-### Requirement: Generation reports honest diagnostics
-
-When artifacts cannot be parsed, generation SHALL report diagnostics naming each affected file
-and SHALL NOT emit a snapshot that silently omits part of the model.
-
-#### Scenario: Unparseable artifact blocks silent omission
-
-- **WHEN** one artifact file is unparseable and generation is attempted
-- **THEN** a diagnostic names the file and no snapshot lacking the artifact is emitted silently
-
-### Requirement: The page is read-only
-
-The page SHALL offer no capability to create, edit, annotate or approve anything: no forms, no
-editable fields, no controls that mutate state beyond client-side presentation. The page SHALL NOT
-persist anything outside the address of the current view: no browser storage, no cookies, no session,
-no durable store of any kind. Accepting a filter selection or a selected artifact is presentation
-state, not input that becomes product knowledge.
-
-#### Scenario: No mutating controls
-
-- **WHEN** the generated page is inspected and exercised
-- **THEN** nothing on it accepts input that creates, edits or approves product knowledge
-
-#### Scenario: Nothing is persisted
-
-- **WHEN** a reader explores the page and browser storage and cookies are then inspected
-- **THEN** the snapshot has written nothing, and reloading restores only what the address encodes
-
-### Requirement: Relationships are navigable in both directions
-
-On an artifact's rendered view, every reference to another artifact SHALL be a link that
-navigates to the referenced artifact — both the relationships the artifact's frontmatter declares
-(outgoing) and the derived reverse views computed from the rest of the model (incoming,
-"referenced by"). The reader SHALL NOT need to know which side authored the edge.
-
-#### Scenario: Outgoing reference is a link
-
-- **WHEN** a reader views a use case that declares a governing business rule
-- **THEN** the rule's mention is a link that navigates to the rule's rendered view
-
-#### Scenario: Derived incoming reference is a link
-
-- **WHEN** a reader views a use case from which a functional requirement derives
-- **THEN** the requirement appears in a "referenced by" view as a link, although no authored
-  file states that edge on the use case
-
 ### Requirement: Graph visualization with node-selection highlighting
 
 The whole-model graph visualization SHALL NOT be part of the page's opening view and SHALL be reached
@@ -170,35 +60,25 @@ navigation to the artifact.
 - **THEN** it is presented, and selecting a node highlights that artifact's relationships and offers
   navigation to it
 
-### Requirement: Offline client-side search
+### Requirement: The page is read-only
 
-The page SHALL provide search over artifact IDs, titles and body content, working entirely
-client-side with no network access, from the same single self-contained file.
+The page SHALL offer no capability to create, edit, annotate or approve anything: no forms, no
+editable fields, no controls that mutate state beyond client-side presentation. The page SHALL NOT
+persist anything outside the address of the current view: no browser storage, no cookies, no session,
+no durable store of any kind. Accepting a filter selection or a selected artifact is presentation
+state, not input that becomes product knowledge.
 
-#### Scenario: Search by ID, title and content offline
+#### Scenario: No mutating controls
 
-- **WHEN** the browser is offline and the reader searches for an artifact's ID, a word from its
-  title, or a term from its body
-- **THEN** the matching artifacts are returned as navigable results
+- **WHEN** the generated page is inspected and exercised
+- **THEN** nothing on it accepts input that creates, edits or approves product knowledge
 
-### Requirement: Navigation additions preserve the generation contract
+#### Scenario: Nothing is persisted
 
-The embedded script and data serving navigation, visualization and search SHALL be part of the
-single self-contained file, SHALL reference no external resources, SHALL offer no capability to
-create, edit, annotate or approve anything, and SHALL preserve deterministic generation:
-identical model content still yields a byte-identical file.
+- **WHEN** a reader explores the page and browser storage and cookies are then inspected
+- **THEN** the snapshot has written nothing, and reloading restores only what the address encodes
 
-#### Scenario: Still one deterministic self-contained file
-
-- **WHEN** the snapshot is generated twice from identical model content
-- **THEN** the two files are byte-identical, and the page functions fully from local disk with
-  networking disabled
-
-#### Scenario: Still read-only
-
-- **WHEN** the page's interactive features are exercised
-- **THEN** nothing creates, edits or approves product knowledge; interactivity is limited to
-  presentation
+## ADDED Requirements
 
 ### Requirement: The snapshot opens in an orientation view
 
