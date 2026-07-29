@@ -5,8 +5,20 @@ import { listFilesRecursive, repoRoot, validateMarkdownDocument } from '../helpe
 const modelDir = join(repoRoot, 'docs', 'product', 'model');
 
 const expectedIds: Record<string, string[]> = {
-  actor: ['ACT-PRODUCT-ENGINEER', 'ACT-REPOSITORY-MAINTAINER', 'ACT-AI-ASSISTANT'],
-  journey: ['JRN-ADOPT-001', 'JRN-CHANGE-001', 'JRN-SDD-HANDOFF-001'],
+  actor: [
+    'ACT-PRODUCT-ENGINEER',
+    'ACT-REPOSITORY-MAINTAINER',
+    'ACT-AI-ASSISTANT',
+    // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
+    'ACT-PRODUCT-EXPLORER',
+  ],
+  journey: [
+    'JRN-ADOPT-001',
+    'JRN-CHANGE-001',
+    'JRN-SDD-HANDOFF-001',
+    // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
+    'JRN-SNAPSHOT-001',
+  ],
   'use-case': [
     'UC-INIT-001',
     'UC-DEFINE-001',
@@ -22,6 +34,9 @@ const expectedIds: Record<string, string[]> = {
     // Added by CHG-CLI-POLISH-001 (adoption improvements).
     'UC-SCHEMA-001',
     'UC-FIX-001',
+    // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
+    'UC-SNAPSHOT-001',
+    'UC-SNAPSHOT-EXPLORE-001',
   ],
   'business-rule': [
     'BR-CANONICAL-001',
@@ -42,6 +57,8 @@ const expectedIds: Record<string, string[]> = {
     // Added by CHG-BRAND-001 (ProductShape brand adoption).
     'TERM-METHODOLOGY',
     'TERM-REFERENCE-IMPLEMENTATION',
+    // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
+    'TERM-PRODUCT-SNAPSHOT',
   ],
   'bounded-context': ['BC-PRODUCT-DEFINITION', 'BC-DELIVERY-INTEGRATION'],
   'functional-requirement': [
@@ -65,6 +82,9 @@ const expectedIds: Record<string, string[]> = {
     'FR-FIX-001',
     // Added by CHG-MODEL-TRUEUP-001 (baseline corrected against shipped behaviour).
     'FR-DOCTOR-001',
+    // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
+    'FR-SNAPSHOT-001',
+    'FR-SNAPSHOT-002',
   ],
   'quality-requirement': [
     'QR-PORTABILITY-001',
