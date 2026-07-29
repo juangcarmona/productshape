@@ -152,8 +152,8 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
   program
     .command('graph')
     .description('Compile the product graph and write generated outputs')
-    .option('--format <format>', 'output format: summary, json or mermaid', 'summary')
-    .action(async (options: { format: 'summary' | 'json' | 'mermaid' }) => {
+    .option('--format <format>', 'output format: summary, json, mermaid or html', 'summary')
+    .action(async (options: { format: 'summary' | 'json' | 'mermaid' | 'html' }) => {
       capture.code = await runGraph(io, options);
     });
 

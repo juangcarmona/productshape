@@ -1,4 +1,4 @@
-import { access, cp, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
+import { access, cp, mkdir, mkdtemp, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -121,6 +121,35 @@ describe('prodshape graph / inspect / impact', () => {
     const result = await run(['graph', '--format', 'mermaid'], workDir);
     expect(result.code).toBe(0);
     expect(result.out.join('\n')).toMatch(/^flowchart LR/);
+  });
+
+  it('graph --format html writes one self-contained snapshot and reports its path', async () => {
+    const result = await run(['graph', '--format', 'html'], workDir);
+    expect(result.code).toBe(0);
+    expect(result.out.at(-1)).toMatch(/snapshot\.html$/);
+    const snapshotPath = join(workDir, '.product', 'generated', 'snapshot.html');
+    const html = await readFile(snapshotPath, 'utf8');
+    // Every artifact of the model is present (count matches the graph summary of 9 nodes).
+    expect((html.match(/<article class="artifact"/g) ?? []).length).toBe(9);
+    expect(html).toContain('class="badge');
+    expect(html).toMatch(/revision (unavailable|[0-9a-f]{40})/);
+    // Self-contained and read-only: no scripts, no external resources, no inputs.
+    expect(html).not.toContain('<script');
+    expect(html).not.toContain('src=');
+    expect(html).not.toContain('<link');
+    expect(html).not.toContain('<input');
+    expect(html).not.toContain('<form');
+  });
+
+  it('graph --format html is byte-identical across regenerations', async () => {
+    const snapshotPath = join(workDir, '.product', 'generated', 'snapshot.html');
+    await run(['graph', '--format', 'html'], workDir);
+    const first = await readFile(snapshotPath, 'utf8');
+    await rm(snapshotPath);
+    await run(['graph', '--format', 'html'], workDir);
+    const second = await readFile(snapshotPath, 'utf8');
+    expect(second).toBe(first);
+    expect(first).not.toContain('\r');
   });
 
   it('inspect shows outgoing and derived incoming relationships', async () => {
