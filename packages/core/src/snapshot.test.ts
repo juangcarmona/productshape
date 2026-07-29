@@ -738,3 +738,299 @@ describe('relationship groups', () => {
     expect(doc.querySelectorAll('#detail .rels p.none').length).toBe(2);
   });
 });
+
+describe('ranked search', () => {
+  let dom: JSDOM;
+  let doc: Document;
+
+  /**
+   * A model built to expose ranking: "product" appears in several titles, in one identifier prefix,
+   * and in many bodies. Document order puts the body-only matches first, which is exactly the failure
+   * the previous implementation had.
+   */
+  const ranked = [
+    artifact(
+      'ACT-ALPHA',
+      'actor',
+      { 'actor-kind': 'human' },
+      {
+        title: 'Alpha operator',
+        body: '## Purpose\n\nMentions product repeatedly: product, product, product.',
+      },
+    ),
+    artifact(
+      'ACT-BETA',
+      'actor',
+      { 'actor-kind': 'human' },
+      {
+        title: 'Beta operator',
+        body: '## Purpose\n\nAlso mentions product in its body only.',
+      },
+    ),
+    artifact(
+      'TERM-PRODUCT',
+      'domain-term',
+      { 'defined-in': 'BC-Z' },
+      {
+        title: 'Product Snapshot',
+        body: '## Definition\n\nA projection.',
+      },
+    ),
+    artifact(
+      'BC-Z',
+      'bounded-context',
+      {},
+      {
+        title: 'Zeta context',
+        body: '## Responsibility\n\nThe product definition lives here.',
+      },
+    ),
+    artifact(
+      'UC-PRODUCT-READ',
+      'use-case',
+      { 'primary-actor': 'ACT-ALPHA' },
+      {
+        title: 'Read the catalogue',
+        body: '## Goal\n\nNothing relevant.',
+      },
+    ),
+    artifact(
+      'FR-NAMED',
+      'functional-requirement',
+      { 'derived-from': ['UC-PRODUCT-READ'] },
+      {
+        title: 'A requirement about the product model',
+        body: '## Requirement\n\nUnrelated text.',
+      },
+    ),
+  ];
+
+  const open = (artifacts = ranked): void => {
+    dom = new JSDOM(build(artifacts), {
+      url: 'https://snapshot.invalid/snapshot.html#/artifacts',
+      runScripts: 'dangerously',
+    });
+    doc = dom.window.document;
+  };
+  const type = (q: string): void => {
+    const input = doc.getElementById('q-body') as HTMLInputElement;
+    input.value = q;
+    input.dispatchEvent(new dom.window.Event('input'));
+  };
+  const ids = (): string[] =>
+    [...doc.querySelectorAll('#q-body-results li[data-id]')].map(
+      (li) => li.getAttribute('data-id') ?? '',
+    );
+  const status = (): string => doc.getElementById('q-body-status')?.textContent ?? '';
+  const key = (k: string): void => {
+    const input = doc.getElementById('q-body') as HTMLInputElement;
+    input.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: k, bubbles: true }));
+  };
+
+  beforeEach(() => open());
+
+  it('puts an exact identifier match first', () => {
+    type('TERM-PRODUCT');
+    expect(ids()[0]).toBe('TERM-PRODUCT');
+  });
+
+  it('ranks identifier prefix above titles, and titles above body-only matches', () => {
+    type('product');
+    const order = ids();
+    // TERM-PRODUCT's title starts with "Product" — a prefix-title match, tier 3 of the five.
+    // UC-PRODUCT-READ matches only as an identifier substring, which is not a prefix, so it sits in
+    // the substring tier below it. FR-NAMED's title contains "product" further in, same tier.
+    expect(order.indexOf('TERM-PRODUCT')).toBeLessThan(order.indexOf('UC-PRODUCT-READ'));
+    expect(order.indexOf('TERM-PRODUCT')).toBeLessThan(order.indexOf('FR-NAMED'));
+    // Both title matches outrank the artifacts matched only in their bodies.
+    expect(order.indexOf('FR-NAMED')).toBeLessThan(order.indexOf('ACT-ALPHA'));
+    expect(order.indexOf('FR-NAMED')).toBeLessThan(order.indexOf('BC-Z'));
+  });
+
+  it('no longer buries title matches under body matches, the failure that motivated the slice', () => {
+    type('product');
+    const order = ids();
+    // Document order would have put ACT-ALPHA and ACT-BETA first; ranking must not.
+    expect(order[0]).not.toBe('ACT-ALPHA');
+    expect(order[0]).not.toBe('ACT-BETA');
+    for (const titled of ['TERM-PRODUCT', 'FR-NAMED']) {
+      expect(order.indexOf(titled)).toBeLessThan(order.indexOf('ACT-ALPHA'));
+    }
+  });
+
+  it('matches by artifact kind', () => {
+    type('Domain Terms');
+    expect(ids()).toContain('TERM-PRODUCT');
+  });
+
+  it('shows a snippet for body matches only, containing the phrase', () => {
+    type('mentions product repeatedly');
+    const li = doc.querySelector('#q-body-results li[data-id="ACT-ALPHA"]');
+    // The snippet preserves the body's original casing; the match itself is case-insensitive.
+    expect(li?.querySelector('.snippet')?.textContent?.toLowerCase()).toContain(
+      'mentions product repeatedly',
+    );
+    type('TERM-PRODUCT');
+    const exact = doc.querySelector('#q-body-results li[data-id="TERM-PRODUCT"]');
+    expect(exact?.querySelector('.snippet')).toBeNull();
+  });
+
+  it('keeps snippets as text when the body contains markup-like content', () => {
+    const nasty = [
+      artifact(
+        'ACT-N',
+        'actor',
+        { 'actor-kind': 'human' },
+        {
+          body: `## Purpose\n\nfindme ${hostile}`,
+        },
+      ),
+    ];
+    open(nasty);
+    type('findme');
+    const snippet = doc.querySelector('#q-body-results .snippet');
+    expect(snippet?.querySelector('script')).toBeNull();
+    expect(snippet?.textContent).toContain('<script>alert(1)</script>');
+  });
+
+  it('reports the total match count and never omits a higher-ranked match', () => {
+    const many = Array.from({ length: 40 }, (_, i) =>
+      artifact(
+        `UC-M${String(i).padStart(2, '0')}`,
+        'use-case',
+        { 'primary-actor': 'ACT-ALPHA' },
+        {
+          title: `Case ${i}`,
+          body: '## Goal\n\nwidget appears in every body.',
+        },
+      ),
+    ).concat(ranked);
+    open(many);
+    type('widget');
+    expect(status()).toMatch(/40 matches · showing the top 25/);
+    expect(ids().length).toBe(25);
+  });
+
+  it('states the count plainly when nothing is truncated', () => {
+    type('TERM-PRODUCT');
+    expect(status()).toBe('1 match');
+  });
+
+  it('names the query when nothing matches', () => {
+    type('zzz-nothing-here');
+    expect(status()).toContain('zzz-nothing-here');
+    expect(doc.querySelector('#q-body-results .empty')?.textContent).toContain('zzz-nothing-here');
+    expect(ids().length).toBe(0);
+  });
+
+  it('moves an active marker with the arrow keys and reports it to assistive technology', () => {
+    type('product');
+    const input = doc.getElementById('q-body') as HTMLInputElement;
+    expect(input.getAttribute('aria-activedescendant')).toBeNull();
+    key('ArrowDown');
+    const first = doc.querySelector('#q-body-results li[data-active="true"]');
+    expect(first?.getAttribute('data-id')).toBe(ids()[0]);
+    expect(input.getAttribute('aria-activedescendant')).toBe(first?.id);
+    key('ArrowDown');
+    expect(
+      doc.querySelector('#q-body-results li[data-active="true"]')?.getAttribute('data-id'),
+    ).toBe(ids()[1]);
+    key('ArrowUp');
+    expect(
+      doc.querySelector('#q-body-results li[data-active="true"]')?.getAttribute('data-id'),
+    ).toBe(ids()[0]);
+  });
+
+  it('commits the active result with Enter, moving the single selection', () => {
+    type('product');
+    key('ArrowDown');
+    const target = ids()[0];
+    key('Enter');
+    expect(dom.window.location.hash).toBe(`#/artifacts/${target}`);
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+    expect(doc.querySelector('#detail h3.artifact')).not.toBeNull();
+  });
+
+  it('clears with Escape without discarding the selected artifact', () => {
+    dom.window.location.hash = '#/artifacts/BC-Z';
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+    type('product');
+    expect(ids().length).toBeGreaterThan(0);
+    key('Escape');
+    expect(ids().length).toBe(0);
+    expect(status()).toBe('');
+    expect(doc.querySelector('#detail h3.artifact')?.textContent).toBe('Zeta context');
+  });
+
+  it('orders identically for identical model content', () => {
+    type('product');
+    const first = ids();
+    open();
+    type('product');
+    expect(ids()).toEqual(first);
+  });
+
+  it('finds body text wherever the renderer put it, and decodes escaped entities', () => {
+    const varied = [
+      artifact(
+        'ACT-V',
+        'actor',
+        { 'actor-kind': 'human' },
+        {
+          body: [
+            '## Purpose',
+            '',
+            'A paragraph with **bold** and `inlinecode` words.',
+            '',
+            '- a bullet containing bulletword',
+            '',
+            '```',
+            'fenced fencedword here',
+            '```',
+            '',
+            'And an escaped tag: <div class="x"> stays text.',
+          ].join('\n'),
+        },
+      ),
+    ];
+    // The index strips the renderer's tags textually rather than parsing the DOM, so every one of
+    // these has to remain findable — including content inside headings, lists and code fences.
+    for (const needle of ['Purpose', 'bold', 'inlinecode', 'bulletword', 'fencedword']) {
+      open(varied);
+      type(needle);
+      expect(ids(), `searching for ${needle}`).toContain('ACT-V');
+    }
+    // Escaped entities are decoded, so authored markup is searchable as the text the author wrote.
+    open(varied);
+    type('<div class="x">');
+    expect(ids()).toContain('ACT-V');
+  });
+
+  it('does not glue adjacent words together when stripping tags', () => {
+    const adjacent = [
+      artifact(
+        'ACT-G',
+        'actor',
+        { 'actor-kind': 'human' },
+        {
+          body: '## Purpose\n\nOne **two** three and `four` five.',
+        },
+      ),
+    ];
+    open(adjacent);
+    // "One two three" must still read as separate words after the <strong> around "two" is removed.
+    type('one two three');
+    expect(ids()).toContain('ACT-G');
+    type('four five');
+    expect(ids()).toContain('ACT-G');
+  });
+
+  it('exposes the results as a listbox described by the status line', () => {
+    const input = doc.getElementById('q-body') as HTMLInputElement;
+    expect(input.getAttribute('role')).toBe('combobox');
+    expect(input.getAttribute('aria-controls')).toBe('q-body-results');
+    expect(input.getAttribute('aria-describedby')).toBe('q-body-status');
+    expect(doc.getElementById('q-body-results')?.getAttribute('role')).toBe('listbox');
+    expect(doc.getElementById('q-body-status')?.getAttribute('aria-live')).toBe('polite');
+  });
+});

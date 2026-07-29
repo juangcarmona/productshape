@@ -167,6 +167,13 @@ ul.kinds .count { margin-left: auto; font-family: var(--mono); font-variant-nume
 }
 
 ul.plain { list-style: none; margin: 0; padding: 0; }
+.master .filters p.qstatus { margin: 0; font-size: 0.72rem; color: var(--muted); min-height: 0.9rem; }
+ul.results { list-style: none; margin: 0; padding: 0; max-height: 18rem; overflow-y: auto; }
+ul.results li { padding: 0.25rem 0.35rem; border-bottom: 1px solid var(--line); border-left: 3px solid transparent; }
+ul.results li[data-active='true'] { background: var(--accent-soft); border-left-color: var(--accent); }
+ul.results li.empty { color: var(--muted); font-size: 0.8rem; border-left: none; }
+ul.results .hithead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.35rem; }
+ul.results .snippet { display: block; margin-top: 0.1rem; font-size: 0.75rem; color: var(--muted); overflow-wrap: anywhere; }
 ul.plain li { padding: 0.18rem 0; border-bottom: 1px solid var(--line); }
 ul.idlist { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.3rem 0.5rem; }
 ul.idlist a { font-family: var(--mono); font-size: 0.8rem; border: 1px solid var(--line); border-radius: 2px; padding: 0.1rem 0.4rem; }
@@ -748,54 +755,186 @@ const script = String.raw`
     });
   };
 
-  /* ------------------------------------------------------------------ carried-forward search */
+  /* ----------------------------------------------------------- ranked search */
 
-  var searchText = null;
+  /* Ranking tiers, best first. Ordering is (tier, id): identifiers are unique, so it is total. */
+  var TIER_EXACT_ID = 0;
+  var TIER_ID_PREFIX = 1;
+  var TIER_TITLE_EXACT = 2;
+  var TIER_TITLE_PART = 3;
+  var TIER_BODY = 4;
+  var RESULT_LIMIT = 25;
+  var SNIPPET_RADIUS = 60;
+
+  var plainText = null;
+
+  /**
+   * Plain text from one rendered body. The generator emits a small, known tag vocabulary and escapes
+   * exactly four entities, so stripping tags textually is both exact and far cheaper than parsing
+   * every body through the DOM — which cost 849 ms on the first keystroke at 730 artifacts, since it
+   * is a full HTML parse of the entire model before a single result can be shown.
+   */
+  var stripTags = function (html) {
+    return html
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&amp;/g, '&')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
   var searchIndex = function () {
-    if (searchText) return searchText;
-    searchText = {};
-    var probe = doc.createElement('div');
+    if (plainText) return plainText;
+    plainText = {};
     for (var i = 0; i < ARTIFACTS.length; i += 1) {
-      probe.innerHTML = ARTIFACTS[i].body;
-      searchText[ARTIFACTS[i].id] = (probe.textContent || '').toLowerCase().replace(/\s+/g, ' ');
+      plainText[ARTIFACTS[i].id] = stripTags(ARTIFACTS[i].body);
     }
-    clear(probe);
-    return searchText;
+    return plainText;
+  };
+
+  /* Build it once the page is idle, so the reader's first keystroke never waits for it. */
+  var warmIndex = function () {
+    if (typeof window.requestIdleCallback === 'function') {
+      window.requestIdleCallback(function () {
+        searchIndex();
+      });
+    } else {
+      window.setTimeout(searchIndex, 200);
+    }
+  };
+
+  /** Classify one artifact against the query, or null when it does not match at all. */
+  var scoreArtifact = function (artifact, needle, text) {
+    var id = artifact.id.toLowerCase();
+    if (id === needle) return { tier: TIER_EXACT_ID };
+    if (id.indexOf(needle) === 0) return { tier: TIER_ID_PREFIX };
+    var title = (artifact.title || '').toLowerCase();
+    if (title === needle || title.indexOf(needle) === 0) return { tier: TIER_TITLE_EXACT };
+    /* A kind name is the same kind of intent as a title, so it shares that tier. */
+    var kindName = (LABELS[artifact.kind] || artifact.kind).toLowerCase();
+    if (kindName === needle || kindName.indexOf(needle) === 0) return { tier: TIER_TITLE_EXACT };
+    if (title.indexOf(needle) > 0 || kindName.indexOf(needle) > 0) return { tier: TIER_TITLE_PART };
+    if (id.indexOf(needle) > 0) return { tier: TIER_TITLE_PART };
+    var body = text[artifact.id] || '';
+    var at = body.toLowerCase().indexOf(needle);
+    if (at >= 0) return { tier: TIER_BODY, at: at };
+    return null;
+  };
+
+  /**
+   * Score every artifact, then sort, then cap. Capping during the scan is what made the previous
+   * implementation unable to rank: it could not know whether a better match lay further down.
+   */
+  var searchAll = function (needle) {
+    var text = searchIndex();
+    var hits = [];
+    for (var i = 0; i < ARTIFACTS.length; i += 1) {
+      var score = scoreArtifact(ARTIFACTS[i], needle, text);
+      if (score) hits.push({ artifact: ARTIFACTS[i], tier: score.tier, at: score.at });
+    }
+    hits.sort(function (a, b) {
+      if (a.tier !== b.tier) return a.tier - b.tier;
+      return a.artifact.id < b.artifact.id ? -1 : a.artifact.id > b.artifact.id ? 1 : 0;
+    });
+    return hits;
+  };
+
+  /** A window of the artifact's own text around the match, trimmed at both ends when cut. */
+  var snippetFor = function (id, at) {
+    var body = searchIndex()[id] || '';
+    var from = Math.max(0, at - SNIPPET_RADIUS);
+    var to = Math.min(body.length, at + SNIPPET_RADIUS);
+    return (from > 0 ? '…' : '') + body.slice(from, to) + (to < body.length ? '…' : '');
   };
 
   var wireSearch = function () {
     var input = doc.getElementById('q-body');
     var results = doc.getElementById('q-body-results');
+    var status = doc.getElementById('q-body-status');
     if (!input || !results) return;
-    input.addEventListener('input', function () {
-      var q = input.value.trim().toLowerCase();
-      clear(results);
-      if (!q) return;
-      var text = searchIndex();
-      var hits = [];
-      for (var i = 0; i < ARTIFACTS.length && hits.length < 25; i += 1) {
-        var a = ARTIFACTS[i];
-        if (
-          a.id.toLowerCase().indexOf(q) >= 0 ||
-          (a.title || '').toLowerCase().indexOf(q) >= 0 ||
-          (text[a.id] || '').indexOf(q) >= 0
-        ) {
-          hits.push(a);
+
+    var active = -1;
+    var shown = [];
+
+    var markActive = function () {
+      var items = results.querySelectorAll('li[data-id]');
+      for (var i = 0; i < items.length; i += 1) {
+        if (i === active) {
+          items[i].setAttribute('data-active', 'true');
+          input.setAttribute('aria-activedescendant', items[i].id);
+        } else {
+          items[i].removeAttribute('data-active');
         }
       }
-      if (hits.length === 0) {
-        results.appendChild(el('li', 'empty', 'Nothing matches "' + q + '".'));
+      if (active < 0) input.removeAttribute('aria-activedescendant');
+    };
+
+    var render = function () {
+      var q = input.value.trim();
+      clear(results);
+      active = -1;
+      shown = [];
+      input.removeAttribute('aria-activedescendant');
+      if (!q) {
+        if (status) status.textContent = '';
         return;
       }
-      for (var h = 0; h < hits.length; h += 1) {
+      var hits = searchAll(q.toLowerCase());
+      if (hits.length === 0) {
+        if (status) status.textContent = 'Nothing matches “' + q + '”.';
+        results.appendChild(el('li', 'empty', 'Nothing matches “' + q + '”.'));
+        return;
+      }
+      shown = hits.slice(0, RESULT_LIMIT);
+      if (status) {
+        /* Truncation is never silent: a reader who sees 25 of 73 must be told there are 73. */
+        status.textContent =
+          hits.length > shown.length
+            ? hits.length + ' matches · showing the top ' + shown.length
+            : hits.length + (hits.length === 1 ? ' match' : ' matches');
+      }
+      for (var h = 0; h < shown.length; h += 1) {
+        var hit = shown[h];
         var li = el('li');
-        li.appendChild(tokenFor(hits[h].kind));
+        li.id = 'q-hit-' + h;
+        li.setAttribute('data-id', hit.artifact.id);
+        var head = el('span', 'hithead');
+        head.appendChild(tokenFor(hit.artifact.kind));
         var link = doc.createElement('a');
-        link.href = '#/artifacts/' + hits[h].id;
-        link.textContent = hits[h].title || hits[h].id;
-        li.appendChild(link);
-        li.appendChild(el('span', 'aid mono', hits[h].id));
+        link.href = '#/artifacts/' + hit.artifact.id;
+        link.textContent = hit.artifact.title || hit.artifact.id;
+        head.appendChild(link);
+        head.appendChild(el('span', 'aid mono', hit.artifact.id));
+        li.appendChild(head);
+        /* Only a body match needs an excerpt; for the others the reason is already on screen. */
+        if (hit.tier === TIER_BODY && typeof hit.at === 'number') {
+          li.appendChild(el('span', 'snippet', snippetFor(hit.artifact.id, hit.at)));
+        }
         results.appendChild(li);
+      }
+    };
+
+    input.addEventListener('input', render);
+    input.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape') {
+        input.value = '';
+        render();
+        return;
+      }
+      if (shown.length === 0) return;
+      if (ev.key === 'ArrowDown') {
+        active = active + 1 >= shown.length ? 0 : active + 1;
+        markActive();
+        ev.preventDefault();
+      } else if (ev.key === 'ArrowUp') {
+        active = active - 1 < 0 ? shown.length - 1 : active - 1;
+        markActive();
+        ev.preventDefault();
+      } else if (ev.key === 'Enter' && active >= 0) {
+        go({ view: 'artifacts', id: shown[active].artifact.id });
+        ev.preventDefault();
       }
     });
   };
@@ -878,6 +1017,7 @@ const script = String.raw`
     });
   }
   wireSearch();
+  warmIndex();
 
   window.addEventListener('hashchange', function () {
     if (suppress) {
@@ -1119,8 +1259,10 @@ export function buildSnapshotHtml(
     `<label for="f-kind">Kind<select id="f-kind"><option value="">All kinds</option>${kindOptions}</select></label>`,
     `<label for="f-status">Status<select id="f-status"><option value="">Any status</option>${statusOptions}</select></label>`,
     '<label for="f-text">Filter by name or ID<input id="f-text" type="search" autocomplete="off"></label>',
-    '<label for="q-body">Search content<input id="q-body" type="search" autocomplete="off"></label>',
-    '<ul class="plain" id="q-body-results"></ul>',
+    '<label for="q-body">Search</label>',
+    '<input id="q-body" type="search" autocomplete="off" role="combobox" aria-expanded="true" aria-controls="q-body-results" aria-describedby="q-body-status">',
+    '<p class="qstatus" id="q-body-status" role="status" aria-live="polite"></p>',
+    '<ul class="results" id="q-body-results" role="listbox" aria-label="Search results"></ul>',
     '</div>',
     '<div class="listwrap"><div id="artifact-list"></div></div>',
     '<p class="counts" id="list-counts"></p>',

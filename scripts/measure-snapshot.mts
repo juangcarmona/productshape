@@ -57,6 +57,17 @@ interface Measurement {
    * reader experiences and is recorded as such.
    */
   selectionMs: { hardest: string; samples: number; p50: number; p95: number; max: number };
+  /**
+   * Search latency: elapsed time from the query changing to results being displayed, for a query
+   * matching one artifact, roughly a tenth of the model, and every artifact. Measured in jsdom, so
+   * like the selection figure it excludes layout and paint.
+   */
+  searchMs: { queries: string[]; samples: number; p50: number; p95: number; max: number };
+  /**
+   * The first query a reader ever types, which additionally builds the plain-text body index. This
+   * is the figure they actually feel; the warm figures above are every query after it.
+   */
+  firstSearchMs: number;
 }
 
 /** Bytes of markup the browser parses into the document at open: <body> up to the inert data. */
@@ -315,8 +326,47 @@ async function measure(label: string, modelRoot: string): Promise<Measurement> {
       dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
     }
   }
+  /* The first-ever query in a fresh document, including the lazy index build. */
+  let firstSearchMs = 0;
+  {
+    const cold = new JSDOM(html, {
+      url: 'https://snapshot.invalid/snapshot.html#/artifacts',
+      runScripts: 'dangerously',
+    });
+    const coldField = cold.window.document.getElementById('q-body') as HTMLInputElement | null;
+    if (coldField) {
+      coldField.value = 'product';
+      const started = performance.now();
+      coldField.dispatchEvent(new cold.window.Event('input'));
+      firstSearchMs = round(performance.now() - started, 2);
+    }
+    cold.window.close();
+  }
+
+  /* Search: one match, a tenth of the model, everything. */
+  const oneOnly = artifacts[0]?.id ?? 'nothing';
+  const searchQueries = [oneOnly, 'product', 'e'];
+  const searchTimings: number[] = [];
+  const field = dom.window.document.getElementById('q-body') as HTMLInputElement | null;
+  if (field) {
+    dom.window.location.hash = '#/artifacts';
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+    for (let r = 0; r < 10 + 3; r += 1) {
+      for (const query of searchQueries) {
+        field.value = query;
+        const started = performance.now();
+        field.dispatchEvent(new dom.window.Event('input'));
+        const elapsed = performance.now() - started;
+        if (r >= 3) searchTimings.push(elapsed);
+      }
+    }
+  }
+
   dom.window.close();
   timings.sort((a, b) => a - b);
+  searchTimings.sort((a, b) => a - b);
+  const atOf = (list: number[], q: number): number =>
+    round(list[Math.min(list.length - 1, Math.floor(list.length * q))] ?? 0, 2);
   const at = (q: number): number =>
     round(timings[Math.min(timings.length - 1, Math.floor(timings.length * q))] ?? 0, 2);
 
@@ -341,6 +391,14 @@ async function measure(label: string, modelRoot: string): Promise<Measurement> {
       p50: at(0.5),
       p95: at(0.95),
       max: round(timings.at(-1) ?? 0, 2),
+    },
+    firstSearchMs,
+    searchMs: {
+      queries: searchQueries,
+      samples: searchTimings.length,
+      p50: atOf(searchTimings, 0.5),
+      p95: atOf(searchTimings, 0.95),
+      max: round(searchTimings.at(-1) ?? 0, 2),
     },
   };
 }
@@ -392,11 +450,11 @@ for (const [k, v] of Object.entries(environment)) {
 }
 process.stdout.write(`\n`);
 process.stdout.write(
-  `${pad('model', 24)}${pad('artifacts', 11)}${pad('rels', 7)}${pad('file B', 12)}${pad('opening B', 12)}${pad('share', 8)}${pad('nodes/edges', 13)}${pad('gen ms', 14)}${pad('B/authored', 11)}${pad('select p95', 11)}\n`,
+  `${pad('model', 24)}${pad('artifacts', 11)}${pad('rels', 7)}${pad('file B', 12)}${pad('opening B', 12)}${pad('share', 8)}${pad('nodes/edges', 13)}${pad('gen ms', 14)}${pad('B/authored', 11)}${pad('select p95', 11)}${pad('search p95', 11)}\n`,
 );
 for (const r of results) {
   process.stdout.write(
-    `${pad(r.model, 24)}${pad(num(r.artifacts), 11)}${pad(num(r.relationships), 7)}${pad(num(r.fileBytes), 12)}${pad(num(r.openingMarkupBytes), 12)}${pad(`${Math.round(r.openingMarkupShare * 100)}%`, 8)}${pad(`${r.artifactLevelNodes}/${r.artifactLevelEdges}`, 13)}${pad(`${r.generationMs.min}-${r.generationMs.max}`, 14)}${pad(String(r.bytesPerAuthoredByte), 11)}${pad(String(r.selectionMs.p95), 11)}\n`,
+    `${pad(r.model, 24)}${pad(num(r.artifacts), 11)}${pad(num(r.relationships), 7)}${pad(num(r.fileBytes), 12)}${pad(num(r.openingMarkupBytes), 12)}${pad(`${Math.round(r.openingMarkupShare * 100)}%`, 8)}${pad(`${r.artifactLevelNodes}/${r.artifactLevelEdges}`, 13)}${pad(`${r.generationMs.min}-${r.generationMs.max}`, 14)}${pad(String(r.bytesPerAuthoredByte), 11)}${pad(String(r.selectionMs.p95), 11)}${pad(String(r.searchMs.p95), 11)}\n`,
   );
 }
 const first = results[0];
