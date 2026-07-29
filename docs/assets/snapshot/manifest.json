@@ -1,0 +1,71 @@
+{
+  "browser": "msedge.exe",
+  "shots": [
+    {
+      "name": "01-overview-desktop",
+      "route": "#/",
+      "viewport": "1440x900",
+      "caption": "Opening view: orientation only — no artifact body, no artifact-level graph."
+    },
+    {
+      "name": "02-artifact-detail-desktop",
+      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE-001",
+      "viewport": "1440x900",
+      "caption": "Master-detail: one active artifact, with grouped relationships below its body."
+    },
+    {
+      "name": "03-relationship-groups-collapsed",
+      "route": "#/artifacts/BC-PRODUCT-DEFINITION",
+      "viewport": "1440x2400",
+      "caption": "The most connected artifact (27 relationships): groups carry exact counts and the large ones start collapsed."
+    },
+    {
+      "name": "04-relationship-groups-expanded",
+      "route": "#/artifacts/BC-PRODUCT-DEFINITION",
+      "viewport": "1440x2400",
+      "caption": "The same artifact with every group expanded: exactly the counted members appear."
+    },
+    {
+      "name": "05-artifact-detail-narrow",
+      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE-001",
+      "viewport": "430x900",
+      "caption": "Narrow viewport: the detail is its own state, reached from the list."
+    },
+    {
+      "name": "06-artifact-list-narrow",
+      "route": "#/artifacts",
+      "viewport": "430x900",
+      "caption": "Narrow viewport: the list is its own state, not a compressed desktop layout."
+    },
+    {
+      "name": "07-long-title-and-body",
+      "route": "#/artifacts/CON-SDD-AGNOSTIC",
+      "viewport": "430x900",
+      "caption": "Long title and body wrap within their container; the page does not scroll sideways."
+    },
+    {
+      "name": "08-unknown-identifier",
+      "route": "#/artifacts/UC-DOES-NOT-EXIST",
+      "viewport": "1440x900",
+      "caption": "An identifier this snapshot does not contain is named, with a way onward."
+    },
+    {
+      "name": "09-model-graph",
+      "route": "#/graph",
+      "viewport": "1440x900",
+      "caption": "The whole-model graph, built only when opened. Carried forward unchanged; SLI-SNAPSHOT-006 replaces it."
+    },
+    {
+      "name": "10-focus-visible",
+      "route": "#/artifacts",
+      "viewport": "1440x900",
+      "caption": "Keyboard focus is visible: the focus ring on the first list entry."
+    },
+    {
+      "name": "11-no-colour",
+      "route": "#/artifacts/BC-PRODUCT-DEFINITION",
+      "viewport": "1440x900",
+      "caption": "Rendered without colour: kind, status, selection and relationship direction remain determinable."
+    }
+  ]
+}

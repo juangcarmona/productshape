@@ -19,7 +19,8 @@
     "build": "pnpm -r run build",
     "version": "changeset version && pnpm build && node packages/cli/dist/bin.js integration update",
     "release": "changeset publish",
-    "measure:snapshot": "tsx scripts/measure-snapshot.mts"
+    "measure:snapshot": "tsx scripts/measure-snapshot.mts",
+    "shots:snapshot": "tsx scripts/screenshot-snapshot.mts"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0",

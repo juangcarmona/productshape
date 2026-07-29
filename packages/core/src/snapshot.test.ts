@@ -23,6 +23,18 @@ const model = [
   artifact('CON-A', 'constraint', {}, { body: '## Constraint\n\nA boundary.' }),
 ];
 
+/** 12 use cases citing one actor: enough for a group above the collapse threshold. */
+const busy = [
+  artifact('ACT-H', 'actor', { 'actor-kind': 'human' }, { body: '## Purpose\n\nA hub.' }),
+  artifact('BR-H', 'business-rule', {}, { body: '## Rule\n\nA rule.' }),
+  ...Array.from({ length: 12 }, (_, i) =>
+    artifact(`UC-H${String(i).padStart(2, '0')}`, 'use-case', {
+      'primary-actor': 'ACT-H',
+      'governed-by': ['BR-H'],
+    }),
+  ),
+];
+
 function build(artifacts = model): string {
   return buildSnapshotHtml(compileGraph(artifacts), artifacts, 'abc123');
 }
@@ -437,6 +449,8 @@ describe('the embedded application', () => {
     const rels = doc.querySelector('#detail .rels');
     const headings = [...(rels?.querySelectorAll('h5') ?? [])].map((h) => h.textContent);
     expect(headings).toEqual(['Declares (references)', 'Referenced by (derived)']);
+    // Relationship type and direction are carried by each group's label, which every entry sits
+    // under — including the single-group case, which renders the label without a disclosure.
     const text = rels?.textContent ?? '';
     expect(text).toContain('→ primary-actor');
     expect(text).toContain('← derived-from');
@@ -573,5 +587,154 @@ describe('the embedded application', () => {
     expect(doc.body.getAttribute('data-pane')).toBe('master');
     navigate('#/artifacts/UC-A');
     expect(doc.body.getAttribute('data-pane')).toBe('detail');
+  });
+});
+
+describe('relationship groups', () => {
+  let dom: JSDOM;
+  let doc: Document;
+
+  const open = (hash: string, artifacts: typeof model): void => {
+    dom = new JSDOM(build(artifacts), {
+      url: `https://snapshot.invalid/snapshot.html${hash}`,
+      runScripts: 'dangerously',
+    });
+    doc = dom.window.document;
+  };
+  const groups = (): Element[] => [...doc.querySelectorAll('#detail details.relgroup')];
+
+  it('groups a direction by relationship type and artifact kind, with exact counts', () => {
+    open('#/artifacts/ACT-H', busy);
+    // ACT-H is referenced by 12 use cases via primary-actor: one group, above the threshold, so it
+    // presents as a collapsed disclosure carrying the label and the count.
+    const label = doc.querySelector('#detail .glabel');
+    expect(label?.textContent).toContain('← primary-actor');
+    expect(label?.textContent).toContain('Use Cases');
+    expect(doc.querySelector('#detail .gcount')?.textContent).toBe('12');
+  });
+
+  it('collapses a lone group that is large, rather than exempting it for being alone', () => {
+    open('#/artifacts/ACT-H', busy);
+    const only = doc.querySelectorAll('#detail details.relgroup');
+    expect(only.length).toBe(1);
+    expect((only[0] as HTMLDetailsElement).open).toBe(false);
+    expect(only[0]?.querySelector('ul.members')).toBeNull();
+    expect(doc.querySelector('#detail p.glabel.solo')).toBeNull();
+  });
+
+  it('uses a plain label, not a disclosure, for a lone small group', () => {
+    open('#/artifacts/UC-A', model);
+    // UC-A declares one primary-actor: a lone group of one.
+    const solo = doc.querySelector('#detail p.glabel.solo');
+    expect(solo?.textContent).toContain('→ primary-actor');
+    expect(solo?.querySelector('.gcount')?.textContent).toBe('1');
+  });
+
+  it('splits distinct relationship types into separate counted groups', () => {
+    open('#/artifacts/UC-H00', busy);
+    const labels = groups().map((g) => g.querySelector('.glabel')?.textContent ?? '');
+    expect(labels.some((l) => l.includes('→ primary-actor') && l.includes('Actors'))).toBe(true);
+    expect(labels.some((l) => l.includes('→ governed-by') && l.includes('Business Rules'))).toBe(
+      true,
+    );
+    for (const g of groups()) expect(Number(g.querySelector('.gcount')?.textContent)).toBe(1);
+  });
+
+  it('group counts sum to exactly the compiled graph edges per direction', () => {
+    const graph = compileGraph(busy);
+    for (const node of graph.nodes) {
+      open(`#/artifacts/${node.id}`, busy);
+      const rels = doc.querySelector('#detail .rels');
+      const counts = [...(rels?.querySelectorAll('.gcount') ?? [])].map((c) =>
+        Number(c.textContent),
+      );
+      const total = counts.reduce((a, b) => a + b, 0);
+      const expected =
+        graph.edges.filter((e) => e.from === node.id).length +
+        graph.edges.filter((e) => e.to === node.id).length;
+      expect(total, `totals for ${node.id}`).toBe(expected);
+    }
+  });
+
+  it('starts a group above the threshold collapsed, rendering none of its members', () => {
+    open('#/artifacts/BR-H', busy);
+    // BR-H is referenced by 12 use cases via governed-by; a single group, but above the threshold.
+    const detail = doc.getElementById('detail');
+    const collapsed = detail?.querySelector('details.relgroup:not([open])');
+    expect(collapsed).not.toBeNull();
+    expect(collapsed?.querySelector('ul.members')).toBeNull();
+    expect(collapsed?.querySelector('.gcount')?.textContent).toBe('12');
+  });
+
+  it('reveals exactly the counted members when expanded, each selectable', () => {
+    open('#/artifacts/BR-H', busy);
+    const collapsed = doc.querySelector(
+      '#detail details.relgroup:not([open])',
+    ) as HTMLDetailsElement;
+    const declared = Number(collapsed.querySelector('.gcount')?.textContent);
+    collapsed.open = true;
+    collapsed.dispatchEvent(new dom.window.Event('toggle'));
+    const members = collapsed.querySelectorAll('ul.members li');
+    expect(members.length).toBe(declared);
+    for (const li of members) {
+      expect(li.querySelector('a')?.getAttribute('href')).toMatch(/^#\/artifacts\/UC-H\d\d$/);
+    }
+  });
+
+  it('keeps small groups open so nothing is hidden without reason', () => {
+    open('#/artifacts/UC-H00', busy);
+    for (const g of groups()) {
+      if (Number(g.querySelector('.gcount')?.textContent) <= 8) {
+        expect((g as HTMLDetailsElement).open).toBe(true);
+        expect(g.querySelector('ul.members')).not.toBeNull();
+      }
+    }
+  });
+
+  it('makes every relationship reachable as text, including after expansion', () => {
+    const graph = compileGraph(busy);
+    open('#/artifacts/BR-H', busy);
+    for (const g of doc.querySelectorAll('#detail details.relgroup')) {
+      const d = g as HTMLDetailsElement;
+      d.open = true;
+      d.dispatchEvent(new dom.window.Event('toggle'));
+    }
+    const hrefs = [...doc.querySelectorAll('#detail .rels a')].map((a) => a.getAttribute('href'));
+    const expected = graph.edges
+      .filter((e) => e.from === 'BR-H' || e.to === 'BR-H')
+      .map((e) => `#/artifacts/${e.from === 'BR-H' ? e.to : e.from}`);
+    for (const href of expected) expect(hrefs).toContain(href);
+  });
+
+  it('escapes related-artifact titles rendered from the embedded data', () => {
+    const nasty = [
+      artifact(
+        'ACT-X',
+        'actor',
+        { 'actor-kind': 'human' },
+        { body: '## Purpose\n\nx.', title: hostile },
+      ),
+      artifact('UC-X', 'use-case', { 'primary-actor': 'ACT-X' }),
+    ];
+    open('#/artifacts/UC-X', nasty);
+    const rels = doc.querySelector('#detail .rels');
+    expect(rels?.querySelector('script')).toBeNull();
+    expect(rels?.textContent).toContain('<script>alert(1)</script>');
+  });
+
+  it('exposes expanded state as state, not appearance', () => {
+    open('#/artifacts/BR-H', busy);
+    const d = doc.querySelector('#detail details.relgroup') as HTMLDetailsElement;
+    // <details> reports expansion natively; assistive technology reads it without an ARIA attribute.
+    expect(d.tagName.toLowerCase()).toBe('details');
+    expect(d.querySelector('summary')).not.toBeNull();
+    expect(d.open).toBe(false);
+    d.open = true;
+    expect(d.open).toBe(true);
+  });
+
+  it('still reports both directions as empty for an isolated artifact', () => {
+    open('#/artifacts/CON-A', model);
+    expect(doc.querySelectorAll('#detail .rels p.none').length).toBe(2);
   });
 });
