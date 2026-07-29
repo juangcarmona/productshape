@@ -874,18 +874,21 @@ function snapshotDataJson(graph: ProductGraph, groups: Map<string, LoadedArtifac
 /** Aggregate the relationships by source kind, relationship type and target kind, with counts. */
 function kindAggregateRows(graph: ProductGraph): string[] {
   const kindOf = new Map(graph.nodes.map((n) => [n.id, n.type]));
-  const counts = new Map<string, number>();
+  // Keyed by the triple itself rather than a delimited string: no separator to choose, nothing to
+  // parse back, and the source stays plain text.
+  const counts = new Map<string, { from: string; relKind: string; to: string; count: number }>();
   for (const edge of graph.edges) {
     const from = kindOf.get(edge.from);
     const to = kindOf.get(edge.to);
     if (!from || !to) continue;
-    const key = `${from} ${edge.kind} ${to}`;
-    counts.set(key, (counts.get(key) ?? 0) + 1);
+    const key = [from, edge.kind, to].join('\u0000');
+    const entry = counts.get(key);
+    if (entry) entry.count += 1;
+    else counts.set(key, { from, relKind: edge.kind, to, count: 1 });
   }
   return [...counts.entries()]
     .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([key, count]) => {
-      const [from, relKind, to] = key.split(' ') as [string, string, string];
+    .map(([, { from, relKind, to, count }]) => {
       return [
         '<tr>',
         `<td>${token(from)} ${escapeHtml(kindLabels[from] ?? from)}</td>`,
