@@ -46,6 +46,11 @@ Product Change to carry it, usually with the AI Assistant executing the Change s
 
 ## Alternative Flows
 
+- Unclear intent: the AI assistant detects that the change request is ambiguous or insufficiently
+  formed to produce a sound Product Change. It warns the user, explains specifically what is
+  unclear (missing actor, undefined scope, contradictory goals), and recommends invoking
+  `ps:explore` to clarify before proceeding. The engineer decides whether to explore or to
+  continue with partial clarity and record the remaining gaps as open questions.
 - Rejection: the reviewer finds the change unsound and moves it to rejected; the baseline is
   unaffected and the recorded analysis remains for future reference.
 - Concurrent overlap: another active change touches the same artifacts; the overlap is surfaced
