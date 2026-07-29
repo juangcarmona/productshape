@@ -4,8 +4,8 @@ generated-at: 2026-07-29T16:30:01.482Z
 work-item:
   provider: github
   repository: juangcarmona/productshape
-  id: "31"
-  title: "SLI-SNAPSHOT-004: Typed relationships in both directions, without a graph"
+  id: '31'
+  title: 'SLI-SNAPSHOT-004: Typed relationships in both directions, without a graph'
 source:
   repository: juangcarmona/productshape
   revision: ab8adff3af9a27969f09f4c6b455847c056de03d

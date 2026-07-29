@@ -223,8 +223,30 @@ ul.idlist a { font-family: var(--mono); font-size: 0.8rem; border: 1px solid var
 .rels h5 { margin: 0.8rem 0 0.3rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
 .rels ul { list-style: none; margin: 0; padding: 0; font-size: 0.85rem; }
 .rels li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem; padding: 0.15rem 0; border-bottom: 1px solid var(--line); }
-.rels .dir { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); flex: none; }
+.rels .dir { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); flex: none; }
 .rels .none { color: var(--muted); font-size: 0.85rem; }
+details.relgroup { border: 1px solid var(--line); border-left: 2px solid var(--line-strong); margin: 0.3rem 0; }
+details.relgroup > summary {
+  display: flex; align-items: baseline; gap: 0.5rem; cursor: pointer;
+  padding: 0.25rem 0.5rem; background: var(--panel); font-size: 0.8rem; list-style-position: inside;
+}
+details.relgroup > summary::marker { color: var(--muted); }
+details.relgroup > summary .glabel { font-family: var(--mono); color: var(--muted); overflow-wrap: anywhere; }
+details.relgroup > summary .gcount {
+  margin-left: auto; font-family: var(--mono); font-variant-numeric: tabular-nums;
+  border: 1px solid var(--line-strong); border-radius: 2px; padding: 0 0.35em; flex: none;
+}
+details.relgroup[open] > summary { border-bottom: 1px solid var(--line); }
+details.relgroup ul.members { padding: 0.1rem 0.5rem 0.3rem; }
+.rels p.glabel.solo {
+  display: flex; align-items: baseline; gap: 0.5rem; margin: 0.3rem 0 0.1rem;
+  font-family: var(--mono); font-size: 0.8rem; color: var(--muted);
+}
+.rels p.glabel.solo .gcount {
+  margin-left: auto; font-variant-numeric: tabular-nums;
+  border: 1px solid var(--line-strong); border-radius: 2px; padding: 0 0.35em; flex: none;
+}
+details.relgroup ul.members li:last-child { border-bottom: none; }
 
 #graph-host svg { width: 100%; height: auto; background: var(--panel); border: 1px solid var(--line); }
 #graph-host circle { stroke: #ffffff; stroke-width: 1; cursor: pointer; }
@@ -457,29 +479,111 @@ const script = String.raw`
 
   /* ----------------------------------------------------------------- detail */
 
+  /* A group larger than this starts collapsed. Presentation constant, not a product rule. */
+  var COLLAPSE_ABOVE = 8;
+
+  var otherEnd = function (edge, direction) {
+    return direction === 'out' ? edge.to : edge.from;
+  };
+
+  /**
+   * Partition one direction's edges by relationship type, then by the artifact kind at the other
+   * end, preserving the compiled graph's edge order within each group so the result is
+   * deterministic.
+   */
+  var groupEdges = function (edges, direction) {
+    var groups = [];
+    var index = {};
+    for (var i = 0; i < edges.length; i += 1) {
+      var other = byId[otherEnd(edges[i], direction)];
+      var otherKind = other ? other.kind : 'unknown';
+      var key = edges[i].kind + ' ' + otherKind;
+      if (!index[key]) {
+        index[key] = { relKind: edges[i].kind, kind: otherKind, edges: [] };
+        groups.push(index[key]);
+      }
+      index[key].edges.push(edges[i]);
+    }
+    return groups;
+  };
+
+  var relationshipEntry = function (edge, direction) {
+    var otherId = otherEnd(edge, direction);
+    var other = byId[otherId];
+    var li = el('li');
+    li.appendChild(el('span', 'dir', direction === 'out' ? '→' : '←'));
+    if (other) li.appendChild(tokenFor(other.kind));
+    var link = doc.createElement('a');
+    link.href = '#/artifacts/' + otherId;
+    link.textContent = other && other.title ? other.title : otherId;
+    li.appendChild(link);
+    li.appendChild(el('span', 'aid mono', otherId));
+    return li;
+  };
+
+  var memberList = function (edges, direction) {
+    var list = el('ul', 'members');
+    for (var i = 0; i < edges.length; i += 1) list.appendChild(relationshipEntry(edges[i], direction));
+    return list;
+  };
+
+  var groupLabel = function (group, direction) {
+    return (
+      (direction === 'out' ? '→ ' : '← ') +
+      group.relKind +
+      ' · ' +
+      (LABELS[group.kind] || group.kind)
+    );
+  };
+
   var relationshipList = function (host, heading, edges, direction) {
-    var h = el('h5', null, heading);
-    host.appendChild(h);
+    host.appendChild(el('h5', null, heading));
     if (!edges || edges.length === 0) {
       host.appendChild(el('p', 'none', 'None.'));
       return;
     }
-    var list = el('ul');
-    for (var i = 0; i < edges.length; i += 1) {
-      var edge = edges[i];
-      var otherId = direction === 'out' ? edge.to : edge.from;
-      var other = byId[otherId];
-      var li = el('li');
-      li.appendChild(el('span', 'dir', (direction === 'out' ? '→ ' : '← ') + edge.kind));
-      if (other) li.appendChild(tokenFor(other.kind));
-      var link = doc.createElement('a');
-      link.href = '#/artifacts/' + otherId;
-      link.textContent = other && other.title ? other.title : otherId;
-      li.appendChild(link);
-      li.appendChild(el('span', 'aid mono', otherId));
-      list.appendChild(li);
+    var groups = groupEdges(edges, direction);
+    /* A lone small group needs no disclosure, but its label still has to state the relationship
+       type: the type is required on every entry, and the label is where it is carried. A lone
+       *large* group still collapses — whether a group overwhelms the view depends on its size, not
+       on how many other groups sit beside it, and one type accounting for every relationship is the
+       most common shape a high-degree artifact takes. */
+    if (groups.length === 1 && groups[0].edges.length <= COLLAPSE_ABOVE) {
+      var only = el('p', 'glabel solo');
+      only.appendChild(el('span', null, groupLabel(groups[0], direction)));
+      only.appendChild(el('span', 'gcount', groups[0].edges.length));
+      host.appendChild(only);
+      host.appendChild(memberList(groups[0].edges, direction));
+      return;
     }
-    host.appendChild(list);
+    for (var g = 0; g < groups.length; g += 1) {
+      var group = groups[g];
+      var count = group.edges.length;
+      var details = doc.createElement('details');
+      details.className = 'relgroup';
+      var summary = doc.createElement('summary');
+      summary.appendChild(el('span', 'glabel', groupLabel(group, direction)));
+      summary.appendChild(el('span', 'gcount', count));
+      details.appendChild(summary);
+      if (count > COLLAPSE_ABOVE) {
+        /* Collapsed groups render no members until first opened: a high-degree artifact must not
+           pay to build what it immediately hides. */
+        details.addEventListener(
+          'toggle',
+          (function (node, groupEdgesList, dir) {
+            return function () {
+              if (node.open && !node.querySelector('ul.members')) {
+                node.appendChild(memberList(groupEdgesList, dir));
+              }
+            };
+          })(details, group.edges, direction),
+        );
+      } else {
+        details.open = true;
+        details.appendChild(memberList(group.edges, direction));
+      }
+      host.appendChild(details);
+    }
   };
 
   var renderDetail = function () {
