@@ -251,8 +251,10 @@ the modify set is short and complete.
 
 ## Open Questions
 
-None outstanding. Four questions were raised when this change was drafted; the product owner has
-resolved all four, and the resolutions are recorded here and realized in the proposed artifacts.
+One outstanding, raised during delivery and owned by the product owner: the interaction form of the
+focused neighbourhood projection (question 5). Four were raised when this change was drafted and the
+product owner has resolved all four; those resolutions are recorded here and realized in the proposed
+artifacts.
 
 1. **Are the semantic bands fixed or adopter-visible? — Resolved: fixed and product-owned.** The
    validated mapping is canonical for every product model the snapshot projects: Product context
@@ -283,6 +285,30 @@ resolved all four, and the resolutions are recorded here and realized in the pro
    affected artifact identities as entry points. It is derived topology, not a health judgement: no
    warning presentation, no severity, no scoring, and no vocabulary such as "orphaned".
    Realized in FR-SNAPSHOT-003.
+
+5. **What is the interaction form of the focused neighbourhood? — Open, owned by the product owner.**
+   The product owner describes it as a cloud of nodes where clicking a node shows that artifact's
+   detail in its place, clicking again clears the selection and highlights the related nodes, and
+   hovering reveals minimal information so navigating between nodes is easier. That is design
+   direction rather than a settled decision, and three tensions with this change's own requirements
+   have to be resolved before `SLI-SNAPSHOT-006` is approved:
+
+   - **A cloud is not the layered map.** FR-SNAPSHOT-005 fixes the layered map's bands and forbids a
+     free-form whole-model drawing. An anchored cloud is a legitimate shape for the _focused
+     neighbourhood_ — one artifact plus one hop — but it must not become the unstructured graph this
+     change removed, and its arrangement must stay deterministic, which rules out a layout that
+     settles differently each time it opens.
+   - **A second click that clears the selection contradicts the single selected artifact.**
+     FR-SNAPSHOT-006 requires one selected artifact shared by every surface and addressed in the
+     fragment. If a second click deselects, it is undefined what the detail pane shows, what the
+     address becomes, and what Back then returns to. It is also close to the pattern this change
+     diagnosed as a defect in the previous snapshot, where a node had to be clicked twice because the
+     first click only highlighted. Whether "highlight the neighbourhood" and "select the artifact"
+     should be one gesture or two distinct ones is the decision to make.
+   - **Hover may accelerate but may not be the only path.** QR-ACCESSIBILITY-001 forbids essential
+     hover-only information. Minimal-info-on-hover is permitted provided the same information is
+     reachable without a pointer — by keyboard focus, or rendered persistently — so the question is
+     what that non-hover equivalent is, not whether hover is allowed.
 
 ## Product Acceptance
 
