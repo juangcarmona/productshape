@@ -1,7 +1,7 @@
 schema: product-definition-as-code/delivery-slice/v1alpha1
 id: SLI-SNAPSHOT-003
 title: Orient, address and read one artifact
-status: approved
+status: completed
 product-change: CHG-SNAPSHOT-002
 outcome: >-
   A Product Explorer opens the snapshot and is oriented before being asked to read anything — which

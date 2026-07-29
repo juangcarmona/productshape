@@ -71,9 +71,12 @@ Product input: handoff `HOF-GITHUB-28`, slice `SLI-SNAPSHOT-003`, work item
 - [x] 4.5 Unit tests: route parsing and serialization round-trip; legacy fragment resolves and
       normalizes without a second history entry; unknown identifier produces the explicit state in
       both route forms; nothing is written to browser storage or cookies.
-- [ ] 4.6 Verify in a browser from `file://` and from a static server: direct artifact links open on
+- [x] 4.6 Verify in a browser from `file://` and from a static server: direct artifact links open on
       the artifact; Back and Forward restore visited views and selections; Back immediately after a
-      legacy arrival leaves the page.
+      legacy arrival leaves the page. Confirmed by the product owner in a real browser over
+      `file://`: opening a legacy `#FR-SNAPSHOT-002` fragment and pressing Back once behaves
+      correctly, so `history.replaceState` is permitted and the fallback path that would have added a
+      forbidden history entry is not taken.
 
 ## 5. Presentation system
 
@@ -139,16 +142,12 @@ and the page's own embedded script is driven in a real DOM (jsdom 30) so routing
 legacy-fragment normalization, escaping after navigating away and back, filtering, search and
 persistence are exercised as a reader would exercise them. 282 tests pass.
 
-**Five tasks remain unchecked because they need a browser, which this environment does not have.**
-jsdom implements the DOM but performs no layout or paint, so it cannot confirm what a page looks
-like or how it feels:
+**Four tasks remain unchecked because they need a browser, which the implementing environment does
+not have.** jsdom implements the DOM but performs no layout or paint, so it cannot confirm what a
+page looks like or how it feels. The fifth — 4.6, the one that could have required a code change —
+was confirmed directly by the product owner: `history.replaceState` is permitted on `file://` and
+the legacy-fragment Back behaviour is correct.
 
-- **4.6** — direct links, Back/Forward and post-legacy Back in a real browser over `file://` and from
-  a static server. The equivalent logic is covered by 4.5 in jsdom, including `history.length`
-  after normalization; what is unconfirmed is real browser history behaviour, in particular whether
-  `history.replaceState` is permitted on `file://` in the target browsers. The implementation falls
-  back to a hash assignment if it is refused, which would add a history entry the spec forbids — this
-  is the one place where a browser result could require a code change.
 - **5.3** — visual review and recorded screenshots at desktop and narrow viewports for both models.
   Stylesheet-level facts (single light appearance, no theme branch, monospaced identifiers, one
   accent, stable kind palette, absence of gradients/glass/hero type) are asserted in tests; the

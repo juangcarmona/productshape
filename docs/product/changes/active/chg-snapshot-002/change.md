@@ -2,7 +2,7 @@
 id: CHG-SNAPSHOT-002
 type: product-change
 title: Turn the Product Snapshot into a progressive-disclosure explorer
-status: approved
+status: in-progress
 base-revision: 'a17168724c5fe036d0ba357af490fdbd410a83d8'
 operations:
   add:
