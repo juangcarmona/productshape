@@ -1,6 +1,6 @@
 {
   "name": "@prodshape/adapter-openspec",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "OpenSpec adapter for Product Definition as Code: sidecar placement and requirement-coverage validation.",
   "license": "Apache-2.0",
   "type": "module",
