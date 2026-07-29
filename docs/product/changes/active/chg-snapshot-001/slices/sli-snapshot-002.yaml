@@ -1,7 +1,7 @@
 schema: product-definition-as-code/delivery-slice/v1alpha1
 id: SLI-SNAPSHOT-002
 title: A connected, explorable Product Snapshot
-status: approved
+status: completed
 product-change: CHG-SNAPSHOT-001
 outcome: >-
   A Product Explorer can follow any artifact's relationships in both directions as navigable

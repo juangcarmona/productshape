@@ -133,12 +133,16 @@ describe('prodshape graph / inspect / impact', () => {
     expect((html.match(/<article class="artifact"/g) ?? []).length).toBe(9);
     expect(html).toContain('class="badge');
     expect(html).toMatch(/revision (unavailable|[0-9a-f]{40})/);
-    // Self-contained and read-only: no scripts, no external resources, no inputs.
-    expect(html).not.toContain('<script');
+    // Self-contained and read-only: only the two embedded snapshot scripts (search index
+    // and behavior), no external resources, no mutating controls.
+    expect((html.match(/<script/g) ?? []).length).toBe(2);
+    expect(html).toContain('<script id="search-index" type="application/json">');
     expect(html).not.toContain('src=');
     expect(html).not.toContain('<link');
-    expect(html).not.toContain('<input');
     expect(html).not.toContain('<form');
+    // Navigation additions of SLI-SNAPSHOT-002: relationships and the graph SVG.
+    expect(html).toContain('Referenced by');
+    expect(html).toContain('<svg id="graph-svg"');
   });
 
   it('graph --format html is byte-identical across regenerations', async () => {

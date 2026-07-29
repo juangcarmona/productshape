@@ -1,0 +1,10 @@
+schema: product-definition-as-code/coverage/v1alpha1
+handoff: HOF-GITHUB-20
+requirements:
+  FR-SNAPSHOT-002:
+    status: covered
+    specification:
+      - openspec/changes/add-snapshot-navigation/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+      - packages/cli/src/program.test.ts
