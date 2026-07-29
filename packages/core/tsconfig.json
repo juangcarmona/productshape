@@ -2,7 +2,11 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    // DOM types exist for the jsdom-based snapshot test, which drives the generated page's own
+    // embedded script in a real document. The library itself ships no DOM code: the snapshot's
+    // client behaviour is a static string, and nothing under src/ touches a browser global.
+    "lib": ["ES2023", "DOM"]
   },
   "include": ["src"]
 }

@@ -14,15 +14,26 @@ export function escapeHtml(text: string): string {
     .replaceAll('"', '&quot;');
 }
 
+/**
+ * Link targets are restricted to schemes that cannot execute. Authored content travels outside the
+ * repository inside the generated snapshot, so a `javascript:` or `data:` target would let an
+ * authored string act on its reader; such a link renders as inert text instead of an anchor.
+ */
+function safeHref(href: string): string | undefined {
+  const scheme = /^([a-zA-Z][a-zA-Z0-9+.-]*):/.exec(href.trim());
+  if (!scheme) return href; // relative, absolute path, or bare fragment
+  return ['http', 'https', 'mailto'].includes((scheme[1] ?? '').toLowerCase()) ? href : undefined;
+}
+
 /** Inline formatting over already-escaped text: code first so its content stays literal. */
 function renderInline(escaped: string): string {
   let out = escaped.replace(/`([^`]+)`/g, (_, code: string) => `<code>${code}</code>`);
   out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   out = out.replace(/(^|[\s(])_([^_]+)_(?=[\s).,;:!?]|$)/g, '$1<em>$2</em>');
-  out = out.replace(
-    /\[([^\]]+)\]\(([^)\s]+)\)/g,
-    (_, text: string, href: string) => `<a href="${href}">${text}</a>`,
-  );
+  out = out.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (match, text: string, href: string) => {
+    const safe = safeHref(href);
+    return safe === undefined ? match : `<a href="${safe}">${text}</a>`;
+  });
   return out;
 }
 

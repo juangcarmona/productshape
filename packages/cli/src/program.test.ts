@@ -129,20 +129,30 @@ describe('prodshape graph / inspect / impact', () => {
     expect(result.out.at(-1)).toMatch(/snapshot\.html$/);
     const snapshotPath = join(workDir, '.product', 'generated', 'snapshot.html');
     const html = await readFile(snapshotPath, 'utf8');
-    // Every artifact of the model is present (count matches the graph summary of 9 nodes).
-    expect((html.match(/<article class="artifact"/g) ?? []).length).toBe(9);
-    expect(html).toContain('class="badge');
+    // Every artifact of the model is contained in the file (the graph summary reports 9 nodes),
+    // carried as inert data rather than rendered into the opening document.
+    const open = '<script id="snapshot-data" type="application/json">';
+    const dataStart = html.indexOf(open) + open.length;
+    const data = JSON.parse(
+      html.slice(dataStart, html.indexOf('</script>', dataStart)).replaceAll('\\u003c', '<'),
+    ) as { artifacts: { id: string }[]; edges: unknown[] };
+    expect(data.artifacts.length).toBe(9);
     expect(html).toMatch(/revision (unavailable|[0-9a-f]{40})/);
-    // Self-contained and read-only: only the two embedded snapshot scripts (search index
-    // and behavior), no external resources, no mutating controls.
+    // The opening document orients without exposing the corpus: no artifact body, no graph.
+    const opening = html.slice(html.indexOf('<body'), html.indexOf('<script id='));
+    expect(opening).toContain('Product Snapshot');
+    expect(opening).toContain('Relationships by kind');
+    expect(opening).not.toContain('<circle');
+    expect(opening).not.toContain('<svg');
+    // Self-contained and read-only: the inert data block and the application block, nothing else.
     expect((html.match(/<script/g) ?? []).length).toBe(2);
-    expect(html).toContain('<script id="search-index" type="application/json">');
+    expect(html).toContain(open);
     expect(html).not.toContain('src=');
     expect(html).not.toContain('<link');
     expect(html).not.toContain('<form');
-    // Navigation additions of SLI-SNAPSHOT-002: relationships and the graph SVG.
-    expect(html).toContain('Referenced by');
-    expect(html).toContain('<svg id="graph-svg"');
+    // Relationships and the whole-model graph are reachable, built on demand from that data.
+    expect(html).toContain('Referenced by (derived)');
+    expect(html).toContain('id="graph-host"');
   });
 
   it('graph --format html is byte-identical across regenerations', async () => {
