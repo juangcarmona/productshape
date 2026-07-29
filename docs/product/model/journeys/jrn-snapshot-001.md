@@ -2,7 +2,7 @@
 id: JRN-SNAPSHOT-001
 type: journey
 title: Understand the product without the repository
-status: draft
+status: active
 primary-actor: ACT-PRODUCT-EXPLORER
 steps:
   - use-case: UC-SNAPSHOT-001

@@ -2,7 +2,7 @@
 id: TERM-PRODUCT-SNAPSHOT
 type: domain-term
 title: Product Snapshot
-status: draft
+status: active
 defined-in: BC-PRODUCT-DEFINITION
 synonyms:
   - snapshot page

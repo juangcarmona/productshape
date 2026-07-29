@@ -2,7 +2,7 @@
 id: UC-SNAPSHOT-001
 type: use-case
 title: Generate a Product Snapshot page
-status: draft
+status: active
 primary-actor: ACT-PRODUCT-ENGINEER
 supporting-actors:
   - ACT-REPOSITORY-MAINTAINER

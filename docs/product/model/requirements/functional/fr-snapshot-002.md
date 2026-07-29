@@ -2,7 +2,7 @@
 id: FR-SNAPSHOT-002
 type: functional-requirement
 title: Navigate the product graph within the snapshot page
-status: draft
+status: active
 derived-from:
   - UC-SNAPSHOT-EXPLORE-001
   - BR-RELATIONSHIPS-001

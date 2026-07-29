@@ -2,7 +2,7 @@
 id: FR-SNAPSHOT-001
 type: functional-requirement
 title: Generate a self-contained Product Snapshot page
-status: draft
+status: active
 derived-from:
   - UC-SNAPSHOT-001
   - BR-CANONICAL-001

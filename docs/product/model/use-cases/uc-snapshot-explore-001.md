@@ -2,7 +2,7 @@
 id: UC-SNAPSHOT-EXPLORE-001
 type: use-case
 title: Explore the product through a snapshot page
-status: draft
+status: active
 primary-actor: ACT-PRODUCT-EXPLORER
 supporting-actors: []
 bounded-context: BC-PRODUCT-DEFINITION

@@ -2,7 +2,7 @@
 id: ACT-PRODUCT-EXPLORER
 type: actor
 title: Product Explorer
-status: draft
+status: active
 actor-kind: human
 ---
 
