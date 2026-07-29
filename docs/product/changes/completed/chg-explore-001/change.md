@@ -2,7 +2,7 @@
 id: CHG-EXPLORE-001
 type: product-change
 title: Add product-idea exploration step before committing to a change
-status: approved
+status: implemented
 base-revision: '97624b4cd4bdefacaa70dde2a979401fe2d48a2a'
 operations:
   add:

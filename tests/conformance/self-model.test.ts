@@ -37,6 +37,8 @@ const expectedIds: Record<string, string[]> = {
     // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
     'UC-SNAPSHOT-001',
     'UC-SNAPSHOT-EXPLORE-001',
+    // Added by CHG-EXPLORE-001 (ps:explore thinking partner).
+    'UC-EXPLORE-001',
   ],
   'business-rule': [
     'BR-CANONICAL-001',
@@ -85,6 +87,8 @@ const expectedIds: Record<string, string[]> = {
     // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
     'FR-SNAPSHOT-001',
     'FR-SNAPSHOT-002',
+    // Added by CHG-EXPLORE-001 (ps:explore thinking partner).
+    'FR-EXPLORE-001',
   ],
   'quality-requirement': [
     'QR-PORTABILITY-001',
