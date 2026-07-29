@@ -1,32 +1,40 @@
 ---
 id: CON-NO-WEB-UI
 type: constraint
-title: The product provides no web interface in v0.1
+title: The product provides no interactive web application; static snapshot projections are permitted
 status: active
 ---
 
 ## Constraint
 
-Version 0.1 of the product ships no web interface of any kind: no browser-based editor, viewer,
-dashboard or portal. All interaction with the product definition happens through the authored
-files, the command-line tool and AI assistants operating on the repository.
+The product ships no interactive web application of any kind: no browser-based editor, no
+dashboard, no portal, no hosted or served surface through which product knowledge is created,
+modified or approved. The one permitted web-facing form is the Product Snapshot: a generated,
+static, self-contained, read-only projection of the product model, regenerable at any time from
+the authored files and never authoritative. All authoring and evolution of the product definition
+happens through the authored files, the command-line tool and AI assistants operating on the
+repository.
 
 ## Rationale
 
-This boundary is deliberately fixed to keep v0.1 focused on the substance of the methodology: the
-artifact contracts, deterministic validation, the change flow and the handoff contract. A web
-interface would multiply the surface to design, build and support before the model it would
-display has proven itself, and it would tempt the product toward exactly the pattern the
-methodology rejects — a place where product knowledge is viewed and edited outside the files and
-their review flow. Files, CLI and AI assistants together already cover authoring, navigation and
-enforcement for the adopters v0.1 targets.
+The original boundary deferred every web surface from v0.1 to keep the focus on the substance of
+the methodology, while stating the condition under which a web surface could ever arrive: as a
+projection over the same files and commands, never as a new home for product truth. The Product
+Snapshot satisfies that condition exactly — it is read-only by nature, involves no server, and
+holds nothing the authored files do not. The rule that matters is therefore not "no web" but "no
+interactive web application": a surface where product knowledge could be viewed and edited
+outside the files and their review flow remains exactly the pattern the methodology rejects,
+while a static projection extends the product's reach to people who will never clone a
+repository, without moving truth anywhere.
 
 ## Consequences
 
 - Impossible: browsing, editing or approving product knowledge through a hosted or local web
-  application; graphical dashboards as a supported product surface in v0.1.
-- Harder: reaching stakeholders who will not read Markdown or run a command-line tool; visual
-  exploration is limited to generated outputs such as diagrams rendered by external viewers.
-- Mandatory: every product capability must be fully usable through files and the command line;
-  documentation and onboarding must assume no graphical surface; any future web interface must
-  arrive as a projection over the same files and commands, never as a new home for product truth.
+  application; any web surface that holds product state the authored files do not; a snapshot
+  that accepts input, requires a server, or fetches remote resources to function.
+- Harder: real-time or collaborative consumption — a snapshot reflects the model at its recorded
+  revision and is only as current as its last regeneration.
+- Mandatory: every product capability remains fully usable through files and the command line;
+  the snapshot is generated output, reproducible from the authored files at any time; any richer
+  web surface in the future must still arrive as a projection over the same files and commands,
+  never as a new home for product truth.

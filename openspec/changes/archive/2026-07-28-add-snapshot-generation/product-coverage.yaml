@@ -4,20 +4,20 @@ requirements:
   FR-SNAPSHOT-001:
     status: covered
     specification:
-      - openspec/changes/add-snapshot-generation/specs/snapshot-generation/spec.md
+      - openspec/changes/archive/2026-07-28-add-snapshot-generation/specs/snapshot-generation/spec.md
     verification:
       - packages/core/src/snapshot.test.ts
       - packages/cli/src/program.test.ts
   FR-SNAPSHOT-002:
     status: partial
     specification:
-      - openspec/changes/add-snapshot-generation/specs/snapshot-generation/spec.md
+      - openspec/changes/archive/2026-07-28-add-snapshot-generation/specs/snapshot-generation/spec.md
     verification:
       - packages/core/src/snapshot.test.ts
       - packages/core/src/markdown.test.ts
   QR-DETERMINISM-001:
     status: partial
     specification:
-      - openspec/changes/add-snapshot-generation/specs/snapshot-generation/spec.md
+      - openspec/changes/archive/2026-07-28-add-snapshot-generation/specs/snapshot-generation/spec.md
     verification:
       - packages/cli/src/program.test.ts

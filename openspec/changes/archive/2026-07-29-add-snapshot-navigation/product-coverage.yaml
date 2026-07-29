@@ -4,7 +4,7 @@ requirements:
   FR-SNAPSHOT-002:
     status: covered
     specification:
-      - openspec/changes/add-snapshot-navigation/specs/snapshot-generation/spec.md
+      - openspec/changes/archive/2026-07-29-add-snapshot-navigation/specs/snapshot-generation/spec.md
     verification:
       - packages/core/src/snapshot.test.ts
       - packages/cli/src/program.test.ts
