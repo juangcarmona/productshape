@@ -118,6 +118,43 @@ const shots: Shot[] = [
       'Rendered without colour: kind, status, selection and relationship direction remain determinable.',
     prepare: `document.documentElement.style.filter = 'grayscale(1)'`,
   },
+  {
+    name: '12-search-ranked',
+    route: '#/artifacts',
+    ...TALL,
+    caption:
+      'Ranked search for "product": 73 matches, top 25 shown, identifier and title matches above body-only ones.',
+    prepare: `var q=document.getElementById('q-body');q.value='product';q.dispatchEvent(new Event('input'))`,
+  },
+  {
+    name: '13-search-snippet',
+    route: '#/artifacts',
+    ...DESKTOP,
+    caption: 'A body match shows a snippet of the matching content, inserted as text.',
+    prepare: `var q=document.getElementById('q-body');q.value='byte-identical';q.dispatchEvent(new Event('input'))`,
+  },
+  {
+    name: '14-search-keyboard-active',
+    route: '#/artifacts',
+    ...DESKTOP,
+    caption:
+      'Arrow keys move an active result, reported with aria-activedescendant; Enter follows it.',
+    prepare: `var q=document.getElementById('q-body');q.value='snapshot';q.dispatchEvent(new Event('input'));q.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));q.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}))`,
+  },
+  {
+    name: '15-search-no-results',
+    route: '#/artifacts',
+    ...DESKTOP,
+    caption: 'A query matching nothing says so, and repeats the query it searched for.',
+    prepare: `var q=document.getElementById('q-body');q.value='nothing matches this';q.dispatchEvent(new Event('input'))`,
+  },
+  {
+    name: '16-search-narrow',
+    route: '#/artifacts',
+    ...NARROW,
+    caption: 'Search results on a narrow viewport.',
+    prepare: `var q=document.getElementById('q-body');q.value='handoff';q.dispatchEvent(new Event('input'))`,
+  },
 ];
 
 const flag = (name: string): string | undefined => {
@@ -211,12 +248,24 @@ for (const shot of shots) {
     args.push(`${pageUrl}${shot.route}`);
   }
 
-  try {
-    await run(browser, args, { timeout: 60_000 });
-  } catch (error) {
-    process.stdout.write(`  FAILED ${shot.name}: ${(error as Error).message.split('\n')[0]}\n`);
-    continue;
+  /* The heaviest routes occasionally exceed the browser's budget on a cold start; one retry with a
+     longer budget is enough, and a persistent failure is reported rather than silently skipped. */
+  let captured = false;
+  for (const attempt of [0, 1]) {
+    const attemptArgs = args.map((a) =>
+      attempt === 1 && a.startsWith('--virtual-time-budget=') ? '--virtual-time-budget=15000' : a,
+    );
+    try {
+      await run(browser, attemptArgs, { timeout: attempt === 0 ? 60_000 : 120_000 });
+      captured = true;
+      break;
+    } catch (error) {
+      if (attempt === 1) {
+        process.stdout.write(`  FAILED ${shot.name}: ${(error as Error).message.split('\n')[0]}\n`);
+      }
+    }
   }
+  if (!captured) continue;
   const bytes = await readFile(target);
   await writeFile(join(outDir, `${shot.name}.png`), bytes);
   manifest.push({

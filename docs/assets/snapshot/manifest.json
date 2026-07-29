@@ -66,6 +66,36 @@
       "route": "#/artifacts/BC-PRODUCT-DEFINITION",
       "viewport": "1440x900",
       "caption": "Rendered without colour: kind, status, selection and relationship direction remain determinable."
+    },
+    {
+      "name": "12-search-ranked",
+      "route": "#/artifacts",
+      "viewport": "1440x2400",
+      "caption": "Ranked search for \"product\": 73 matches, top 25 shown, identifier and title matches above body-only ones."
+    },
+    {
+      "name": "13-search-snippet",
+      "route": "#/artifacts",
+      "viewport": "1440x900",
+      "caption": "A body match shows a snippet of the matching content, inserted as text."
+    },
+    {
+      "name": "14-search-keyboard-active",
+      "route": "#/artifacts",
+      "viewport": "1440x900",
+      "caption": "Arrow keys move an active result, reported with aria-activedescendant; Enter follows it."
+    },
+    {
+      "name": "15-search-no-results",
+      "route": "#/artifacts",
+      "viewport": "1440x900",
+      "caption": "A query matching nothing says so, and repeats the query it searched for."
+    },
+    {
+      "name": "16-search-narrow",
+      "route": "#/artifacts",
+      "viewport": "430x900",
+      "caption": "Search results on a narrow viewport."
     }
   ]
 }
