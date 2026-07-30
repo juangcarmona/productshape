@@ -267,16 +267,13 @@ nav.gmodes a[aria-current='true'] { color: var(--ink); font-weight: 600; border-
 #graph-host circle.anchor { stroke: var(--ink); stroke-width: 3; }
 #graph-host circle.satellite { cursor: pointer; stroke-width: 2; }
 #graph-host circle.satellite:focus-visible, #graph-host circle.member:focus-visible,
-#graph-host circle.lnode:focus-visible, #graph-host rect.cell:focus-visible {
+#graph-host circle.lnode:focus-visible {
   outline: 2px solid var(--accent); outline-offset: 2px;
 }
 #graph-host circle.member, #graph-host circle.lnode { cursor: pointer; }
 #graph-host line.spoke { stroke: var(--line-strong); stroke-width: 1.4; }
 #graph-host line.spoke.in { stroke-dasharray: 4 3; }
 #graph-host line.member { stroke: var(--line); stroke-width: 1; }
-#graph-host line.ledge { stroke: #c3c9d6; stroke-width: 0.8; }
-#graph-host line.ledge.agg { stroke: #98a1b2; stroke-width: 1.6; }
-#graph-host text.aggcount { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
 #graph-host .arrowhead { fill: #9aa2b3; }
 #graph-host text.satcount { font-family: var(--mono); font-size: 15px; font-weight: 700; fill: #ffffff; }
 #graph-host text.satkind { font-size: 12px; fill: var(--text); }
@@ -295,13 +292,19 @@ nav.gmodes a[aria-current='true'] { color: var(--ink); font-weight: 600; border-
 #graph-host text.anchorsub { font-size: 11px; fill: var(--muted); }
 #graph-host text.axis { font-size: 11px; fill: var(--muted); letter-spacing: 0.08em; }
 #graph-host rect.band { fill: var(--panel); stroke: var(--line); }
-#graph-host rect.cell { fill: #ffffff; stroke: var(--line-strong); cursor: pointer; }
-#graph-host rect.cell.collapsed { fill: var(--panel); stroke-dasharray: 4 3; }
-#graph-host text.bandname { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; }
-#graph-host text.celltoken { font-family: var(--mono); font-size: 11px; font-weight: 700; fill: var(--muted); }
-#graph-host text.cellcount { font-family: var(--mono); font-size: 12px; fill: var(--muted); }
-#graph-host text.celllabel { font-size: 11px; fill: var(--muted); }
-p.layersummary { margin-top: 0.5rem; }
+#graph-host text.bandname { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; }
+#graph-host text.bandcount { font-family: var(--mono); font-size: 12px; fill: var(--muted); }
+#graph-host svg.landscape { cursor: grab; touch-action: none; }
+#graph-host svg.landscape[data-panning] { cursor: grabbing; }
+#graph-host g.lsnode { cursor: pointer; }
+#graph-host g.lsnode rect.nodebox { fill: #ffffff; stroke: var(--line-strong); stroke-width: 1; }
+#graph-host g.lsnode:hover rect.nodebox { stroke: var(--accent); }
+#graph-host g.lsnode:focus-visible rect.nodebox { stroke: var(--accent); stroke-width: 2; }
+#graph-host g.lsnode:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#graph-host g.lsnode rect.nodeaccent { stroke: none; }
+#graph-host text.nodetitle { font-size: 12px; fill: var(--ink); }
+#graph-host text.nodeid { font-family: var(--mono); font-size: 10px; }
+p.landscapesummary { margin-top: 0.5rem; }
 
 .unknown { border: 1px solid var(--line-strong); border-left: 3px solid var(--muted); padding: 0.7rem 0.9rem; max-width: 60rem; }
 .unknown .aid { font-family: var(--mono); }
@@ -1132,266 +1135,246 @@ const script = String.raw`
       kinds: ['functional-requirement', 'quality-requirement', 'constraint'],
     },
   ];
-  /**
-   * How many artifacts the map will draw before it starts holding back. FR-SNAPSHOT-005 requires it
-   * not to render everything "for a large model", which is scale-conditional: a 73-artifact model
-   * draws in full and stays legible, while a 730-artifact one must collapse. So the budget is on the
-   * total rendered, and the largest kinds collapse first — they are the ones that would spill.
-   */
-  var LAYER_BUDGET = 90;
-  /* A cell wraps its members into rows; a kind needing more rows than this collapses regardless. */
-  var LAYER_COLS = 12;
-  var LAYER_MAX_ROWS = 3;
+
+  /* Node and grid geometry in canvas units. Fixed, so placement never depends on rendered text. */
+  var LS = {
+    nodeW: 196,
+    nodeH: 34,
+    gapX: 10,
+    gapY: 8,
+    padX: 18,
+    bandPadTop: 30,
+    bandPadBottom: 14,
+    bandGap: 14,
+    width: 1680,
+  };
 
   /**
-   * The layered model map: real artifacts in four fixed, product-owned bands. Bands organize the view
-   * and carry no lifecycle, causality or direction — the measured model has 180 of 196 relationships
-   * crossing bands in six distinct directions that do not form a cascade, so an arrowhead is computed
-   * from the edge and never from which band sits higher.
+   * The Product Landscape: the complete product in four permanently visible bands, every artifact its own
+   * stable, individually reachable node carrying its title.
    *
-   * It is the only projection that draws many real artifacts, so it is the one that must hold content
-   * back: a kind with more members than the threshold renders as one counted cell, and the map states
-   * exactly what it is hiding.
+   * Placement is a deterministic grid — within a band, artifacts group by kind in the fixed kind order and
+   * fill columns then rows in the compiled graph's own sort order. Position is a pure function of the model:
+   * nothing settles, nothing is seeded, and no rendered text is measured, so identical content always
+   * produces identical geometry.
+   *
+   * Nothing is aggregated and nothing is hidden. Node size is fixed and the canvas grows instead, because
+   * shrinking nodes to fit a viewport is what produces the anonymous dots FR-SNAPSHOT-005 forbids. Reaching
+   * readable detail is what pan, zoom and fit are for; the landscape is explicitly not a poster.
    */
-  var buildLayers = function (host, filterKindSet) {
-    clear(host);
+  var landscapeLayout = function () {
+    var cols = Math.max(1, Math.floor((LS.width - 2 * LS.padX + LS.gapX) / (LS.nodeW + LS.gapX)));
     var bands = [];
+    var nodes = [];
+    var y = 10;
     for (var b = 0; b < LAYER_BANDS.length; b += 1) {
-      var kinds = [];
+      var members = [];
       for (var k = 0; k < LAYER_BANDS[b].kinds.length; k += 1) {
         var kind = LAYER_BANDS[b].kinds[k];
-        if (filterKindSet && !filterKindSet[kind]) continue;
-        var members = [];
         for (var i = 0; i < ARTIFACTS.length; i += 1) {
           if (ARTIFACTS[i].kind === kind) members.push(ARTIFACTS[i]);
         }
-        if (members.length > 0) kinds.push({ kind: kind, members: members });
       }
       /* Only bands the model populates are rendered. */
-      if (kinds.length > 0) bands.push({ name: LAYER_BANDS[b].name, kinds: kinds });
+      if (members.length === 0) continue;
+      var rows = Math.ceil(members.length / cols);
+      var bandH = LS.bandPadTop + rows * (LS.nodeH + LS.gapY) - LS.gapY + LS.bandPadBottom;
+      for (var m = 0; m < members.length; m += 1) {
+        nodes.push({
+          artifact: members[m],
+          x: LS.padX + (m % cols) * (LS.nodeW + LS.gapX),
+          y: y + LS.bandPadTop + Math.floor(m / cols) * (LS.nodeH + LS.gapY),
+        });
+      }
+      bands.push({ name: LAYER_BANDS[b].name, y: y, h: bandH, count: members.length });
+      y += bandH + LS.bandGap;
     }
+    return { bands: bands, nodes: nodes, height: y, cols: cols };
+  };
 
-    /* Choose what to hold back before drawing: sort kinds by size and collapse the largest until the
-       rendered total fits the budget. */
-    var allKinds = [];
-    for (var bb = 0; bb < bands.length; bb += 1) {
-      for (var kk = 0; kk < bands[bb].kinds.length; kk += 1) allKinds.push(bands[bb].kinds[kk]);
-    }
-    var renderedTotal = 0;
-    for (var ai = 0; ai < allKinds.length; ai += 1) renderedTotal += allKinds[ai].members.length;
-    var bySize = allKinds.slice().sort(function (a, b) {
-      if (b.members.length !== a.members.length) return b.members.length - a.members.length;
-      return a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : 0;
-    });
-    var collapsedKinds = {};
-    for (var ci = 0; ci < bySize.length && renderedTotal > LAYER_BUDGET; ci += 1) {
-      collapsedKinds[bySize[ci].kind] = true;
-      renderedTotal -= bySize[ci].members.length;
-    }
+  var buildLandscape = function (host) {
+    clear(host);
+    var layout = landscapeLayout();
 
-    var width = 1000;
-    var bandHeight = 150;
-    var height = Math.max(1, bands.length) * bandHeight + 30;
     var svg = svgEl('svg', {
-      viewBox: '0 0 ' + width + ' ' + height,
       role: 'img',
-      'aria-label': 'Layered model map: ' + bands.length + ' bands',
+      class: 'landscape',
+      'aria-label':
+        'Product landscape: ' + layout.nodes.length + ' artifacts in ' + layout.bands.length + ' bands',
     });
-    var edgeLayer = svgEl('g', { class: 'edges' });
+    var defs = svgEl('defs', {});
+    var clip = svgEl('clipPath', { id: 'ls-title-clip', clipPathUnits: 'objectBoundingBox' });
+    clip.appendChild(svgEl('rect', { x: 0, y: 0, width: 1, height: 1 }));
+    defs.appendChild(clip);
+    svg.appendChild(defs);
+    var bandLayer = svgEl('g', { class: 'bands' });
     var nodeLayer = svgEl('g', { class: 'nodes' });
+    svg.appendChild(bandLayer);
+    svg.appendChild(nodeLayer);
 
-    var pos = {};
-    var cellAt = {};
-    var hiddenArtifacts = 0;
-    for (var bi = 0; bi < bands.length; bi += 1) {
-      var band = bands[bi];
-      var top = 20 + bi * bandHeight;
-      nodeLayer.appendChild(
-        svgEl('rect', { x: 8, y: top, width: width - 16, height: bandHeight - 18, class: 'band' }),
-      );
-      var bl = svgText(18, top + 18, band.name, 'bandname', 'start');
-      nodeLayer.appendChild(bl);
-
-      var cellX = 18;
-      for (var ki = 0; ki < band.kinds.length; ki += 1) {
-        var entry = band.kinds[ki];
-        var rows = Math.ceil(entry.members.length / LAYER_COLS);
-        var collapsed = collapsedKinds[entry.kind] === true || rows > LAYER_MAX_ROWS;
-        var cols = Math.min(LAYER_COLS, entry.members.length);
-        var cellW = collapsed ? 150 : 32 + cols * 22;
-        nodeLayer.appendChild(
-          svgEl('rect', {
-            x: cellX,
-            y: top + 30,
-            width: cellW,
-            height: bandHeight - 52,
-            class: 'cell' + (collapsed ? ' collapsed' : ''),
-            'data-kind': entry.kind,
-            tabindex: '0',
-            role: 'button',
-            'aria-expanded': String(!collapsed),
-            'aria-label':
-              (LABELS[entry.kind] || entry.kind) + ' · ' + entry.members.length +
-              (collapsed ? ' · collapsed' : ''),
-          }),
-        );
-        nodeLayer.appendChild(
-          svgText(cellX + 8, top + 46, TOKENS[entry.kind] || '?', 'celltoken', 'start'),
-        );
-        nodeLayer.appendChild(
-          svgText(cellX + cellW - 8, top + 46, String(entry.members.length), 'cellcount', 'end'),
-        );
-        cellAt[entry.kind] = { x: cellX + cellW / 2, y: top + 74 };
-        if (collapsed) {
-          hiddenArtifacts += entry.members.length;
-          nodeLayer.appendChild(
-            svgText(cellX + cellW / 2, top + 74, LABELS[entry.kind] || entry.kind, 'celllabel'),
-          );
-        } else {
-          for (var mi = 0; mi < entry.members.length; mi += 1) {
-            /* Wrap into rows so a populous kind stays inside its cell instead of spilling past it. */
-            var mx = cellX + 16 + (mi % LAYER_COLS) * 22;
-            var my = top + 74 + Math.floor(mi / LAYER_COLS) * 20;
-            pos[entry.members[mi].id] = { x: mx, y: my };
-            var dot = svgEl('circle', {
-              cx: mx,
-              cy: my,
-              r: 7,
-              class: 'lnode',
-              'data-member': entry.members[mi].id,
-              tabindex: '0',
-              role: 'link',
-              fill: COLORS[entry.kind] || '#4f5560',
-            });
-            describe(dot, entry.members[mi].title + ' — ' + entry.members[mi].id);
-            nodeLayer.appendChild(dot);
-          }
-        }
-        cellX += cellW + 14;
-      }
-    }
-
-    /**
-     * Every relationship is represented, never dropped. An edge between two drawn artifacts is drawn
-     * individually; an edge touching a collapsed kind is routed to that kind's cell and merged with
-     * its siblings into one connector carrying a count. Without this the map went silent at scale —
-     * at ten times this model it drew none of 3,290 relationships, which is honest and useless.
-     */
-    var kindOfId = {};
-    for (var ki2 = 0; ki2 < ARTIFACTS.length; ki2 += 1) kindOfId[ARTIFACTS[ki2].id] = ARTIFACTS[ki2].kind;
-    var reprOf = function (id) {
-      if (pos[id]) return { x: pos[id].x, y: pos[id].y, exact: true };
-      var cell = cellAt[kindOfId[id]];
-      return cell ? { x: cell.x, y: cell.y, exact: false } : null;
-    };
-
-    var individual = 0;
-    var aggregated = 0;
-    var connectors = {};
-    var order = [];
-    for (var e = 0; e < EDGES.length; e += 1) {
-      var from = reprOf(EDGES[e].from);
-      var to = reprOf(EDGES[e].to);
-      if (!from || !to) continue;
-      if (from.x === to.x && from.y === to.y) {
-        /* Both ends collapsed into the same cell: counted, but there is nothing to draw. */
-        aggregated += 1;
-        continue;
-      }
-      var exact = from.exact && to.exact;
-      var key = from.x + ',' + from.y + '>' + to.x + ',' + to.y;
-      if (!connectors[key]) {
-        connectors[key] = { from: from, to: to, count: 0, exact: exact };
-        order.push(key);
-      }
-      connectors[key].count += 1;
-      if (exact) individual += 1;
-      else aggregated += 1;
-    }
-    var drawn = 0;
-    var aggConnectors = 0;
-    for (var oi = 0; oi < order.length; oi += 1) {
-      var conn = connectors[order[oi]];
-      edgeLayer.appendChild(
-        svgEl('line', {
-          x1: conn.from.x,
-          y1: conn.from.y,
-          x2: conn.to.x,
-          y2: conn.to.y,
-          class: 'ledge' + (conn.exact ? '' : ' agg'),
-          'marker-end': 'url(#arrow)',
+    for (var b = 0; b < layout.bands.length; b += 1) {
+      var band = layout.bands[b];
+      bandLayer.appendChild(
+        svgEl('rect', {
+          x: 8,
+          y: band.y,
+          width: LS.width - 16,
+          height: band.h,
+          class: 'band',
         }),
       );
-      if (!conn.exact && conn.count > 1) {
-        edgeLayer.appendChild(
-          svgText(
-            (conn.from.x + conn.to.x) / 2,
-            (conn.from.y + conn.to.y) / 2 - 3,
-            String(conn.count),
-            'aggcount',
-          ),
-        );
-      }
-      drawn += 1;
-      if (!conn.exact) aggConnectors += 1;
+      bandLayer.appendChild(svgText(18, band.y + 20, band.name, 'bandname', 'start'));
+      bandLayer.appendChild(
+        svgText(LS.width - 18, band.y + 20, String(band.count), 'bandcount', 'end'),
+      );
     }
-    var defs = svgEl('defs', {});
-    var marker = svgEl('marker', {
-      id: 'arrow',
-      viewBox: '0 0 10 10',
-      refX: '9',
-      refY: '5',
-      markerWidth: '5',
-      markerHeight: '5',
-      orient: 'auto-start-reverse',
+
+    for (var n = 0; n < layout.nodes.length; n += 1) {
+      var item = layout.nodes[n];
+      var a = item.artifact;
+      var g = svgEl('g', {
+        class: 'lsnode',
+        'data-member': a.id,
+        tabindex: '0',
+        role: 'link',
+        'aria-label': a.title + ' — ' + a.id + ' — ' + a.kindName,
+      });
+      describe(g, a.title + ' — ' + a.id + ' — ' + a.kindName);
+      g.appendChild(
+        svgEl('rect', { x: item.x, y: item.y, width: LS.nodeW, height: LS.nodeH, class: 'nodebox' }),
+      );
+      /* Kind colour touches the accent bar and the identifier only, never the node's surface: a lane of
+         forty nodes has to read as names, not as forty coloured blocks. */
+      g.appendChild(
+        svgEl('rect', {
+          x: item.x,
+          y: item.y,
+          width: 4,
+          height: LS.nodeH,
+          class: 'nodeaccent',
+          fill: COLORS[a.kind] || '#4f5560',
+        }),
+      );
+      /* Truncated to the node's width by character budget rather than by clipping, so the rendered
+         geometry stays measurable and the full title still reaches the reader through the accessible
+         name, the tooltip and the artifact's own view. */
+      var maxChars = Math.floor((LS.nodeW - 20) / 6.4);
+      var shown = a.title.length > maxChars ? a.title.slice(0, maxChars - 1) + '…' : a.title;
+      g.appendChild(svgText(item.x + 12, item.y + 15, shown, 'nodetitle', 'start'));
+      var idText = svgText(item.x + 12, item.y + 28, a.id, 'nodeid', 'start');
+      idText.setAttribute('fill', COLORS[a.kind] || '#4f5560');
+      g.appendChild(idText);
+      nodeLayer.appendChild(g);
+    }
+
+    var fit = { x: 0, y: 0, w: LS.width, h: layout.height };
+    var view = { x: fit.x, y: fit.y, w: fit.w, h: fit.h };
+    var applyView = function () {
+      svg.setAttribute('viewBox', view.x + ' ' + view.y + ' ' + view.w + ' ' + view.h);
+    };
+    applyView();
+
+    var zoomBy = function (factor, cx, cy) {
+      var nw = view.w * factor;
+      if (nw < fit.w / 24 || nw > fit.w * 2) return;
+      view = {
+        x: cx - (cx - view.x) * factor,
+        y: cy - (cy - view.y) * factor,
+        w: nw,
+        h: view.h * factor,
+      };
+      applyView();
+    };
+    svg.addEventListener('wheel', function (ev) {
+      ev.preventDefault();
+      var rect = svg.getBoundingClientRect();
+      var px = view.x + ((ev.clientX - rect.left) / rect.width) * view.w;
+      var py = view.y + ((ev.clientY - rect.top) / rect.height) * view.h;
+      zoomBy(ev.deltaY > 0 ? 1.15 : 1 / 1.15, px, py);
     });
-    marker.appendChild(svgEl('path', { d: 'M 0 0 L 10 5 L 0 10 z', class: 'arrowhead' }));
-    defs.appendChild(marker);
-    svg.appendChild(defs);
-    svg.appendChild(edgeLayer);
-    svg.appendChild(nodeLayer);
-    host.appendChild(svg);
+    var dragging = null;
+    svg.addEventListener('pointerdown', function (ev) {
+      if (ev.target instanceof Element && ev.target.closest('[data-member]')) return;
+      dragging = { x: ev.clientX, y: ev.clientY, vx: view.x, vy: view.y };
+      svg.setAttribute('data-panning', 'true');
+    });
+    svg.addEventListener('pointermove', function (ev) {
+      if (!dragging) return;
+      var rect = svg.getBoundingClientRect();
+      view.x = dragging.vx - ((ev.clientX - dragging.x) / rect.width) * view.w;
+      view.y = dragging.vy - ((ev.clientY - dragging.y) / rect.height) * view.h;
+      applyView();
+    });
+    var endDrag = function () {
+      dragging = null;
+      svg.removeAttribute('data-panning');
+    };
+    svg.addEventListener('pointerup', endDrag);
+    svg.addEventListener('pointerleave', endDrag);
 
-    var summary = el('p', 'note layersummary');
-    var parts = [
-      bands.length + (bands.length === 1 ? ' band' : ' bands'),
-      hiddenArtifacts + ' of ' + ARTIFACTS.length + ' artifacts collapsed into counted cells',
-      individual + ' of ' + EDGES.length + ' relationships drawn individually',
-      aggregated + ' merged into ' + aggConnectors + ' aggregate connectors',
-    ];
-    summary.textContent =
-      parts.join(' · ') +
-      '. Every relationship is represented; none is omitted. ' +
-      'Bands group the model; they state no order, cause or dependency.';
-    host.appendChild(summary);
-
-    var open = function (target) {
+    /* Selection keeps the wiring the layered map already had; what selection means is a later slice. */
+    var activate = function (target) {
       if (!target) return;
       var member = target.getAttribute('data-member');
-      if (member) {
-        go({ view: 'graph', graphMode: 'focus', id: member });
-        return;
-      }
-      var kind = target.getAttribute('data-kind');
-      if (kind) {
-        var next = {};
-        for (var i = 0; i < ARTIFACTS.length; i += 1) next[ARTIFACTS[i].kind] = true;
-        buildLayers(host, (function () {
-          var only = {};
-          only[kind] = true;
-          return only;
-        })());
-      }
+      if (member) go({ view: 'graph', graphMode: 'focus', id: member });
     };
     svg.addEventListener('click', function (ev) {
-      open(ev.target instanceof Element ? ev.target.closest('[data-kind],[data-member]') : null);
+      activate(ev.target instanceof Element ? ev.target.closest('[data-member]') : null);
     });
     svg.addEventListener('keydown', function (ev) {
-      if (ev.key !== 'Enter' && ev.key !== ' ') return;
-      open(ev.target instanceof Element ? ev.target.closest('[data-kind],[data-member]') : null);
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        activate(ev.target instanceof Element ? ev.target.closest('[data-member]') : null);
+        ev.preventDefault();
+        return;
+      }
+      var step = view.w / 12;
+      if (ev.key === '+' || ev.key === '=') zoomBy(1 / 1.2, view.x + view.w / 2, view.y + view.h / 2);
+      else if (ev.key === '-') zoomBy(1.2, view.x + view.w / 2, view.y + view.h / 2);
+      else if (ev.key === '0') {
+        view = { x: fit.x, y: fit.y, w: fit.w, h: fit.h };
+        applyView();
+      } else if (ev.key === 'ArrowLeft') view.x -= step;
+      else if (ev.key === 'ArrowRight') view.x += step;
+      else if (ev.key === 'ArrowUp') view.y -= step;
+      else if (ev.key === 'ArrowDown') view.y += step;
+      else return;
+      applyView();
       ev.preventDefault();
     });
+
+    var controls = el('div', 'gcontrols');
+    var button = function (label, onClick) {
+      var btn = doc.createElement('button');
+      btn.type = 'button';
+      btn.textContent = label;
+      btn.addEventListener('click', onClick);
+      controls.appendChild(btn);
+    };
+    button('Zoom in', function () {
+      zoomBy(1 / 1.2, view.x + view.w / 2, view.y + view.h / 2);
+    });
+    button('Zoom out', function () {
+      zoomBy(1.2, view.x + view.w / 2, view.y + view.h / 2);
+    });
+    button('Fit', function () {
+      view = { x: fit.x, y: fit.y, w: fit.w, h: fit.h };
+      applyView();
+    });
+    host.appendChild(controls);
+    host.appendChild(svg);
+    var summary = el('p', 'note landscapesummary');
+    summary.textContent =
+      layout.bands.length +
+      (layout.bands.length === 1 ? ' band · ' : ' bands · ') +
+      layout.nodes.length +
+      ' of ' +
+      ARTIFACTS.length +
+      ' artifacts individually represented · none aggregated, none hidden. ' +
+      'Bands group the model; they state no order, cause or dependency. ' +
+      'Drag to pan, scroll to zoom, or use the buttons; with the map focused, arrow keys pan, + and - zoom, 0 fits.';
+    host.appendChild(summary);
   };
+
 
   var buildProjection = function () {
     var host = doc.getElementById('graph-host');
@@ -1407,7 +1390,7 @@ const script = String.raw`
       tabs[i].setAttribute('href', href);
     }
     if (mode === 'focus') buildFocus(host, state.id);
-    else buildLayers(host, null);
+    else buildLandscape(host);
   };
 
   /* ----------------------------------------------------------- ranked search */
@@ -1930,12 +1913,13 @@ export function buildSnapshotHtml(
     '<section id="view-graph" aria-labelledby="h-graph" hidden>',
     '<h2 class="view" id="h-graph">Model map</h2>',
     '<nav class="gmodes" aria-label="Projections">',
-    '<a href="#/graph/layers" data-mode="layers">Layered map</a>',
+    '<a href="#/graph/layers" data-mode="layers">Landscape</a>',
     '<a href="#/graph/focus" data-mode="focus">Focused neighbourhood</a>',
     '</nav>',
-    '<p class="note">Two projections, drawn on request. The layered map places artifacts in four fixed',
-    "bands; the focused neighbourhood orbits one artifact's relationship groups around it. Every",
-    "relationship either shows is also readable as text on the artifact's own view.</p>",
+    '<p class="note">The landscape places every artifact in one of four fixed bands as its own node —',
+    'nothing aggregated, nothing hidden — and is navigated by panning, zooming and fitting rather than',
+    "read at one fixed scale. The focused neighbourhood orbits one artifact's relationship groups around",
+    "it. Every relationship either shows is also readable as text on the artifact's own view.</p>",
     '<div id="graph-host"></div>',
     '</section>',
 

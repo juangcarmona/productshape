@@ -1,0 +1,39 @@
+schema: product-definition-as-code/coverage/v1alpha1
+handoff: HOF-GITHUB-38
+requirements:
+  FR-SNAPSHOT-005:
+    status: covered
+    specification:
+      - openspec/changes/add-product-landscape/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+      - openspec/changes/add-product-landscape/measurements.md
+  FR-SNAPSHOT-007:
+    status: covered
+    specification:
+      - openspec/changes/add-product-landscape/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+      - openspec/changes/add-product-landscape/measurements.md
+  QR-PRESENTATION-001:
+    status: covered
+    specification:
+      - openspec/changes/add-product-landscape/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+      - scripts/screenshot-snapshot.mts
+      - openspec/changes/add-product-landscape/measurements.md
+  QR-ACCESSIBILITY-001:
+    status: covered
+    specification:
+      - openspec/changes/add-product-landscape/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+      - openspec/changes/add-product-landscape/measurements.md
+  QR-SCALABILITY-001:
+    status: covered
+    specification:
+      - openspec/changes/add-product-landscape/specs/snapshot-generation/spec.md
+    verification:
+      - openspec/changes/add-product-landscape/measurements.md
+      - scripts/measure-snapshot.mts
