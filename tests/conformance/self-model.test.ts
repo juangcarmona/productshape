@@ -59,6 +59,8 @@ const expectedIds: Record<string, string[]> = {
     // Added by CHG-BRAND-001 (ProductShape brand adoption).
     'TERM-METHODOLOGY',
     'TERM-REFERENCE-IMPLEMENTATION',
+    // Added by CHG-SNAPSHOT-002 (progressive-disclosure Product Snapshot Explorer).
+    'TERM-GRAPH-PROJECTION',
     // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
     'TERM-PRODUCT-SNAPSHOT',
   ],
@@ -89,12 +91,21 @@ const expectedIds: Record<string, string[]> = {
     'FR-SNAPSHOT-002',
     // Added by CHG-EXPLORE-001 (ps:explore thinking partner).
     'FR-EXPLORE-001',
+    // Added by CHG-SNAPSHOT-002 (progressive-disclosure Product Snapshot Explorer).
+    'FR-SNAPSHOT-003',
+    'FR-SNAPSHOT-004',
+    'FR-SNAPSHOT-005',
+    'FR-SNAPSHOT-006',
   ],
   'quality-requirement': [
     'QR-PORTABILITY-001',
     'QR-DETERMINISM-001',
     'QR-EXPLAINABILITY-001',
     'QR-EXTENSIBILITY-001',
+    // Added by CHG-SNAPSHOT-002 (progressive-disclosure Product Snapshot Explorer).
+    'QR-ACCESSIBILITY-001',
+    'QR-PRESENTATION-001',
+    'QR-SCALABILITY-001',
   ],
   constraint: [
     'CON-MARKDOWN-001',
