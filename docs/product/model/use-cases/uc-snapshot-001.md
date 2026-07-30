@@ -20,6 +20,8 @@ uses-terms:
 The current product model becomes one static, self-contained HTML file — a Product Snapshot —
 that anyone can explore in a browser without the repository, the CLI or any server, stamped with
 the model revision it was generated from and reproducible byte-for-byte from the same content.
+The file contains the model completely; the page it opens as displays only what the reader has
+asked for.
 
 ## Trigger
 
@@ -36,8 +38,12 @@ reflects the new baseline.
 1. The engineer runs `prodshape graph --format html`.
 2. The product graph is compiled from the authored artifacts, including all derived reverse
    relationships.
-3. Every artifact is rendered — frontmatter and body — into the page, organized by kind.
-4. A graph visualization and a client-side search index are embedded into the same file.
+3. Every artifact — its frontmatter, its authored content and its status — and every relationship
+   in the compiled graph is embedded into the file completely, so nothing the reader can reach is
+   missing and nothing needs to be fetched later.
+4. The exploration capabilities are embedded into the same file: the search index, the
+   relationship structure the projections are built from, and the presentation logic that renders
+   embedded content on demand.
 5. The source revision of the model is recorded visibly in the page.
 6. The snapshot is written as a single self-contained HTML file under the generated-output area,
    and the command reports where.
@@ -62,6 +68,9 @@ reflects the new baseline.
 
 - One self-contained HTML file exists, opening correctly from local disk with no network access
   and no server.
+- The file contains every artifact and every relationship of the compiled model; the page opens
+  in an orientation state that renders none of the artifact content and no artifact-level graph,
+  and completeness of the file is therefore independent of what is displayed at any moment.
 - The page records the model revision it was generated from.
 - The canonical model is untouched; the snapshot is a derived, regenerable projection and never
   authoritative.
