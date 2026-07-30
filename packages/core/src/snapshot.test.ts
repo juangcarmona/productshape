@@ -1095,6 +1095,10 @@ describe('graph projections', () => {
     doc = dom.window.document;
   };
   const sats = (): Element[] => [...doc.querySelectorAll('#graph-host circle[data-group]')];
+  const navigateTo = (hash: string): void => {
+    dom.window.location.hash = hash;
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+  };
   const members = (): Element[] => [...doc.querySelectorAll('#graph-host circle[data-member]')];
   const labelOf = (n: Element): string => n.getAttribute('aria-label') ?? '';
   const cy = (n: Element): number => Number(n.getAttribute('cy'));
@@ -1389,6 +1393,31 @@ describe('graph projections', () => {
       'Rules and language',
       'Product commitments',
     ]);
+    // Each artifact's node sits inside its band's lane.
+    const graph = compileGraph(busy);
+    const bandOf: Record<string, string> = {
+      actor: 'Product context',
+      'bounded-context': 'Product context',
+      journey: 'Product behaviour',
+      'use-case': 'Product behaviour',
+      'business-rule': 'Rules and language',
+      'domain-term': 'Rules and language',
+      'functional-requirement': 'Product commitments',
+      'quality-requirement': 'Product commitments',
+      constraint: 'Product commitments',
+    };
+    const lanes = [...doc.querySelectorAll('#graph-host rect.band')].map((r, i) => ({
+      name: [...doc.querySelectorAll('#graph-host text.bandname')][i]?.textContent ?? '',
+      top: Number(r.getAttribute('y')),
+      bottom: Number(r.getAttribute('y')) + Number(r.getAttribute('height')),
+    }));
+    for (const node of doc.querySelectorAll('#graph-host g.lsnode')) {
+      const id = node.getAttribute('data-member') ?? '';
+      const kind = graph.nodes.find((n) => n.id === id)?.type ?? '';
+      const y = Number(node.querySelector('rect.nodebox')?.getAttribute('y'));
+      const lane = lanes.find((l) => y >= l.top && y <= l.bottom);
+      expect(lane?.name, `${id} (${kind})`).toBe(bandOf[kind]);
+    }
   });
 
   it('renders only the bands the model populates', () => {
@@ -1398,6 +1427,132 @@ describe('graph projections', () => {
     expect(bands).toEqual(['Product context', 'Product behaviour']);
   });
 
+  it('represents every artifact individually, aggregating nothing and hiding nothing', () => {
+    open('#/graph/layers');
+    const graph = compileGraph(busy);
+    const ids = [...doc.querySelectorAll('#graph-host g.lsnode')].map((n) =>
+      n.getAttribute('data-member'),
+    );
+    expect(ids.length).toBe(graph.nodes.length);
+    expect([...ids].sort()).toEqual(graph.nodes.map((n) => n.id).sort());
+    // No counted cell stands in for artifacts, and nothing is collapsed away.
+    expect(doc.querySelector('#graph-host rect.cell')).toBeNull();
+    const summary = doc.querySelector('p.landscapesummary')?.textContent ?? '';
+    expect(summary).toContain(`${graph.nodes.length} of ${graph.nodes.length} artifacts`);
+    expect(summary).toContain('none aggregated, none hidden');
+  });
+
+  it('gives every node its title as primary identity, with kind and identifier available', () => {
+    open('#/graph/layers');
+    for (const node of doc.querySelectorAll('#graph-host g.lsnode')) {
+      const id = node.getAttribute('data-member') ?? '';
+      const label = node.getAttribute('aria-label') ?? '';
+      expect(label).toContain(id);
+      expect(node.querySelector('title')?.textContent).toContain(id);
+      // The title text is the node's own first line; the identifier renders separately beneath it.
+      expect(node.querySelector('text.nodetitle')?.textContent?.length).toBeGreaterThan(0);
+      expect(node.querySelector('text.nodeid')?.textContent).toBe(id);
+    }
+  });
+
+  it('uses kind colour as an accent, never as the node surface', () => {
+    open('#/graph/layers');
+    const node = doc.querySelector('#graph-host g.lsnode')!;
+    const box = node.querySelector('rect.nodebox')!;
+    const accent = node.querySelector('rect.nodeaccent')!;
+    expect(box.getAttribute('fill')).toBeNull();
+    const boxArea = Number(box.getAttribute('width')) * Number(box.getAttribute('height'));
+    const accentArea = Number(accent.getAttribute('width')) * Number(accent.getAttribute('height'));
+    expect(accentArea / boxArea).toBeLessThan(0.1);
+  });
+
+  it('draws no relationships in the landscape, leaving them readable as text', () => {
+    open('#/graph/layers');
+    expect(doc.querySelectorAll('#graph-host line').length).toBe(0);
+    // The relationships are still fully available on each artifact's own view.
+    navigateTo('#/artifacts/UC-H00');
+    expect(doc.querySelector('#detail .rels')?.textContent).toContain('primary-actor');
+  });
+
+  it('places every artifact deterministically and stably', () => {
+    const positions = (): string[] =>
+      [...doc.querySelectorAll('#graph-host g.lsnode')].map((n) => {
+        const r = n.querySelector('rect.nodebox')!;
+        return `${n.getAttribute('data-member')}@${r.getAttribute('x')},${r.getAttribute('y')}`;
+      });
+    open('#/graph/layers');
+    const first = positions();
+    // Panning and zooming move the camera, not the artifacts.
+    const svg = doc.querySelector('#graph-host svg.landscape')!;
+    svg.dispatchEvent(
+      new dom.window.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+    );
+    svg.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: '-', bubbles: true }));
+    expect(positions()).toEqual(first);
+    // A second build of identical content places everything identically.
+    open('#/graph/layers');
+    expect(positions()).toEqual(first);
+  });
+
+  it('makes every artifact reachable and selectable by keyboard', () => {
+    open('#/graph/layers');
+    const graph = compileGraph(busy);
+    const nodes = [...doc.querySelectorAll('#graph-host g.lsnode')];
+    expect(nodes.length).toBe(graph.nodes.length);
+    for (const n of nodes) {
+      expect(n.getAttribute('tabindex')).toBe('0');
+      expect(n.getAttribute('role')).toBe('link');
+    }
+    const target = nodes[3]!;
+    const id = target.getAttribute('data-member');
+    target.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(dom.window.location.hash).toBe(`#/graph/focus/${id}`);
+  });
+
+  it('places no node outside the canvas and none overlapping another', () => {
+    open('#/graph/layers');
+    const svg = doc.querySelector('#graph-host svg.landscape')!;
+    const [vx = 0, vy = 0, vw = 0, vh = 0] = (svg.getAttribute('viewBox') ?? '')
+      .split(' ')
+      .map(Number);
+    const boxes = [...doc.querySelectorAll('#graph-host g.lsnode rect.nodebox')].map((r) => ({
+      x: Number(r.getAttribute('x')),
+      y: Number(r.getAttribute('y')),
+      w: Number(r.getAttribute('width')),
+      h: Number(r.getAttribute('height')),
+    }));
+    for (const b of boxes) {
+      expect(b.x).toBeGreaterThanOrEqual(vx);
+      expect(b.y).toBeGreaterThanOrEqual(vy);
+      expect(b.x + b.w).toBeLessThanOrEqual(vx + vw);
+      expect(b.y + b.h).toBeLessThanOrEqual(vy + vh);
+    }
+    for (let i = 0; i < boxes.length; i += 1) {
+      for (let j = i + 1; j < boxes.length; j += 1) {
+        const a = boxes[i]!;
+        const b = boxes[j]!;
+        const overlap = a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+        expect(overlap, `nodes ${i} and ${j} overlap`).toBe(false);
+      }
+    }
+  });
+
+  it('offers pan, zoom and fit on the landscape, by pointer and keyboard', () => {
+    open('#/graph/layers');
+    const svg = doc.querySelector('#graph-host svg.landscape')!;
+    const labels = [...doc.querySelectorAll('.gcontrols button')].map((b) => b.textContent);
+    expect(labels).toEqual(['Zoom in', 'Zoom out', 'Fit']);
+    const fitted = svg.getAttribute('viewBox');
+    (doc.querySelectorAll('.gcontrols button')[0] as HTMLButtonElement).click();
+    expect(svg.getAttribute('viewBox')).not.toBe(fitted);
+    (doc.querySelectorAll('.gcontrols button')[2] as HTMLButtonElement).click();
+    expect(svg.getAttribute('viewBox')).toBe(fitted);
+    svg.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    expect(svg.getAttribute('viewBox')).not.toBe(fitted);
+    svg.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: '0', bubbles: true }));
+    expect(svg.getAttribute('viewBox')).toBe(fitted);
+  });
+
   it('states nothing about order, cause or dependency between bands', () => {
     open('#/graph/layers');
     const text = doc.getElementById('view-graph')?.textContent?.toLowerCase() ?? '';
@@ -1405,48 +1560,6 @@ describe('graph projections', () => {
     for (const word of ['precedes', 'depends on', 'causes', 'lifecycle', 'stage', 'flow']) {
       expect(text).not.toContain(word);
     }
-  });
-
-  it('draws each relationship with its authored direction, not the band geometry', () => {
-    open('#/graph/layers');
-    const edges = [...doc.querySelectorAll('#graph-host line.ledge')];
-    expect(edges.length).toBeGreaterThan(0);
-    // Every drawn edge carries the arrow marker, whose direction comes from the edge's own ends.
-    for (const e of edges) expect(e.getAttribute('marker-end')).toBe('url(#arrow)');
-    expect(doc.querySelector('#graph-host marker#arrow')).not.toBeNull();
-  });
-
-  it('collapses a large kind and states exactly what it holds back', () => {
-    // Collapse is budget-driven: a model this size draws in full, so the fixture has to exceed the
-    // rendered-artifact budget before anything is held back.
-    const wide = busy.concat(
-      Array.from({ length: 100 }, (_, i) =>
-        artifact(`UC-W${String(i).padStart(3, '0')}`, 'use-case', { 'primary-actor': 'ACT-H' }),
-      ),
-    );
-    open('#/graph/layers', wide);
-    const collapsed = doc.querySelector('#graph-host rect.cell.collapsed');
-    expect(collapsed?.getAttribute('aria-expanded')).toBe('false');
-    expect(labelOf(collapsed!)).toContain('collapsed');
-    const summary = doc.querySelector('p.layersummary')?.textContent ?? '';
-    expect(summary).toMatch(/\d+ of \d+ artifacts collapsed into counted cells/);
-    // Nothing is dropped: what is not drawn individually is merged into a counted connector.
-    expect(summary).toContain('Every relationship is represented; none is omitted');
-    const individual = Number(/(\d+) of \d+ relationships drawn individually/.exec(summary)?.[1]);
-    const merged = Number(/(\d+) merged into/.exec(summary)?.[1]);
-    expect(individual + merged).toBe(compileGraph(wide).edges.length);
-  });
-
-  it('draws a small model in full rather than collapsing it needlessly', () => {
-    open('#/graph/layers');
-    // 20 artifacts is well inside the budget, so nothing is held back.
-    expect(doc.querySelector('#graph-host rect.cell.collapsed')).toBeNull();
-    const summary = doc.querySelector('p.layersummary')?.textContent ?? '';
-    expect(summary).toContain('0 of 20 artifacts collapsed');
-    const graph = compileGraph(busy);
-    expect(summary).toContain(
-      `${graph.edges.length} of ${graph.edges.length} relationships drawn individually`,
-    );
   });
 
   it('never draws a node or relationship absent from the compiled graph', () => {

@@ -1,0 +1,102 @@
+schema: product-definition-as-code/delivery-slice/v1alpha1
+id: SLI-SNAPSHOT-009
+title: One selection operation and the three-region Explorer
+status: proposed
+product-change: CHG-SNAPSHOT-003
+outcome: >-
+  The Explorer becomes one instrument rather than three views sharing a variable. A left rail carries search,
+  filters and browsing; the map sits in the centre; an inspector on the right stays present and scrolls on its
+  own. Selecting an artifact from the map, from a search result, from the browser or from a relationship link
+  performs the identical operation every time — set the selection, show it in the inspector, update the
+  address, centre and fit its neighbourhood — so a reader can read what they selected without leaving the map,
+  and hovering previews without committing to anything.
+implements:
+  - requirement: FR-SNAPSHOT-002
+    coverage: full
+  - requirement: FR-SNAPSHOT-006
+    coverage: partial
+    scope: >-
+      The single selection operation and everything it touches: selecting from the map, a search result, the
+      artifact browser or a declared or derived relationship link performing the identical operation — set the
+      selected artifact, update the inspector, update the address, centre and fit the neighbourhood — with no
+      surface permitted a partial version of it; exactly one selected artifact shared by every part of the
+      page; hover previewing without changing the selection, the focus or the address; one navigation
+      mechanism owning state transitions with the address always reflecting page state; the active view and
+      the selected artifact in the addressable state; direct artifact links from file:// and static hosting;
+      Back and Forward restoring visited selections; the explicit unresolved-identifier state; permanent
+      legacy bare-identifier resolution normalized in place; and no persistence outside the address. Band
+      scope as addressable state, and band selection changing neither the selection nor the focus, are covered
+      by SLI-SNAPSHOT-010, which completes this requirement.
+  - requirement: QR-PRESENTATION-001
+    coverage: partial
+    scope: >-
+      The selected and hovered node states, each visually distinct from focused, related and background and
+      each distinguishable with colour removed; and the density obligation now that all three regions exist —
+      the rail, the map and the inspector legible together on an ordinary desktop viewport without decorative
+      whitespace displacing content. The scoped-band state is covered by SLI-SNAPSHOT-010.
+  - requirement: QR-ACCESSIBILITY-001
+    coverage: partial
+    scope: >-
+      Every surface this slice introduces: the rail, the inspector and the three-region structure placed in
+      the landmark and heading outline without skipping a level; reaching search, filters, the browser list,
+      the map and the inspector by keyboard alone with no trapped focus and no pointer-only control; visible
+      focus at every stop and deliberate focus placement when a selection changes; the selected artifact
+      reported as current with aria-current wherever it appears in a set of navigable items; accessible names
+      for any icon-only control introduced here; WCAG 2.1 AA contrast for every text-and-background pair this
+      slice adds; and hover previews never being the only way to obtain what they show.
+  - requirement: QR-SCALABILITY-001
+    coverage: partial
+    scope: >-
+      Artifact-selection latency re-measured on the named reference environment at all three defined reference
+      model scales, now that a selection also updates the inspector and moves the camera, and confirmed
+      against its existing budget rather than a new one; search latency re-confirmed against its existing
+      budget; and the five landscape integrity properties re-verified with all three regions present at each
+      of those scales.
+affects:
+  - UC-SNAPSHOT-EXPLORE-001
+  - JRN-SNAPSHOT-001
+  - TERM-PRODUCT-LANDSCAPE
+depends-on:
+  - SLI-SNAPSHOT-007
+  - SLI-SNAPSHOT-008
+verification:
+  - >-
+    The Explorer presents three regions — a left rail with search, filters and browsing; the map in the
+    centre; an inspector on the right — and the inspector remains present rather than replacing the map.
+  - A long artifact is selected and the inspector scrolled to its end; the map has not moved and the rail
+    still shows the selection.
+  - >-
+    Selecting an artifact from the map, then from a search result, then from the browser, then from a
+    relationship link produces the same four outcomes every time: the selection is set, the inspector shows
+    it, the address changes, and the map centres and fits its neighbourhood.
+  - Exactly one artifact detail is active at any moment, and inspecting the document confirms no other
+    artifact's body is present alongside it.
+  - The inspector shows the human-readable title, identifier, kind, status, remaining metadata, the authored
+    Markdown with its original heading hierarchy, and the artifact's relationships in both directions as text
+    with every related artifact selectable in one step.
+  - Hovering several artifacts on the map changes neither the selection, nor the focus, nor the address.
+  - >-
+    Copying the address while reading one artifact and opening it in a new window from local disk with
+    networking disabled lands on the same artifact in the same state; the same address served from static
+    hosting resolves identically.
+  - Back and Forward restore previously visited selections and map states, and a legacy bare-identifier
+    fragment still resolves and normalizes in place without adding a history entry.
+  - An address naming an identifier the snapshot does not contain names it, explains it is absent, and offers
+    a way onward.
+  - >-
+    On a viewport too narrow for three regions, the rail, map and inspector become distinct navigable states,
+    the selected artifact survives moving between them, and no horizontal page scrolling is required.
+  - The whole progression is operable by keyboard alone, with visible focus at every stop, aria-current on the
+    selected artifact, and every text-and-background pair introduced here meeting WCAG 2.1 AA.
+  - >-
+    Artifact-selection latency is re-measured at the three defined reference scales and still meets its
+    existing budget; search latency still meets its existing budget; and the five integrity properties hold
+    with all three regions present.
+  - Authored content containing markup, script or attribute sequences is displayed as text in the inspector
+    and never executes, and nothing on the page creates, edits, annotates, approves or persists anything.
+out-of-scope:
+  - Band scope in any form, including its visual state, its keyboard operation and its representation in the
+    address; SLI-SNAPSHOT-010 delivers all of it and completes FR-SNAPSHOT-006.
+  - Search ranking, snippets and truncation reporting; FR-SNAPSHOT-004 is unchanged and search changes only
+    in that selecting a result now performs the shared operation.
+  - Any new latency budget. This slice re-confirms the budgets already agreed.
