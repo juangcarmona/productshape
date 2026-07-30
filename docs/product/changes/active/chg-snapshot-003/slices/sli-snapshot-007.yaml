@@ -1,7 +1,7 @@
 schema: product-definition-as-code/delivery-slice/v1alpha1
 id: SLI-SNAPSHOT-007
 title: The product landscape, proven at reference scale
-status: proposed
+status: approved
 product-change: CHG-SNAPSHOT-003
 outcome: >-
   A Product Explorer enters one map and sees the complete product laid out in its four permanently visible
@@ -52,15 +52,19 @@ implements:
     coverage: partial
     scope: >-
       Landscape rendering and landscape integrity, measured on the named reference environment at all three
-      defined reference model scales including the 730-artifact scale. Covers the five integrity properties
-      for the landscape state — stable placement, individual reachability, successful selection and focus,
-      interaction within measured budgets, and no clipping, overlap or inaccessible content — plus
-      landscape-render latency recorded as a distribution with its evidence-based budget set from those
-      figures, and confirmation that generated file size and generation time per artifact do not increase
-      with model size. This evidence belongs to this slice rather than a later one because it determines
-      whether the landscape is viable at all. Focus-transition and band-scope measurement are covered by
-      SLI-SNAPSHOT-008 and SLI-SNAPSHOT-010; artifact-selection latency continues to bind its existing
-      budget throughout.
+      defined reference model scales including the 730-artifact scale. Covers the SLI-SNAPSHOT-007 landscape
+      integrity properties — deterministic stable placement, individual reachability, individual selection,
+      no clipping, and no node overlap — with the count of artifacts aggregated away reported separately and
+      required to be zero. Covers whole-landscape rendering against its canonical budget of 250 ms at the
+      95th percentile, reported as a distribution including the slowest sample, with the measured interval
+      and sampling protocol defined by the measurement harness. Covers confirmation that generated file size
+      and generation time per artifact do not increase with model size. This evidence belongs to this slice
+      rather than a later one because it determines whether the landscape is viable at all. These five are
+      this slice's projection of the requirement's own five: the requirement pairs selection with focus,
+      whereas this slice verifies selection only — that activating a node reaches the selected artifact's
+      address — because the focused state does not exist until SLI-SNAPSHOT-008. Focused-state behaviour,
+      focus-transition latency and band-scope measurement are covered by SLI-SNAPSHOT-008 and
+      SLI-SNAPSHOT-010; artifact-selection latency continues to bind its existing budget throughout.
 affects:
   - UC-SNAPSHOT-EXPLORE-001
   - JRN-SNAPSHOT-001
@@ -92,12 +96,17 @@ verification:
     unlabelled and no heading level is skipped.
   - >-
     At each of the three defined reference model scales, on the named reference environment, the landscape is
-    verified against the five integrity properties, and each result is recorded — including at the
-    730-artifact scale, where stable placement, individual reachability, successful selection and focus,
-    interaction within budget, and the absence of clipping, overlap or inaccessible content are each recorded
-    with their figure or pass.
-  - Landscape-render latency is measured across the three scales, reported as a distribution including the
-    slowest cases, and its evidence-based budget is derived from those figures and recorded.
+    verified against the SLI-SNAPSHOT-007 landscape integrity properties — deterministic stable placement,
+    individual reachability, individual selection, no clipping, no node overlap — and each result is recorded,
+    including at the 730-artifact scale. The number of artifacts aggregated away is recorded separately and is
+    zero at every scale.
+  - >-
+    Whole-landscape rendering is measured across the three scales and confirmed within 250 ms at the 95th
+    percentile, reported as a distribution including the slowest sample, with the sampling protocol recorded
+    alongside the figures.
+  - >-
+    Nothing in this slice's evidence claims to verify focused-state behaviour or focus-transition performance;
+    both are deferred to SLI-SNAPSHOT-008, where the focused state first exists.
   - Generated file size per authored byte and generation time per artifact do not increase with model size,
     and regeneration from identical model content remains byte-identical.
 out-of-scope:
@@ -108,4 +117,7 @@ out-of-scope:
   - Band scope as navigation state and the scoped-band visual state; SLI-SNAPSHOT-010 delivers them.
   - Aggregating, sampling or clustering artifacts in the landscape. Every artifact is individually
     represented; reducing that would be a separate product decision.
-  - Any budget for interactions this slice does not introduce.
+  - >-
+    Any budget for interactions this slice does not introduce. The 250 ms p95 landscape-rendering budget is
+    in scope because this slice introduces whole-landscape rendering; the search, artifact-selection and
+    focus-transition budgets are not set here.

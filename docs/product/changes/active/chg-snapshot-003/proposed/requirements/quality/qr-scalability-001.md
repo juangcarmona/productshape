@@ -11,7 +11,8 @@ verification:
   - scenario: The document rendered when the snapshot opens does not grow in proportion to the number of artifacts in the model
   - scenario: Generated file size grows no worse than linearly with authored content, and generation time grows no worse than linearly with artifact count
   - scenario: Search, artifact selection, landscape rendering and the focus transition respond without perceptible delay on both a current-scale and a materially larger model, and their latency is measured and recorded rather than asserted
-  - scenario: Concrete interaction budgets are established from measurement on an identified representative environment during technical design, before implementation is approved
+  - scenario: Whole-landscape rendering completes within 250 ms at the 95th percentile on the named reference environment at each defined reference scale
+  - scenario: Concrete budgets for the interactions that carry no numeric budget here are established from measurement on an identified representative environment during technical design, before implementation is approved
   - scenario: Interaction latency does not degrade materially as the model grows across the representative models
   - scenario: A high-degree artifact, an isolated artifact and an artifact with a long title and long body are all readable at every measured scale
   - scenario: At each defined model scale, on the named reference environment, the landscape holds stable placement, individual reachability, successful selection and focus, interaction within measured budgets, and no clipping, overlap or inaccessible content
@@ -37,12 +38,24 @@ Product Landscape, and completing the transition from the landscape into a focus
 complete without delay the reader perceives as waiting, and MUST NOT degrade materially as the model grows
 across the representative models.
 
-The latency of each of those interactions MUST be measured on an identified representative
+**Whole-landscape rendering MUST complete within 250 ms at the 95th percentile** on the named
+reference environment, at each defined reference scale. This budget covers entering or regenerating
+the complete landscape, from the moment the landscape is requested until it is ready for
+interaction — every artifact placed and every node present and activatable. It is a whole-canvas
+construction cost paid once per view change, and it is therefore **distinct from the budgets that
+govern the per-gesture interactions** — displaying search results, showing a selected artifact, and
+the transition into a focused neighbourhood — which the measurement harness holds to 100 ms. Those
+per-gesture figures are established per increment from measurement and carry no canonical authority
+here; this landscape budget does. The interval measured and the sampling protocol that produces the
+percentile belong to the measurement harness, not to this requirement.
+
+The latency of each of the other interactions above MUST be measured on an identified representative
 environment — named hardware, operating system and browser version, with the file opened over
-`file://` — and the figures MUST be recorded. Concrete numeric budgets MUST be established from
-those measurements during technical design, and MUST be agreed before implementation is approved.
-This requirement deliberately states no numeric interaction budget: no such measurement exists yet,
-and a number chosen before the first measurement would be a guess presented as a commitment.
+`file://` — and the figures MUST be recorded. Concrete numeric budgets for them MUST be established
+from those measurements during technical design, and MUST be agreed before implementation is
+approved. Beyond the landscape budget stated above, this requirement deliberately states no numeric
+interaction budget: no such measurement exists yet for those interactions, and a number chosen
+before the first measurement would be a guess presented as a commitment.
 
 The file-size and generation-time figures above are different in kind: they rest on measurements
 already recorded against the pre-change snapshot, which is why they carry targets here and the
@@ -96,17 +109,21 @@ and long titles and bodies, so that the hard cases are present rather than assum
 - **Artifact-selection responsiveness.** For each representative model, measure elapsed time from
   selecting an artifact to its content being displayed, for the artifact with the longest body and
   for the artifact with the most relationships. Report the distribution. No target is set here.
-- **Landscape responsiveness.** For each representative model, measure elapsed time from opening the map to
-  the complete landscape being rendered. Report the distribution. No target is set here.
+- **Landscape responsiveness.** For each representative model, measure elapsed time from the
+  landscape being requested to the complete landscape being ready for interaction. Report the
+  distribution. **The target is 250 ms at the 95th percentile, at every reference scale.** The
+  measured interval and the sampling protocol that produces the percentile — how many samples, how
+  they are ordered, and which are discarded as warm-up — are defined by the measurement harness and
+  recorded with the figures.
 - **Focus-transition responsiveness.** For each representative model, measure elapsed time from selection to
   the focused neighbourhood being centred and fitted, for the highest-degree artifact and for an isolated
   artifact. Report the distribution. No target is set here.
 - **Landscape integrity at scale.** For each representative model, on the named reference environment,
   record five properties, each with a target of zero failures: every artifact holds a **stable position**
   across focus changes; every artifact is **individually reachable**; every artifact can be **selected and
-  focused** successfully; landscape rendering, selection and the focus transition stay within their
-  **measured interaction budgets**; and no artifact, relationship or label is **clipped, overlapping or
-  inaccessible**. Simultaneous legibility of every title in a whole-product fit is deliberately not among
+  focused** successfully; landscape rendering stays **within its 250 ms p95 budget** and selection and the
+  focus transition stay within their measured interaction budgets; and no artifact, relationship or label
+  is **clipped, overlapping or inaccessible**. Simultaneous legibility of every title in a whole-product fit is deliberately not among
   them — see the note below.
 - **Interaction latency growth.** Compare each interaction measure across the representative models.
   The target is that latency does not grow materially with model size — the same interaction on a
@@ -124,14 +141,21 @@ landscape usable at that size: things stay where they are, everything can be rea
 opened, it responds within budget, and nothing is broken or hidden. Titles are legible at readable detail,
 which FR-SNAPSHOT-005 and QR-PRESENTATION-001 govern.
 
-**On interaction budgets.** No numeric budget for search, selection, landscape-rendering or
-focus-transition latency is set by this requirement, because none has been measured. The measurement procedure above exists to
-produce those figures on an identified environment — hardware, operating system and browser version
-recorded with the numbers — and the budgets are then set from what is observed and agreed during
-technical design, before implementation is approved. Any numeric budget proposed before that
-measurement is a technical hypothesis and MUST be recorded as one rather than as a threshold this
-requirement imposes. The file-size, opening-document and generation-time targets above do carry
-numbers, because measurements against the pre-change snapshot already exist to support them.
+**On interaction budgets.** One interaction budget is now canonical: whole-landscape rendering at
+250 ms p95, stated above. It carries a number because the landscape has been built and measured, and
+the figure was set from those measurements and agreed rather than assumed — which is the procedure
+this requirement demands, followed to its conclusion for the first interaction to complete it.
+
+No numeric budget for search, artifact-selection or focus-transition latency is set by this
+requirement, because the procedure has not yet concluded for them. The measurement procedure above
+exists to produce those figures on an identified environment — hardware, operating system and
+browser version recorded with the numbers — and each budget is then set from what is observed and
+agreed during technical design, before the implementation that introduces the interaction is
+approved. Any numeric budget proposed before that measurement is a technical hypothesis and MUST be
+recorded as one rather than as a threshold this requirement imposes; the 100 ms figure the
+measurement harness applies to those three interactions is such a hypothesis and is not elevated by
+this requirement. The file-size, opening-document and generation-time targets above do carry numbers,
+because measurements against the pre-change snapshot already exist to support them.
 
 ## Verification
 
@@ -148,9 +172,13 @@ numbers, because measurements against the pre-change snapshot already exist to s
   within the measured budgets, and no clipping, overlap or inaccessible content.
 - At the 730-artifact scale specifically, each of the five is recorded with its figure or its pass, so the
   landscape's viability at that size rests on evidence rather than on impression.
-- Concrete interaction budgets are derived from those recorded figures and agreed during technical
-  design; implementation approval does not proceed until they exist. No budget is asserted in advance
-  of the measurement.
+- Whole-landscape rendering is measured at every reference scale on the named reference environment
+  and confirmed within 250 ms at the 95th percentile. The sampling protocol that produced the
+  percentile is recorded alongside the figures, and the slowest observed sample is reported rather
+  than only the percentile.
+- The remaining interaction budgets are derived from those recorded figures and agreed during
+  technical design; implementation approval does not proceed until they exist. No budget beyond the
+  landscape-rendering budget is asserted in advance of the measurement.
 - Each interaction is compared across the three models and confirmed not to degrade materially with
   model size.
 - The highest-degree artifact of the largest representative model is opened: its neighbours are
