@@ -1,0 +1,109 @@
+schema: product-definition-as-code/delivery-slice/v1alpha1
+id: SLI-SNAPSHOT-008
+title: Focus as a state of the landscape
+status: proposed
+product-change: CHG-SNAPSHOT-003
+outcome: >-
+  Selecting an artifact promotes it and its neighbourhood into the foreground of the same landscape, while
+  the rest of the product stays visible behind it in the positions it already occupied. The camera moves
+  continuously to centre the artifact and fit its neighbourhood; only that neighbourhood's relationships are
+  prominent; a large neighbourhood arrives as typed counted groups the reader opens. Selecting something
+  else promotes the new neighbourhood and returns the previous one to the background, and an explicit reset
+  restores the whole landscape. Nothing rearranges, so the reader never loses their place.
+implements:
+  - requirement: FR-SNAPSHOT-005
+    coverage: partial
+    scope: >-
+      The focused state: promoting the selected artifact and its neighbourhood into the foreground, leaving
+      the rest of the product visible behind as subdued background, drawing prominently only the
+      relationships belonging to that neighbourhood with each stating its type and authored direction
+      including across and counter to band order, keeping direction determinable with colour removed,
+      presenting a large neighbourhood as typed counted groups with exact counts that expand only on
+      request, returning the previous neighbourhood to the background when another artifact is selected, and
+      the absence of any separate neighbourhood view. Also that a node selected on the map becomes the
+      page's single selected artifact and the map holds no selection of its own. The landscape state and
+      band assignment are covered by SLI-SNAPSHOT-007.
+  - requirement: FR-SNAPSHOT-007
+    coverage: partial
+    scope: >-
+      Everything about focus that must not disturb the product: positions unchanged when the selected
+      artifact changes, when focus is entered or cleared, and when a counted group is expanded or collapsed;
+      the camera centring the selected artifact and fitting its neighbourhood; the movement continuous
+      rather than an abrupt redraw; the reduced-motion path arriving at the same destination view without
+      animation; the previously focused neighbourhood returning to the background rather than disappearing;
+      the explicit reset restoring the landscape state; and camera position, zoom and focus history held
+      nowhere but the address of the current view. Stable placement and determinism are covered by
+      SLI-SNAPSHOT-007.
+  - requirement: QR-PRESENTATION-001
+    coverage: partial
+    scope: >-
+      The focused, related and background node states as this slice introduces them, each visually distinct
+      from one another and each distinguishable with colour removed, within the presentation system
+      SLI-SNAPSHOT-007 applies to the landscape. Counted groups and their expansion controls presented in
+      that same system. The selected and hovered states are covered by SLI-SNAPSHOT-009 and the scoped-band
+      state by SLI-SNAPSHOT-010.
+  - requirement: QR-ACCESSIBILITY-001
+    coverage: partial
+    scope: >-
+      Every surface this slice introduces: entering and clearing focus, expanding and collapsing a counted
+      group, and the reset action all operable by keyboard with no pointer-only path; visible focus
+      throughout and deliberate focus placement when a selection changes the focused artifact; expanded and
+      collapsed state exposed to assistive technology as state; relationship type and direction determinable
+      with colour removed; nothing needed available only on hover; and the camera transition suppressed under
+      a reduced-motion preference while still arriving at the same view.
+  - requirement: QR-SCALABILITY-001
+    coverage: partial
+    scope: >-
+      Focus-transition latency measured on the named reference environment at all three defined reference
+      model scales, for the highest-degree artifact and for an isolated artifact, reported as a distribution
+      with its evidence-based budget set from those figures; the five landscape integrity properties
+      re-verified for the focused state at each of those scales, including with counted groups expanded; and
+      confirmation that artifact-selection latency has not regressed against its existing budget now that
+      selection also moves a camera. Landscape-render measurement belongs to SLI-SNAPSHOT-007 and band-scope
+      verification to SLI-SNAPSHOT-010.
+affects:
+  - UC-SNAPSHOT-EXPLORE-001
+  - JRN-SNAPSHOT-001
+  - TERM-PRODUCT-LANDSCAPE
+  - TERM-GRAPH-PROJECTION
+  - BR-RELATIONSHIPS-001
+depends-on:
+  - SLI-SNAPSHOT-007
+verification:
+  - >-
+    Selecting an artifact promotes it and its neighbourhood; the rest of the product is still visible,
+    subdued, behind it; and only that neighbourhood's relationships are drawn prominently, each naming its
+    type, with direction still determinable when colour is removed.
+  - A reader notes where three artifacts sit, selects a fourth, and finds all three exactly where they were.
+  - After ten consecutive selections across different bands, every artifact not currently focused occupies
+    its original position and the arrangement as a whole is unchanged.
+  - Selecting a second artifact promotes the second neighbourhood and returns the first to the background,
+    where it remains visible rather than disappearing.
+  - The camera centres the selected artifact and fits its neighbourhood wholly within the visible canvas,
+    moving continuously so a reader can see the landscape it came from.
+  - With a reduced-motion preference set, the same selection arrives at the same centred, fitted view with no
+    animation.
+  - >-
+    Focusing the most connected artifact yields typed counted groups rather than a spill of nodes; expanding
+    one reveals exactly the counted number with no collision and nothing clipped; and the background
+    arrangement is unchanged by the expansion.
+  - The reset action restores the complete landscape from any focused state, with every artifact where the
+    reader last saw it.
+  - Entering focus, expanding a group and resetting are all operable by keyboard, with expanded state exposed
+    as state and focus landing deliberately when the selection changes.
+  - >-
+    The snapshot is inspected for map surfaces — there is one map with two states, and no control anywhere
+    opens a separate neighbourhood view.
+  - >-
+    Focus-transition latency is measured at each of the three defined reference scales on the named reference
+    environment, for the highest-degree and an isolated artifact, the figures recorded in full and the budget
+    derived from them; the five integrity properties hold for the focused state at each scale, including with
+    groups expanded; and artifact-selection latency still meets its existing budget.
+  - After exploring, browser storage and cookies contain nothing, and regeneration from identical model
+    content remains byte-identical.
+out-of-scope:
+  - The three-region Explorer, the persistent inspector and selection from search or the browser;
+    SLI-SNAPSHOT-009 delivers them.
+  - Band scope in any form; SLI-SNAPSHOT-010 delivers it.
+  - Multi-hop neighbourhoods. One hop remains the product decision.
+  - Saved camera positions or expansion state; nothing is persisted beyond the address of the current view.

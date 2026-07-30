@@ -1,0 +1,102 @@
+schema: product-definition-as-code/delivery-slice/v1alpha1
+id: SLI-SNAPSHOT-010
+title: Band scope as separate navigation state
+status: proposed
+product-change: CHG-SNAPSHOT-003
+outcome: >-
+  A Product Explorer can narrow what the landscape and the artifact browser emphasise by selecting a semantic
+  band, without that being mistaken for choosing something to read. Band scope changes neither the selected
+  artifact nor the focus, is held in the address separately from the selection, and is restored independently
+  by Back and Forward — so a scoped landscape is a link someone can share. The orientation view offers a way
+  into the landscape rather than competing with it, and the kind-level aggregate stays as the precise answer
+  to composition and counts.
+implements:
+  - requirement: FR-SNAPSHOT-006
+    coverage: partial
+    scope: >-
+      Band scope, completing this requirement alongside SLI-SNAPSHOT-009's selection operation: selecting a
+      band scopes or highlights the landscape and the artifact browser; it does not select an artifact and does
+      not create or clear a focused neighbourhood; band scope is represented in the addressable state
+      separately from the selected artifact, so a scoped landscape is directly linkable and is restored by Back
+      and Forward independently of the selection; and clearing the scope leaves the selection intact. With this
+      slice the addressable state carries the active view, the selected artifact, the map state and the band
+      scope.
+  - requirement: FR-SNAPSHOT-003
+    coverage: full
+  - requirement: QR-PRESENTATION-001
+    coverage: partial
+    scope: >-
+      The scoped-band state, visible as its own state within the presentation system the earlier slices
+      established: which band is currently scoping the landscape and the artifact browser is apparent at a
+      glance, distinct from the focused, selected, related, background and hovered node states, and
+      distinguishable with colour removed. Completes this requirement's node and state presentation alongside
+      SLI-SNAPSHOT-007, SLI-SNAPSHOT-008 and SLI-SNAPSHOT-009.
+  - requirement: QR-ACCESSIBILITY-001
+    coverage: partial
+    scope: >-
+      Band interaction as this slice introduces it: selecting, changing and clearing a band scope operable by
+      keyboard alone with no pointer-only path; the band controls placed in the landmark and heading structure
+      without skipping a level, with accessible names; the active scope exposed to assistive technology as
+      state rather than by appearance alone, using aria-current where the bands form a set of navigable items;
+      focus continuity across a scope change, so focus is neither lost nor reset to the document start when the
+      landscape and browser narrow; WCAG 2.1 AA contrast for every text-and-background pair introduced here;
+      and no non-essential animation under a reduced-motion preference. Completes this requirement across the
+      Explorer alongside the three earlier slices.
+  - requirement: QR-SCALABILITY-001
+    coverage: partial
+    scope: >-
+      Band scoping and its restoration verified on the named reference environment at all three defined
+      reference model scales: applying a scope, changing it, clearing it, and restoring it from an address and
+      from Back and Forward all behave correctly at each scale, and the five landscape integrity properties
+      continue to hold in every scoped state. No new latency budget is set — the approved change defines none
+      for band scope — and the existing landscape-render, focus-transition, artifact-selection and search
+      budgets are re-confirmed rather than replaced. Completes this requirement alongside the three earlier
+      slices.
+affects:
+  - UC-SNAPSHOT-EXPLORE-001
+  - JRN-SNAPSHOT-001
+  - TERM-PRODUCT-LANDSCAPE
+  - TERM-GRAPH-PROJECTION
+depends-on:
+  - SLI-SNAPSHOT-007
+  - SLI-SNAPSHOT-009
+verification:
+  - Selecting a band narrows what the landscape and the artifact browser emphasise, and no artifact becomes
+    selected and no focused neighbourhood is created or cleared by doing so.
+  - >-
+    The address records the band scope separately from the selected artifact: a scoped landscape can be linked
+    and reopened, clearing the scope leaves the selected artifact intact, and Back and Forward restore scope
+    and selection independently of one another.
+  - Selecting a band while an artifact is focused leaves that artifact focused and its neighbourhood
+    prominent.
+  - The orientation view offers an entry point into the landscape and does not duplicate it; no second spatial
+    arrangement of artifacts appears on it.
+  - >-
+    The orientation view still states identity, revision, totals, counts by kind with entry points, the
+    generated read-only statement, the kind-level aggregate whose counts match the compiled graph exactly, and
+    the neutral no-relationships group — and still contains no artifact body and no artifact-level map.
+  - The currently scoped band is apparent at a glance, is distinct from every node state, and remains
+    determinable with colour removed.
+  - >-
+    Selecting, changing and clearing a band scope are operable by keyboard alone; the active scope is reported
+    to assistive technology as state; and focus is neither lost nor reset to the document start when the scope
+    changes.
+  - Band controls carry accessible names, sit in the heading and landmark structure without skipping a level,
+    and every text-and-background pair introduced here meets WCAG 2.1 AA.
+  - With a reduced-motion preference set, applying or clearing a scope runs without non-essential animation.
+  - >-
+    At each of the three defined reference model scales, on the named reference environment, applying,
+    changing, clearing and restoring a band scope all behave correctly, and the five landscape integrity
+    properties hold in every scoped state.
+  - >-
+    The landscape-render, focus-transition, artifact-selection and search budgets already agreed are
+    re-confirmed and unchanged; no new budget is introduced for band scoping.
+  - Regeneration from identical model content remains byte-identical, and browser storage and cookies remain
+    empty after scoping and clearing.
+out-of-scope:
+  - Any new latency budget. The approved change defines none for band scoping, so this slice measures and
+    verifies without inventing one.
+  - Scoping by anything other than a semantic band. Search and filters are covered by FR-SNAPSHOT-004 and
+    SLI-SNAPSHOT-009 and are unchanged here.
+  - Persisting a scope between visits. Scope lives in the address of the current view and nowhere else.
+  - Removing the kind-level aggregate. The approved change retains it as complementary to the landscape.
