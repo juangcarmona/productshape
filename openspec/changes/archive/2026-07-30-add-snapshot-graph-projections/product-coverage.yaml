@@ -1,0 +1,49 @@
+schema: product-definition-as-code/coverage/v1alpha1
+handoff: HOF-GITHUB-35
+requirements:
+  CON-NO-WEB-UI:
+    status: covered
+    specification:
+      - openspec/changes/archive/2026-07-30-add-snapshot-graph-projections/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+  FR-SNAPSHOT-002:
+    status: covered
+    specification:
+      - openspec/changes/archive/2026-07-30-add-snapshot-graph-projections/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+  FR-SNAPSHOT-005:
+    status: covered
+    specification:
+      - openspec/changes/archive/2026-07-30-add-snapshot-graph-projections/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+      - openspec/changes/archive/2026-07-30-add-snapshot-graph-projections/measurements.md
+  FR-SNAPSHOT-006:
+    status: covered
+    specification:
+      - openspec/changes/archive/2026-07-30-add-snapshot-graph-projections/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+  QR-ACCESSIBILITY-001:
+    status: covered
+    specification:
+      - openspec/changes/archive/2026-07-30-add-snapshot-graph-projections/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+      - openspec/changes/archive/2026-07-30-add-snapshot-graph-projections/measurements.md
+  QR-PRESENTATION-001:
+    status: covered
+    specification:
+      - openspec/changes/archive/2026-07-30-add-snapshot-graph-projections/specs/snapshot-generation/spec.md
+    verification:
+      - openspec/changes/archive/2026-07-30-add-snapshot-graph-projections/measurements.md
+      - scripts/screenshot-snapshot.mts
+  QR-SCALABILITY-001:
+    status: covered
+    specification:
+      - openspec/changes/archive/2026-07-30-add-snapshot-graph-projections/specs/snapshot-generation/spec.md
+    verification:
+      - openspec/changes/archive/2026-07-30-add-snapshot-graph-projections/measurements.md
+      - scripts/measure-snapshot.mts
