@@ -558,7 +558,7 @@ const script = String.raw`
     for (var i = 0; i < edges.length; i += 1) {
       var other = byId[otherEnd(edges[i], direction)];
       var otherKind = other ? other.kind : 'unknown';
-      var key = edges[i].kind + ' ' + otherKind;
+      var key = edges[i].kind + '\u0000' + otherKind;
       if (!index[key]) {
         index[key] = { relKind: edges[i].kind, kind: otherKind, edges: [] };
         groups.push(index[key]);
