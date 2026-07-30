@@ -512,14 +512,10 @@ describe('the embedded application', () => {
     );
   });
 
-  it('builds the whole-model graph only when that view is opened', () => {
+  it('builds a projection only when that view is opened', () => {
     expect(doc.querySelector('#graph-host svg')).toBeNull();
     navigate('#/graph');
-    const svg = doc.querySelector('#graph-host svg');
-    expect(svg).not.toBeNull();
-    const graph = compileGraph(model);
-    expect(svg?.querySelectorAll('circle').length).toBe(graph.nodes.length);
-    expect(svg?.querySelectorAll('line').length).toBe(graph.edges.length);
+    expect(doc.querySelector('#graph-host svg')).not.toBeNull();
   });
 
   it('filters the list by kind, status and text without losing the selection', () => {
@@ -1032,5 +1028,259 @@ describe('ranked search', () => {
     expect(input.getAttribute('aria-describedby')).toBe('q-body-status');
     expect(doc.getElementById('q-body-results')?.getAttribute('role')).toBe('listbox');
     expect(doc.getElementById('q-body-status')?.getAttribute('aria-live')).toBe('polite');
+  });
+});
+
+describe('graph projections', () => {
+  let dom: JSDOM;
+  let doc: Document;
+
+  /** Twelve use cases on one actor and rule: a group above the pre-open threshold. */
+  const busy = [
+    artifact('ACT-H', 'actor', { 'actor-kind': 'human' }, { body: '## Purpose\n\nA hub.' }),
+    artifact('BR-H', 'business-rule', {}, { body: '## Rule\n\nA rule.' }),
+    artifact(
+      'TERM-H',
+      'domain-term',
+      { 'defined-in': 'BC-H' },
+      { body: '## Definition\n\nA term.' },
+    ),
+    artifact('BC-H', 'bounded-context', {}, { body: '## Responsibility\n\nA context.' }),
+    artifact('JRN-H', 'journey', { 'primary-actor': 'ACT-H', steps: [{ 'use-case': 'UC-H00' }] }),
+    artifact('QR-H', 'quality-requirement', { 'applies-to': ['UC-H00'] }),
+    artifact('CON-H', 'constraint', { 'applies-to': ['BC-H'] }),
+    ...Array.from({ length: 12 }, (_, i) =>
+      artifact(`UC-H${String(i).padStart(2, '0')}`, 'use-case', {
+        'primary-actor': 'ACT-H',
+        'governed-by': ['BR-H'],
+        'uses-terms': ['TERM-H'],
+        'bounded-context': 'BC-H',
+      }),
+    ),
+    artifact('FR-H', 'functional-requirement', { 'derived-from': ['UC-H00'] }),
+  ];
+
+  const open = (hash: string, artifacts = busy): void => {
+    dom = new JSDOM(build(artifacts), {
+      url: `https://snapshot.invalid/snapshot.html${hash}`,
+      runScripts: 'dangerously',
+    });
+    doc = dom.window.document;
+  };
+  const sats = (): Element[] => [...doc.querySelectorAll('#graph-host circle[data-group]')];
+  const members = (): Element[] => [...doc.querySelectorAll('#graph-host circle[data-member]')];
+  const labelOf = (n: Element): string => n.getAttribute('aria-label') ?? '';
+  const cy = (n: Element): number => Number(n.getAttribute('cy'));
+
+  it('offers exactly the layered map and the focused neighbourhood, and no whole-graph drawing', () => {
+    open('#/graph');
+    const modes = [...doc.querySelectorAll('nav.gmodes a[data-mode]')].map((a) =>
+      a.getAttribute('data-mode'),
+    );
+    expect(modes).toEqual(['layers', 'focus']);
+    // The circular whole-model projection is gone, not hidden behind a control.
+    expect(build(busy)).not.toContain('graph-svg');
+    expect(build(busy)).not.toContain('Model graph');
+  });
+
+  it('orbits relationship groups, not artifacts, with exact counts', () => {
+    open('#/graph/focus/UC-H00');
+    // UC-H00 declares 4 groups (primary-actor, governed-by, uses-terms, bounded-context) and is
+    // referenced by 3 (steps, applies-to, derived-from).
+    expect(sats().length).toBe(7);
+    const counts = sats().map((n) =>
+      Number(n.parentElement?.parentElement?.querySelector('text.satcount')?.textContent),
+    );
+    expect(counts.every((c) => Number.isFinite(c))).toBe(true);
+    expect(labelOf(sats()[0]!)).toMatch(/^(outgoing|incoming) /);
+  });
+
+  it('keeps the projection bounded by relationship types, not by degree', () => {
+    open('#/graph/focus/ACT-H');
+    // ACT-H is referenced by 12 use cases and 1 journey: 13 relationships, 2 groups.
+    const relationships = compileGraph(busy).edges.filter(
+      (e) => e.from === 'ACT-H' || e.to === 'ACT-H',
+    ).length;
+    expect(relationships).toBe(13);
+    expect(sats().length).toBe(2);
+  });
+
+  it('places outgoing above the anchor and incoming below, so direction is positional', () => {
+    open('#/graph/focus/UC-H00');
+    const anchorY = cy(doc.querySelector('#graph-host circle.anchor')!);
+    for (const s of sats()) {
+      if (labelOf(s).startsWith('outgoing')) expect(cy(s)).toBeLessThan(anchorY);
+      else expect(cy(s)).toBeGreaterThan(anchorY);
+    }
+  });
+
+  it('pre-opens small groups and leaves large ones closed', () => {
+    open('#/graph/focus/ACT-H');
+    const big = sats().find((s) => labelOf(s).endsWith('· 12'));
+    const small = sats().find((s) => labelOf(s).endsWith('· 1'));
+    expect(big?.getAttribute('aria-expanded')).toBe('false');
+    expect(small?.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('opens a group without moving the others', () => {
+    open('#/graph/focus/ACT-H');
+    const before = sats().map((s) => `${s.getAttribute('cx')},${s.getAttribute('cy')}`);
+    const big = sats().find((s) => labelOf(s).endsWith('· 12'))!;
+    big.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+    const after = sats().map((s) => `${s.getAttribute('cx')},${s.getAttribute('cy')}`);
+    expect(after).toEqual(before);
+    expect(
+      sats()
+        .find((s) => labelOf(s).endsWith('· 12'))
+        ?.getAttribute('aria-expanded'),
+    ).toBe('true');
+    expect(members().length).toBeGreaterThanOrEqual(12);
+  });
+
+  it('activating a group does not change the selection; activating a member does', () => {
+    open('#/graph/focus/ACT-H');
+    const hashBefore = dom.window.location.hash;
+    const big = sats().find((s) => labelOf(s).endsWith('· 12'))!;
+    big.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+    expect(dom.window.location.hash).toBe(hashBefore);
+    const member = members()[0]!;
+    const targetId = member.getAttribute('data-member');
+    member.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+    expect(dom.window.location.hash).toBe(`#/graph/focus/${targetId}`);
+  });
+
+  it('is keyboard-operable and exposes expanded state', () => {
+    open('#/graph/focus/ACT-H');
+    const big = sats().find((s) => labelOf(s).endsWith('· 12'))!;
+    expect(big.getAttribute('tabindex')).toBe('0');
+    expect(big.getAttribute('role')).toBe('button');
+    big.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(
+      sats()
+        .find((s) => labelOf(s).endsWith('· 12'))
+        ?.getAttribute('aria-expanded'),
+    ).toBe('true');
+  });
+
+  it('reveals identity on hover and on focus, never pointer-only', () => {
+    open('#/graph/focus/UC-H00');
+    for (const node of [...sats(), ...members()]) {
+      // <title> serves the pointer; aria-label serves focus and assistive technology.
+      expect(node.querySelector('title')?.textContent).toBeTruthy();
+      expect(node.getAttribute('aria-label')).toBeTruthy();
+      expect(node.getAttribute('tabindex')).toBe('0');
+    }
+  });
+
+  it('says so plainly for an artifact with no relationships', () => {
+    open('#/graph/focus/CON-A', model);
+    expect(doc.getElementById('graph-host')?.textContent).toContain('no relationships');
+  });
+
+  it('assigns every artifact kind to its fixed band', () => {
+    open('#/graph/layers');
+    const bands = [...doc.querySelectorAll('#graph-host text.bandname')].map((t) => t.textContent);
+    expect(bands).toEqual([
+      'Product context',
+      'Product behaviour',
+      'Rules and language',
+      'Product commitments',
+    ]);
+  });
+
+  it('renders only the bands the model populates', () => {
+    const twoKinds = [model[0]!, model[1]!];
+    open('#/graph/layers', twoKinds);
+    const bands = [...doc.querySelectorAll('#graph-host text.bandname')].map((t) => t.textContent);
+    expect(bands).toEqual(['Product context', 'Product behaviour']);
+  });
+
+  it('states nothing about order, cause or dependency between bands', () => {
+    open('#/graph/layers');
+    const text = doc.getElementById('view-graph')?.textContent?.toLowerCase() ?? '';
+    expect(text).toContain('state no order, cause or dependency');
+    for (const word of ['precedes', 'depends on', 'causes', 'lifecycle', 'stage', 'flow']) {
+      expect(text).not.toContain(word);
+    }
+  });
+
+  it('draws each relationship with its authored direction, not the band geometry', () => {
+    open('#/graph/layers');
+    const edges = [...doc.querySelectorAll('#graph-host line.ledge')];
+    expect(edges.length).toBeGreaterThan(0);
+    // Every drawn edge carries the arrow marker, whose direction comes from the edge's own ends.
+    for (const e of edges) expect(e.getAttribute('marker-end')).toBe('url(#arrow)');
+    expect(doc.querySelector('#graph-host marker#arrow')).not.toBeNull();
+  });
+
+  it('collapses a large kind and states exactly what it holds back', () => {
+    // Collapse is budget-driven: a model this size draws in full, so the fixture has to exceed the
+    // rendered-artifact budget before anything is held back.
+    const wide = busy.concat(
+      Array.from({ length: 100 }, (_, i) =>
+        artifact(`UC-W${String(i).padStart(3, '0')}`, 'use-case', { 'primary-actor': 'ACT-H' }),
+      ),
+    );
+    open('#/graph/layers', wide);
+    const collapsed = doc.querySelector('#graph-host rect.cell.collapsed');
+    expect(collapsed?.getAttribute('aria-expanded')).toBe('false');
+    expect(labelOf(collapsed!)).toContain('collapsed');
+    const summary = doc.querySelector('p.layersummary')?.textContent ?? '';
+    expect(summary).toMatch(/\d+ of \d+ artifacts collapsed into counted cells/);
+    // Nothing is dropped: what is not drawn individually is merged into a counted connector.
+    expect(summary).toContain('Every relationship is represented; none is omitted');
+    const individual = Number(/(\d+) of \d+ relationships drawn individually/.exec(summary)?.[1]);
+    const merged = Number(/(\d+) merged into/.exec(summary)?.[1]);
+    expect(individual + merged).toBe(compileGraph(wide).edges.length);
+  });
+
+  it('draws a small model in full rather than collapsing it needlessly', () => {
+    open('#/graph/layers');
+    // 20 artifacts is well inside the budget, so nothing is held back.
+    expect(doc.querySelector('#graph-host rect.cell.collapsed')).toBeNull();
+    const summary = doc.querySelector('p.layersummary')?.textContent ?? '';
+    expect(summary).toContain('0 of 20 artifacts collapsed');
+    const graph = compileGraph(busy);
+    expect(summary).toContain(
+      `${graph.edges.length} of ${graph.edges.length} relationships drawn individually`,
+    );
+  });
+
+  it('never draws a node or relationship absent from the compiled graph', () => {
+    open('#/graph/layers');
+    const graph = compileGraph(busy);
+    const known = new Set(graph.nodes.map((n) => n.id));
+    for (const n of doc.querySelectorAll('#graph-host circle[data-member]')) {
+      expect(known.has(n.getAttribute('data-member') ?? '')).toBe(true);
+    }
+    const drawn = doc.querySelectorAll('#graph-host line.ledge').length;
+    expect(drawn).toBeLessThanOrEqual(graph.edges.length);
+  });
+
+  it('carries the graph mode in the address and restores it', () => {
+    open('#/graph/focus/UC-H00');
+    expect(doc.getElementById('view-graph')?.hidden).toBe(false);
+    expect(doc.querySelector('nav.gmodes a[aria-current="true"]')?.getAttribute('data-mode')).toBe(
+      'focus',
+    );
+    open('#/graph/layers');
+    expect(doc.querySelector('nav.gmodes a[aria-current="true"]')?.getAttribute('data-mode')).toBe(
+      'layers',
+    );
+  });
+
+  it('still resolves the route earlier snapshots used', () => {
+    open('#/graph');
+    expect(doc.getElementById('view-graph')?.hidden).toBe(false);
+    expect(doc.querySelector('nav.gmodes a[aria-current="true"]')?.getAttribute('data-mode')).toBe(
+      'layers',
+    );
+  });
+
+  it('arranges both projections identically for identical content', () => {
+    open('#/graph/focus/UC-H00');
+    const first = sats().map((s) => `${s.getAttribute('cx')},${s.getAttribute('cy')}`);
+    open('#/graph/focus/UC-H00');
+    expect(sats().map((s) => `${s.getAttribute('cx')},${s.getAttribute('cy')}`)).toEqual(first);
   });
 });

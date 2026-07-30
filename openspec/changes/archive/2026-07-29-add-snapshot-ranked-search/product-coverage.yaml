@@ -1,0 +1,48 @@
+schema: product-definition-as-code/coverage/v1alpha1
+handoff: HOF-GITHUB-33
+requirements:
+  CON-NO-WEB-UI:
+    status: covered
+    specification:
+      - openspec/changes/archive/2026-07-29-add-snapshot-ranked-search/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+  FR-SNAPSHOT-002:
+    status: covered
+    specification:
+      - openspec/changes/archive/2026-07-29-add-snapshot-ranked-search/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+  FR-SNAPSHOT-004:
+    status: covered
+    specification:
+      - openspec/changes/archive/2026-07-29-add-snapshot-ranked-search/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+  FR-SNAPSHOT-006:
+    status: covered
+    specification:
+      - openspec/changes/archive/2026-07-29-add-snapshot-ranked-search/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+  QR-ACCESSIBILITY-001:
+    status: covered
+    specification:
+      - openspec/changes/archive/2026-07-29-add-snapshot-ranked-search/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+      - openspec/changes/archive/2026-07-29-add-snapshot-ranked-search/measurements.md
+  QR-PRESENTATION-001:
+    status: covered
+    specification:
+      - openspec/changes/archive/2026-07-29-add-snapshot-ranked-search/specs/snapshot-generation/spec.md
+    verification:
+      - openspec/changes/archive/2026-07-29-add-snapshot-ranked-search/measurements.md
+      - scripts/screenshot-snapshot.mts
+  QR-SCALABILITY-001:
+    status: covered
+    specification:
+      - openspec/changes/archive/2026-07-29-add-snapshot-ranked-search/specs/snapshot-generation/spec.md
+    verification:
+      - openspec/changes/archive/2026-07-29-add-snapshot-ranked-search/measurements.md
+      - scripts/measure-snapshot.mts

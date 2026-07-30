@@ -255,15 +255,44 @@ details.relgroup ul.members { padding: 0.1rem 0.5rem 0.3rem; }
 }
 details.relgroup ul.members li:last-child { border-bottom: none; }
 
-#graph-host svg { width: 100%; height: auto; background: var(--panel); border: 1px solid var(--line); }
-#graph-host circle { stroke: #ffffff; stroke-width: 1; cursor: pointer; }
-#graph-host circle.sel { stroke: var(--ink); stroke-width: 3; }
-#graph-host circle.hl { stroke: var(--accent); stroke-width: 2; }
-#graph-host circle.dim { opacity: 0.25; }
-#graph-host line { stroke: #c9cedb; stroke-width: 0.6; }
-#graph-host line.hl { stroke: var(--accent); stroke-width: 1.6; }
-#graph-host line.dim { stroke: #eceff3; }
-#graph-info { min-height: 1.4rem; font-size: 0.85rem; }
+nav.gmodes { display: flex; gap: 0.15rem; margin: 0 0 0.6rem; }
+nav.gmodes a {
+  padding: 0.25rem 0.7rem; font-size: 0.82rem; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 2px; background: var(--bg);
+}
+nav.gmodes a[aria-current='true'] { color: var(--ink); font-weight: 600; border-color: var(--line-strong); background: var(--panel); }
+#graph-host svg { width: 100%; height: auto; background: var(--bg); border: 1px solid var(--line); max-width: 70rem; }
+#graph-host text { font-family: var(--sans); fill: var(--text); }
+#graph-host circle { stroke: #ffffff; stroke-width: 1.5; }
+#graph-host circle.anchor { stroke: var(--ink); stroke-width: 3; }
+#graph-host circle.satellite { cursor: pointer; stroke-width: 2; }
+#graph-host circle.satellite:focus-visible, #graph-host circle.member:focus-visible,
+#graph-host circle.lnode:focus-visible, #graph-host rect.cell:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+#graph-host circle.member, #graph-host circle.lnode { cursor: pointer; }
+#graph-host line.spoke { stroke: var(--line-strong); stroke-width: 1.4; }
+#graph-host line.spoke.in { stroke-dasharray: 4 3; }
+#graph-host line.member { stroke: var(--line); stroke-width: 1; }
+#graph-host line.ledge { stroke: #c3c9d6; stroke-width: 0.8; }
+#graph-host line.ledge.agg { stroke: #98a1b2; stroke-width: 1.6; }
+#graph-host text.aggcount { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
+#graph-host .arrowhead { fill: #9aa2b3; }
+#graph-host text.satcount { font-family: var(--mono); font-size: 15px; font-weight: 700; fill: #ffffff; }
+#graph-host text.satlabel { font-family: var(--mono); font-size: 12px; fill: var(--muted); }
+#graph-host text.satkind { font-size: 12px; fill: var(--muted); }
+#graph-host text.mlabel { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
+#graph-host text.anchorid { font-family: var(--mono); font-size: 13px; font-weight: 600; }
+#graph-host text.anchorsub { font-size: 11px; fill: var(--muted); }
+#graph-host text.axis { font-size: 11px; fill: var(--muted); letter-spacing: 0.08em; }
+#graph-host rect.band { fill: var(--panel); stroke: var(--line); }
+#graph-host rect.cell { fill: #ffffff; stroke: var(--line-strong); cursor: pointer; }
+#graph-host rect.cell.collapsed { fill: var(--panel); stroke-dasharray: 4 3; }
+#graph-host text.bandname { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; }
+#graph-host text.celltoken { font-family: var(--mono); font-size: 11px; font-weight: 700; fill: var(--muted); }
+#graph-host text.cellcount { font-family: var(--mono); font-size: 12px; fill: var(--muted); }
+#graph-host text.celllabel { font-size: 11px; fill: var(--muted); }
+p.layersummary { margin-top: 0.5rem; }
 
 .unknown { border: 1px solid var(--line-strong); border-left: 3px solid var(--muted); padding: 0.7rem 0.9rem; max-width: 60rem; }
 .unknown .aid { font-family: var(--mono); }
@@ -347,7 +376,20 @@ const script = String.raw`
       return { view: 'artifacts', id: decodeURIComponent(hash.replace(/^\/artifacts\//, '')), legacy: false };
     }
     if (hash === '/artifacts') return { view: 'artifacts', id: null, legacy: false };
-    if (hash === '/graph') return { view: 'graph', id: null, legacy: false };
+    var focused = /^\/graph\/focus\/(.+)$/.exec(hash);
+    if (focused) {
+      return {
+        view: 'graph',
+        graphMode: 'focus',
+        id: decodeURIComponent(focused[1]),
+        legacy: false,
+      };
+    }
+    if (/^\/graph\/(layers|focus)$/.test(hash)) {
+      return { view: 'graph', id: null, graphMode: hash.replace('/graph/', ''), legacy: false };
+    }
+    /* The route earlier snapshots used; it opens the broad-topology projection. */
+    if (hash === '/graph') return { view: 'graph', id: null, graphMode: 'layers', legacy: false };
     /* Legacy fragment produced by earlier snapshots: a bare artifact identifier. Permanent. */
     if (/^[A-Z][A-Z0-9]*(-[A-Z0-9]+)+$/.test(hash)) {
       return { view: 'artifacts', id: hash, legacy: true };
@@ -357,7 +399,10 @@ const script = String.raw`
 
   var hashFor = function (next) {
     if (next.view === 'artifacts') return next.id ? '#/artifacts/' + next.id : '#/artifacts';
-    if (next.view === 'graph') return '#/graph';
+    if (next.view === 'graph') {
+      var mode = next.graphMode || 'layers';
+      return mode === 'focus' && next.id ? '#/graph/focus/' + next.id : '#/graph/' + mode;
+    }
     return '#/';
   };
 
@@ -403,7 +448,7 @@ const script = String.raw`
     state = {
       view: parsed.view,
       id: unknown ? null : parsed.id,
-      graphMode: null,
+      graphMode: parsed.graphMode || null,
       unknown: unknown,
     };
     render();
@@ -663,96 +708,526 @@ const script = String.raw`
     host.appendChild(rels);
   };
 
-  /* ------------------------------------------------------------ model graph */
+  /* ------------------------------------------------------- graph projections */
 
-  var graphBuilt = false;
-  var buildGraph = function () {
-    var host = doc.getElementById('graph-host');
-    if (!host || graphBuilt) return;
-    graphBuilt = true;
-    var ordered = [];
-    for (var k = 0; k < ORDER.length; k += 1) {
-      for (var i = 0; i < ARTIFACTS.length; i += 1) {
-        if (ARTIFACTS[i].kind === ORDER[k]) ordered.push(ARTIFACTS[i]);
+  var NS = 'http://www.w3.org/2000/svg';
+  var svgEl = function (tag, attrs) {
+    var node = doc.createElementNS(NS, tag);
+    for (var key in attrs) {
+      if (Object.prototype.hasOwnProperty.call(attrs, key)) node.setAttribute(key, String(attrs[key]));
+    }
+    return node;
+  };
+  var svgText = function (x, y, text, cls, anchor) {
+    var node = svgEl('text', { x: x, y: y, class: cls || '', 'text-anchor': anchor || 'middle' });
+    node.textContent = text;
+    return node;
+  };
+  /** Identity on hover and, because <title> is not enough on its own, on focus too. */
+  var describe = function (node, label) {
+    node.appendChild((function () {
+      var t = doc.createElementNS(NS, 'title');
+      t.textContent = label;
+      return t;
+    })());
+    node.setAttribute('aria-label', label);
+    return node;
+  };
+
+  var FOCUS_PREOPEN = 4;
+
+  /**
+   * Which satellites the reader has opened, keyed by anchor and group. Held here so re-rendering the
+   * projection preserves what they opened — and so opening one satellite leaves every other one
+   * exactly where it was, rather than the view re-anchoring under their hand.
+   */
+  var focusOpen = {};
+  var groupKey = function (anchorId, group) {
+    return anchorId + '|' + group.direction + '|' + group.relKind + '|' + group.kind;
+  };
+
+  /**
+   * The focused neighbourhood: the selected artifact anchors the centre and its relationship *groups*
+   * orbit it — outgoing above the axis, incoming below, so direction is positional and survives colour
+   * removal. Satellites are groups rather than artifacts, so the projection's size tracks how many
+   * relationship types an artifact has rather than its degree: the busiest artifact in this model has
+   * 27 relationships in 5 groups, and the busiest synthetic one 171 in a similar handful.
+   *
+   * Placement is a pure function of the graph's own ordering. Nothing settles, nothing is seeded.
+   */
+  var buildFocus = function (host, anchorId) {
+    clear(host);
+    var anchor = byId[anchorId];
+    if (!anchor) {
+      host.appendChild(el('p', 'note', 'Select an artifact to see its neighbourhood.'));
+      return;
+    }
+    var out = groupEdges(outgoing[anchorId] || [], 'out');
+    var inc = groupEdges(incoming[anchorId] || [], 'in');
+    var total = (outgoing[anchorId] || []).length + (incoming[anchorId] || []).length;
+
+    /**
+     * The canvas adapts to which halves are populated. A one-directional artifact is common — every
+     * bounded context and most actors are purely incoming — and reserving a half for a direction that
+     * has no groups leaves the projection half empty. Direction stays positional either way: outgoing
+     * is always above the anchor, incoming always below it.
+     */
+    var hasOut = out.length > 0;
+    var hasIn = inc.length > 0;
+    var R = 250;
+    var MEMBER_OFFSET = 120;
+    /* Height is derived from the member ring, not the satellite ring, so an opened group's dots and
+       labels cannot collide with the axis caption at the edge. */
+    var REACH = R + MEMBER_OFFSET;
+    var PAD = 58;
+    var CX = 500;
+    var height = hasOut && hasIn ? 2 * (REACH + PAD) : REACH + 2 * PAD;
+    var CY = hasOut && hasIn ? REACH + PAD : hasOut ? height - PAD : PAD;
+
+    var svg = svgEl('svg', {
+      viewBox: '0 0 1000 ' + height,
+      role: 'img',
+      'aria-label':
+        'Neighbourhood of ' + anchorId + ': ' + total + ' relationships in ' +
+        (out.length + inc.length) + ' groups',
+    });
+
+    var edgeLayer = svgEl('g', { class: 'edges' });
+    var nodeLayer = svgEl('g', { class: 'nodes' });
+    svg.appendChild(edgeLayer);
+    svg.appendChild(nodeLayer);
+
+    var place = function (groups, direction) {
+      var n = groups.length;
+      for (var i = 0; i < n; i += 1) {
+        /* Outgoing occupies the upper half, incoming the lower. */
+        var t = (i + 0.5) / n;
+        var angle = direction === 'out' ? Math.PI + t * Math.PI : t * Math.PI;
+        var x = CX + R * Math.cos(angle);
+        var y = CY + R * Math.sin(angle);
+        groups[i].x = x;
+        groups[i].y = y;
+        groups[i].angle = angle;
+        groups[i].direction = direction;
+      }
+    };
+    place(out, 'out');
+    place(inc, 'in');
+    var all = out.concat(inc);
+
+    var openMembers = function (group) {
+      var m = group.edges.length;
+      var spread = Math.min(1.1, 0.34 * m);
+      for (var j = 0; j < m; j += 1) {
+        var offset = m === 1 ? 0 : (j / (m - 1) - 0.5) * spread;
+        var a = group.angle + offset;
+        var mx = CX + REACH * Math.cos(a);
+        var my = CY + REACH * Math.sin(a);
+        var otherId = group.direction === 'out' ? group.edges[j].to : group.edges[j].from;
+        var other = byId[otherId];
+        edgeLayer.appendChild(
+          svgEl('line', { x1: group.x, y1: group.y, x2: mx, y2: my, class: 'member' }),
+        );
+        var dot = svgEl('circle', {
+          cx: mx,
+          cy: my,
+          r: 7,
+          class: 'member',
+          'data-member': otherId,
+          tabindex: '0',
+          role: 'link',
+          fill: COLORS[other ? other.kind : ''] || '#4f5560',
+        });
+        describe(dot, (other && other.title ? other.title + ' — ' : '') + otherId);
+        nodeLayer.appendChild(dot);
+        var label = svgText(mx, my - 13, otherId, 'mlabel');
+        nodeLayer.appendChild(label);
+      }
+    };
+
+    for (var g = 0; g < all.length; g += 1) {
+      var group = all[g];
+      var count = group.edges.length;
+      var key = groupKey(anchorId, group);
+      /* Small groups arrive open, so a typical artifact needs no clicking at all. */
+      group.open = Object.prototype.hasOwnProperty.call(focusOpen, key)
+        ? focusOpen[key]
+        : count <= FOCUS_PREOPEN;
+      edgeLayer.appendChild(
+        svgEl('line', { x1: CX, y1: CY, x2: group.x, y2: group.y, class: 'spoke ' + group.direction }),
+      );
+      var sat = svgEl('circle', {
+        cx: group.x,
+        cy: group.y,
+        r: 20,
+        class: 'satellite',
+        'data-group': String(g),
+        tabindex: '0',
+        role: 'button',
+        'aria-expanded': String(group.open),
+        fill: COLORS[group.kind] || '#4f5560',
+      });
+      describe(
+        sat,
+        (group.direction === 'out' ? 'outgoing ' : 'incoming ') +
+          group.relKind + ' · ' + (LABELS[group.kind] || group.kind) + ' · ' + count,
+      );
+      nodeLayer.appendChild(sat);
+      nodeLayer.appendChild(svgText(group.x, group.y + 5, String(count), 'satcount'));
+      var above = group.direction === 'out';
+      nodeLayer.appendChild(
+        svgText(group.x, group.y + (above ? -30 : 42), group.relKind, 'satlabel'),
+      );
+      nodeLayer.appendChild(
+        svgText(
+          group.x,
+          group.y + (above ? -18 : 54),
+          (group.direction === 'out' ? '→ ' : '← ') + (LABELS[group.kind] || group.kind),
+          'satkind',
+        ),
+      );
+      if (group.open) openMembers(group);
+    }
+
+    var anchorNode = svgEl('circle', {
+      cx: CX,
+      cy: CY,
+      r: 30,
+      class: 'anchor',
+      fill: COLORS[anchor.kind] || '#4f5560',
+    });
+    describe(anchorNode, anchor.title + ' — ' + anchorId);
+    nodeLayer.appendChild(anchorNode);
+    nodeLayer.appendChild(svgText(CX, CY + 52, anchorId, 'anchorid'));
+    nodeLayer.appendChild(
+      svgText(CX, CY + 68, total + (total === 1 ? ' relationship' : ' relationships'), 'anchorsub'),
+    );
+    if (hasOut) nodeLayer.appendChild(svgText(CX, 22, 'outgoing ↑', 'axis'));
+    if (hasIn) nodeLayer.appendChild(svgText(CX, height - 10, 'incoming ↓', 'axis'));
+
+    /* Activating a group toggles it; activating a member selects that artifact. Two gestures, two
+       targets, so neither is overloaded and the selection is never cleared by the projection. */
+    var toggle = function (index) {
+      var group = all[index];
+      focusOpen[groupKey(anchorId, group)] = !group.open;
+      buildFocus(host, anchorId);
+    };
+    var activate = function (target) {
+      if (!target) return;
+      var member = target.getAttribute('data-member');
+      if (member) {
+        go({ view: 'graph', graphMode: 'focus', id: member });
+        return;
+      }
+      var index = target.getAttribute('data-group');
+      if (index !== null) toggle(Number(index));
+    };
+    svg.addEventListener('click', function (ev) {
+      activate(
+        ev.target instanceof Element ? ev.target.closest('[data-group],[data-member]') : null,
+      );
+    });
+    svg.addEventListener('keydown', function (ev) {
+      if (ev.key !== 'Enter' && ev.key !== ' ') return;
+      activate(
+        ev.target instanceof Element ? ev.target.closest('[data-group],[data-member]') : null,
+      );
+      ev.preventDefault();
+    });
+
+    host.appendChild(svg);
+    if (total === 0) {
+      host.appendChild(
+        el('p', 'note', 'This artifact declares no relationships and is referenced by none.'),
+      );
+    }
+  };
+
+  var LAYER_BANDS = [
+    { name: 'Product context', kinds: ['actor', 'bounded-context'] },
+    { name: 'Product behaviour', kinds: ['journey', 'use-case'] },
+    { name: 'Rules and language', kinds: ['business-rule', 'domain-term'] },
+    {
+      name: 'Product commitments',
+      kinds: ['functional-requirement', 'quality-requirement', 'constraint'],
+    },
+  ];
+  /**
+   * How many artifacts the map will draw before it starts holding back. FR-SNAPSHOT-005 requires it
+   * not to render everything "for a large model", which is scale-conditional: a 73-artifact model
+   * draws in full and stays legible, while a 730-artifact one must collapse. So the budget is on the
+   * total rendered, and the largest kinds collapse first — they are the ones that would spill.
+   */
+  var LAYER_BUDGET = 90;
+  /* A cell wraps its members into rows; a kind needing more rows than this collapses regardless. */
+  var LAYER_COLS = 12;
+  var LAYER_MAX_ROWS = 3;
+
+  /**
+   * The layered model map: real artifacts in four fixed, product-owned bands. Bands organize the view
+   * and carry no lifecycle, causality or direction — the measured model has 180 of 196 relationships
+   * crossing bands in six distinct directions that do not form a cascade, so an arrowhead is computed
+   * from the edge and never from which band sits higher.
+   *
+   * It is the only projection that draws many real artifacts, so it is the one that must hold content
+   * back: a kind with more members than the threshold renders as one counted cell, and the map states
+   * exactly what it is hiding.
+   */
+  var buildLayers = function (host, filterKindSet) {
+    clear(host);
+    var bands = [];
+    for (var b = 0; b < LAYER_BANDS.length; b += 1) {
+      var kinds = [];
+      for (var k = 0; k < LAYER_BANDS[b].kinds.length; k += 1) {
+        var kind = LAYER_BANDS[b].kinds[k];
+        if (filterKindSet && !filterKindSet[kind]) continue;
+        var members = [];
+        for (var i = 0; i < ARTIFACTS.length; i += 1) {
+          if (ARTIFACTS[i].kind === kind) members.push(ARTIFACTS[i]);
+        }
+        if (members.length > 0) kinds.push({ kind: kind, members: members });
+      }
+      /* Only bands the model populates are rendered. */
+      if (kinds.length > 0) bands.push({ name: LAYER_BANDS[b].name, kinds: kinds });
+    }
+
+    /* Choose what to hold back before drawing: sort kinds by size and collapse the largest until the
+       rendered total fits the budget. */
+    var allKinds = [];
+    for (var bb = 0; bb < bands.length; bb += 1) {
+      for (var kk = 0; kk < bands[bb].kinds.length; kk += 1) allKinds.push(bands[bb].kinds[kk]);
+    }
+    var renderedTotal = 0;
+    for (var ai = 0; ai < allKinds.length; ai += 1) renderedTotal += allKinds[ai].members.length;
+    var bySize = allKinds.slice().sort(function (a, b) {
+      if (b.members.length !== a.members.length) return b.members.length - a.members.length;
+      return a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : 0;
+    });
+    var collapsedKinds = {};
+    for (var ci = 0; ci < bySize.length && renderedTotal > LAYER_BUDGET; ci += 1) {
+      collapsedKinds[bySize[ci].kind] = true;
+      renderedTotal -= bySize[ci].members.length;
+    }
+
+    var width = 1000;
+    var bandHeight = 150;
+    var height = Math.max(1, bands.length) * bandHeight + 30;
+    var svg = svgEl('svg', {
+      viewBox: '0 0 ' + width + ' ' + height,
+      role: 'img',
+      'aria-label': 'Layered model map: ' + bands.length + ' bands',
+    });
+    var edgeLayer = svgEl('g', { class: 'edges' });
+    var nodeLayer = svgEl('g', { class: 'nodes' });
+
+    var pos = {};
+    var cellAt = {};
+    var hiddenArtifacts = 0;
+    for (var bi = 0; bi < bands.length; bi += 1) {
+      var band = bands[bi];
+      var top = 20 + bi * bandHeight;
+      nodeLayer.appendChild(
+        svgEl('rect', { x: 8, y: top, width: width - 16, height: bandHeight - 18, class: 'band' }),
+      );
+      var bl = svgText(18, top + 18, band.name, 'bandname', 'start');
+      nodeLayer.appendChild(bl);
+
+      var cellX = 18;
+      for (var ki = 0; ki < band.kinds.length; ki += 1) {
+        var entry = band.kinds[ki];
+        var rows = Math.ceil(entry.members.length / LAYER_COLS);
+        var collapsed = collapsedKinds[entry.kind] === true || rows > LAYER_MAX_ROWS;
+        var cols = Math.min(LAYER_COLS, entry.members.length);
+        var cellW = collapsed ? 150 : 32 + cols * 22;
+        nodeLayer.appendChild(
+          svgEl('rect', {
+            x: cellX,
+            y: top + 30,
+            width: cellW,
+            height: bandHeight - 52,
+            class: 'cell' + (collapsed ? ' collapsed' : ''),
+            'data-kind': entry.kind,
+            tabindex: '0',
+            role: 'button',
+            'aria-expanded': String(!collapsed),
+            'aria-label':
+              (LABELS[entry.kind] || entry.kind) + ' · ' + entry.members.length +
+              (collapsed ? ' · collapsed' : ''),
+          }),
+        );
+        nodeLayer.appendChild(
+          svgText(cellX + 8, top + 46, TOKENS[entry.kind] || '?', 'celltoken', 'start'),
+        );
+        nodeLayer.appendChild(
+          svgText(cellX + cellW - 8, top + 46, String(entry.members.length), 'cellcount', 'end'),
+        );
+        cellAt[entry.kind] = { x: cellX + cellW / 2, y: top + 74 };
+        if (collapsed) {
+          hiddenArtifacts += entry.members.length;
+          nodeLayer.appendChild(
+            svgText(cellX + cellW / 2, top + 74, LABELS[entry.kind] || entry.kind, 'celllabel'),
+          );
+        } else {
+          for (var mi = 0; mi < entry.members.length; mi += 1) {
+            /* Wrap into rows so a populous kind stays inside its cell instead of spilling past it. */
+            var mx = cellX + 16 + (mi % LAYER_COLS) * 22;
+            var my = top + 74 + Math.floor(mi / LAYER_COLS) * 20;
+            pos[entry.members[mi].id] = { x: mx, y: my };
+            var dot = svgEl('circle', {
+              cx: mx,
+              cy: my,
+              r: 7,
+              class: 'lnode',
+              'data-member': entry.members[mi].id,
+              tabindex: '0',
+              role: 'link',
+              fill: COLORS[entry.kind] || '#4f5560',
+            });
+            describe(dot, entry.members[mi].title + ' — ' + entry.members[mi].id);
+            nodeLayer.appendChild(dot);
+          }
+        }
+        cellX += cellW + 14;
       }
     }
-    var center = 500;
-    var radius = 420;
-    var pos = {};
-    for (var n = 0; n < ordered.length; n += 1) {
-      var angle = (n / ordered.length) * 2 * Math.PI - Math.PI / 2;
-      pos[ordered[n].id] = {
-        x: (center + radius * Math.cos(angle)).toFixed(2),
-        y: (center + radius * Math.sin(angle)).toFixed(2),
-      };
-    }
-    var NS = 'http://www.w3.org/2000/svg';
-    var svg = doc.createElementNS(NS, 'svg');
-    svg.setAttribute('viewBox', '0 0 1000 1000');
-    svg.setAttribute('role', 'img');
-    svg.setAttribute('aria-label', 'Whole-model graph: ' + ordered.length + ' artifacts, ' + EDGES.length + ' relationships');
-    for (var g = 0; g < EDGES.length; g += 1) {
-      var from = pos[EDGES[g].from];
-      var to = pos[EDGES[g].to];
+
+    /**
+     * Every relationship is represented, never dropped. An edge between two drawn artifacts is drawn
+     * individually; an edge touching a collapsed kind is routed to that kind's cell and merged with
+     * its siblings into one connector carrying a count. Without this the map went silent at scale —
+     * at ten times this model it drew none of 3,290 relationships, which is honest and useless.
+     */
+    var kindOfId = {};
+    for (var ki2 = 0; ki2 < ARTIFACTS.length; ki2 += 1) kindOfId[ARTIFACTS[ki2].id] = ARTIFACTS[ki2].kind;
+    var reprOf = function (id) {
+      if (pos[id]) return { x: pos[id].x, y: pos[id].y, exact: true };
+      var cell = cellAt[kindOfId[id]];
+      return cell ? { x: cell.x, y: cell.y, exact: false } : null;
+    };
+
+    var individual = 0;
+    var aggregated = 0;
+    var connectors = {};
+    var order = [];
+    for (var e = 0; e < EDGES.length; e += 1) {
+      var from = reprOf(EDGES[e].from);
+      var to = reprOf(EDGES[e].to);
       if (!from || !to) continue;
-      var line = doc.createElementNS(NS, 'line');
-      line.setAttribute('data-from', EDGES[g].from);
-      line.setAttribute('data-to', EDGES[g].to);
-      line.setAttribute('x1', from.x);
-      line.setAttribute('y1', from.y);
-      line.setAttribute('x2', to.x);
-      line.setAttribute('y2', to.y);
-      svg.appendChild(line);
+      if (from.x === to.x && from.y === to.y) {
+        /* Both ends collapsed into the same cell: counted, but there is nothing to draw. */
+        aggregated += 1;
+        continue;
+      }
+      var exact = from.exact && to.exact;
+      var key = from.x + ',' + from.y + '>' + to.x + ',' + to.y;
+      if (!connectors[key]) {
+        connectors[key] = { from: from, to: to, count: 0, exact: exact };
+        order.push(key);
+      }
+      connectors[key].count += 1;
+      if (exact) individual += 1;
+      else aggregated += 1;
     }
-    for (var c = 0; c < ordered.length; c += 1) {
-      var node = ordered[c];
-      var p = pos[node.id];
-      var circle = doc.createElementNS(NS, 'circle');
-      circle.setAttribute('data-id', node.id);
-      circle.setAttribute('cx', p.x);
-      circle.setAttribute('cy', p.y);
-      circle.setAttribute('r', '9');
-      circle.setAttribute('fill', COLORS[node.kind] || '#5f6673');
-      var title = doc.createElementNS(NS, 'title');
-      title.textContent = node.id + (node.title ? ' — ' + node.title : '');
-      circle.appendChild(title);
-      svg.appendChild(circle);
+    var drawn = 0;
+    var aggConnectors = 0;
+    for (var oi = 0; oi < order.length; oi += 1) {
+      var conn = connectors[order[oi]];
+      edgeLayer.appendChild(
+        svgEl('line', {
+          x1: conn.from.x,
+          y1: conn.from.y,
+          x2: conn.to.x,
+          y2: conn.to.y,
+          class: 'ledge' + (conn.exact ? '' : ' agg'),
+          'marker-end': 'url(#arrow)',
+        }),
+      );
+      if (!conn.exact && conn.count > 1) {
+        edgeLayer.appendChild(
+          svgText(
+            (conn.from.x + conn.to.x) / 2,
+            (conn.from.y + conn.to.y) / 2 - 3,
+            String(conn.count),
+            'aggcount',
+          ),
+        );
+      }
+      drawn += 1;
+      if (!conn.exact) aggConnectors += 1;
     }
+    var defs = svgEl('defs', {});
+    var marker = svgEl('marker', {
+      id: 'arrow',
+      viewBox: '0 0 10 10',
+      refX: '9',
+      refY: '5',
+      markerWidth: '5',
+      markerHeight: '5',
+      orient: 'auto-start-reverse',
+    });
+    marker.appendChild(svgEl('path', { d: 'M 0 0 L 10 5 L 0 10 z', class: 'arrowhead' }));
+    defs.appendChild(marker);
+    svg.appendChild(defs);
+    svg.appendChild(edgeLayer);
+    svg.appendChild(nodeLayer);
     host.appendChild(svg);
 
-    svg.addEventListener('click', function (ev) {
-      var target = ev.target instanceof Element ? ev.target.closest('circle[data-id]') : null;
+    var summary = el('p', 'note layersummary');
+    var parts = [
+      bands.length + (bands.length === 1 ? ' band' : ' bands'),
+      hiddenArtifacts + ' of ' + ARTIFACTS.length + ' artifacts collapsed into counted cells',
+      individual + ' of ' + EDGES.length + ' relationships drawn individually',
+      aggregated + ' merged into ' + aggConnectors + ' aggregate connectors',
+    ];
+    summary.textContent =
+      parts.join(' · ') +
+      '. Every relationship is represented; none is omitted. ' +
+      'Bands group the model; they state no order, cause or dependency.';
+    host.appendChild(summary);
+
+    var open = function (target) {
       if (!target) return;
-      var id = target.getAttribute('data-id');
-      var related = {};
-      related[id] = true;
-      var lines = svg.querySelectorAll('line');
-      for (var i = 0; i < lines.length; i += 1) {
-        var f = lines[i].getAttribute('data-from');
-        var t = lines[i].getAttribute('data-to');
-        if (f === id || t === id) {
-          lines[i].setAttribute('class', 'hl');
-          related[f] = true;
-          related[t] = true;
-        } else {
-          lines[i].setAttribute('class', 'dim');
-        }
+      var member = target.getAttribute('data-member');
+      if (member) {
+        go({ view: 'graph', graphMode: 'focus', id: member });
+        return;
       }
-      var circles = svg.querySelectorAll('circle[data-id]');
-      for (var j = 0; j < circles.length; j += 1) {
-        var cid = circles[j].getAttribute('data-id');
-        circles[j].setAttribute('class', cid === id ? 'sel' : related[cid] ? 'hl' : 'dim');
+      var kind = target.getAttribute('data-kind');
+      if (kind) {
+        var next = {};
+        for (var i = 0; i < ARTIFACTS.length; i += 1) next[ARTIFACTS[i].kind] = true;
+        buildLayers(host, (function () {
+          var only = {};
+          only[kind] = true;
+          return only;
+        })());
       }
-      var info = doc.getElementById('graph-info');
-      if (info) {
-        clear(info);
-        var a = byId[id];
-        var link = doc.createElement('a');
-        link.href = '#/artifacts/' + id;
-        link.textContent = 'Read ' + id + (a && a.title ? ' — ' + a.title : '');
-        info.appendChild(link);
-      }
+    };
+    svg.addEventListener('click', function (ev) {
+      open(ev.target instanceof Element ? ev.target.closest('[data-kind],[data-member]') : null);
     });
+    svg.addEventListener('keydown', function (ev) {
+      if (ev.key !== 'Enter' && ev.key !== ' ') return;
+      open(ev.target instanceof Element ? ev.target.closest('[data-kind],[data-member]') : null);
+      ev.preventDefault();
+    });
+  };
+
+  var buildProjection = function () {
+    var host = doc.getElementById('graph-host');
+    if (!host) return;
+    var mode = state.graphMode || 'layers';
+    var tabs = doc.querySelectorAll('nav.gmodes a[data-mode]');
+    for (var i = 0; i < tabs.length; i += 1) {
+      if (tabs[i].getAttribute('data-mode') === mode) tabs[i].setAttribute('aria-current', 'true');
+      else tabs[i].removeAttribute('aria-current');
+      var href = tabs[i].getAttribute('data-mode') === 'focus' && state.id
+        ? '#/graph/focus'
+        : '#/graph/' + tabs[i].getAttribute('data-mode');
+      tabs[i].setAttribute('href', href);
+    }
+    if (mode === 'focus') buildFocus(host, state.id);
+    else buildLayers(host, null);
   };
 
   /* ----------------------------------------------------------- ranked search */
@@ -966,7 +1441,7 @@ const script = String.raw`
       else renderList();
       renderDetail();
     }
-    if (state.view === 'graph') buildGraph();
+    if (state.view === 'graph') buildProjection();
 
     /* Focus lands somewhere meaningful after a view or selection change, never lost. */
     var changedView = state.view !== lastView;
@@ -1203,7 +1678,7 @@ export function buildSnapshotHtml(
     '<nav class="views" aria-label="Snapshot views">',
     '<a href="#/" data-view="overview" aria-current="page">Overview</a>',
     '<a href="#/artifacts" data-view="artifacts">Artifacts</a>',
-    '<a href="#/graph" data-view="graph">Model graph</a>',
+    '<a href="#/graph" data-view="graph">Model map</a>',
     '</nav>',
     '</header>',
     '<main id="main">',
@@ -1273,11 +1748,14 @@ export function buildSnapshotHtml(
 
     // ---- Model graph: opened explicitly; built from the embedded data, never at open time.
     '<section id="view-graph" aria-labelledby="h-graph" hidden>',
-    '<h2 class="view" id="h-graph">Model graph</h2>',
-    '<p class="note">The whole-model graph, drawn on request. Select a node to highlight its',
-    'relationships and to open the artifact. Every relationship is also readable as text on each',
-    "artifact's own view.</p>",
-    '<p id="graph-info"></p>',
+    '<h2 class="view" id="h-graph">Model map</h2>',
+    '<nav class="gmodes" aria-label="Projections">',
+    '<a href="#/graph/layers" data-mode="layers">Layered map</a>',
+    '<a href="#/graph/focus" data-mode="focus">Focused neighbourhood</a>',
+    '</nav>',
+    '<p class="note">Two projections, drawn on request. The layered map places artifacts in four fixed',
+    "bands; the focused neighbourhood orbits one artifact's relationship groups around it. Every",
+    "relationship either shows is also readable as text on the artifact's own view.</p>",
     '<div id="graph-host"></div>',
     '</section>',
 

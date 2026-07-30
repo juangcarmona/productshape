@@ -97,11 +97,45 @@ const shots: Shot[] = [
     caption: 'An identifier this snapshot does not contain is named, with a way onward.',
   },
   {
-    name: '09-model-graph',
-    route: '#/graph',
+    name: '09-layered-map',
+    route: '#/graph/layers',
+    ...TALL,
+    caption:
+      'The layered model map: four fixed bands, collapsed kinds stating their counts, and a summary of exactly what is held back.',
+  },
+  {
+    name: '17-focus-typical',
+    route: '#/graph/focus/UC-SNAPSHOT-EXPLORE-001',
     ...DESKTOP,
     caption:
-      'The whole-model graph, built only when opened. Carried forward unchanged; SLI-SNAPSHOT-006 replaces it.',
+      'Focused neighbourhood of a typical artifact: outgoing groups above the anchor, incoming below, small groups already open.',
+  },
+  {
+    name: '18-focus-hardest',
+    route: '#/graph/focus/BC-PRODUCT-DEFINITION',
+    ...DESKTOP,
+    caption:
+      'The hardest artifact in the model: 27 relationships become 5 satellites, the large ones closed with exact counts.',
+  },
+  {
+    name: '19-focus-expanded',
+    route: '#/graph/focus/BC-PRODUCT-DEFINITION',
+    ...DESKTOP,
+    caption:
+      'One satellite opened: its members fan out beside it and every other satellite stays exactly where it was.',
+    prepare: `var s=document.querySelectorAll('#graph-host circle[data-group]');for(var i=0;i<s.length;i++){if((s[i].getAttribute('aria-label')||'').indexOf('· 12')>0){s[i].dispatchEvent(new MouseEvent('click',{bubbles:true}));break}}`,
+  },
+  {
+    name: '20-focus-isolated',
+    route: '#/graph/focus/CON-NO-WEB-UI',
+    ...DESKTOP,
+    caption: 'An artifact with no relationships says so rather than drawing an empty diagram.',
+  },
+  {
+    name: '21-layered-narrow',
+    route: '#/graph/layers',
+    ...NARROW,
+    caption: 'The layered map on a narrow viewport.',
   },
   {
     name: '10-focus-visible',
