@@ -290,13 +290,23 @@ resolved all five. The resolutions are recorded here and realized in the propose
    model (`BC-PRODUCT-DEFINITION`, 27, all incoming).
 
    The selected artifact anchors the centre. What orbits it are the **relationship groups**, not the
-   individual artifacts: each satellite states its relationship type, the artifact kind at the other
-   end, and its exact count. Incoming and outgoing occupy opposite sides of the anchor's axis, so
-   direction is carried by position and survives with colour removed. Opening a satellite fans its
-   members into a local arc; the other satellites stay where they are rather than the view
-   re-anchoring, which keeps the arrangement calm and stable as the reader opens and closes groups.
-   Groups small enough to read at a glance arrive already open, so a typical artifact needs no
-   clicking at all.
+   individual artifacts: each satellite states the artifact kind at the other end and its exact count,
+   and the relationship type annotates the line connecting it to the anchor. Incoming and outgoing
+   occupy opposite sides of the anchor's axis, so direction is carried by position and survives with
+   colour removed. Opening a satellite reveals its members, and the arrangement re-allocates so the
+   opened group has the room they need: every group holds an angular sector at least as wide as its own
+   label, with the slack shared out by member count. Groups small enough to read at a glance arrive
+   already open, so a typical artifact needs no clicking at all. The projection can be panned, zoomed
+   and refitted, by pointer or by keyboard.
+
+   The first version of this resolution said the other satellites stay where they are, on the reasoning
+   that a stable arrangement is calmer, and that the relationship type belongs on the node. First use
+   disproved both. With five incoming groups and twelve members in one of them, holding the neighbours
+   still meant the opened group's members collided with them and ran off the canvas; and the type text
+   on each node crowded out the kind. Two attempts to fix the collisions without moving the neighbours —
+   clamping the fan to its hemisphere, then replacing the fan with a labelled column — either crushed
+   twelve labels into 24 degrees of arc or stopped being a cloud at all. The product owner reversed the
+   decision and treated the collisions as the defect they were.
 
    This resolves the three tensions recorded when the question was raised. On the first, it is a
    cloud without being the graph this change removed: the satellites are aggregates, so the

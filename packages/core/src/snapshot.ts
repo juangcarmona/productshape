@@ -279,8 +279,17 @@ nav.gmodes a[aria-current='true'] { color: var(--ink); font-weight: 600; border-
 #graph-host text.aggcount { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
 #graph-host .arrowhead { fill: #9aa2b3; }
 #graph-host text.satcount { font-family: var(--mono); font-size: 15px; font-weight: 700; fill: #ffffff; }
-#graph-host text.satlabel { font-family: var(--mono); font-size: 12px; fill: var(--muted); }
-#graph-host text.satkind { font-size: 12px; fill: var(--muted); }
+#graph-host text.satkind { font-size: 12px; fill: var(--text); }
+#graph-host text.edgelabel { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
+#graph-host svg.focus { cursor: grab; touch-action: none; }
+#graph-host svg.focus[data-panning] { cursor: grabbing; }
+.gcontrols { display: flex; gap: 0.3rem; margin: 0 0 0.4rem; }
+.gcontrols button {
+  font: inherit; font-size: 0.78rem; padding: 0.2rem 0.6rem;
+  border: 1px solid var(--line-strong); border-radius: 2px;
+  background: var(--bg); color: var(--text); cursor: pointer;
+}
+.gcontrols button:hover { background: var(--panel); }
 #graph-host text.mlabel { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
 #graph-host text.anchorid { font-family: var(--mono); font-size: 13px; font-weight: 600; }
 #graph-host text.anchorsub { font-size: 11px; fill: var(--muted); }
@@ -747,13 +756,14 @@ const script = String.raw`
   };
 
   /**
-   * The focused neighbourhood: the selected artifact anchors the centre and its relationship *groups*
-   * orbit it — outgoing above the axis, incoming below, so direction is positional and survives colour
-   * removal. Satellites are groups rather than artifacts, so the projection's size tracks how many
-   * relationship types an artifact has rather than its degree: the busiest artifact in this model has
-   * 27 relationships in 5 groups, and the busiest synthetic one 171 in a similar handful.
+   * The focused neighbourhood: the selected artifact anchors the centre and its relationship groups
+   * orbit it — outgoing above the axis, incoming below, so direction is positional.
    *
-   * Placement is a pure function of the graph's own ordering. Nothing settles, nothing is seeded.
+   * Each group owns an angular sector sized to what it currently needs, so expanding one re-allocates
+   * the whole hemisphere rather than letting its members collide with its neighbours or run off the
+   * canvas. Members fan inside their own sector, wrapping onto further rings when one ring cannot hold
+   * their labels. Placement is a pure function of the model and of which groups are open: no physics,
+   * nothing seeded, nothing settles.
    */
   var buildFocus = function (host, anchorId) {
     clear(host);
@@ -766,96 +776,181 @@ const script = String.raw`
     var inc = groupEdges(incoming[anchorId] || [], 'in');
     var total = (outgoing[anchorId] || []).length + (incoming[anchorId] || []).length;
 
-    /**
-     * The canvas adapts to which halves are populated. A one-directional artifact is common — every
-     * bounded context and most actors are purely incoming — and reserving a half for a direction that
-     * has no groups leaves the projection half empty. Direction stays positional either way: outgoing
-     * is always above the anchor, incoming always below it.
-     */
-    var hasOut = out.length > 0;
-    var hasIn = inc.length > 0;
-    var R = 250;
-    var MEMBER_OFFSET = 120;
-    /* Height is derived from the member ring, not the satellite ring, so an opened group's dots and
-       labels cannot collide with the axis caption at the edge. */
-    var REACH = R + MEMBER_OFFSET;
-    var PAD = 58;
     var CX = 500;
-    var height = hasOut && hasIn ? 2 * (REACH + PAD) : REACH + 2 * PAD;
-    var CY = hasOut && hasIn ? REACH + PAD : hasOut ? height - PAD : PAD;
+    var CY = 500;
+    var R = 210;
+    var RING = 150;
+    var LABEL_ARC = 150;
+    var GUARD = 0.12;
+
+    var bounds = { minX: CX - 40, maxX: CX + 40, minY: CY - 40, maxY: CY + 40 };
+    var extend = function (x, y, halfW, halfH) {
+      bounds.minX = Math.min(bounds.minX, x - halfW);
+      bounds.maxX = Math.max(bounds.maxX, x + halfW);
+      bounds.minY = Math.min(bounds.minY, y - halfH);
+      bounds.maxY = Math.max(bounds.maxY, y + halfH);
+    };
 
     var svg = svgEl('svg', {
-      viewBox: '0 0 1000 ' + height,
       role: 'img',
+      class: 'focus',
       'aria-label':
         'Neighbourhood of ' + anchorId + ': ' + total + ' relationships in ' +
         (out.length + inc.length) + ' groups',
     });
-
+    var defs = svgEl('defs', {});
+    var mk = function (id, cls) {
+      var marker = svgEl('marker', {
+        id: id,
+        viewBox: '0 0 10 10',
+        refX: '9',
+        refY: '5',
+        markerWidth: '5',
+        markerHeight: '5',
+        orient: 'auto-start-reverse',
+      });
+      marker.appendChild(svgEl('path', { d: 'M 0 0 L 10 5 L 0 10 z', class: cls }));
+      return marker;
+    };
+    defs.appendChild(mk('spoke-arrow', 'arrowhead'));
+    svg.appendChild(defs);
     var edgeLayer = svgEl('g', { class: 'edges' });
     var nodeLayer = svgEl('g', { class: 'nodes' });
     svg.appendChild(edgeLayer);
     svg.appendChild(nodeLayer);
 
-    var place = function (groups, direction) {
-      var n = groups.length;
-      for (var i = 0; i < n; i += 1) {
-        /* Outgoing occupies the upper half, incoming the lower. */
-        var t = (i + 0.5) / n;
-        var angle = direction === 'out' ? Math.PI + t * Math.PI : t * Math.PI;
-        var x = CX + R * Math.cos(angle);
-        var y = CY + R * Math.sin(angle);
-        groups[i].x = x;
-        groups[i].y = y;
-        groups[i].angle = angle;
-        groups[i].direction = direction;
+    /* Roughly how wide a label runs, so sectors can be sized to what a group has to draw. */
+    var runWidth = function (text, perChar) {
+      return text.length * perChar + 14;
+    };
+
+    /* How much angular room each group wants: one unit closed, more when open. */
+    var weigh = function (group) {
+      var key = groupKey(anchorId, group);
+      group.open = Object.prototype.hasOwnProperty.call(focusOpen, key)
+        ? focusOpen[key]
+        : group.edges.length <= FOCUS_PREOPEN;
+      if (!group.open) return 1;
+      return Math.max(1, Math.min(6, group.edges.length / 2));
+    };
+
+    /**
+     * Each group is given at least the angle its own label needs, and the slack is shared out by
+     * weight. If the minimums cannot fit the hemisphere, the ring grows until they do — sizing sectors
+     * by member count alone left adjacent small groups with 12° each, which is 44 px at this radius and
+     * nowhere near enough for "Quality Requirements".
+     */
+    var allocate = function (groups, direction) {
+      if (groups.length === 0) return;
+      var lo = direction === 'out' ? Math.PI + GUARD : GUARD;
+      var span = Math.PI - 2 * GUARD;
+      for (var i = 0; i < groups.length; i += 1) groups[i].direction = direction;
+
+      var labelOfGroup = function (group) {
+        return runWidth(LABELS[group.kind] || group.kind, 6.6);
+      };
+      var totalWeight = 0;
+      for (var w = 0; w < groups.length; w += 1) totalWeight += weigh(groups[w]);
+
+      var radius = R;
+      for (var attempt = 0; attempt < 12; attempt += 1) {
+        var need = 0;
+        for (var n = 0; n < groups.length; n += 1) need += labelOfGroup(groups[n]) / radius;
+        if (need <= span * 0.85) break;
+        radius *= 1.18;
+      }
+      groups.radius = radius;
+
+      var minTotal = 0;
+      for (var m = 0; m < groups.length; m += 1) minTotal += labelOfGroup(groups[m]) / radius;
+      var slack = Math.max(0, span - minTotal);
+
+      var cursor = lo;
+      for (var j = 0; j < groups.length; j += 1) {
+        var slice =
+          labelOfGroup(groups[j]) / radius + (weigh(groups[j]) / totalWeight) * slack;
+        groups[j].sector = slice;
+        groups[j].angle = cursor + slice / 2;
+        groups[j].radius = radius;
+        groups[j].x = CX + radius * Math.cos(groups[j].angle);
+        groups[j].y = CY + radius * Math.sin(groups[j].angle);
+        cursor += slice;
       }
     };
-    place(out, 'out');
-    place(inc, 'in');
+    allocate(out, 'out');
+    allocate(inc, 'in');
     var all = out.concat(inc);
 
     var openMembers = function (group) {
       var m = group.edges.length;
-      var spread = Math.min(1.1, 0.34 * m);
-      for (var j = 0; j < m; j += 1) {
-        var offset = m === 1 ? 0 : (j / (m - 1) - 0.5) * spread;
-        var a = group.angle + offset;
-        var mx = CX + REACH * Math.cos(a);
-        var my = CY + REACH * Math.sin(a);
-        var otherId = group.direction === 'out' ? group.edges[j].to : group.edges[j].from;
-        var other = byId[otherId];
-        edgeLayer.appendChild(
-          svgEl('line', { x1: group.x, y1: group.y, x2: mx, y2: my, class: 'member' }),
-        );
-        var dot = svgEl('circle', {
-          cx: mx,
-          cy: my,
-          r: 7,
-          class: 'member',
-          'data-member': otherId,
-          tabindex: '0',
-          role: 'link',
-          fill: COLORS[other ? other.kind : ''] || '#4f5560',
-        });
-        describe(dot, (other && other.title ? other.title + ' — ' : '') + otherId);
-        nodeLayer.appendChild(dot);
-        var label = svgText(mx, my - 13, otherId, 'mlabel');
-        nodeLayer.appendChild(label);
+      /* Members fan inside the group's own sector, wrapping to a further ring when the arc at this
+         radius cannot hold their labels. Rings grow outward; the viewBox grows with them. */
+      var placed = 0;
+      var ring = 0;
+      while (placed < m) {
+        var radius = group.radius + RING * (ring + 1);
+        var perRing = Math.max(1, Math.floor((group.sector * radius) / LABEL_ARC));
+        var take = Math.min(perRing, m - placed);
+        for (var k = 0; k < take; k += 1) {
+          var t = take === 1 ? 0.5 : k / (take - 1);
+          var a = group.angle + (t - 0.5) * group.sector * (take === 1 ? 0 : 1);
+          var mx = CX + radius * Math.cos(a);
+          var my = CY + radius * Math.sin(a);
+          var edge = group.edges[placed + k];
+          var otherId = group.direction === 'out' ? edge.to : edge.from;
+          var other = byId[otherId];
+          edgeLayer.appendChild(
+            svgEl('line', {
+              x1: group.x,
+              y1: group.y,
+              x2: mx,
+              y2: my,
+              class: 'member',
+            }),
+          );
+          var dot = svgEl('circle', {
+            cx: mx,
+            cy: my,
+            r: 7,
+            class: 'member',
+            'data-member': otherId,
+            tabindex: '0',
+            role: 'link',
+            fill: COLORS[other ? other.kind : ''] || '#4f5560',
+          });
+          describe(dot, (other && other.title ? other.title + ' — ' : '') + otherId);
+          nodeLayer.appendChild(dot);
+          var below = group.direction === 'in';
+          nodeLayer.appendChild(svgText(mx, my + (below ? 20 : -14), otherId, 'mlabel'));
+          extend(mx, my + (below ? 20 : -14), 3 * otherId.length + 4, 10);
+          extend(mx, my, 9, 9);
+        }
+        placed += take;
+        ring += 1;
       }
     };
 
     for (var g = 0; g < all.length; g += 1) {
       var group = all[g];
       var count = group.edges.length;
-      var key = groupKey(anchorId, group);
-      /* Small groups arrive open, so a typical artifact needs no clicking at all. */
-      group.open = Object.prototype.hasOwnProperty.call(focusOpen, key)
-        ? focusOpen[key]
-        : count <= FOCUS_PREOPEN;
-      edgeLayer.appendChild(
-        svgEl('line', { x1: CX, y1: CY, x2: group.x, y2: group.y, class: 'spoke ' + group.direction }),
-      );
+      /* The relationship type annotates the spoke; the satellite carries the kind and the count. */
+      /* Sit the type label out near the satellite, where the sectors have separated. */
+      var mid = 0.74;
+      var lx = CX + group.radius * mid * Math.cos(group.angle);
+      var ly = CY + group.radius * mid * Math.sin(group.angle);
+      var spoke = svgEl('line', {
+        x1: group.direction === 'out' ? CX : group.x,
+        y1: group.direction === 'out' ? CY : group.y,
+        x2: group.direction === 'out' ? group.x : CX,
+        y2: group.direction === 'out' ? group.y : CY,
+        class: 'spoke',
+        'marker-end': 'url(#spoke-arrow)',
+      });
+      edgeLayer.appendChild(spoke);
+      var edgeLabel = svgText(lx, ly - 4, group.relKind, 'edgelabel');
+      nodeLayer.appendChild(edgeLabel);
+      extend(lx, ly - 4, 3.6 * group.relKind.length, 10);
+
       var sat = svgEl('circle', {
         cx: group.x,
         cy: group.y,
@@ -876,15 +971,14 @@ const script = String.raw`
       nodeLayer.appendChild(svgText(group.x, group.y + 5, String(count), 'satcount'));
       var above = group.direction === 'out';
       nodeLayer.appendChild(
-        svgText(group.x, group.y + (above ? -30 : 42), group.relKind, 'satlabel'),
+        svgText(group.x, group.y + (above ? -28 : 40), LABELS[group.kind] || group.kind, 'satkind'),
       );
-      nodeLayer.appendChild(
-        svgText(
-          group.x,
-          group.y + (above ? -18 : 54),
-          (group.direction === 'out' ? '→ ' : '← ') + (LABELS[group.kind] || group.kind),
-          'satkind',
-        ),
+      extend(group.x, group.y, 24, 24);
+      extend(
+        group.x,
+        group.y + (above ? -28 : 40),
+        3.6 * (LABELS[group.kind] || group.kind).length,
+        14,
       );
       if (group.open) openMembers(group);
     }
@@ -902,14 +996,60 @@ const script = String.raw`
     nodeLayer.appendChild(
       svgText(CX, CY + 68, total + (total === 1 ? ' relationship' : ' relationships'), 'anchorsub'),
     );
-    if (hasOut) nodeLayer.appendChild(svgText(CX, 22, 'outgoing ↑', 'axis'));
-    if (hasIn) nodeLayer.appendChild(svgText(CX, height - 10, 'incoming ↓', 'axis'));
+    extend(CX, CY + 68, 3.6 * anchorId.length, 24);
 
-    /* Activating a group toggles it; activating a member selects that artifact. Two gestures, two
-       targets, so neither is overloaded and the selection is never cleared by the projection. */
+    var PADV = 20;
+    var fit = {
+      x: bounds.minX - PADV,
+      y: bounds.minY - PADV,
+      w: bounds.maxX - bounds.minX + 2 * PADV,
+      h: bounds.maxY - bounds.minY + 2 * PADV,
+    };
+    var view = { x: fit.x, y: fit.y, w: fit.w, h: fit.h };
+    var applyView = function () {
+      svg.setAttribute('viewBox', view.x + ' ' + view.y + ' ' + view.w + ' ' + view.h);
+    };
+    applyView();
+
+    /* Pan, zoom and fit, so a dense neighbourhood can be explored rather than only looked at. */
+    var zoomBy = function (factor, cx, cy) {
+      var nx = cx - (cx - view.x) * factor;
+      var ny = cy - (cy - view.y) * factor;
+      var nw = view.w * factor;
+      var nh = view.h * factor;
+      if (nw < fit.w / 8 || nw > fit.w * 4) return;
+      view = { x: nx, y: ny, w: nw, h: nh };
+      applyView();
+    };
+    svg.addEventListener('wheel', function (ev) {
+      ev.preventDefault();
+      var rect = svg.getBoundingClientRect();
+      var px = view.x + ((ev.clientX - rect.left) / rect.width) * view.w;
+      var py = view.y + ((ev.clientY - rect.top) / rect.height) * view.h;
+      zoomBy(ev.deltaY > 0 ? 1.15 : 1 / 1.15, px, py);
+    });
+    var dragging = null;
+    svg.addEventListener('pointerdown', function (ev) {
+      if (ev.target instanceof Element && ev.target.closest('[data-group],[data-member]')) return;
+      dragging = { x: ev.clientX, y: ev.clientY, vx: view.x, vy: view.y };
+      svg.setAttribute('data-panning', 'true');
+    });
+    svg.addEventListener('pointermove', function (ev) {
+      if (!dragging) return;
+      var rect = svg.getBoundingClientRect();
+      view.x = dragging.vx - ((ev.clientX - dragging.x) / rect.width) * view.w;
+      view.y = dragging.vy - ((ev.clientY - dragging.y) / rect.height) * view.h;
+      applyView();
+    });
+    var endDrag = function () {
+      dragging = null;
+      svg.removeAttribute('data-panning');
+    };
+    svg.addEventListener('pointerup', endDrag);
+    svg.addEventListener('pointerleave', endDrag);
+
     var toggle = function (index) {
-      var group = all[index];
-      focusOpen[groupKey(anchorId, group)] = !group.open;
+      focusOpen[groupKey(anchorId, all[index])] = !all[index].open;
       buildFocus(host, anchorId);
     };
     var activate = function (target) {
@@ -923,25 +1063,65 @@ const script = String.raw`
       if (index !== null) toggle(Number(index));
     };
     svg.addEventListener('click', function (ev) {
-      activate(
-        ev.target instanceof Element ? ev.target.closest('[data-group],[data-member]') : null,
-      );
+      activate(ev.target instanceof Element ? ev.target.closest('[data-group],[data-member]') : null);
     });
     svg.addEventListener('keydown', function (ev) {
-      if (ev.key !== 'Enter' && ev.key !== ' ') return;
-      activate(
-        ev.target instanceof Element ? ev.target.closest('[data-group],[data-member]') : null,
-      );
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        activate(
+          ev.target instanceof Element ? ev.target.closest('[data-group],[data-member]') : null,
+        );
+        ev.preventDefault();
+        return;
+      }
+      var step = view.w / 12;
+      if (ev.key === '+' || ev.key === '=') zoomBy(1 / 1.2, view.x + view.w / 2, view.y + view.h / 2);
+      else if (ev.key === '-') zoomBy(1.2, view.x + view.w / 2, view.y + view.h / 2);
+      else if (ev.key === '0') {
+        view = { x: fit.x, y: fit.y, w: fit.w, h: fit.h };
+        applyView();
+      } else if (ev.key === 'ArrowLeft') view.x -= step;
+      else if (ev.key === 'ArrowRight') view.x += step;
+      else if (ev.key === 'ArrowUp') view.y -= step;
+      else if (ev.key === 'ArrowDown') view.y += step;
+      else return;
+      applyView();
       ev.preventDefault();
     });
 
+    var controls = el('div', 'gcontrols');
+    var button = function (label, onClick) {
+      var b = doc.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      b.addEventListener('click', onClick);
+      controls.appendChild(b);
+    };
+    button('Zoom in', function () {
+      zoomBy(1 / 1.2, view.x + view.w / 2, view.y + view.h / 2);
+    });
+    button('Zoom out', function () {
+      zoomBy(1.2, view.x + view.w / 2, view.y + view.h / 2);
+    });
+    button('Fit', function () {
+      view = { x: fit.x, y: fit.y, w: fit.w, h: fit.h };
+      applyView();
+    });
+    host.appendChild(controls);
     host.appendChild(svg);
+    host.appendChild(
+      el(
+        'p',
+        'note',
+        'Drag to pan, scroll to zoom, or use the buttons. With the graph focused: arrow keys pan, + and - zoom, 0 fits.',
+      ),
+    );
     if (total === 0) {
       host.appendChild(
         el('p', 'note', 'This artifact declares no relationships and is referenced by none.'),
       );
     }
   };
+
 
   var LAYER_BANDS = [
     { name: 'Product context', kinds: ['actor', 'bounded-context'] },

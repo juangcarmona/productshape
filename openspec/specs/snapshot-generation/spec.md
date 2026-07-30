@@ -4,7 +4,9 @@ Specify the generation of the Product Snapshot: a static, self-contained, read-o
 projecting the whole product model for people without the repository, produced by
 `prodshape graph --format html` — self-containment, determinism, revision stamping, honest
 diagnostics, and readable by-kind rendering with status badges.
+
 ## Requirements
+
 ### Requirement: HTML is an output format of the graph command
 
 The system SHALL generate a Product Snapshot when the graph command is invoked with the HTML
@@ -728,4 +730,3 @@ is restored by browser Back and Forward alongside the selected artifact.
 
 - **WHEN** the reader moves between projections and presses Back
 - **THEN** the previous projection and selection are restored
-

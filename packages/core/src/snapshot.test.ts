@@ -1060,6 +1060,33 @@ describe('graph projections', () => {
     artifact('FR-H', 'functional-requirement', { 'derived-from': ['UC-H00'] }),
   ];
 
+  /**
+   * The shape that actually broke: BC-PRODUCT-DEFINITION's, reproduced. Five incoming groups means the
+   * first sits close to the anchor's axis, and a twelve-member fan on it used to rotate members across
+   * that axis — off-canvas, and on the wrong side of the anchor. Fewer groups never reach the axis, so
+   * a fixture with two or three groups cannot exercise this at all.
+   */
+  const fiveGroups = [
+    artifact('BC-X', 'bounded-context', {}, { body: '## Responsibility\n\nA hub context.' }),
+    ...Array.from({ length: 12 }, (_, i) =>
+      artifact(`UC-X${String(i).padStart(2, '0')}`, 'use-case', {
+        'primary-actor': 'ACT-X',
+        'bounded-context': 'BC-X',
+      }),
+    ),
+    ...Array.from({ length: 5 }, (_, i) =>
+      artifact(`BR-X${i}`, 'business-rule', { 'applies-to': ['BC-X'] }),
+    ),
+    ...Array.from({ length: 2 }, (_, i) =>
+      artifact(`CON-X${i}`, 'constraint', { 'applies-to': ['BC-X'] }),
+    ),
+    artifact('QR-X0', 'quality-requirement', { 'applies-to': ['BC-X'] }),
+    ...Array.from({ length: 7 }, (_, i) =>
+      artifact(`TERM-X${i}`, 'domain-term', { 'defined-in': 'BC-X' }),
+    ),
+    artifact('ACT-X', 'actor', { 'actor-kind': 'human' }),
+  ];
+
   const open = (hash: string, artifacts = busy): void => {
     dom = new JSDOM(build(artifacts), {
       url: `https://snapshot.invalid/snapshot.html${hash}`,
@@ -1122,19 +1149,131 @@ describe('graph projections', () => {
     expect(small?.getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('opens a group without moving the others', () => {
-    open('#/graph/focus/ACT-H');
+  it('re-organises the cloud when a group is expanded, rather than letting it collide', () => {
+    open('#/graph/focus/BC-X', fiveGroups);
     const before = sats().map((s) => `${s.getAttribute('cx')},${s.getAttribute('cy')}`);
     const big = sats().find((s) => labelOf(s).endsWith('· 12'))!;
     big.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
     const after = sats().map((s) => `${s.getAttribute('cx')},${s.getAttribute('cy')}`);
-    expect(after).toEqual(before);
+    // Expanding re-allocates the hemisphere so the opened group gets the room it needs.
+    expect(after).not.toEqual(before);
     expect(
       sats()
         .find((s) => labelOf(s).endsWith('· 12'))
         ?.getAttribute('aria-expanded'),
     ).toBe('true');
     expect(members().length).toBeGreaterThanOrEqual(12);
+  });
+
+  it('collapsing gives the room back', () => {
+    open('#/graph/focus/BC-X', fiveGroups);
+    const closed = sats().map((s) => `${s.getAttribute('cx')},${s.getAttribute('cy')}`);
+    const big = () => sats().find((s) => labelOf(s).endsWith('· 12'))!;
+    big().dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+    expect(sats().map((s) => `${s.getAttribute('cx')},${s.getAttribute('cy')}`)).not.toEqual(
+      closed,
+    );
+    big().dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+    expect(sats().map((s) => `${s.getAttribute('cx')},${s.getAttribute('cy')}`)).toEqual(closed);
+    expect(members().length).toBe(
+      // Only the small pre-opened groups remain expanded.
+      [...sats()]
+        .filter((s) => s.getAttribute('aria-expanded') === 'true')
+        .reduce((n, s) => {
+          const c = Number(/· (\d+)$/.exec(labelOf(s))?.[1] ?? 0);
+          return n + c;
+        }, 0),
+    );
+  });
+
+  it('gives every group enough room for its own label, so labels never collide', () => {
+    for (const anchor of ['BC-X', 'ACT-H', 'UC-H00']) {
+      const model_ = anchor === 'BC-X' ? fiveGroups : busy;
+      for (const openAll of [false, true]) {
+        open(`#/graph/focus/${anchor}`, model_);
+        if (openAll) {
+          for (const g of sats())
+            g.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+        }
+        const labels = [...doc.querySelectorAll('#graph-host text.satkind')].map((t) => ({
+          x: Number(t.getAttribute('x')),
+          y: Number(t.getAttribute('y')),
+          half: 3.3 * (t.textContent ?? '').length,
+        }));
+        for (let i = 0; i < labels.length; i += 1) {
+          for (let j = i + 1; j < labels.length; j += 1) {
+            const a = labels[i]!;
+            const b = labels[j]!;
+            const overlapsX = Math.abs(a.x - b.x) < a.half + b.half;
+            const overlapsY = Math.abs(a.y - b.y) < 13;
+            expect(
+              overlapsX && overlapsY,
+              `${anchor}${openAll ? ' (all open)' : ''}: "${a.x},${a.y}" and "${b.x},${b.y}" overlap`,
+            ).toBe(false);
+          }
+        }
+      }
+    }
+  });
+
+  it('groups never overlap, however many are open', () => {
+    open('#/graph/focus/BC-X', fiveGroups);
+    for (const g of sats()) g.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+    const points = sats().map((s) => ({
+      x: Number(s.getAttribute('cx')),
+      y: Number(s.getAttribute('cy')),
+    }));
+    for (let i = 0; i < points.length; i += 1) {
+      for (let j = i + 1; j < points.length; j += 1) {
+        const dx = points[i]!.x - points[j]!.x;
+        const dy = points[i]!.y - points[j]!.y;
+        // Satellites are r=20, so centres must stay more than a diameter apart.
+        expect(Math.hypot(dx, dy)).toBeGreaterThan(40);
+      }
+    }
+  });
+
+  it('offers pan, zoom and fit, by pointer and by keyboard', () => {
+    open('#/graph/focus/BC-X', fiveGroups);
+    const svg = doc.querySelector('#graph-host svg.focus')!;
+    const labels = [...doc.querySelectorAll('.gcontrols button')].map((b) => b.textContent);
+    expect(labels).toEqual(['Zoom in', 'Zoom out', 'Fit']);
+    const fitted = svg.getAttribute('viewBox');
+    (doc.querySelectorAll('.gcontrols button')[0] as HTMLButtonElement).click();
+    const zoomed = svg.getAttribute('viewBox');
+    expect(zoomed).not.toBe(fitted);
+    (doc.querySelectorAll('.gcontrols button')[2] as HTMLButtonElement).click();
+    expect(svg.getAttribute('viewBox')).toBe(fitted);
+    // Keyboard equivalents, so navigating the canvas is not pointer-only.
+    svg.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: '-', bubbles: true }));
+    expect(svg.getAttribute('viewBox')).not.toBe(fitted);
+    svg.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: '0', bubbles: true }));
+    expect(svg.getAttribute('viewBox')).toBe(fitted);
+    svg.dispatchEvent(
+      new dom.window.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+    );
+    expect(svg.getAttribute('viewBox')).not.toBe(fitted);
+  });
+
+  it('annotates the relationship type on the spoke, leaving the kind on the satellite', () => {
+    open('#/graph/focus/BC-X', fiveGroups);
+    const edgeLabels = [...doc.querySelectorAll('#graph-host text.edgelabel')].map(
+      (t) => t.textContent,
+    );
+    expect(edgeLabels).toContain('bounded-context');
+    expect(edgeLabels).toContain('defined-in');
+    expect(edgeLabels).toContain('applies-to');
+    const satLabels = [...doc.querySelectorAll('#graph-host text.satkind')].map(
+      (t) => t.textContent,
+    );
+    expect(satLabels).toContain('Use Cases');
+    expect(satLabels).toContain('Domain Terms');
+    // The type no longer clutters the node, and no arrow glyph is baked into its label.
+    for (const l of satLabels) {
+      expect(l).not.toContain('applies-to');
+      expect(l).not.toContain('←');
+      expect(l).not.toContain('→');
+    }
   });
 
   it('activating a group does not change the selection; activating a member does', () => {
@@ -1169,6 +1308,70 @@ describe('graph projections', () => {
       expect(node.querySelector('title')?.textContent).toBeTruthy();
       expect(node.getAttribute('aria-label')).toBeTruthy();
       expect(node.getAttribute('tabindex')).toBe('0');
+    }
+  });
+
+  it('keeps every member inside the canvas and on its own side of the anchor', () => {
+    // Regression: a wide fan used to rotate members across the anchor's axis, which both clipped them
+    // and put an incoming member above the anchor, contradicting positional direction.
+    const cases: [string, typeof busy][] = [
+      ['BC-X', fiveGroups],
+      ['ACT-H', busy],
+      ['BR-H', busy],
+      ['BC-H', busy],
+      ['UC-H00', busy],
+    ];
+    for (const [anchor, model_] of cases) {
+      open(`#/graph/focus/${anchor}`, model_);
+      // Open everything, so the widest fans are on screen.
+      for (const g of sats())
+        g.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+      const svg = doc.querySelector('#graph-host svg')!;
+      const [vx = 0, vy = 0, vw = 0, vh = 0] = (svg.getAttribute('viewBox') ?? '')
+        .split(' ')
+        .map(Number);
+      const anchorY = cy(doc.querySelector('#graph-host circle.anchor')!);
+      for (const m of members()) {
+        const mx = Number(m.getAttribute('cx'));
+        const my = Number(m.getAttribute('cy'));
+        expect(mx, `${anchor} member x within viewBox`).toBeGreaterThanOrEqual(vx);
+        expect(mx, `${anchor} member x within viewBox`).toBeLessThanOrEqual(vx + vw);
+        expect(my, `${anchor} member y within viewBox`).toBeGreaterThanOrEqual(vy);
+        expect(my, `${anchor} member y within viewBox`).toBeLessThanOrEqual(vy + vh);
+      }
+      // Every member sits on the same side of the anchor as the group it belongs to.
+      for (const g of sats()) {
+        const outgoing = labelOf(g).startsWith('outgoing');
+        const gy = cy(g);
+        if (outgoing) expect(gy).toBeLessThan(anchorY);
+        else expect(gy).toBeGreaterThan(anchorY);
+      }
+      for (const m of members()) {
+        const my = Number(m.getAttribute('cy'));
+        // No member may land on the wrong hemisphere, which is what the clamp guarantees.
+        expect(Math.abs(my - anchorY), `${anchor} member is off the axis`).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('frames the drawing rather than assuming it fits a fixed box', () => {
+    open('#/graph/focus/BC-X', fiveGroups);
+    for (const g of sats()) g.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+    const svg = doc.querySelector('#graph-host svg')!;
+    const [vx = 0, vy = 0, vw = 0, vh = 0] = (svg.getAttribute('viewBox') ?? '')
+      .split(' ')
+      .map(Number);
+    const labels = [...doc.querySelectorAll('#graph-host text.mlabel')];
+    expect(labels.length).toBeGreaterThan(0);
+    for (const t of labels) {
+      const x = Number(t.getAttribute('x'));
+      const y = Number(t.getAttribute('y'));
+      // Allow for the label's own width either side of its anchor point.
+      const half = 3 * (t.textContent ?? '').length;
+      expect(x - half).toBeGreaterThanOrEqual(vx);
+      expect(x + half).toBeLessThanOrEqual(vx + vw);
+      expect(y).toBeGreaterThanOrEqual(vy);
+      expect(y).toBeLessThanOrEqual(vy + vh);
     }
   });
 
