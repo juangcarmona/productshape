@@ -251,10 +251,8 @@ the modify set is short and complete.
 
 ## Open Questions
 
-One outstanding, raised during delivery and owned by the product owner: the interaction form of the
-focused neighbourhood projection (question 5). Four were raised when this change was drafted and the
-product owner has resolved all four; those resolutions are recorded here and realized in the proposed
-artifacts.
+None outstanding. Five questions were raised across drafting and delivery; the product owner has
+resolved all five. The resolutions are recorded here and realized in the proposed artifacts.
 
 1. **Are the semantic bands fixed or adopter-visible? — Resolved: fixed and product-owned.** The
    validated mapping is canonical for every product model the snapshot projects: Product context
@@ -286,29 +284,38 @@ artifacts.
    warning presentation, no severity, no scoring, and no vocabulary such as "orphaned".
    Realized in FR-SNAPSHOT-003.
 
-5. **What is the interaction form of the focused neighbourhood? — Open, owned by the product owner.**
-   The product owner describes it as a cloud of nodes where clicking a node shows that artifact's
-   detail in its place, clicking again clears the selection and highlights the related nodes, and
-   hovering reveals minimal information so navigating between nodes is easier. That is design
-   direction rather than a settled decision, and three tensions with this change's own requirements
-   have to be resolved before `SLI-SNAPSHOT-006` is approved:
+5. **What is the interaction form of the focused neighbourhood? — Resolved: an orbit of groups.**
+   The product owner asked to see the alternatives and chose this one after comparing three ASCII
+   mockups, each drawn against both a typical artifact (8 relationships) and the hardest one in the
+   model (`BC-PRODUCT-DEFINITION`, 27, all incoming).
 
-   - **A cloud is not the layered map.** FR-SNAPSHOT-005 fixes the layered map's bands and forbids a
-     free-form whole-model drawing. An anchored cloud is a legitimate shape for the _focused
-     neighbourhood_ — one artifact plus one hop — but it must not become the unstructured graph this
-     change removed, and its arrangement must stay deterministic, which rules out a layout that
-     settles differently each time it opens.
-   - **A second click that clears the selection contradicts the single selected artifact.**
-     FR-SNAPSHOT-006 requires one selected artifact shared by every surface and addressed in the
-     fragment. If a second click deselects, it is undefined what the detail pane shows, what the
-     address becomes, and what Back then returns to. It is also close to the pattern this change
-     diagnosed as a defect in the previous snapshot, where a node had to be clicked twice because the
-     first click only highlighted. Whether "highlight the neighbourhood" and "select the artifact"
-     should be one gesture or two distinct ones is the decision to make.
-   - **Hover may accelerate but may not be the only path.** QR-ACCESSIBILITY-001 forbids essential
-     hover-only information. Minimal-info-on-hover is permitted provided the same information is
-     reachable without a pointer — by keyboard focus, or rendered persistently — so the question is
-     what that non-hover equivalent is, not whether hover is allowed.
+   The selected artifact anchors the centre. What orbits it are the **relationship groups**, not the
+   individual artifacts: each satellite states its relationship type, the artifact kind at the other
+   end, and its exact count. Incoming and outgoing occupy opposite sides of the anchor's axis, so
+   direction is carried by position and survives with colour removed. Opening a satellite fans its
+   members into a local arc; the other satellites stay where they are rather than the view
+   re-anchoring, which keeps the arrangement calm and stable as the reader opens and closes groups.
+   Groups small enough to read at a glance arrive already open, so a typical artifact needs no
+   clicking at all.
+
+   This resolves the three tensions recorded when the question was raised. On the first, it is a
+   cloud without being the graph this change removed: the satellites are aggregates, so the
+   projection's size tracks the number of relationship _types_ an artifact has rather than its degree
+   — which is why it holds at 27 and at 171, where a cloud of individual artifacts degenerates into
+   the circle `FR-SNAPSHOT-005` deleted. Placement is derived from the graph's own ordering, so the
+   arrangement is deterministic; nothing settles.
+
+   On the second, the two clicks act on different things, so neither gesture is overloaded. Clicking a
+   group expands or collapses it; clicking an artifact selects it, updating the detail and the address.
+   Nothing clears the single selected artifact, so `FR-SNAPSHOT-006` is untouched and the defect this
+   change diagnosed in the previous snapshot — a node needing two clicks because the first only
+   highlighted — is not reintroduced.
+
+   On the third, hover is an accelerator and never the only path. Hovering a satellite or a member
+   reveals its title and identifier; keyboard focus reveals the same, and the equivalent relationship
+   list `SLI-SNAPSHOT-004` delivered remains available regardless. Nothing needed is pointer-only.
+
+   Realized in FR-SNAPSHOT-005 and UC-SNAPSHOT-EXPLORE-001.
 
 ## Product Acceptance
 
