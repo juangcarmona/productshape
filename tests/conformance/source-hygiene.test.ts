@@ -32,3 +32,30 @@ describe('source hygiene', () => {
     expect(offenders).toEqual([]);
   });
 });
+
+/*
+ * The snapshot's client script is a String.raw template literal, so a backtick or a `${...}` placeholder
+ * inside it changes what the generated page contains.
+ *
+ * Most such mistakes are loud: a stray backtick, or a placeholder naming something that does not exist,
+ * fails to compile. The compiler blames the line that happens to follow rather than the character
+ * responsible — which has cost two debugging rounds — but it does stop the build.
+ *
+ * The case this test exists for is the quiet one, confirmed by injecting it: a placeholder naming a real
+ * module-scope binding, such as the stylesheet constant declared a few hundred lines above. It compiles
+ * with zero errors and silently interpolates that value into the script every snapshot ships.
+ */
+describe('the snapshot client script', () => {
+  it('contains no backtick or template placeholder that would end its own literal', async () => {
+    const source = await readFile(join(repoRoot, 'packages/core/src/snapshot.ts'), 'utf8');
+    const marker = 'const script = String.raw`';
+    const start = source.indexOf(marker);
+    expect(start, 'the client script literal').toBeGreaterThan(-1);
+    const body = source.slice(start + marker.length);
+    const end = body.indexOf('\n`');
+    expect(end, 'the end of the client script literal').toBeGreaterThan(-1);
+    const inner = body.slice(0, end);
+    expect(inner.includes('`'), 'a backtick inside the client script').toBe(false);
+    expect(inner.includes('${'), 'a template placeholder inside the client script').toBe(false);
+  });
+});
