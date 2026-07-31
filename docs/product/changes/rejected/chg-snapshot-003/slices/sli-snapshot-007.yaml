@@ -1,7 +1,7 @@
 schema: product-definition-as-code/delivery-slice/v1alpha1
 id: SLI-SNAPSHOT-007
 title: The product landscape, proven at reference scale
-status: approved
+status: completed
 product-change: CHG-SNAPSHOT-003
 outcome: >-
   A Product Explorer enters one map and sees the complete product laid out in its four permanently visible

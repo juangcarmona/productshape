@@ -2,7 +2,7 @@
 id: CHG-SNAPSHOT-003
 type: product-change
 title: Replace the two map projections with one focus-and-context canvas
-status: approved
+status: superseded
 base-revision: '4d253d70803a11ced20458d2924a81e4e1a29220'
 operations:
   add:
@@ -269,6 +269,47 @@ a snapshot generated from any product model:
 13. **Everything still true.** One self-contained deterministic offline file; Markdown canonical;
     read-only with no persistence beyond the address; every artifact and relationship reachable and
     readable as text.
+
+## Supersession
+
+The product owner evaluated the delivered Product Landscape and rejected the direction. This change is
+superseded. It is recorded here rather than deleted, because what it proves is worth keeping.
+
+The four-band, relationship-blind landscape was implemented faithfully. It met the acceptance conditions
+this change set: every artifact individually represented, placement derived from the model and stable,
+nothing aggregated away, verified at every reference scale. The direction was not rejected because it was
+built badly.
+
+It was rejected because it optimized the wrong thing. Fixed placement and complete artifact inventory make
+a reliable index of _what the product contains_; they say almost nothing about _how the product is
+connected_. Bands are deliberately blind to relationships — they group by artifact kind and are forbidden
+from implying dependency or direction — so the arrangement a reader spends their attention on carries no
+topological meaning. A reader who wants to understand the product's structure learns it one selection at a
+time, from a layout that never reflects it.
+
+Consequences, binding:
+
+- The remaining slices MUST NOT proceed. `SLI-SNAPSHOT-008`, `SLI-SNAPSHOT-009` and `SLI-SNAPSHOT-010` are
+  cancelled. `SLI-SNAPSHOT-007` is recorded as completed, because its implementation and its SDD workflow
+  genuinely did complete.
+- The product semantics this change proposes MUST NEVER be promoted. `TERM-PRODUCT-LANDSCAPE`,
+  `FR-SNAPSHOT-007`, and the landscape wording proposed for `FR-SNAPSHOT-005` and its siblings do not
+  enter the baseline through this change or any other.
+- The successor starts from the **current promoted baseline**, not from this change's proposed artifacts,
+  and defines a relationship-driven Product Topology Explorer: one whose arrangement is derived from how
+  the product is connected rather than from what kind each artifact is.
+
+Evidence retained, as a rejected experiment rather than as a direction:
+
+- Work item [#38](https://github.com/juangcarmona/productshape/issues/38) — the delivered slice.
+- Commit `12f28c4` — the implementation, deliberately not reverted.
+- `openspec/changes/archive/2026-07-30-add-product-landscape/` — the archived SDD change, its design record
+  and its measurements.
+- `docs/assets/snapshot/` — the screenshots of the rejected landscape, including at the 730-artifact
+  reference scale.
+
+That evidence is technical and stays where it is. Nothing from it is copied into the product definition:
+what the successor inherits is the finding, not the design.
 
 ## Out of Scope
 
