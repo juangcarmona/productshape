@@ -9,19 +9,11 @@
  *
  * Run with: pnpm shots:snapshot [--out <dir>] [--browser <path>]
  */
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
-import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
-import {
-  SchemaRegistry,
-  buildSnapshotHtml,
-  compileGraph,
-  loadModel,
-} from '../packages/core/src/index.js';
-import { writeSyntheticModel } from './lib/synthetic-model.mts';
 
 const run = promisify(execFile);
 const repoRoot = fileURLToPath(new URL('..', import.meta.url));
@@ -42,12 +34,6 @@ interface Shot {
   caption: string;
   /** Script run before capture, for states a URL cannot express (expanded groups, focus). */
   prepare?: string;
-  /**
-   * Which snapshot to shoot. The default is the product's own generated snapshot; `synthetic-10x` is
-   * the 730-artifact reference model QR-SCALABILITY-001 defines, generated here from the same
-   * definition the measurement harness uses so the picture and the figures describe one landscape.
-   */
-  source?: 'product' | 'synthetic-10x';
 }
 
 const DESKTOP = { width: 1440, height: 900 };
@@ -58,12 +44,6 @@ const NARROW = { width: 430, height: 900 };
  * out of the captured region and yields a blank image.
  */
 const TALL = { width: 1440, height: 2400 };
-/**
- * Tall enough to frame the whole 730-artifact landscape. The canvas grows with the model rather than
- * shrinking to fit, so at that scale it renders 2,716 px tall inside the page; anything shorter would
- * crop the last band and make "the complete landscape" a false caption.
- */
-const WHOLE_LANDSCAPE = { width: 1440, height: 3200 };
 
 const shots: Shot[] = [
   {
@@ -117,53 +97,11 @@ const shots: Shot[] = [
     caption: 'An identifier this snapshot does not contain is named, with a way onward.',
   },
   {
-    name: '09-landscape-fitted',
+    name: '09-layered-map',
     route: '#/graph/layers',
     ...TALL,
     caption:
-      'The Product Landscape, fitted: four permanently visible bands, every artifact its own titled node, nothing aggregated and nothing hidden.',
-  },
-  {
-    name: '22-landscape-readable',
-    route: '#/graph/layers',
-    ...DESKTOP,
-    caption:
-      'The same landscape zoomed to readable detail, where each node identifies itself by title with its identifier beneath.',
-    prepare: `var s=document.querySelector('#graph-host svg.landscape');for(var i=0;i<7;i++){s.dispatchEvent(new KeyboardEvent('keydown',{key:'+',bubbles:true}))}`,
-  },
-  {
-    name: '23-landscape-focus-ring',
-    route: '#/graph/layers',
-    ...DESKTOP,
-    caption: 'Keyboard focus on a landscape node, with the focus ring visible.',
-    /*
-     * Zooming moves the camera to the canvas centre, which leaves the *first* node far outside the
-     * frame — focusing it produced a capture identical to the un-focused one. Focus a node the
-     * current viewBox actually contains.
-     */
-    prepare: `var s=document.querySelector('#graph-host svg.landscape');for(var i=0;i<7;i++){s.dispatchEvent(new KeyboardEvent('keydown',{key:'+',bubbles:true}))}var vb=s.getAttribute('viewBox').split(' ').map(Number);var ns=document.querySelectorAll('#graph-host g.lsnode');for(var j=0;j<ns.length;j++){var r=ns[j].querySelector('rect.nodebox');var cx=+r.getAttribute('x')+ +r.getAttribute('width')/2;var cy=+r.getAttribute('y')+ +r.getAttribute('height')/2;if(cx>vb[0]+120&&cx<vb[0]+vb[2]-120&&cy>vb[1]+60&&cy<vb[1]+vb[3]-60){ns[j].focus();break}}`,
-  },
-  {
-    name: '24-landscape-narrow',
-    route: '#/graph/layers',
-    ...NARROW,
-    caption: 'The landscape on a narrow viewport.',
-  },
-  {
-    name: '26-landscape-730',
-    route: '#/graph/layers',
-    ...WHOLE_LANDSCAPE,
-    source: 'synthetic-10x',
-    caption:
-      'The complete landscape at the largest reference scale: 730 artifacts, every one its own node, none aggregated away.',
-  },
-  {
-    name: '25-landscape-no-colour',
-    route: '#/graph/layers',
-    ...DESKTOP,
-    caption:
-      'The landscape rendered without colour: band and kind remain determinable from text and position.',
-    prepare: `document.documentElement.style.filter='grayscale(1)';var s=document.querySelector('#graph-host svg.landscape');for(var i=0;i<7;i++){s.dispatchEvent(new KeyboardEvent('keydown',{key:'+',bubbles:true}))}`,
+      'The layered model map: four fixed bands, collapsed kinds stating their counts, and a summary of exactly what is held back.',
   },
   {
     name: '17-focus-typical',
@@ -192,6 +130,12 @@ const shots: Shot[] = [
     route: '#/graph/focus/CON-NO-WEB-UI',
     ...DESKTOP,
     caption: 'An artifact with no relationships says so rather than drawing an empty diagram.',
+  },
+  {
+    name: '21-layered-narrow',
+    route: '#/graph/layers',
+    ...NARROW,
+    caption: 'The layered map on a narrow viewport.',
   },
   {
     name: '10-focus-visible',
@@ -306,46 +250,11 @@ const pagePath = join(staging, 'snapshot.html');
 await writeFile(pagePath, await readFile(snapshot, 'utf8'), 'utf8');
 const pageUrl = `file:///${(await toBrowserPath(pagePath)).replaceAll('\\', '/').replaceAll(' ', '%20')}`;
 
-/**
- * Reference-scale pages, generated only if a shot asks for one. The revision is a fixed placeholder
- * rather than a real commit so the page stays byte-identical between runs.
- */
-const sourcePages = new Map<string, string>([['product', pagePath]]);
-if (shots.some((shot) => shot.source === 'synthetic-10x')) {
-  const modelRoot = await mkdtemp(join(tmpdir(), 'prodshape-shots-synth-'));
-  try {
-    await writeSyntheticModel(modelRoot, 10);
-    const registry = await SchemaRegistry.loadBundled();
-    const { artifacts } = await loadModel(
-      join(modelRoot, 'docs/product/model'),
-      modelRoot,
-      registry,
-    );
-    const html = buildSnapshotHtml(compileGraph(artifacts), artifacts, 'a'.repeat(40));
-    const synthPath = join(staging, 'snapshot-synthetic-10x.html');
-    await writeFile(synthPath, html, 'utf8');
-    sourcePages.set('synthetic-10x', synthPath);
-    process.stdout.write(`staged synthetic-10x page: ${artifacts.length} artifacts\n`);
-  } finally {
-    await rm(modelRoot, { recursive: true, force: true });
-  }
-}
-
 process.stdout.write(`browser: ${browser}\npage:    ${pageUrl}\nout:     ${outDir}\n\n`);
 
-const manifest: {
-  name: string;
-  route: string;
-  viewport: string;
-  model: string;
-  caption: string;
-}[] = [];
+const manifest: { name: string; route: string; viewport: string; caption: string }[] = [];
 
-const only = flag('--only');
-const selected = only === undefined ? shots : shots.filter((shot) => shot.name.includes(only));
-if (selected.length === 0) throw new Error(`--only ${only} matched no shot`);
-
-for (const shot of selected) {
+for (const shot of shots) {
   const target = join(staging, `${shot.name}.png`);
   await rm(target, { force: true });
   const args = [
@@ -357,13 +266,11 @@ for (const shot of selected) {
     `--window-size=${shot.width},${shot.height}`,
     `--screenshot=${await toBrowserPath(target)}`,
   ];
-  const sourcePath = sourcePages.get(shot.source ?? 'product');
-  if (sourcePath === undefined) throw new Error(`no staged page for source ${shot.source}`);
   if (shot.prepare) {
     // Chromium has no pre-capture hook, so the state is set by a fragment-triggered inline script
     // appended to a staged copy of the page rather than by driving a live session.
     const staged = join(staging, `${shot.name}.html`);
-    const html = await readFile(sourcePath, 'utf8');
+    const html = await readFile(pagePath, 'utf8');
     const injected = html.replace(
       '</body>',
       `<script>window.addEventListener('load',function(){try{${shot.prepare}}catch(e){}});</script></body>`,
@@ -371,11 +278,8 @@ for (const shot of selected) {
     await writeFile(staged, injected, 'utf8');
     const stagedUrl = `file:///${(await toBrowserPath(staged)).replaceAll('\\', '/').replaceAll(' ', '%20')}`;
     args.push(`${stagedUrl}${shot.route}`);
-  } else if (sourcePath === pagePath) {
-    args.push(`${pageUrl}${shot.route}`);
   } else {
-    const url = `file:///${(await toBrowserPath(sourcePath)).replaceAll('\\', '/').replaceAll(' ', '%20')}`;
-    args.push(`${url}${shot.route}`);
+    args.push(`${pageUrl}${shot.route}`);
   }
 
   /* The heaviest routes occasionally exceed the browser's budget on a cold start; one retry with a
@@ -402,19 +306,11 @@ for (const shot of selected) {
     name: shot.name,
     route: shot.route,
     viewport: `${shot.width}x${shot.height}`,
-    model: shot.source ?? 'product',
     caption: shot.caption,
   });
   process.stdout.write(
     `  ${shot.name.padEnd(34)} ${`${shot.width}x${shot.height}`.padEnd(10)} ${(bytes.length / 1024).toFixed(0)} KB\n`,
   );
-}
-
-if (only !== undefined) {
-  process.stdout.write(
-    `\n${selected.length} shot(s) captured; manifest left untouched (--only run)\n`,
-  );
-  process.exit(0);
 }
 
 await writeFile(

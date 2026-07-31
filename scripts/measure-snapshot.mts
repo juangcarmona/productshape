@@ -19,7 +19,7 @@
  *
  * Run with: pnpm measure:snapshot [--scales 1,5,10] [--out <path>]
  */
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import os from 'node:os';
 import { join } from 'node:path';
@@ -32,7 +32,6 @@ import {
   compileGraph,
   loadModel,
 } from '../packages/core/src/index.js';
-import { writeSyntheticModel } from './lib/synthetic-model.mts';
 
 const repoRoot = fileURLToPath(new URL('..', import.meta.url));
 
@@ -74,29 +73,12 @@ interface Measurement {
    * projection being in the document, for the highest-degree artifact and for an isolated one.
    */
   focusMs: { anchors: string[]; samples: number; p50: number; p95: number; max: number };
-  /**
-   * The Product Landscape: render latency plus the SLI-SNAPSHOT-007 landscape integrity properties.
-   * Simultaneous title legibility is deliberately not among them. Focused-state behaviour and
-   * focus-transition latency are not verified here; SLI-SNAPSHOT-008 owns both.
-   */
-  landscapeMs: {
-    samples: number;
-    warmupDiscarded: number;
-    p50: number;
-    p95: number;
-    max: number;
-    budgetMs: number;
-    withinBudget: boolean;
-  };
-  landscape: {
-    nodes: number;
-    artifacts: number;
-    stablePlacement: boolean;
-    individuallyReachable: boolean;
-    selectable: string;
-    withinCanvas: boolean;
-    noOverlap: boolean;
-    aggregatedAway: number;
+  /** The layered map for the whole model, and what it holds back at this scale. */
+  layersMs: number;
+  layersDrawn: {
+    connectors: number;
+    individualRelationships: number;
+    hiddenArtifacts: number;
   };
 }
 
@@ -119,19 +101,189 @@ function artifactLevelElements(html: string): { nodes: number; edges: number } {
   };
 }
 
-const RUNS = 3;
+const longTitle =
+  'Artifact with a deliberately long title that exercises truncation, wrapping and layout ' +
+  'behaviour in list rendering and in the detail header at every viewport width';
 
-/*
- * Landscape-render sampling. QR-SCALABILITY-001 states a 250 ms p95 budget for whole-landscape
- * rendering. The percentile estimator takes the sample at index floor(n * 0.95) of the sorted
- * retained samples, so n must be large enough that the index does not simply land on the slowest
- * sample: at 40 retained samples p95 is the 39th of 40 and is a distinct order statistic from the
- * maximum, whereas at 20 the two coincide. 3 discarded warm-up samples keep once-per-document costs
- * out of a per-view-change figure.
+function body(sections: number, id: string): string {
+  return Array.from(
+    { length: sections },
+    (_, i) => `## Section ${i + 1}
+
+Authored prose for ${id} describing it in enough detail to be representative of a real product
+model body, with a reference to \`ACT-A-001\` and some *emphasis* and a list:
+
+- first bullet with moderate length text
+- second bullet with moderate length text
+- third bullet with moderate length text
+`,
+  ).join('\n');
+}
+
+/**
+ * Write a synthetic model at the given multiple of the reference shape. Dense by construction:
+ * every use case cites the first 8 terms and 4 rules, so early terms and the first context become
+ * high-degree hubs; half the constraints are isolated; one artifact carries a long title and body.
  */
-const LANDSCAPE_SAMPLES = 40;
-const LANDSCAPE_WARMUP = 3;
-const LANDSCAPE_BUDGET_MS = 250;
+async function writeSyntheticModel(root: string, scale: number): Promise<void> {
+  const model = join(root, 'docs/product/model');
+  for (const dir of [
+    'actors',
+    'journeys',
+    'use-cases',
+    'business-rules',
+    'domain/terms',
+    'domain/bounded-contexts',
+    'requirements/functional',
+    'requirements/quality',
+    'requirements/constraints',
+  ]) {
+    await mkdir(join(model, dir), { recursive: true });
+  }
+  await mkdir(join(root, 'docs/product/changes'), { recursive: true });
+  await mkdir(join(root, '.product'), { recursive: true });
+  await writeFile(
+    join(root, '.product/config.yaml'),
+    `schema: product-definition-as-code/config/v1alpha1
+product:
+  root: docs/product
+  model: docs/product/model
+  changes: docs/product/changes
+generated:
+  root: .product/generated
+  commit: false
+validation:
+  warnings-as-errors: false
+  require-journey-for-use-case: false
+  require-requirement-reachability: false
+`,
+    'utf8',
+  );
+
+  const pad = (i: number): string => String(i + 1).padStart(3, '0');
+  const n = {
+    bc: 2 * scale,
+    act: 4 * scale,
+    term: 10 * scale,
+    br: 6 * scale,
+    uc: 16 * scale,
+    jrn: 4 * scale,
+    fr: 21 * scale,
+    qr: 4 * scale,
+    con: 6 * scale,
+  };
+  const bcs = Array.from({ length: n.bc }, (_, i) => `BC-C-${pad(i)}`);
+  const acts = Array.from({ length: n.act }, (_, i) => `ACT-A-${pad(i)}`);
+  const terms = Array.from({ length: n.term }, (_, i) => `TERM-T-${pad(i)}`);
+  const brs = Array.from({ length: n.br }, (_, i) => `BR-R-${pad(i)}`);
+  const ucs = Array.from({ length: n.uc }, (_, i) => `UC-U-${pad(i)}`);
+  const jrns = Array.from({ length: n.jrn }, (_, i) => `JRN-J-${pad(i)}`);
+
+  const write = (dir: string, id: string, content: string): Promise<void> =>
+    writeFile(join(model, dir, `${id.toLowerCase()}.md`), content, 'utf8');
+
+  await Promise.all(
+    bcs.map((id, i) =>
+      write(
+        'domain/bounded-contexts',
+        id,
+        `---\nid: ${id}\ntype: bounded-context\ntitle: Bounded context ${i + 1}\nstatus: active\n---\n\n## Responsibility\n${body(2, id)}\n## Language\n${body(1, id)}\n## Boundaries\n${body(1, id)}\n## External Relationships\n${body(1, id)}\n`,
+      ),
+    ),
+  );
+  await Promise.all(
+    acts.map((id, i) =>
+      write(
+        'actors',
+        id,
+        `---\nid: ${id}\ntype: actor\ntitle: ${i === 0 ? longTitle : `Actor ${i + 1}`}\nstatus: active\nactor-kind: human\n---\n\n## Purpose\n${body(i === 0 ? 12 : 2, id)}\n## Goals\n${body(1, id)}\n## Responsibilities\n${body(1, id)}\n## Boundaries\n${body(1, id)}\n`,
+      ),
+    ),
+  );
+  await Promise.all(
+    terms.map((id, i) =>
+      write(
+        'domain/terms',
+        id,
+        `---\nid: ${id}\ntype: domain-term\ntitle: Term ${i + 1}\nstatus: active\ndefined-in: ${bcs[i % bcs.length]}\n---\n\n## Definition\n${body(1, id)}\n## Distinguish From\n${body(1, id)}\n## Usage\n${body(1, id)}\n`,
+      ),
+    ),
+  );
+  await Promise.all(
+    brs.map((id, i) =>
+      write(
+        'business-rules',
+        id,
+        `---\nid: ${id}\ntype: business-rule\ntitle: Rule ${i + 1}\nstatus: active\napplies-to:\n  - ${bcs[i % bcs.length]}\n---\n\n## Rule\n${body(1, id)}\n## Rationale\n${body(1, id)}\n## Examples\n${body(1, id)}\n## Exceptions\n${body(1, id)}\n`,
+      ),
+    ),
+  );
+  await Promise.all(
+    ucs.map((id, i) => {
+      const t = terms
+        .slice(0, Math.min(terms.length, 8))
+        .map((x) => `  - ${x}`)
+        .join('\n');
+      const r = brs
+        .slice(0, Math.min(brs.length, 4))
+        .map((x) => `  - ${x}`)
+        .join('\n');
+      return write(
+        'use-cases',
+        id,
+        `---\nid: ${id}\ntype: use-case\ntitle: Use case ${i + 1}\nstatus: ${i % 7 === 0 ? 'draft' : 'active'}\nprimary-actor: ${acts[i % acts.length]}\nsupporting-actors:\n  - ${acts[(i + 1) % acts.length]}\nbounded-context: ${bcs[0]}\ngoverned-by:\n${r}\nuses-terms:\n${t}\n---\n\n## Goal\n${body(2, id)}\n## Trigger\n${body(1, id)}\n## Preconditions\n${body(1, id)}\n## Main Flow\n${body(3, id)}\n## Alternative Flows\n${body(2, id)}\n## Failure Conditions\n${body(1, id)}\n## Postconditions\n${body(1, id)}\n`,
+      );
+    }),
+  );
+  await Promise.all(
+    jrns.map((id, i) => {
+      const steps =
+        ucs
+          .slice(i * 3, i * 3 + 4)
+          .map((x) => `  - use-case: ${x}`)
+          .join('\n') || `  - use-case: ${ucs[0]}`;
+      return write(
+        'journeys',
+        id,
+        `---\nid: ${id}\ntype: journey\ntitle: Journey ${i + 1}\nstatus: active\nprimary-actor: ${acts[i % acts.length]}\nsteps:\n${steps}\n---\n\n## Intended Outcome\n${body(2, id)}\n## Entry Conditions\n${body(1, id)}\n## Journey Narrative\n${body(3, id)}\n## Variants and Branches\n${body(1, id)}\n## Completion Conditions\n${body(1, id)}\n`,
+      );
+    }),
+  );
+  await Promise.all(
+    Array.from({ length: n.con }, (_, i) => {
+      const id = `CON-K-${pad(i)}`;
+      // Half the constraints are isolated: no applies-to, therefore degree zero.
+      const applies = i % 2 === 0 ? `applies-to:\n  - ${bcs[i % bcs.length]}\n` : '';
+      return write(
+        'requirements/constraints',
+        id,
+        `---\nid: ${id}\ntype: constraint\ntitle: Constraint ${i + 1}\nstatus: active\n${applies}---\n\n## Constraint\n${body(1, id)}\n## Rationale\n${body(1, id)}\n## Consequences\n${body(1, id)}\n`,
+      );
+    }),
+  );
+  await Promise.all(
+    Array.from({ length: n.fr }, (_, i) => {
+      const id = `FR-F-${pad(i)}`;
+      return write(
+        'requirements/functional',
+        id,
+        `---\nid: ${id}\ntype: functional-requirement\ntitle: Functional requirement ${i + 1}\nstatus: active\nderived-from:\n  - ${ucs[i % ucs.length]}\n  - ${brs[i % brs.length]}\nverification:\n  - scenario: Scenario one for requirement ${i + 1}\n  - scenario: Scenario two for requirement ${i + 1}\n---\n\n## Requirement\n${body(2, id)}\n## Rationale\n${body(1, id)}\n## Acceptance Scenarios\n${body(2, id)}\n`,
+      );
+    }),
+  );
+  await Promise.all(
+    Array.from({ length: n.qr }, (_, i) => {
+      const id = `QR-Q-${pad(i)}`;
+      return write(
+        'requirements/quality',
+        id,
+        `---\nid: ${id}\ntype: quality-requirement\ntitle: Quality requirement ${i + 1}\nstatus: active\nquality-attribute: attribute-${i + 1}\napplies-to:\n  - ${ucs[i % ucs.length]}\n  - ${jrns[i % jrns.length]}\nverification:\n  - scenario: Scenario for quality ${i + 1}\n---\n\n## Requirement\n${body(1, id)}\n## Measurement\n${body(1, id)}\n## Verification\n${body(1, id)}\n`,
+      );
+    }),
+  );
+}
+
+const RUNS = 3;
 
 async function measure(label: string, modelRoot: string): Promise<Measurement> {
   const registry = await SchemaRegistry.loadBundled();
@@ -238,100 +390,23 @@ async function measure(label: string, modelRoot: string): Promise<Measurement> {
     }
   }
 
-  /*
-   * The landscape: render latency, then the SLI-SNAPSHOT-007 integrity properties, measured not
-   * eyeballed.
-   *
-   * Sampling protocol. QR-SCALABILITY-001 states the budget as a 95th percentile, so one sample
-   * cannot answer it. The landscape is entered LANDSCAPE_SAMPLES times, each time from the artifact
-   * list so that every sample builds the whole canvas from nothing rather than re-showing a host that
-   * is already populated. The measured interval runs from dispatching the navigation to the landscape
-   * being ready for interaction — every node placed and activatable — which is synchronous here, so
-   * the interval closes when the dispatch returns. The first LANDSCAPE_WARMUP samples are discarded:
-   * they carry first-call JIT and the lazily built artifact index, which a reader pays once per
-   * document rather than once per view change. The percentile is taken over the retained samples and
-   * the slowest retained sample is reported alongside it.
-   */
-  const landscapeTimings: number[] = [];
-  for (let s = 0; s < LANDSCAPE_WARMUP + LANDSCAPE_SAMPLES; s += 1) {
-    dom.window.location.hash = '#/artifacts';
-    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
-    dom.window.location.hash = '#/graph/layers';
-    const lsStarted = performance.now();
-    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
-    const elapsed = performance.now() - lsStarted;
-    if (s >= LANDSCAPE_WARMUP) landscapeTimings.push(elapsed);
-  }
-
-  const lsDoc = dom.window.document;
-  const geometry = (): { id: string; x: number; y: number; w: number; h: number }[] =>
-    [...lsDoc.querySelectorAll('#graph-host g.lsnode')].map((n) => {
-      const r = n.querySelector('rect.nodebox');
-      return {
-        id: n.getAttribute('data-member') ?? '',
-        x: Number(r?.getAttribute('x')),
-        y: Number(r?.getAttribute('y')),
-        w: Number(r?.getAttribute('width')),
-        h: Number(r?.getAttribute('height')),
-      };
-    });
-
-  const before = geometry();
-  const lsSvg = lsDoc.querySelector('#graph-host svg.landscape');
-  /* Panning and zooming must move the camera, never the artifacts. */
-  for (const key of ['ArrowRight', 'ArrowDown', '-', '+']) {
-    lsSvg?.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key, bubbles: true }));
-  }
-  const after = geometry();
-  const stablePlacement =
-    before.length === after.length &&
-    before.every((b, i) => {
-      const a = after[i];
-      return a !== undefined && a.id === b.id && a.x === b.x && a.y === b.y;
-    });
-
-  const compiledIds = new Set(graph.nodes.map((n) => n.id));
-  const nodeIds = new Set(before.map((b) => b.id));
-  const individuallyReachable =
-    nodeIds.size === compiledIds.size && [...compiledIds].every((id) => nodeIds.has(id));
-  const focusable = [...lsDoc.querySelectorAll('#graph-host g.lsnode[tabindex="0"]')].length;
-
-  /* Every artifact activated in turn, not sampled: at this size exhaustive is cheap. */
-  let selected = 0;
-  for (const node of lsDoc.querySelectorAll('#graph-host g.lsnode')) {
-    const id = node.getAttribute('data-member');
-    node.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-    if (dom.window.location.hash === `#/graph/focus/${id}`) selected += 1;
-    dom.window.location.hash = '#/graph/layers';
-    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
-  }
-  const selectable = `${selected}/${before.length}`;
-
-  const vb = (lsDoc.querySelector('#graph-host svg.landscape')?.getAttribute('viewBox') ?? '')
-    .split(' ')
-    .map(Number);
-  const [vx = 0, vy = 0, vw = 0, vh = 0] = vb;
-  const withinCanvas = before.every(
-    (b) => b.x >= vx && b.y >= vy && b.x + b.w <= vx + vw && b.y + b.h <= vy + vh,
-  );
-  let noOverlap = true;
-  for (let i = 0; i < before.length && noOverlap; i += 1) {
-    for (let j = i + 1; j < before.length; j += 1) {
-      const a = before[i];
-      const b = before[j];
-      if (a === undefined || b === undefined) continue;
-      if (a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h) {
-        noOverlap = false;
-        break;
-      }
-    }
-  }
+  /* The layered map for the whole model, plus what it reports holding back. */
+  dom.window.location.hash = '#/artifacts';
+  dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+  dom.window.location.hash = '#/graph/layers';
+  const layersStarted = performance.now();
+  dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+  const layersMs = round(performance.now() - layersStarted, 2);
+  const layersDoc = dom.window.document;
+  const drawnEdges = layersDoc.querySelectorAll('#graph-host line.ledge').length;
+  const summaryText = layersDoc.querySelector('p.layersummary')?.textContent ?? '';
+  const hiddenMatch = /(\d+) of \d+ artifacts collapsed/.exec(summaryText);
+  const individualMatch = /(\d+) of \d+ relationships drawn individually/.exec(summaryText);
 
   dom.window.close();
   timings.sort((a, b) => a - b);
   focusTimings.sort((a, b) => a - b);
   searchTimings.sort((a, b) => a - b);
-  landscapeTimings.sort((a, b) => a - b);
   const atOf = (list: number[], q: number): number =>
     round(list[Math.min(list.length - 1, Math.floor(list.length * q))] ?? 0, 2);
   const at = (q: number): number =>
@@ -367,24 +442,11 @@ async function measure(label: string, modelRoot: string): Promise<Measurement> {
       p95: atOf(focusTimings, 0.95),
       max: round(focusTimings.at(-1) ?? 0, 2),
     },
-    landscapeMs: {
-      samples: landscapeTimings.length,
-      warmupDiscarded: LANDSCAPE_WARMUP,
-      p50: atOf(landscapeTimings, 0.5),
-      p95: atOf(landscapeTimings, 0.95),
-      max: round(landscapeTimings.at(-1) ?? 0, 2),
-      budgetMs: LANDSCAPE_BUDGET_MS,
-      withinBudget: atOf(landscapeTimings, 0.95) <= LANDSCAPE_BUDGET_MS,
-    },
-    landscape: {
-      nodes: before.length,
-      artifacts: graph.nodes.length,
-      stablePlacement,
-      individuallyReachable: individuallyReachable && focusable === before.length,
-      selectable,
-      withinCanvas,
-      noOverlap,
-      aggregatedAway: graph.nodes.length - before.length,
+    layersMs,
+    layersDrawn: {
+      connectors: drawnEdges,
+      individualRelationships: individualMatch ? Number(individualMatch[1]) : 0,
+      hiddenArtifacts: hiddenMatch ? Number(hiddenMatch[1]) : 0,
     },
     searchMs: {
       queries: searchQueries,
@@ -443,20 +505,11 @@ for (const [k, v] of Object.entries(environment)) {
 }
 process.stdout.write(`\n`);
 process.stdout.write(
-  `${pad('model', 24)}${pad('artifacts', 11)}${pad('rels', 7)}${pad('file B', 12)}${pad('opening B', 12)}${pad('share', 8)}${pad('nodes/edges', 13)}${pad('gen ms', 14)}${pad('B/authored', 11)}${pad('select p95', 11)}${pad('search p95', 11)}${pad('focus p95', 11)}${pad('lscape p95', 11)}${pad('integrity', 12)}\n`,
+  `${pad('model', 24)}${pad('artifacts', 11)}${pad('rels', 7)}${pad('file B', 12)}${pad('opening B', 12)}${pad('share', 8)}${pad('nodes/edges', 13)}${pad('gen ms', 14)}${pad('B/authored', 11)}${pad('select p95', 11)}${pad('search p95', 11)}${pad('focus p95', 11)}${pad('layers ms', 11)}\n`,
 );
 for (const r of results) {
   process.stdout.write(
-    `${pad(r.model, 24)}${pad(num(r.artifacts), 11)}${pad(num(r.relationships), 7)}${pad(num(r.fileBytes), 12)}${pad(num(r.openingMarkupBytes), 12)}${pad(`${Math.round(r.openingMarkupShare * 100)}%`, 8)}${pad(`${r.artifactLevelNodes}/${r.artifactLevelEdges}`, 13)}${pad(`${r.generationMs.min}-${r.generationMs.max}`, 14)}${pad(String(r.bytesPerAuthoredByte), 11)}${pad(String(r.selectionMs.p95), 11)}${pad(String(r.searchMs.p95), 11)}${pad(String(r.focusMs.p95), 11)}${pad(String(r.landscapeMs.p95) + ' ms', 11)}${pad(
-      [
-        r.landscape.stablePlacement ? 'stable' : 'MOVED',
-        r.landscape.individuallyReachable ? 'reachable' : 'UNREACHABLE',
-        r.landscape.selectable,
-        r.landscape.withinCanvas ? 'in-canvas' : 'CLIPPED',
-        r.landscape.noOverlap ? 'no-overlap' : 'OVERLAP',
-      ].join(' '),
-      12,
-    )}\n`,
+    `${pad(r.model, 24)}${pad(num(r.artifacts), 11)}${pad(num(r.relationships), 7)}${pad(num(r.fileBytes), 12)}${pad(num(r.openingMarkupBytes), 12)}${pad(`${Math.round(r.openingMarkupShare * 100)}%`, 8)}${pad(`${r.artifactLevelNodes}/${r.artifactLevelEdges}`, 13)}${pad(`${r.generationMs.min}-${r.generationMs.max}`, 14)}${pad(String(r.bytesPerAuthoredByte), 11)}${pad(String(r.selectionMs.p95), 11)}${pad(String(r.searchMs.p95), 11)}${pad(String(r.focusMs.p95), 11)}${pad(String(r.layersMs), 11)}\n`,
   );
 }
 const first = results[0];
