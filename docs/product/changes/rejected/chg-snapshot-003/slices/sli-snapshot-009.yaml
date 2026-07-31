@@ -1,7 +1,7 @@
 schema: product-definition-as-code/delivery-slice/v1alpha1
 id: SLI-SNAPSHOT-009
 title: One selection operation and the three-region Explorer
-status: proposed
+status: cancelled
 product-change: CHG-SNAPSHOT-003
 outcome: >-
   The Explorer becomes one instrument rather than three views sharing a variable. A left rail carries search,

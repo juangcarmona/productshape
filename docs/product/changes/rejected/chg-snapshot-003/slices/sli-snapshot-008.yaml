@@ -1,7 +1,7 @@
 schema: product-definition-as-code/delivery-slice/v1alpha1
 id: SLI-SNAPSHOT-008
 title: Focus as a state of the landscape
-status: proposed
+status: cancelled
 product-change: CHG-SNAPSHOT-003
 outcome: >-
   Selecting an artifact promotes it and its neighbourhood into the foreground of the same landscape, while
