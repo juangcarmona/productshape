@@ -1,0 +1,80 @@
+schema: product-definition-as-code/delivery-slice/v1alpha1
+id: SLI-EXPLORER-003
+title: Traverse relationships through the Focused Topology
+status: proposed
+product-change: CHG-SNAPSHOT-004
+outcome: >-
+  A reader sees the selected artifact's neighbourhood as a small, legible picture: immediate canonical
+  relationships grouped by meaning and type, complete counts on everything collapsed, expansion only on
+  deliberate action, dense sets falling back to structured lists. Refocusing produces a new projection
+  rather than accumulating a canvas. The layered whole-product map is withdrawn, leaving exactly two
+  projections, and every traversal the picture offers survives without it.
+implements:
+  - requirement: FR-SNAPSHOT-009
+    coverage: full
+  - requirement: FR-SNAPSHOT-005
+    coverage: full
+  - requirement: FR-SNAPSHOT-006
+    coverage: partial
+    scope: >-
+      The Focused Topology's explicit disclosure state in the addressable state, restored by deep link
+      and by Back/Forward, completing this requirement across the four surfaces.
+  - requirement: QR-SCALABILITY-001
+    coverage: partial
+    scope: >-
+      The reader operation this slice delivers, measured at the three representative scales on the named
+      environment: expanding a bounded relationship group, on the most connected artifact and the largest
+      group. Confirmation that no control renders the corpus simultaneously at any scale.
+  - requirement: QR-PRESENTATION-001
+    coverage: partial
+    scope: >-
+      The presentation contract confirmed on the composed page once all four surfaces exist: single
+      light appearance, typography, structure, colour restraint and stability, density and prohibited
+      treatments inspected on the rendered page and recorded as screenshots at desktop and narrow
+      viewports for the current and corpus-scale models.
+  - requirement: QR-ACCESSIBILITY-001
+    coverage: partial
+    scope: >-
+      Every capability this slice introduces: the projection reachable, expandable and refocusable by
+      keyboard alone; expanded state exposed as state; direction never carried by colour alone; the
+      structured-list fallback fully equivalent; no non-essential animation under reduced motion.
+affects:
+  - UC-SNAPSHOT-EXPLORE-001
+  - JRN-SNAPSHOT-001
+  - TERM-FOCUSED-TOPOLOGY
+  - TERM-GRAPH-PROJECTION
+  - TERM-PRODUCT-SNAPSHOT
+depends-on:
+  - SLI-EXPLORER-001
+  - SLI-EXPLORER-002
+verification:
+  - The snapshot provides exactly two graph projections; the layered whole-product map is absent, and
+    exercising every control at the reference corpus scale never renders every artifact simultaneously,
+    a whole-product canvas, whole-product fit, bands or a whole-graph drawing.
+  - Focusing an artifact shows its immediate relationships grouped by meaning and type, direction
+    distinguished other than by colour alone, every collapsed group carrying its complete count.
+  - Expansion happens only on deliberate action; refocusing on a related artifact replaces the projection
+    rather than accumulating it, and Back returns to the previous focus.
+  - A relationship set too dense to draw legibly is presented as a structured list with every entry
+    selectable; with the projection unavailable, every traversal it offers is completed through the
+    Reader, the Catalog, search and deep links.
+  - The projection is identical for the same model, focus and explicit reader state in two fresh
+    windows; nothing drawn or counted is absent from the compiled graph; no visual device implies
+    lifecycle, maturity, importance, sequence, causality or dependency the graph does not record.
+  - The disclosure state is carried in the address, restored by deep link, and walked by Back/Forward.
+  - Group expansion latency is measured at the three representative scales and recorded; the whole
+    projection is keyboard-operable with visible focus and exposed state.
+  - >-
+    With all four surfaces present, reachability is verified as completeness: every artifact and every
+    canonical relationship of the compiled model is reached and read through the Explorer's surfaces,
+    each artifact through at least two routes, without any simultaneous rendering of the corpus.
+  - One operator completes the entire progression — orient, search, filter, open, read, expand, refocus,
+    return — without a pointing device, with visible focus at every stop and state exposed to assistive
+    technology; the colour-removed and reduced-motion sweeps pass on the composed page.
+  - Regeneration from identical model content remains byte-identical with the complete Explorer present,
+    and browser storage stays empty after the full exploration.
+out-of-scope:
+  - Any whole-product or multi-focus canvas, any depth or radius control, any accumulation of expansions
+    across refocusing.
+  - The choice of rendering technique, layout algorithm or library — technical design at delivery.
+  - Any npm release, package bump or changeset.
