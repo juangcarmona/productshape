@@ -97,13 +97,6 @@ const shots: Shot[] = [
     caption: 'An identifier this snapshot does not contain is named, with a way onward.',
   },
   {
-    name: '09-layered-map',
-    route: '#/graph/layers',
-    ...TALL,
-    caption:
-      'The layered model map: four fixed bands, collapsed kinds stating their counts, and a summary of exactly what is held back.',
-  },
-  {
     name: '17-focus-typical',
     route: '#/graph/focus/UC-SNAPSHOT-EXPLORE-001',
     ...DESKTOP,
@@ -130,12 +123,6 @@ const shots: Shot[] = [
     route: '#/graph/focus/CON-NO-WEB-UI',
     ...DESKTOP,
     caption: 'An artifact with no relationships says so rather than drawing an empty diagram.',
-  },
-  {
-    name: '21-layered-narrow',
-    route: '#/graph/layers',
-    ...NARROW,
-    caption: 'The layered map on a narrow viewport.',
   },
   {
     name: '10-focus-visible',

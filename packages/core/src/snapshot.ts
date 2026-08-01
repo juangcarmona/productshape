@@ -255,27 +255,20 @@ details.relgroup ul.members { padding: 0.1rem 0.5rem 0.3rem; }
 }
 details.relgroup ul.members li:last-child { border-bottom: none; }
 
-nav.gmodes { display: flex; gap: 0.15rem; margin: 0 0 0.6rem; }
-nav.gmodes a {
   padding: 0.25rem 0.7rem; font-size: 0.82rem; color: var(--muted);
   border: 1px solid var(--line); border-radius: 2px; background: var(--bg);
 }
-nav.gmodes a[aria-current='true'] { color: var(--ink); font-weight: 600; border-color: var(--line-strong); background: var(--panel); }
 #graph-host svg { width: 100%; height: auto; background: var(--bg); border: 1px solid var(--line); max-width: 70rem; }
 #graph-host text { font-family: var(--sans); fill: var(--text); }
 #graph-host circle { stroke: #ffffff; stroke-width: 1.5; }
 #graph-host circle.anchor { stroke: var(--ink); stroke-width: 3; }
 #graph-host circle.satellite { cursor: pointer; stroke-width: 2; }
 #graph-host circle.satellite:focus-visible, #graph-host circle.member:focus-visible,
-#graph-host circle.lnode:focus-visible, #graph-host rect.cell:focus-visible {
   outline: 2px solid var(--accent); outline-offset: 2px;
 }
-#graph-host circle.member, #graph-host circle.lnode { cursor: pointer; }
 #graph-host line.spoke { stroke: var(--line-strong); stroke-width: 1.4; }
 #graph-host line.spoke.in { stroke-dasharray: 4 3; }
 #graph-host line.member { stroke: var(--line); stroke-width: 1; }
-#graph-host line.ledge { stroke: #c3c9d6; stroke-width: 0.8; }
-#graph-host line.ledge.agg { stroke: #98a1b2; stroke-width: 1.6; }
 #graph-host text.aggcount { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
 #graph-host .arrowhead { fill: #9aa2b3; }
 #graph-host text.satcount { font-family: var(--mono); font-size: 15px; font-weight: 700; fill: #ffffff; }
@@ -294,14 +287,11 @@ nav.gmodes a[aria-current='true'] { color: var(--ink); font-weight: 600; border-
 #graph-host text.anchorid { font-family: var(--mono); font-size: 13px; font-weight: 600; }
 #graph-host text.anchorsub { font-size: 11px; fill: var(--muted); }
 #graph-host text.axis { font-size: 11px; fill: var(--muted); letter-spacing: 0.08em; }
-#graph-host rect.band { fill: var(--panel); stroke: var(--line); }
 #graph-host rect.cell { fill: #ffffff; stroke: var(--line-strong); cursor: pointer; }
 #graph-host rect.cell.collapsed { fill: var(--panel); stroke-dasharray: 4 3; }
-#graph-host text.bandname { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; }
 #graph-host text.celltoken { font-family: var(--mono); font-size: 11px; font-weight: 700; fill: var(--muted); }
 #graph-host text.cellcount { font-family: var(--mono); font-size: 12px; fill: var(--muted); }
 #graph-host text.celllabel { font-size: 11px; fill: var(--muted); }
-p.layersummary { margin-top: 0.5rem; }
 
 div.ovsearch { margin: 0.6rem 0 0.2rem; max-width: 34rem; }
 div.ovsearch label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 0.2rem; }
@@ -380,16 +370,16 @@ const script = String.raw`
   /* ---------------------------------------------------------------- routing */
 
   var views = ['overview', 'artifacts', 'graph'];
-  var state = { view: 'overview', id: null, graphMode: null, cat: { k: null, s: null, c: null, f: null, q: null }, unknown: null };
+  var state = { view: 'overview', id: null, graphMode: null, cat: { k: null, s: null, c: null, f: null, q: null, x: null }, unknown: null };
 
   /*
    * Catalog state (FR-SNAPSHOT-008): the active query and filters are part of the address, in a
    * fixed serialization order so identical states produce identical addresses. k = kind,
    * s = status, c = bounded context, f = name/ID filter, q = search query.
    */
-  var CAT_KEYS = ['k', 's', 'c', 'f', 'q'];
+  var CAT_KEYS = ['k', 's', 'c', 'f', 'q', 'x'];
   var emptyCat = function () {
-    return { k: null, s: null, c: null, f: null, q: null };
+    return { k: null, s: null, c: null, f: null, q: null, x: null };
   };
   var catQuery = function (cat) {
     if (!cat) return '';
@@ -443,13 +433,16 @@ const script = String.raw`
         graphMode: 'focus',
         id: decodeURIComponent(focused[1]),
         legacy: false,
+        cat: cat,
       };
     }
-    if (/^\/graph\/(layers|focus)$/.test(hash)) {
-      return { view: 'graph', id: null, graphMode: hash.replace('/graph/', ''), legacy: false };
+    if (hash === '/graph/focus') {
+      return { view: 'graph', id: null, graphMode: 'focus', legacy: false, cat: cat };
     }
-    /* The route earlier snapshots used; it opens the broad-topology projection. */
-    if (hash === '/graph') return { view: 'graph', id: null, graphMode: 'layers', legacy: false };
+    /* Routes earlier snapshots produced for the withdrawn layered map resolve in place. */
+    if (hash === '/graph' || hash === '/graph/layers') {
+      return { view: 'graph', id: null, graphMode: 'focus', legacy: false, cat: cat, stale: true };
+    }
     /* Legacy fragment produced by earlier snapshots: a bare artifact identifier. Permanent. */
     if (/^[A-Z][A-Z0-9]*(-[A-Z0-9]+)+$/.test(hash)) {
       return { view: 'artifacts', id: hash, legacy: true };
@@ -462,8 +455,7 @@ const script = String.raw`
       return (next.id ? '#/artifacts/' + next.id : '#/artifacts') + catQuery(next.cat);
     }
     if (next.view === 'graph') {
-      var mode = next.graphMode || 'layers';
-      return mode === 'focus' && next.id ? '#/graph/focus/' + next.id : '#/graph/' + mode;
+      return (next.id ? '#/graph/focus/' + next.id : '#/graph/focus') + catQuery(next.cat);
     }
     return '#/';
   };
@@ -505,6 +497,10 @@ const script = String.raw`
     if (parsed.legacy && !unknown) {
       /* Resolve, then normalize in place so no redundant history entry is created. */
       go({ view: 'artifacts', id: parsed.id }, 'replace');
+      return;
+    }
+    if (parsed.stale && !unknown) {
+      go({ view: parsed.view, graphMode: 'focus', id: parsed.id, cat: parsed.cat }, 'replace');
       return;
     }
     state = {
@@ -555,6 +551,7 @@ const script = String.raw`
       c: filterContext,
       f: filterText,
       q: state.cat.q,
+      x: state.cat.x,
     };
     go({ view: state.view, id: state.id, graphMode: state.graphMode, cat: state.cat }, 'replace');
   };
@@ -837,15 +834,39 @@ const script = String.raw`
   };
 
   var FOCUS_PREOPEN = 4;
+  /* Past this size an opened group falls back to a structured list below the drawing: a fan of
+     dozens of labelled nodes stops being legible before it stops being possible. Presentation
+     constant, not a product rule. */
+  var FOCUS_LIST_ABOVE = 24;
 
   /**
-   * Which satellites the reader has opened, keyed by anchor and group. Held here so re-rendering the
-   * projection preserves what they opened — and so opening one satellite leaves every other one
-   * exactly where it was, rather than the view re-anchoring under their hand.
+   * Which groups are open is explicit reader state, carried in the address (?x=0.2). x absent
+   * means the defaults (small groups open); 'x=-' means everything closed; otherwise x lists the
+   * open group indices in the projection's deterministic group order. Addressable, shareable,
+   * never persisted anywhere else.
    */
-  var focusOpen = {};
-  var groupKey = function (anchorId, group) {
-    return anchorId + '|' + group.direction + '|' + group.relKind + '|' + group.kind;
+  var focusOpenSet = function (groups) {
+    var open = {};
+    if (state.cat.x === null || state.cat.x === undefined) {
+      for (var i = 0; i < groups.length; i += 1) {
+        open[i] = groups[i].edges.length <= FOCUS_PREOPEN;
+      }
+      return open;
+    }
+    if (state.cat.x === '-') return open;
+    var parts = String(state.cat.x).split('.');
+    for (var j = 0; j < parts.length; j += 1) {
+      var index = parseInt(parts[j], 10);
+      if (!isNaN(index)) open[index] = true;
+    }
+    return open;
+  };
+  var focusXFor = function (groups) {
+    var indices = [];
+    for (var i = 0; i < groups.length; i += 1) {
+      if (groups[i].open) indices.push(i);
+    }
+    return indices.length === 0 ? '-' : indices.join('.');
   };
 
   /**
@@ -919,11 +940,7 @@ const script = String.raw`
 
     /* How much angular room each group wants: one unit closed, more when open. */
     var weigh = function (group) {
-      var key = groupKey(anchorId, group);
-      group.open = Object.prototype.hasOwnProperty.call(focusOpen, key)
-        ? focusOpen[key]
-        : group.edges.length <= FOCUS_PREOPEN;
-      if (!group.open) return 1;
+      if (!group.open || group.listed) return 1;
       return Math.max(1, Math.min(6, group.edges.length / 2));
     };
 
@@ -970,11 +987,21 @@ const script = String.raw`
         cursor += slice;
       }
     };
+    var all = out.concat(inc);
+    var openNow = focusOpenSet(all);
+    for (var gi = 0; gi < all.length; gi += 1) {
+      all[gi].open = Boolean(openNow[gi]);
+      all[gi].listed = all[gi].open && all[gi].edges.length > FOCUS_LIST_ABOVE;
+    }
     allocate(out, 'out');
     allocate(inc, 'in');
-    var all = out.concat(inc);
 
+    var listedPanels = [];
     var openMembers = function (group) {
+      if (group.listed) {
+        listedPanels.push(group);
+        return;
+      }
       var m = group.edges.length;
       /* Members fan inside the group's own sector, wrapping to a further ring when the arc at this
          radius cannot hold their labels. Rings grow outward; the viewBox grows with them. */
@@ -1058,7 +1085,8 @@ const script = String.raw`
       describe(
         sat,
         (group.direction === 'out' ? 'outgoing ' : 'incoming ') +
-          group.relKind + ' · ' + (LABELS[group.kind] || group.kind) + ' · ' + count,
+          group.relKind + ' · ' + (LABELS[group.kind] || group.kind) + ' · ' + count +
+          (group.listed ? ' — too many to draw legibly; shown as a list below the drawing' : ''),
       );
       nodeLayer.appendChild(sat);
       nodeLayer.appendChild(svgText(group.x, group.y + 5, String(count), 'satcount'));
@@ -1142,14 +1170,26 @@ const script = String.raw`
     svg.addEventListener('pointerleave', endDrag);
 
     var toggle = function (index) {
-      focusOpen[groupKey(anchorId, all[index])] = !all[index].open;
-      buildFocus(host, anchorId);
+      all[index].open = !all[index].open;
+      var cat = {};
+      for (var key in state.cat) {
+        if (Object.prototype.hasOwnProperty.call(state.cat, key)) cat[key] = state.cat[key];
+      }
+      cat.x = focusXFor(all);
+      /* Disclosure is not navigation: the address changes, the history entry does not. */
+      go({ view: 'graph', graphMode: 'focus', id: anchorId, cat: cat }, 'replace');
     };
     var activate = function (target) {
       if (!target) return;
       var member = target.getAttribute('data-member');
       if (member) {
-        go({ view: 'graph', graphMode: 'focus', id: member });
+        /* Refocusing produces a newly focused projection: the disclosure does not accumulate. */
+        var cat = {};
+        for (var key in state.cat) {
+          if (Object.prototype.hasOwnProperty.call(state.cat, key)) cat[key] = state.cat[key];
+        }
+        cat.x = null;
+        go({ view: 'graph', graphMode: 'focus', id: member, cat: cat });
         return;
       }
       var index = target.getAttribute('data-group');
@@ -1208,6 +1248,19 @@ const script = String.raw`
         'Drag to pan, scroll to zoom, or use the buttons. With the graph focused: arrow keys pan, + and - zoom, 0 fits.',
       ),
     );
+    /* Dense sets fall back to a legible structure: every entry stays selectable, nothing is
+       drawn that cannot be read. */
+    for (var lp = 0; lp < listedPanels.length; lp += 1) {
+      var listedGroup = listedPanels[lp];
+      var panel = el('div', 'denselist');
+      var head = el('p', 'glabel solo');
+      head.appendChild(el('span', null, groupLabel(listedGroup, listedGroup.direction)));
+      head.appendChild(el('span', 'gcount', listedGroup.edges.length));
+      head.appendChild(el('span', 'note', ' too many to draw legibly — listed instead'));
+      panel.appendChild(head);
+      panel.appendChild(memberList(listedGroup.edges, listedGroup.direction));
+      host.appendChild(panel);
+    }
     if (total === 0) {
       host.appendChild(
         el('p', 'note', 'This artifact declares no relationships and is referenced by none.'),
@@ -1216,291 +1269,10 @@ const script = String.raw`
   };
 
 
-  var LAYER_BANDS = [
-    { name: 'Product context', kinds: ['actor', 'bounded-context'] },
-    { name: 'Product behaviour', kinds: ['journey', 'use-case'] },
-    { name: 'Rules and language', kinds: ['business-rule', 'domain-term'] },
-    {
-      name: 'Product commitments',
-      kinds: ['functional-requirement', 'quality-requirement', 'constraint'],
-    },
-  ];
-  /**
-   * How many artifacts the map will draw before it starts holding back. FR-SNAPSHOT-005 requires it
-   * not to render everything "for a large model", which is scale-conditional: a 73-artifact model
-   * draws in full and stays legible, while a 730-artifact one must collapse. So the budget is on the
-   * total rendered, and the largest kinds collapse first — they are the ones that would spill.
-   */
-  var LAYER_BUDGET = 90;
-  /* A cell wraps its members into rows; a kind needing more rows than this collapses regardless. */
-  var LAYER_COLS = 12;
-  var LAYER_MAX_ROWS = 3;
-
-  /**
-   * The layered model map: real artifacts in four fixed, product-owned bands. Bands organize the view
-   * and carry no lifecycle, causality or direction — the measured model has 180 of 196 relationships
-   * crossing bands in six distinct directions that do not form a cascade, so an arrowhead is computed
-   * from the edge and never from which band sits higher.
-   *
-   * It is the only projection that draws many real artifacts, so it is the one that must hold content
-   * back: a kind with more members than the threshold renders as one counted cell, and the map states
-   * exactly what it is hiding.
-   */
-  var buildLayers = function (host, filterKindSet) {
-    clear(host);
-    var bands = [];
-    for (var b = 0; b < LAYER_BANDS.length; b += 1) {
-      var kinds = [];
-      for (var k = 0; k < LAYER_BANDS[b].kinds.length; k += 1) {
-        var kind = LAYER_BANDS[b].kinds[k];
-        if (filterKindSet && !filterKindSet[kind]) continue;
-        var members = [];
-        for (var i = 0; i < ARTIFACTS.length; i += 1) {
-          if (ARTIFACTS[i].kind === kind) members.push(ARTIFACTS[i]);
-        }
-        if (members.length > 0) kinds.push({ kind: kind, members: members });
-      }
-      /* Only bands the model populates are rendered. */
-      if (kinds.length > 0) bands.push({ name: LAYER_BANDS[b].name, kinds: kinds });
-    }
-
-    /* Choose what to hold back before drawing: sort kinds by size and collapse the largest until the
-       rendered total fits the budget. */
-    var allKinds = [];
-    for (var bb = 0; bb < bands.length; bb += 1) {
-      for (var kk = 0; kk < bands[bb].kinds.length; kk += 1) allKinds.push(bands[bb].kinds[kk]);
-    }
-    var renderedTotal = 0;
-    for (var ai = 0; ai < allKinds.length; ai += 1) renderedTotal += allKinds[ai].members.length;
-    var bySize = allKinds.slice().sort(function (a, b) {
-      if (b.members.length !== a.members.length) return b.members.length - a.members.length;
-      return a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : 0;
-    });
-    var collapsedKinds = {};
-    for (var ci = 0; ci < bySize.length && renderedTotal > LAYER_BUDGET; ci += 1) {
-      collapsedKinds[bySize[ci].kind] = true;
-      renderedTotal -= bySize[ci].members.length;
-    }
-
-    var width = 1000;
-    var bandHeight = 150;
-    var height = Math.max(1, bands.length) * bandHeight + 30;
-    var svg = svgEl('svg', {
-      viewBox: '0 0 ' + width + ' ' + height,
-      role: 'img',
-      'aria-label': 'Layered model map: ' + bands.length + ' bands',
-    });
-    var edgeLayer = svgEl('g', { class: 'edges' });
-    var nodeLayer = svgEl('g', { class: 'nodes' });
-
-    var pos = {};
-    var cellAt = {};
-    var hiddenArtifacts = 0;
-    for (var bi = 0; bi < bands.length; bi += 1) {
-      var band = bands[bi];
-      var top = 20 + bi * bandHeight;
-      nodeLayer.appendChild(
-        svgEl('rect', { x: 8, y: top, width: width - 16, height: bandHeight - 18, class: 'band' }),
-      );
-      var bl = svgText(18, top + 18, band.name, 'bandname', 'start');
-      nodeLayer.appendChild(bl);
-
-      var cellX = 18;
-      for (var ki = 0; ki < band.kinds.length; ki += 1) {
-        var entry = band.kinds[ki];
-        var rows = Math.ceil(entry.members.length / LAYER_COLS);
-        var collapsed = collapsedKinds[entry.kind] === true || rows > LAYER_MAX_ROWS;
-        var cols = Math.min(LAYER_COLS, entry.members.length);
-        var cellW = collapsed ? 150 : 32 + cols * 22;
-        nodeLayer.appendChild(
-          svgEl('rect', {
-            x: cellX,
-            y: top + 30,
-            width: cellW,
-            height: bandHeight - 52,
-            class: 'cell' + (collapsed ? ' collapsed' : ''),
-            'data-kind': entry.kind,
-            tabindex: '0',
-            role: 'button',
-            'aria-expanded': String(!collapsed),
-            'aria-label':
-              (LABELS[entry.kind] || entry.kind) + ' · ' + entry.members.length +
-              (collapsed ? ' · collapsed' : ''),
-          }),
-        );
-        nodeLayer.appendChild(
-          svgText(cellX + 8, top + 46, TOKENS[entry.kind] || '?', 'celltoken', 'start'),
-        );
-        nodeLayer.appendChild(
-          svgText(cellX + cellW - 8, top + 46, String(entry.members.length), 'cellcount', 'end'),
-        );
-        cellAt[entry.kind] = { x: cellX + cellW / 2, y: top + 74 };
-        if (collapsed) {
-          hiddenArtifacts += entry.members.length;
-          nodeLayer.appendChild(
-            svgText(cellX + cellW / 2, top + 74, LABELS[entry.kind] || entry.kind, 'celllabel'),
-          );
-        } else {
-          for (var mi = 0; mi < entry.members.length; mi += 1) {
-            /* Wrap into rows so a populous kind stays inside its cell instead of spilling past it. */
-            var mx = cellX + 16 + (mi % LAYER_COLS) * 22;
-            var my = top + 74 + Math.floor(mi / LAYER_COLS) * 20;
-            pos[entry.members[mi].id] = { x: mx, y: my };
-            var dot = svgEl('circle', {
-              cx: mx,
-              cy: my,
-              r: 7,
-              class: 'lnode',
-              'data-member': entry.members[mi].id,
-              tabindex: '0',
-              role: 'link',
-              fill: COLORS[entry.kind] || '#4f5560',
-            });
-            describe(dot, entry.members[mi].title + ' — ' + entry.members[mi].id);
-            nodeLayer.appendChild(dot);
-          }
-        }
-        cellX += cellW + 14;
-      }
-    }
-
-    /**
-     * Every relationship is represented, never dropped. An edge between two drawn artifacts is drawn
-     * individually; an edge touching a collapsed kind is routed to that kind's cell and merged with
-     * its siblings into one connector carrying a count. Without this the map went silent at scale —
-     * at ten times this model it drew none of 3,290 relationships, which is honest and useless.
-     */
-    var kindOfId = {};
-    for (var ki2 = 0; ki2 < ARTIFACTS.length; ki2 += 1) kindOfId[ARTIFACTS[ki2].id] = ARTIFACTS[ki2].kind;
-    var reprOf = function (id) {
-      if (pos[id]) return { x: pos[id].x, y: pos[id].y, exact: true };
-      var cell = cellAt[kindOfId[id]];
-      return cell ? { x: cell.x, y: cell.y, exact: false } : null;
-    };
-
-    var individual = 0;
-    var aggregated = 0;
-    var connectors = {};
-    var order = [];
-    for (var e = 0; e < EDGES.length; e += 1) {
-      var from = reprOf(EDGES[e].from);
-      var to = reprOf(EDGES[e].to);
-      if (!from || !to) continue;
-      if (from.x === to.x && from.y === to.y) {
-        /* Both ends collapsed into the same cell: counted, but there is nothing to draw. */
-        aggregated += 1;
-        continue;
-      }
-      var exact = from.exact && to.exact;
-      var key = from.x + ',' + from.y + '>' + to.x + ',' + to.y;
-      if (!connectors[key]) {
-        connectors[key] = { from: from, to: to, count: 0, exact: exact };
-        order.push(key);
-      }
-      connectors[key].count += 1;
-      if (exact) individual += 1;
-      else aggregated += 1;
-    }
-    var drawn = 0;
-    var aggConnectors = 0;
-    for (var oi = 0; oi < order.length; oi += 1) {
-      var conn = connectors[order[oi]];
-      edgeLayer.appendChild(
-        svgEl('line', {
-          x1: conn.from.x,
-          y1: conn.from.y,
-          x2: conn.to.x,
-          y2: conn.to.y,
-          class: 'ledge' + (conn.exact ? '' : ' agg'),
-          'marker-end': 'url(#arrow)',
-        }),
-      );
-      if (!conn.exact && conn.count > 1) {
-        edgeLayer.appendChild(
-          svgText(
-            (conn.from.x + conn.to.x) / 2,
-            (conn.from.y + conn.to.y) / 2 - 3,
-            String(conn.count),
-            'aggcount',
-          ),
-        );
-      }
-      drawn += 1;
-      if (!conn.exact) aggConnectors += 1;
-    }
-    var defs = svgEl('defs', {});
-    var marker = svgEl('marker', {
-      id: 'arrow',
-      viewBox: '0 0 10 10',
-      refX: '9',
-      refY: '5',
-      markerWidth: '5',
-      markerHeight: '5',
-      orient: 'auto-start-reverse',
-    });
-    marker.appendChild(svgEl('path', { d: 'M 0 0 L 10 5 L 0 10 z', class: 'arrowhead' }));
-    defs.appendChild(marker);
-    svg.appendChild(defs);
-    svg.appendChild(edgeLayer);
-    svg.appendChild(nodeLayer);
-    host.appendChild(svg);
-
-    var summary = el('p', 'note layersummary');
-    var parts = [
-      bands.length + (bands.length === 1 ? ' band' : ' bands'),
-      hiddenArtifacts + ' of ' + ARTIFACTS.length + ' artifacts collapsed into counted cells',
-      individual + ' of ' + EDGES.length + ' relationships drawn individually',
-      aggregated + ' merged into ' + aggConnectors + ' aggregate connectors',
-    ];
-    summary.textContent =
-      parts.join(' · ') +
-      '. Every relationship is represented; none is omitted. ' +
-      'Bands group the model; they state no order, cause or dependency.';
-    host.appendChild(summary);
-
-    var open = function (target) {
-      if (!target) return;
-      var member = target.getAttribute('data-member');
-      if (member) {
-        go({ view: 'graph', graphMode: 'focus', id: member });
-        return;
-      }
-      var kind = target.getAttribute('data-kind');
-      if (kind) {
-        var next = {};
-        for (var i = 0; i < ARTIFACTS.length; i += 1) next[ARTIFACTS[i].kind] = true;
-        buildLayers(host, (function () {
-          var only = {};
-          only[kind] = true;
-          return only;
-        })());
-      }
-    };
-    svg.addEventListener('click', function (ev) {
-      open(ev.target instanceof Element ? ev.target.closest('[data-kind],[data-member]') : null);
-    });
-    svg.addEventListener('keydown', function (ev) {
-      if (ev.key !== 'Enter' && ev.key !== ' ') return;
-      open(ev.target instanceof Element ? ev.target.closest('[data-kind],[data-member]') : null);
-      ev.preventDefault();
-    });
-  };
-
   var buildProjection = function () {
     var host = doc.getElementById('graph-host');
     if (!host) return;
-    var mode = state.graphMode || 'layers';
-    var tabs = doc.querySelectorAll('nav.gmodes a[data-mode]');
-    for (var i = 0; i < tabs.length; i += 1) {
-      if (tabs[i].getAttribute('data-mode') === mode) tabs[i].setAttribute('aria-current', 'true');
-      else tabs[i].removeAttribute('aria-current');
-      var href = tabs[i].getAttribute('data-mode') === 'focus' && state.id
-        ? '#/graph/focus'
-        : '#/graph/' + tabs[i].getAttribute('data-mode');
-      tabs[i].setAttribute('href', href);
-    }
-    if (mode === 'focus') buildFocus(host, state.id);
-    else buildLayers(host, null);
+    buildFocus(host, state.id);
   };
 
   /* ----------------------------------------------------------- ranked search */
@@ -2015,7 +1787,7 @@ export function buildSnapshotHtml(
     '<nav class="views" aria-label="Snapshot views">',
     '<a href="#/" data-view="overview" aria-current="page">Overview</a>',
     '<a href="#/artifacts" data-view="artifacts">Artifacts</a>',
-    '<a href="#/graph" data-view="graph">Model map</a>',
+    '<a href="#/graph/focus" data-view="graph">Topology</a>',
     '</nav>',
     '</header>',
     '<main id="main">',
@@ -2090,14 +1862,11 @@ export function buildSnapshotHtml(
 
     // ---- Model graph: opened explicitly; built from the embedded data, never at open time.
     '<section id="view-graph" aria-labelledby="h-graph" hidden>',
-    '<h2 class="view" id="h-graph">Model map</h2>',
-    '<nav class="gmodes" aria-label="Projections">',
-    '<a href="#/graph/layers" data-mode="layers">Layered map</a>',
-    '<a href="#/graph/focus" data-mode="focus">Focused neighbourhood</a>',
-    '</nav>',
-    '<p class="note">Two projections, drawn on request. The layered map places artifacts in four fixed',
-    "bands; the focused neighbourhood orbits one artifact's relationship groups around it. Every",
-    "relationship either shows is also readable as text on the artifact's own view.</p>",
+    '<h2 class="view" id="h-graph">Topology</h2>',
+    '<p class="note">The Focused Topology, drawn on request: the selected artifact and its immediate',
+    'canonical relationships, grouped and counted, opened only where you ask. Refocusing draws a new',
+    'neighbourhood rather than growing this one. Every relationship it shows is also readable as text',
+    "on the artifact's own view.</p>",
     '<div id="graph-host"></div>',
     '</section>',
 

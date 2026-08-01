@@ -153,31 +153,41 @@ navigates to the referenced artifact — both the relationships the artifact's f
 
 ### Requirement: Graph visualization with node-selection highlighting
 
-The page SHALL provide exactly three graph projections — the kind-level aggregate, the layered model
-map and the focused neighbourhood — and SHALL NOT provide an unstructured drawing of the whole graph.
-No projection SHALL be rendered in the opening view. Selecting a node in any projection SHALL make that
-artifact the page's single selected artifact; a projection SHALL NOT hold a selection of its own. Every
-node, relationship and direction a projection draws SHALL exist in the compiled graph, no projection
-SHALL imply importance, health, ownership or ordering the model does not record, and identical model
-content SHALL produce identical arrangements.
+The page SHALL provide exactly two graph projections — the kind-level aggregate and the Focused
+Topology — and SHALL NOT provide a drawing of the whole graph or any arrangement in which artifact
+kind determines position. No projection SHALL be rendered in the opening view. Selecting a node in
+the projection SHALL make that artifact the page's single selected artifact.
 
-#### Scenario: Exactly three projections, and no whole-graph drawing
+The Focused Topology SHALL be local, bounded and progressive: anchored on the selected artifact,
+its immediate canonical relationships grouped by relationship meaning and artifact type with
+complete counts, direction distinguished other than by colour alone, expansion only on deliberate
+action. Its disclosure SHALL be carried in the address and SHALL replace the history entry on
+toggle; refocusing on a member SHALL be a navigation to a newly focused projection with disclosure
+reset — the traversal never accumulates. A group opened past the legibility threshold SHALL render
+as a structured list below the drawing, named as such, with every entry selectable.
 
-- **WHEN** the snapshot is inspected for the views it offers
-- **THEN** the kind-level aggregate, the layered model map and the focused neighbourhood are present,
-  and no control anywhere opens an unstructured drawing of the entire graph
+#### Scenario: Exactly two projections
 
-#### Scenario: Selecting a node moves the page's one selection
+- **WHEN** the generated page is inspected and every control exercised
+- **THEN** only the kind-level aggregate and the Focused Topology exist, and the withdrawn map
+  routes resolve in place to the Focused Topology
 
-- **WHEN** the reader selects a node in either visual projection
-- **THEN** that artifact becomes the page's single selected artifact, and leaving the projection keeps
-  it selected
+#### Scenario: Disclosure is addressable, not history
 
-#### Scenario: Projections invent nothing
+- **WHEN** a group is toggled and the resulting address is opened in a fresh window
+- **THEN** the same groups are open, and toggling never grew the browser history
 
-- **WHEN** a projection is compared with the compiled graph
-- **THEN** every node, relationship and direction it draws exists in the graph, and it draws nothing
-  else
+#### Scenario: Refocus resets
+
+- **WHEN** a member is selected from an expanded projection
+- **THEN** a newly focused projection appears with default disclosure, and Back returns to the
+  previous focus with its disclosure intact
+
+#### Scenario: Dense sets stay legible
+
+- **WHEN** a group larger than the legibility threshold is opened
+- **THEN** it is presented as a structured list below the drawing rather than a fan, its
+  accessible name says so, and every entry remains selectable
 
 ### Requirement: Offline client-side search
 
@@ -692,58 +702,6 @@ content with identical groups open SHALL produce an identical arrangement.
 
 - **WHEN** the reader moves through satellites and members by keyboard
 - **THEN** each reveals the same identity that hovering it reveals
-
-### Requirement: The layered model map arranges artifacts in four fixed bands
-
-The layered model map SHALL place real artifacts in four bands, assigning every artifact kind as
-follows: Product context holds Actors and Bounded Contexts; Product behaviour holds Journeys and Use
-Cases; Rules and language holds Business Rules and Domain Terms; Product commitments holds Functional
-Requirements, Quality Requirements and Constraints. This assignment is owned by the product, SHALL be
-identical for every model the snapshot projects, and SHALL NOT be configurable by an adopter or derived
-per model.
-
-Bands SHALL organize the view only. Band membership and band order SHALL NOT imply lifecycle stage,
-causality, sequence, precedence or dependency, and the projection SHALL NOT present them as doing so.
-Every relationship SHALL display its authored direction, including where it crosses bands and where it
-runs counter to band order. Only bands the model populates SHALL be rendered.
-
-The map SHALL remain legible as the model grows: it SHALL support filtering, SHALL group and collapse,
-SHALL state the exact count of whatever it has hidden or collapsed, and SHALL NOT render every node and
-every edge by default for a large model.
-
-#### Scenario: Every kind lands in its band
-
-- **WHEN** the reader opens the layered map for a model containing all nine artifact kinds
-- **THEN** actors and bounded contexts appear in Product context, journeys and use cases in Product
-  behaviour, business rules and domain terms in Rules and language, and the three requirement kinds in
-  Product commitments
-
-#### Scenario: The assignment does not vary by model
-
-- **WHEN** the layered map is opened for two unrelated product models with different kind proportions
-- **THEN** the band assignment is the same in both, and nothing in either file or its configuration can
-  change it
-
-#### Scenario: Bands carry no lifecycle or causal meaning
-
-- **WHEN** the layered map is inspected for what it says about the relationship between bands
-- **THEN** nothing states or implies that one band precedes, causes, depends on or supersedes another
-
-#### Scenario: Authored direction survives band crossing
-
-- **WHEN** a relationship runs from a band lower in the order to one higher in it
-- **THEN** it displays the direction the model authored, not the direction the band order suggests
-
-#### Scenario: Only populated bands appear
-
-- **WHEN** the map is opened for a model containing no bounded contexts
-- **THEN** the bands the model populates are rendered, with no empty band shown and none invented
-
-#### Scenario: It holds back rather than spilling at scale
-
-- **WHEN** the map is opened for a materially larger model
-- **THEN** it does not render every node and edge, it offers filtering, and it states the exact number
-  of artifacts and relationships it has collapsed or hidden
 
 ### Requirement: The active graph mode is part of the addressable state
 

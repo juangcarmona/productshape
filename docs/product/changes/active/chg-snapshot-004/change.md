@@ -2,7 +2,7 @@
 id: CHG-SNAPSHOT-004
 type: product-change
 title: The Product Explorer
-status: in-progress
+status: implemented
 base-revision: 'af0d6c64ae9eecbe7628255795ac9b0b45d4745c'
 operations:
   add:

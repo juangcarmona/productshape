@@ -1,7 +1,7 @@
 schema: product-definition-as-code/delivery-slice/v1alpha1
 id: SLI-EXPLORER-003
 title: Traverse relationships through the Focused Topology
-status: approved
+status: completed
 product-change: CHG-SNAPSHOT-004
 outcome: >-
   A reader sees the selected artifact's neighbourhood as a small, legible picture: immediate canonical

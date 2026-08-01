@@ -79,13 +79,11 @@ interface Measurement {
    * projection being in the document, for the highest-degree artifact and for an isolated one.
    */
   focusMs: { anchors: string[]; samples: number; p50: number; p95: number; max: number };
-  /** The layered map for the whole model, and what it holds back at this scale. */
-  layersMs: number;
-  layersDrawn: {
-    connectors: number;
-    individualRelationships: number;
-    hiddenArtifacts: number;
-  };
+  /**
+   * Group-expansion latency (SLI-EXPLORER-003, FR-SNAPSHOT-009): elapsed time from toggling a
+   * relationship group on the highest-degree focus to the projection being rebuilt.
+   */
+  expandMs: { samples: number; p50: number; p95: number; max: number };
 }
 
 /** Bytes of markup the browser parses into the document at open: <body> up to the inert data. */
@@ -414,22 +412,29 @@ async function measure(label: string, modelRoot: string): Promise<Measurement> {
     }
   }
 
-  /* The layered map for the whole model, plus what it reports holding back. */
-  dom.window.location.hash = '#/artifacts';
-  dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
-  dom.window.location.hash = '#/graph/layers';
-  const layersStarted = performance.now();
-  dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
-  const layersMs = round(performance.now() - layersStarted, 2);
-  const layersDoc = dom.window.document;
-  const drawnEdges = layersDoc.querySelectorAll('#graph-host line.ledge').length;
-  const summaryText = layersDoc.querySelector('p.layersummary')?.textContent ?? '';
-  const hiddenMatch = /(\d+) of \d+ artifacts collapsed/.exec(summaryText);
-  const individualMatch = /(\d+) of \d+ relationships drawn individually/.exec(summaryText);
+  /* Group expansion on the hardest focus: toggle the largest group of the busiest artifact. */
+  const expandTimings: number[] = [];
+  if (busiest?.[0]) {
+    dom.window.location.hash = `#/graph/focus/${busiest[0]}`;
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+    const focusDoc = dom.window.document;
+    const sats = [...focusDoc.querySelectorAll('#graph-host circle[data-group]')];
+    const target = sats[0];
+    if (target) {
+      for (let r = 0; r < 10 + 3; r += 1) {
+        const started = performance.now();
+        target.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+        const elapsed = performance.now() - started;
+        if (r >= 3) expandTimings.push(elapsed);
+        dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+      }
+    }
+  }
 
   dom.window.close();
   timings.sort((a, b) => a - b);
   focusTimings.sort((a, b) => a - b);
+  expandTimings.sort((a, b) => a - b);
   searchTimings.sort((a, b) => a - b);
   filterTimings.sort((a, b) => a - b);
   const atOf = (list: number[], q: number): number =>
@@ -467,11 +472,11 @@ async function measure(label: string, modelRoot: string): Promise<Measurement> {
       p95: atOf(focusTimings, 0.95),
       max: round(focusTimings.at(-1) ?? 0, 2),
     },
-    layersMs,
-    layersDrawn: {
-      connectors: drawnEdges,
-      individualRelationships: individualMatch ? Number(individualMatch[1]) : 0,
-      hiddenArtifacts: hiddenMatch ? Number(hiddenMatch[1]) : 0,
+    expandMs: {
+      samples: expandTimings.length,
+      p50: atOf(expandTimings, 0.5),
+      p95: atOf(expandTimings, 0.95),
+      max: round(expandTimings.at(-1) ?? 0, 2),
     },
     filterMs: {
       samples: filterTimings.length,
@@ -536,11 +541,11 @@ for (const [k, v] of Object.entries(environment)) {
 }
 process.stdout.write(`\n`);
 process.stdout.write(
-  `${pad('model', 24)}${pad('artifacts', 11)}${pad('rels', 7)}${pad('file B', 12)}${pad('opening B', 12)}${pad('share', 8)}${pad('nodes/edges', 13)}${pad('gen ms', 14)}${pad('B/authored', 11)}${pad('select p95', 11)}${pad('search p95', 11)}${pad('focus p95', 11)}${pad('layers ms', 11)}\n`,
+  `${pad('model', 24)}${pad('artifacts', 11)}${pad('rels', 7)}${pad('file B', 12)}${pad('opening B', 12)}${pad('share', 8)}${pad('nodes/edges', 13)}${pad('gen ms', 14)}${pad('B/authored', 11)}${pad('select p95', 11)}${pad('search p95', 11)}${pad('focus p95', 11)}${pad('expand p95', 11)}${pad('filter p95', 11)}\n`,
 );
 for (const r of results) {
   process.stdout.write(
-    `${pad(r.model, 24)}${pad(num(r.artifacts), 11)}${pad(num(r.relationships), 7)}${pad(num(r.fileBytes), 12)}${pad(num(r.openingMarkupBytes), 12)}${pad(`${Math.round(r.openingMarkupShare * 100)}%`, 8)}${pad(`${r.artifactLevelNodes}/${r.artifactLevelEdges}`, 13)}${pad(`${r.generationMs.min}-${r.generationMs.max}`, 14)}${pad(String(r.bytesPerAuthoredByte), 11)}${pad(String(r.selectionMs.p95), 11)}${pad(String(r.searchMs.p95), 11)}${pad(String(r.focusMs.p95), 11)}${pad(String(r.layersMs), 11)}\n`,
+    `${pad(r.model, 24)}${pad(num(r.artifacts), 11)}${pad(num(r.relationships), 7)}${pad(num(r.fileBytes), 12)}${pad(num(r.openingMarkupBytes), 12)}${pad(`${Math.round(r.openingMarkupShare * 100)}%`, 8)}${pad(`${r.artifactLevelNodes}/${r.artifactLevelEdges}`, 13)}${pad(`${r.generationMs.min}-${r.generationMs.max}`, 14)}${pad(String(r.bytesPerAuthoredByte), 11)}${pad(String(r.selectionMs.p95), 11)}${pad(String(r.searchMs.p95), 11)}${pad(String(r.focusMs.p95), 11)}${pad(String(r.expandMs.p95), 11)}${pad(String(r.filterMs.p95), 11)}\n`,
   );
 }
 const first = results[0];
