@@ -1067,19 +1067,32 @@ const script = String.raw`
       var group = all[g];
       var count = group.edges.length;
       /* The relationship type annotates the spoke; the satellite carries the kind and the count. */
-      /* Sit the type label out near the satellite, where the sectors have separated. */
-      var mid = 0.5;
-      var lx = CX + group.radius * mid * Math.cos(group.angle);
-      var ly = CY + group.radius * mid * Math.sin(group.angle);
-      /* Rotate the label along its spoke so it reads as the edge's own annotation, kept upright. */
+      /* The type annotates its edge from beside it: rotated along the spoke but offset on the
+         perpendicular, so the line itself stays visible and the anchor's label is never crossed. */
+      var mid = 0.62;
+      var perp = 14;
+      var lx = CX + group.radius * mid * Math.cos(group.angle) - Math.sin(group.angle) * perp;
+      var ly = CY + group.radius * mid * Math.sin(group.angle) + Math.cos(group.angle) * perp;
       var deg = (group.angle * 180) / Math.PI;
       if (deg > 90) deg -= 180;
       if (deg < -90) deg += 180;
+      /* Trimmed to the circles' rims: a spoke that runs centre-to-centre buries its arrowhead
+         under the node it points at. Anchor r=30, satellite r=20, plus a 3px breath. */
+      var spokeLen = group.radius;
+      var ux = Math.cos(group.angle);
+      var uy = Math.sin(group.angle);
+      var fromAnchor = group.direction === 'out';
+      var startR = fromAnchor ? 33 : 23;
+      var endR = fromAnchor ? 23 : 33;
+      var sx = fromAnchor ? CX + ux * startR : group.x - ux * startR;
+      var sy = fromAnchor ? CY + uy * startR : group.y - uy * startR;
+      var ex = fromAnchor ? group.x - ux * endR : CX + ux * endR;
+      var ey = fromAnchor ? group.y - uy * endR : CY + uy * endR;
       var spoke = svgEl('line', {
-        x1: group.direction === 'out' ? CX : group.x,
-        y1: group.direction === 'out' ? CY : group.y,
-        x2: group.direction === 'out' ? group.x : CX,
-        y2: group.direction === 'out' ? group.y : CY,
+        x1: sx,
+        y1: sy,
+        x2: ex,
+        y2: ey,
         class: 'spoke',
         'marker-end': 'url(#spoke-arrow)',
       });
@@ -1132,10 +1145,7 @@ const script = String.raw`
     describe(anchorNode, anchor.title + ' — ' + anchorId);
     nodeLayer.appendChild(anchorNode);
     nodeLayer.appendChild(svgText(CX, CY + 52, anchorId, 'anchorid'));
-    nodeLayer.appendChild(
-      svgText(CX, CY + 68, total + (total === 1 ? ' relationship' : ' relationships'), 'anchorsub'),
-    );
-    extend(CX, CY + 68, 3.6 * anchorId.length, 24);
+    extend(CX, CY + 52, 3.6 * anchorId.length, 12);
 
     var PADV = 20;
     var fit = {
