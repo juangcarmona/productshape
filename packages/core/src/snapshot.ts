@@ -318,7 +318,7 @@ footer.site p { margin: 0.2rem 0; max-width: 78ch; }
   body[data-pane='detail'] .master, body[data-pane='master'] .detail { display: none; }
   .backlink { display: block; }
 }
-.backlink { display: none; margin: 0 0 0.6rem; font-size: 0.85rem; }
+.backlink { display: block; margin: 0 0 0.6rem; font-size: 0.85rem; }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
@@ -668,7 +668,7 @@ const script = String.raw`
     li.appendChild(el('span', 'dir', direction === 'out' ? '→' : '←'));
     if (other) li.appendChild(tokenFor(other.kind));
     var link = doc.createElement('a');
-    link.href = '#/artifacts/' + otherId;
+    link.href = '#/artifacts/' + otherId + catQuery(state.cat);
     link.textContent = other && other.title ? other.title : otherId;
     li.appendChild(link);
     li.appendChild(el('span', 'aid mono', otherId));
@@ -1721,9 +1721,21 @@ const script = String.raw`
       if (listBuilt) markCurrent();
       else renderList();
       renderDetail();
-      /* Returning to the list resumes the discovery in progress: the way back carries the state. */
+      /* Returning to the list resumes the discovery in progress: the way back carries the state
+         and names it, so the reader can see how they arrived without relying on browser chrome. */
       var back = doc.querySelector('.backlink a');
-      if (back) back.setAttribute('href', '#/artifacts' + catQuery(state.cat));
+      if (back) {
+        back.setAttribute('href', '#/artifacts' + catQuery(state.cat));
+        var crumbs = [];
+        if (state.cat.k) crumbs.push(LABELS[state.cat.k] || state.cat.k);
+        if (state.cat.s) crumbs.push(state.cat.s);
+        if (state.cat.c) crumbs.push(state.cat.c);
+        if (state.cat.f) crumbs.push('filter \u201C' + state.cat.f + '\u201D');
+        if (state.cat.q) crumbs.push('search \u201C' + state.cat.q + '\u201D');
+        back.textContent = crumbs.length > 0
+          ? '\u2190 Results \u00B7 ' + crumbs.join(' \u00B7 ')
+          : '\u2190 All artifacts';
+      }
     }
     if (state.view === 'graph') buildProjection();
 

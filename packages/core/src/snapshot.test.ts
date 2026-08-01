@@ -1604,3 +1604,57 @@ describe('the overview and the catalog (SLI-EXPLORER-001)', () => {
     expect(selects.sort()).toEqual(['f-context', 'f-kind', 'f-status']);
   });
 });
+describe('the artifact reader (SLI-EXPLORER-002)', () => {
+  let dom: JSDOM;
+  let doc: Document;
+
+  const model = [
+    artifact('BC-Z', 'bounded-context', {}, { body: '## Responsibility\n\nZone.' }),
+    artifact('ACT-A', 'actor', { 'actor-kind': 'human' }),
+    ...Array.from({ length: 4 }, (_, i) =>
+      artifact(`UC-Z${i}`, 'use-case', { 'primary-actor': 'ACT-A', 'bounded-context': 'BC-Z' }),
+    ),
+    artifact('FR-D', 'functional-requirement', {
+      'derived-from': ['UC-Z0'],
+      verification: [{ scenario: 'holds' }],
+    }),
+  ];
+
+  const open = (hash: string): void => {
+    dom = new JSDOM(build(model), {
+      url: `https://snapshot.invalid/snapshot.html${hash}`,
+      runScripts: 'dangerously',
+    });
+    doc = dom.window.document;
+  };
+
+  it('keeps the discovery on every relationship link, so following an edge preserves context', () => {
+    open('#/artifacts/UC-Z0?k=use-case&c=BC-Z');
+    const rels = [...doc.querySelectorAll('#detail .rels a[href^="#/artifacts/"]')];
+    expect(rels.length).toBeGreaterThan(0);
+    for (const a of rels) {
+      expect(a.getAttribute('href')).toContain('?k=use-case&c=BC-Z');
+    }
+  });
+
+  it('names the discovery it returns to, visibly from the Reader', () => {
+    open('#/artifacts/UC-Z0?k=use-case&q=zone');
+    const back = doc.querySelector('.backlink a');
+    expect(back?.getAttribute('href')).toBe('#/artifacts?k=use-case&q=zone');
+    expect(back?.textContent).toContain('Results');
+    expect(back?.textContent).toContain('Use Cases');
+    expect(back?.textContent).toContain('search “zone”');
+    open('#/artifacts/UC-Z0');
+    expect(doc.querySelector('.backlink a')?.textContent).toBe('← All artifacts');
+  });
+
+  it('shows every relationship group with its complete count, title and identifier per entry', () => {
+    open('#/artifacts/UC-Z0');
+    const counts = [...doc.querySelectorAll('#detail .rels .gcount')].map((n) => n.textContent);
+    expect(counts.length).toBeGreaterThan(0);
+    for (const c of counts) expect(Number(c)).toBeGreaterThan(0);
+    const entry = doc.querySelector('#detail .rels ul.members li');
+    expect(entry?.querySelector('a')?.textContent).not.toBe('');
+    expect(entry?.querySelector('.aid')?.textContent).toMatch(/^[A-Z]+-/);
+  });
+});
