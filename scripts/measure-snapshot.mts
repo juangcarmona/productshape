@@ -64,6 +64,12 @@ interface Measurement {
    */
   searchMs: { queries: string[]; samples: number; p50: number; p95: number; max: number };
   /**
+   * Catalog filter latency (SLI-EXPLORER-001, FR-SNAPSHOT-008): elapsed time from a filter
+   * changing to the narrowed list being displayed, for the widest kind and for clearing back to
+   * everything. Measured in jsdom like the other interaction figures.
+   */
+  filterMs: { samples: number; p50: number; p95: number; max: number };
+  /**
    * The first query a reader ever types, which additionally builds the plain-text body index. This
    * is the figure they actually feel; the warm figures above are every query after it.
    */
@@ -390,6 +396,24 @@ async function measure(label: string, modelRoot: string): Promise<Measurement> {
     }
   }
 
+  /* Catalog filtering: narrow to the widest kind, then clear — the two hardest list rebuilds. */
+  const filterTimings: number[] = [];
+  const kindField = dom.window.document.getElementById('f-kind') as HTMLSelectElement | null;
+  if (kindField) {
+    const widest = [...new Set(artifacts.map((a) => a.type))]
+      .map((t) => ({ t, n: artifacts.filter((a) => a.type === t).length }))
+      .sort((a, b) => b.n - a.n)[0]?.t;
+    for (let r = 0; r < 10 + 3; r += 1) {
+      for (const value of [widest ?? '', '']) {
+        kindField.value = value;
+        const started = performance.now();
+        kindField.dispatchEvent(new dom.window.Event('change'));
+        const elapsed = performance.now() - started;
+        if (r >= 3) filterTimings.push(elapsed);
+      }
+    }
+  }
+
   /* The layered map for the whole model, plus what it reports holding back. */
   dom.window.location.hash = '#/artifacts';
   dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
@@ -407,6 +431,7 @@ async function measure(label: string, modelRoot: string): Promise<Measurement> {
   timings.sort((a, b) => a - b);
   focusTimings.sort((a, b) => a - b);
   searchTimings.sort((a, b) => a - b);
+  filterTimings.sort((a, b) => a - b);
   const atOf = (list: number[], q: number): number =>
     round(list[Math.min(list.length - 1, Math.floor(list.length * q))] ?? 0, 2);
   const at = (q: number): number =>
@@ -447,6 +472,12 @@ async function measure(label: string, modelRoot: string): Promise<Measurement> {
       connectors: drawnEdges,
       individualRelationships: individualMatch ? Number(individualMatch[1]) : 0,
       hiddenArtifacts: hiddenMatch ? Number(hiddenMatch[1]) : 0,
+    },
+    filterMs: {
+      samples: filterTimings.length,
+      p50: atOf(filterTimings, 0.5),
+      p95: atOf(filterTimings, 0.95),
+      max: round(filterTimings.at(-1) ?? 0, 2),
     },
     searchMs: {
       queries: searchQueries,

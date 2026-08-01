@@ -942,7 +942,8 @@ describe('ranked search', () => {
     key('ArrowDown');
     const target = ids()[0];
     key('Enter');
-    expect(dom.window.location.hash).toBe(`#/artifacts/${target}`);
+    // FR-SNAPSHOT-008: opening a result preserves the active query, so returning resumes it.
+    expect(dom.window.location.hash).toBe(`#/artifacts/${target}?q=product`);
     dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
     expect(doc.querySelector('#detail h3.artifact')).not.toBeNull();
   });
@@ -1485,5 +1486,121 @@ describe('graph projections', () => {
     const first = sats().map((s) => `${s.getAttribute('cx')},${s.getAttribute('cy')}`);
     open('#/graph/focus/UC-H00');
     expect(sats().map((s) => `${s.getAttribute('cx')},${s.getAttribute('cy')}`)).toEqual(first);
+  });
+});
+describe('the overview and the catalog (SLI-EXPLORER-001)', () => {
+  let dom: JSDOM;
+  let doc: Document;
+
+  const model = [
+    artifact('BC-Z', 'bounded-context', {}, { body: '## Responsibility\n\nZone.' }),
+    artifact('BC-Y', 'bounded-context', {}, { body: '## Responsibility\n\nYard.' }),
+    artifact('ACT-A', 'actor', { 'actor-kind': 'human' }),
+    ...Array.from({ length: 4 }, (_, i) =>
+      artifact(`UC-Z${i}`, 'use-case', { 'primary-actor': 'ACT-A', 'bounded-context': 'BC-Z' }),
+    ),
+    ...Array.from({ length: 3 }, (_, i) =>
+      artifact(`UC-Y${i}`, 'use-case', { 'primary-actor': 'ACT-A', 'bounded-context': 'BC-Y' }),
+    ),
+    artifact('FR-D', 'functional-requirement', {
+      'derived-from': ['UC-Z0'],
+      verification: [{ scenario: 'holds' }],
+    }),
+  ];
+
+  const open = (hash: string, artifacts = model): void => {
+    dom = new JSDOM(build(artifacts), {
+      url: `https://snapshot.invalid/snapshot.html${hash}`,
+      runScripts: 'dangerously',
+    });
+    doc = dom.window.document;
+  };
+  const listedIds = (): string[] =>
+    [...doc.querySelectorAll('#artifact-list a')].map(
+      (a) => (a.getAttribute('href') ?? '').replace(/^#\/artifacts\//, '').split('?')[0] ?? '',
+    );
+  const setControl = (id: string, value: string, event = 'change'): void => {
+    const node = doc.getElementById(id) as HTMLInputElement;
+    node.value = value;
+    node.dispatchEvent(new dom.window.Event(event));
+  };
+
+  it('offers a family entry point per kind from the overview, opening the catalog narrowed', () => {
+    open('');
+    const links = [...doc.querySelectorAll('.kinds a')].map((a) => a.getAttribute('href'));
+    expect(links).toContain('#/artifacts?k=use-case');
+    expect(links).toContain('#/artifacts?k=bounded-context');
+    dom.window.location.hash = '#/artifacts?k=use-case';
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+    expect(new Set(listedIds())).toEqual(
+      new Set(['UC-Z0', 'UC-Z1', 'UC-Z2', 'UC-Z3', 'UC-Y0', 'UC-Y1', 'UC-Y2']),
+    );
+    expect((doc.getElementById('f-kind') as HTMLSelectElement).value).toBe('use-case');
+  });
+
+  it('keeps global search one gesture from the first screen', () => {
+    open('');
+    const field = doc.getElementById('ov-q') as HTMLInputElement;
+    expect(field).not.toBeNull();
+    field.value = 'UC-Z0';
+    field.dispatchEvent(
+      new dom.window.KeyboardEvent('keydown', { key: 'Enter', cancelable: true }),
+    );
+    expect(dom.window.location.hash).toBe('#/artifacts?q=UC-Z0');
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+    expect((doc.getElementById('q-body') as HTMLInputElement).value).toBe('UC-Z0');
+    expect(doc.querySelectorAll('#q-body-results li[data-id]').length).toBeGreaterThan(0);
+  });
+
+  it('re-addresses every filter change in place, without growing history', () => {
+    open('#/artifacts');
+    const before = dom.window.history.length;
+    setControl('f-kind', 'use-case');
+    setControl('f-status', 'active');
+    setControl('f-context', 'BC-Z');
+    setControl('f-text', 'UC-Z', 'input');
+    expect(dom.window.location.hash).toBe('#/artifacts?k=use-case&s=active&c=BC-Z&f=UC-Z');
+    expect(dom.window.history.length).toBe(before);
+    expect(new Set(listedIds())).toEqual(new Set(['UC-Z0', 'UC-Z1', 'UC-Z2', 'UC-Z3']));
+  });
+
+  it('reproduces a query-and-filter state from its address in a fresh window', () => {
+    open('#/artifacts?k=use-case&c=BC-Y&s=active');
+    expect(new Set(listedIds())).toEqual(new Set(['UC-Y0', 'UC-Y1', 'UC-Y2']));
+    expect((doc.getElementById('f-context') as HTMLSelectElement).value).toBe('BC-Y');
+    expect((doc.getElementById('f-status') as HTMLSelectElement).value).toBe('active');
+  });
+
+  it('preserves the discovery across opening a result and returning', () => {
+    open('#/artifacts?k=use-case&c=BC-Z');
+    const link = [...doc.querySelectorAll('#artifact-list a')].find((a) =>
+      (a.getAttribute('href') ?? '').includes('UC-Z1'),
+    );
+    expect(link?.getAttribute('href')).toBe('#/artifacts/UC-Z1?k=use-case&c=BC-Z');
+    dom.window.location.hash = link?.getAttribute('href') ?? '';
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+    expect(doc.querySelector('#detail h3.artifact')?.textContent).toContain('UC-Z1');
+    const back = doc.querySelector('.backlink a');
+    expect(back?.getAttribute('href')).toBe('#/artifacts?k=use-case&c=BC-Z');
+    dom.window.location.hash = back?.getAttribute('href') ?? '';
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+    expect(new Set(listedIds())).toEqual(new Set(['UC-Z0', 'UC-Z1', 'UC-Z2', 'UC-Z3']));
+  });
+
+  it('offers the bounded-context filter only where the model declares one', () => {
+    open('#/artifacts');
+    expect(doc.getElementById('f-context')).not.toBeNull();
+    const without = [
+      artifact('ACT-B', 'actor', { 'actor-kind': 'human' }),
+      artifact('BR-B', 'business-rule', {}),
+    ];
+    open('#/artifacts', without);
+    expect(doc.getElementById('f-context')).toBeNull();
+  });
+
+  it('invents no filterable property beyond the canonical fields', () => {
+    open('#/artifacts');
+    const selects = [...doc.querySelectorAll('.filters select')].map((s) => s.id);
+    expect(selects.sort()).toEqual(['f-context', 'f-kind', 'f-status']);
   });
 });

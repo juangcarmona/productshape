@@ -303,6 +303,10 @@ nav.gmodes a[aria-current='true'] { color: var(--ink); font-weight: 600; border-
 #graph-host text.celllabel { font-size: 11px; fill: var(--muted); }
 p.layersummary { margin-top: 0.5rem; }
 
+div.ovsearch { margin: 0.6rem 0 0.2rem; max-width: 34rem; }
+div.ovsearch label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 0.2rem; }
+div.ovsearch input { width: 100%; font: inherit; padding: 0.3rem 0.5rem; border: 1px solid var(--line-strong); border-radius: 2px; background: #ffffff; }
+
 .unknown { border: 1px solid var(--line-strong); border-left: 3px solid var(--muted); padding: 0.7rem 0.9rem; max-width: 60rem; }
 .unknown .aid { font-family: var(--mono); }
 footer.site { border-top: 1px solid var(--line); padding: 0.8rem 1rem 1.5rem; color: var(--muted); font-size: 0.78rem; }
@@ -376,15 +380,62 @@ const script = String.raw`
   /* ---------------------------------------------------------------- routing */
 
   var views = ['overview', 'artifacts', 'graph'];
-  var state = { view: 'overview', id: null, graphMode: null, unknown: null };
+  var state = { view: 'overview', id: null, graphMode: null, cat: { k: null, s: null, c: null, f: null, q: null }, unknown: null };
+
+  /*
+   * Catalog state (FR-SNAPSHOT-008): the active query and filters are part of the address, in a
+   * fixed serialization order so identical states produce identical addresses. k = kind,
+   * s = status, c = bounded context, f = name/ID filter, q = search query.
+   */
+  var CAT_KEYS = ['k', 's', 'c', 'f', 'q'];
+  var emptyCat = function () {
+    return { k: null, s: null, c: null, f: null, q: null };
+  };
+  var catQuery = function (cat) {
+    if (!cat) return '';
+    var parts = [];
+    for (var i = 0; i < CAT_KEYS.length; i += 1) {
+      var key = CAT_KEYS[i];
+      if (cat[key]) parts.push(key + '=' + encodeURIComponent(cat[key]));
+    }
+    return parts.length > 0 ? '?' + parts.join('&') : '';
+  };
+  var catParse = function (query) {
+    var cat = emptyCat();
+    if (!query) return cat;
+    var pairs = query.split('&');
+    for (var i = 0; i < pairs.length; i += 1) {
+      var eq = pairs[i].indexOf('=');
+      if (eq < 1) continue;
+      var key = pairs[i].slice(0, eq);
+      if (CAT_KEYS.indexOf(key) < 0) continue;
+      try {
+        cat[key] = decodeURIComponent(pairs[i].slice(eq + 1)) || null;
+      } catch (err) {
+        /* An undecodable value is treated as absent rather than crashing the address. */
+      }
+    }
+    return cat;
+  };
 
   var parseHash = function (raw) {
     var hash = (raw || '').replace(/^#/, '');
-    if (hash === '' || hash === '/') return { view: 'overview', id: null, legacy: false };
-    if (/^\/artifacts\/(.+)$/.test(hash)) {
-      return { view: 'artifacts', id: decodeURIComponent(hash.replace(/^\/artifacts\//, '')), legacy: false };
+    var q = hash.indexOf('?');
+    var cat = emptyCat();
+    if (q >= 0) {
+      cat = catParse(hash.slice(q + 1));
+      hash = hash.slice(0, q);
     }
-    if (hash === '/artifacts') return { view: 'artifacts', id: null, legacy: false };
+    if (hash === '' || hash === '/') return { view: 'overview', id: null, legacy: false, cat: cat };
+    if (/^\/artifacts\/(.+)$/.test(hash)) {
+      return {
+        view: 'artifacts',
+        id: decodeURIComponent(hash.replace(/^\/artifacts\//, '')),
+        legacy: false,
+        cat: cat,
+      };
+    }
+    if (hash === '/artifacts') return { view: 'artifacts', id: null, legacy: false, cat: cat };
     var focused = /^\/graph\/focus\/(.+)$/.exec(hash);
     if (focused) {
       return {
@@ -407,7 +458,9 @@ const script = String.raw`
   };
 
   var hashFor = function (next) {
-    if (next.view === 'artifacts') return next.id ? '#/artifacts/' + next.id : '#/artifacts';
+    if (next.view === 'artifacts') {
+      return (next.id ? '#/artifacts/' + next.id : '#/artifacts') + catQuery(next.cat);
+    }
     if (next.view === 'graph') {
       var mode = next.graphMode || 'layers';
       return mode === 'focus' && next.id ? '#/graph/focus/' + next.id : '#/graph/' + mode;
@@ -432,12 +485,12 @@ const script = String.raw`
         suppress = true;
         location.hash = target;
       }
-      state = { view: next.view, id: next.id, graphMode: next.graphMode || null, unknown: next.unknown || null };
+      state = { view: next.view, id: next.id, graphMode: next.graphMode || null, cat: next.cat || emptyCat(), unknown: next.unknown || null };
       render();
       return;
     }
     if (location.hash === target) {
-      state = { view: next.view, id: next.id, graphMode: next.graphMode || null, unknown: next.unknown || null };
+      state = { view: next.view, id: next.id, graphMode: next.graphMode || null, cat: next.cat || emptyCat(), unknown: next.unknown || null };
       render();
       return;
     }
@@ -458,8 +511,10 @@ const script = String.raw`
       view: parsed.view,
       id: unknown ? null : parsed.id,
       graphMode: parsed.graphMode || null,
+      cat: parsed.cat || emptyCat(),
       unknown: unknown,
     };
+    applyCatalogState();
     render();
   };
 
@@ -467,11 +522,47 @@ const script = String.raw`
 
   var filterKind = null;
   var filterStatus = null;
+  var filterContext = null;
   var filterText = null;
+  var searchSync = null;
+
+  /** Reflect the address's catalog state into the filter variables and their controls. */
+  var applyCatalogState = function () {
+    filterKind = state.cat.k || null;
+    filterStatus = state.cat.s || null;
+    filterContext = state.cat.c || null;
+    filterText = state.cat.f || null;
+    var controls = [
+      ['f-kind', filterKind],
+      ['f-status', filterStatus],
+      ['f-context', filterContext],
+      ['f-text', filterText],
+      ['q-body', state.cat.q],
+    ];
+    for (var i = 0; i < controls.length; i += 1) {
+      var node = doc.getElementById(controls[i][0]);
+      if (node && node.value !== (controls[i][1] || '')) node.value = controls[i][1] || '';
+    }
+    if (listBuilt) renderList();
+    if (searchSync) searchSync();
+  };
+
+  /** Every filter or query change re-addresses the catalog in place: shareable, never history. */
+  var catalogChanged = function () {
+    state.cat = {
+      k: filterKind,
+      s: filterStatus,
+      c: filterContext,
+      f: filterText,
+      q: state.cat.q,
+    };
+    go({ view: state.view, id: state.id, graphMode: state.graphMode, cat: state.cat }, 'replace');
+  };
 
   var matchesFilters = function (a) {
     if (filterKind && a.kind !== filterKind) return false;
     if (filterStatus && a.status !== filterStatus) return false;
+    if (filterContext && a.context !== filterContext) return false;
     if (filterText) {
       var needle = filterText.toLowerCase();
       if (a.id.toLowerCase().indexOf(needle) < 0 && (a.title || '').toLowerCase().indexOf(needle) < 0) {
@@ -487,7 +578,9 @@ const script = String.raw`
     var links = doc.querySelectorAll('#artifact-list a[href^="#/artifacts/"]');
     var wanted = state.id ? '#/artifacts/' + state.id : null;
     for (var i = 0; i < links.length; i += 1) {
-      if (wanted && links[i].getAttribute('href') === wanted) {
+      var href = links[i].getAttribute('href') || '';
+      var path = href.indexOf('?') >= 0 ? href.slice(0, href.indexOf('?')) : href;
+      if (wanted && path === wanted) {
         links[i].setAttribute('aria-current', 'true');
       } else {
         links[i].removeAttribute('aria-current');
@@ -515,7 +608,7 @@ const script = String.raw`
         var a = members[m];
         var li = el('li');
         var link = doc.createElement('a');
-        link.href = '#/artifacts/' + a.id;
+        link.href = '#/artifacts/' + a.id + catQuery(state.cat);
         link.appendChild(tokenFor(a.kind));
         link.appendChild(el('span', 'name', a.title || a.id));
         link.appendChild(el('span', 'aid', a.id));
@@ -1558,7 +1651,7 @@ const script = String.raw`
         var head = el('span', 'hithead');
         head.appendChild(tokenFor(hit.artifact.kind));
         var link = doc.createElement('a');
-        link.href = '#/artifacts/' + hit.artifact.id;
+        link.href = '#/artifacts/' + hit.artifact.id + catQuery(state.cat);
         link.textContent = hit.artifact.title || hit.artifact.id;
         head.appendChild(link);
         head.appendChild(el('span', 'aid mono', hit.artifact.id));
@@ -1571,7 +1664,15 @@ const script = String.raw`
       }
     };
 
-    input.addEventListener('input', render);
+    input.addEventListener('input', function () {
+      render();
+      var q = input.value.trim() || null;
+      if (q !== state.cat.q && state.view === 'artifacts') {
+        state.cat.q = q;
+        go({ view: state.view, id: state.id, graphMode: state.graphMode, cat: state.cat }, 'replace');
+      }
+    });
+    searchSync = render;
     input.addEventListener('keydown', function (ev) {
       if (ev.key === 'Escape') {
         input.value = '';
@@ -1588,7 +1689,7 @@ const script = String.raw`
         markActive();
         ev.preventDefault();
       } else if (ev.key === 'Enter' && active >= 0) {
-        go({ view: 'artifacts', id: shown[active].artifact.id });
+        go({ view: 'artifacts', id: shown[active].artifact.id, cat: state.cat });
         ev.preventDefault();
       }
     });
@@ -1620,6 +1721,9 @@ const script = String.raw`
       if (listBuilt) markCurrent();
       else renderList();
       renderDetail();
+      /* Returning to the list resumes the discovery in progress: the way back carries the state. */
+      var back = doc.querySelector('.backlink a');
+      if (back) back.setAttribute('href', '#/artifacts' + catQuery(state.cat));
     }
     if (state.view === 'graph') buildProjection();
 
@@ -1648,6 +1752,7 @@ const script = String.raw`
   var filters = {
     kind: doc.getElementById('f-kind'),
     status: doc.getElementById('f-status'),
+    context: doc.getElementById('f-context'),
     text: doc.getElementById('f-text'),
   };
   if (filters.kind) {
@@ -1655,6 +1760,7 @@ const script = String.raw`
       filterKind = filters.kind.value || null;
       renderList();
       markCurrent();
+      catalogChanged();
     });
   }
   if (filters.status) {
@@ -1662,6 +1768,15 @@ const script = String.raw`
       filterStatus = filters.status.value || null;
       renderList();
       markCurrent();
+      catalogChanged();
+    });
+  }
+  if (filters.context) {
+    filters.context.addEventListener('change', function () {
+      filterContext = filters.context.value || null;
+      renderList();
+      markCurrent();
+      catalogChanged();
     });
   }
   if (filters.text) {
@@ -1669,6 +1784,19 @@ const script = String.raw`
       filterText = filters.text.value.trim() || null;
       renderList();
       markCurrent();
+      catalogChanged();
+    });
+  }
+  var overviewSearch = doc.getElementById('ov-q');
+  if (overviewSearch) {
+    /* Global search from the first screen: submitting lands in the Catalog with the query live. */
+    overviewSearch.addEventListener('keydown', function (ev) {
+      if (ev.key !== 'Enter') return;
+      ev.preventDefault();
+      var q = overviewSearch.value.trim() || null;
+      var cat = emptyCat();
+      cat.q = q;
+      go({ view: 'artifacts', id: null, cat: cat });
     });
   }
   wireSearch();
@@ -1753,6 +1881,10 @@ function snapshotDataJson(graph: ProductGraph, groups: Map<string, LoadedArtifac
         kindName: kindLabels[kind] ?? kind,
         title: a.title ?? (a.id as string),
         status: a.status ?? 'unknown',
+        context:
+          typeof a.frontmatter['bounded-context'] === 'string'
+            ? a.frontmatter['bounded-context']
+            : null,
         meta: metaPairs(a.frontmatter),
         body: shiftHeadings(renderMarkdown(a.body.trim())),
       });
@@ -1822,7 +1954,7 @@ export function buildSnapshotHtml(
   const kindRows: string[] = [];
   for (const [kind, members] of groups) {
     kindRows.push(
-      `<li>${token(kind)} <a href="#/artifacts">${escapeHtml(kindLabels[kind] ?? kind)}</a><span class="count">${members.length}</span></li>`,
+      `<li>${token(kind)} <a href="#/artifacts?k=${encodeURIComponent(kind)}">${escapeHtml(kindLabels[kind] ?? kind)}</a><span class="count">${members.length}</span></li>`,
     );
   }
 
@@ -1834,6 +1966,19 @@ export function buildSnapshotHtml(
   const statusOptions = statuses
     .map((s) => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`)
     .join('');
+  const contexts = [
+    ...new Set(
+      artifacts
+        .map((a) => a.frontmatter['bounded-context'])
+        .filter((c): c is string => typeof c === 'string'),
+    ),
+  ].sort();
+  const contextFilter =
+    contexts.length > 0
+      ? `<label for="f-context">Bounded context<select id="f-context"><option value="">Any context</option>${contexts
+          .map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`)
+          .join('')}</select></label>`
+      : '';
 
   const lines = [
     '<!doctype html>',
@@ -1869,6 +2014,10 @@ export function buildSnapshotHtml(
     '<p class="lead">This page is a generated, read-only projection of a product model at the',
     'revision stamped above. It is regenerated from the authored files at any time and is never',
     'authoritative. Nothing here can be edited, and nothing you do is stored.</p>',
+    '<div class="ovsearch" role="search">',
+    '<label for="ov-q">Search the product</label>',
+    '<input id="ov-q" type="search" autocomplete="off" placeholder="Identifier, title or phrase — press Enter">',
+    '</div>',
     '<dl class="metrics">',
     `<div><dt>Artifacts</dt><dd>${graph.nodes.length}</dd></div>`,
     `<div><dt>Relationships</dt><dd>${graph.edges.length}</dd></div>`,
@@ -1913,6 +2062,7 @@ export function buildSnapshotHtml(
     '<h3 class="findhead" id="h-find">Find an artifact</h3>',
     `<label for="f-kind">Kind<select id="f-kind"><option value="">All kinds</option>${kindOptions}</select></label>`,
     `<label for="f-status">Status<select id="f-status"><option value="">Any status</option>${statusOptions}</select></label>`,
+    contextFilter,
     '<label for="f-text">Filter by name or ID<input id="f-text" type="search" autocomplete="off"></label>',
     '<label for="q-body">Search</label>',
     '<input id="q-body" type="search" autocomplete="off" role="combobox" aria-expanded="true" aria-controls="q-body-results" aria-describedby="q-body-status">',

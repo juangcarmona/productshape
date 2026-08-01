@@ -1,0 +1,42 @@
+schema: product-definition-as-code/coverage/v1alpha1
+handoff: HOF-GITHUB-46
+requirements:
+  FR-SNAPSHOT-003:
+    status: covered
+    specification:
+      - openspec/changes/add-explorer-overview-catalog/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+  FR-SNAPSHOT-008:
+    status: covered
+    specification:
+      - openspec/changes/add-explorer-overview-catalog/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+      - openspec/changes/add-explorer-overview-catalog/measurements.md
+  FR-SNAPSHOT-006:
+    status: covered
+    specification:
+      - openspec/changes/add-explorer-overview-catalog/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+  QR-SCALABILITY-001:
+    status: covered
+    specification:
+      - openspec/changes/add-explorer-overview-catalog/specs/snapshot-generation/spec.md
+    verification:
+      - openspec/changes/add-explorer-overview-catalog/measurements.md
+      - scripts/measure-snapshot.mts
+  QR-PRESENTATION-001:
+    status: covered
+    specification:
+      - openspec/changes/add-explorer-overview-catalog/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
+      - scripts/screenshot-snapshot.mts
+  QR-ACCESSIBILITY-001:
+    status: covered
+    specification:
+      - openspec/changes/add-explorer-overview-catalog/specs/snapshot-generation/spec.md
+    verification:
+      - packages/core/src/snapshot.test.ts
