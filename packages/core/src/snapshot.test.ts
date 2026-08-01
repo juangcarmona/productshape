@@ -404,7 +404,7 @@ describe('the embedded application', () => {
   it('opens on the overview with the other views hidden', () => {
     expect(visible('overview')).toBe(true);
     expect(visible('artifacts')).toBe(false);
-    expect(visible('graph')).toBe(false);
+    expect(doc.getElementById('view-graph')).toBeNull();
     expect(doc.getElementById('needs-script')).toBeNull();
   });
 
@@ -506,9 +506,9 @@ describe('the embedded application', () => {
     expect(doc.querySelector('nav.views a[aria-current="page"]')?.getAttribute('data-view')).toBe(
       'artifacts',
     );
-    navigate('#/graph');
+    navigate('#/');
     expect(doc.querySelector('nav.views a[aria-current="page"]')?.getAttribute('data-view')).toBe(
-      'graph',
+      'overview',
     );
   });
 
@@ -1586,19 +1586,22 @@ describe('the focused topology (SLI-EXPLORER-003)', () => {
     expect(doc.querySelectorAll('#graph-host circle[data-group]').length).toBeLessThan(5);
   });
 
-  it('resolves the withdrawn map routes in place', () => {
+  it('resolves the withdrawn standalone routes in place, into the integrated view', () => {
     open('#/graph');
-    expect(dom.window.location.hash).toBe('#/graph/focus');
+    expect(dom.window.location.hash).toBe('#/artifacts');
     open('#/graph/layers');
-    expect(dom.window.location.hash).toBe('#/graph/focus');
-    expect(doc.getElementById('view-graph')?.hidden).toBe(false);
+    expect(dom.window.location.hash).toBe('#/artifacts');
+    open('#/graph/focus/ACT-H');
+    expect(dom.window.location.hash).toBe('#/artifacts/ACT-H');
+    expect(doc.getElementById('view-artifacts')?.hidden).toBe(false);
+    expect(doc.querySelectorAll('#graph-host circle[data-group]').length).toBeGreaterThan(0);
   });
 
   it('carries disclosure in the address, replacing history, and restores it from a fresh window', () => {
-    open('#/graph/focus/ACT-H');
+    open('#/artifacts/ACT-H');
     const before = dom.window.history.length;
     click(sat('primary-actor'));
-    expect(dom.window.location.hash).toMatch(/#\/graph\/focus\/ACT-H\?x=/);
+    expect(dom.window.location.hash).toMatch(/#\/artifacts\/ACT-H\?x=/);
     expect(dom.window.history.length).toBe(before);
     const address = dom.window.location.hash;
     open(address);
@@ -1606,14 +1609,14 @@ describe('the focused topology (SLI-EXPLORER-003)', () => {
   });
 
   it('toggling a group changes no selection; refocusing on a member is a navigation that resets disclosure', () => {
-    open('#/graph/focus/UC-H00');
+    open('#/artifacts/UC-H00');
     expect(sat('primary-actor').getAttribute('aria-expanded')).toBe('true');
     const before = dom.window.history.length;
     const member = doc.querySelector('#graph-host [data-member]');
     expect(member).not.toBeNull();
     click(member as Element);
     expect(dom.window.location.hash).toContain(
-      '#/graph/focus/' + member?.getAttribute('data-member'),
+      '#/artifacts/' + member?.getAttribute('data-member'),
     );
     expect(dom.window.location.hash).not.toContain('x=');
     expect(dom.window.history.length).toBe(before + 1);
@@ -1632,21 +1635,19 @@ describe('the focused topology (SLI-EXPLORER-003)', () => {
     expect(doc.querySelectorAll('#graph-host circle[data-member]').length).toBe(0);
   });
 
-  it('follows the page selection into the Topology, and never opens empty while something is selected', () => {
+  it('draws the projection beside the Reader, anchored on the page selection', () => {
     open('#/artifacts/UC-H00?k=use-case');
-    const nav = doc.querySelector('nav.views a[data-view="graph"]');
-    expect(nav?.getAttribute('href')).toBe('#/graph/focus/UC-H00?k=use-case');
-    dom.window.location.hash = nav?.getAttribute('href') ?? '';
-    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+    // Three regions of one instrument: master, detail and the focused topology, all live at once.
+    expect(doc.querySelector('#artifact-list a[aria-current="true"]')).not.toBeNull();
+    expect(doc.querySelector('#detail h3.artifact')?.textContent).toContain('UC-H00');
     expect(doc.querySelectorAll('#graph-host circle[data-group]').length).toBeGreaterThan(0);
+    expect(doc.querySelector('#graph-host svg')?.getAttribute('aria-label')).toContain('UC-H00');
   });
 
-  it('offers a way forward when nothing is selected yet', () => {
-    open('#/graph/focus');
+  it('says plainly why the projection is empty when nothing is selected yet', () => {
+    open('#/artifacts');
     const note = doc.querySelector('#graph-host p.note');
-    expect(note?.textContent).toContain('nothing is selected yet');
-    expect(note?.querySelector('a[href^="#/artifacts"]')).not.toBeNull();
-    expect(note?.querySelector('a[href="#/"]')).not.toBeNull();
+    expect(note?.textContent).toContain('Nothing is selected yet');
   });
 
   it('keeps every traversal available without the visual', () => {

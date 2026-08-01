@@ -133,7 +133,13 @@ nav.views a[aria-current='page'] {
   color: var(--ink); background: var(--bg); font-weight: 600;
   border-color: var(--line-strong); border-bottom: 1px solid var(--bg);
 }
-main { padding: 1rem; }
+html, body { height: 100%; }
+body { display: flex; flex-direction: column; overflow: hidden; }
+header.site { flex: none; }
+footer.site { flex: none; }
+main { flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 1rem; }
+main > section { height: 100%; min-height: 0; }
+#view-overview { overflow-y: auto; }
 section[hidden] { display: none; }
 h2.view { margin: 0 0 0.7rem; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
 h3.block { margin: 1.4rem 0 0.5rem; font-size: 0.9rem; letter-spacing: 0.01em; }
@@ -178,8 +184,8 @@ ul.plain li { padding: 0.18rem 0; border-bottom: 1px solid var(--line); }
 ul.idlist { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.3rem 0.5rem; }
 ul.idlist a { font-family: var(--mono); font-size: 0.8rem; border: 1px solid var(--line); border-radius: 2px; padding: 0.1rem 0.4rem; }
 
-.md { display: grid; grid-template-columns: minmax(17rem, 22rem) minmax(0, 1fr); gap: 0; border: 1px solid var(--line-strong); }
-.master { border-right: 1px solid var(--line-strong); min-width: 0; display: flex; flex-direction: column; max-height: calc(100vh - 9rem); }
+.md { display: grid; grid-template-columns: minmax(16rem, 20rem) minmax(22rem, 1fr) minmax(0, 46rem); gap: 0; border: 1px solid var(--line-strong); height: 100%; min-height: 0; }
+.master { border-right: 1px solid var(--line-strong); min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 .master .filters h3.findhead { margin: 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
 .master .filters { padding: 0.5rem; border-bottom: 1px solid var(--line); background: var(--panel); display: grid; gap: 0.4rem; }
 .master .filters label { font-size: 0.75rem; color: var(--muted); display: grid; gap: 0.15rem; }
@@ -208,7 +214,8 @@ ul.idlist a { font-family: var(--mono); font-size: 0.8rem; border: 1px solid var
 .master .empty { padding: 0.6rem 0.5rem; color: var(--muted); font-size: 0.85rem; }
 .master .counts { padding: 0.3rem 0.5rem; border-top: 1px solid var(--line); background: var(--panel); color: var(--muted); font-size: 0.75rem; }
 
-.detail { min-width: 0; overflow-wrap: anywhere; padding: 0.9rem 1.1rem 2rem; max-width: 60rem; }
+.detail { min-width: 0; min-height: 0; overflow-y: auto; overflow-wrap: anywhere; padding: 0.9rem 1.1rem 2rem; }
+.topo { border-left: 1px solid var(--line-strong); min-width: 0; min-height: 0; overflow-y: auto; padding: 0.5rem; background: var(--bg); }
 .detail .placeholder { color: var(--muted); }
 .detail > header { border-bottom: 1px solid var(--line); padding-bottom: 0.5rem; margin-bottom: 0.7rem; }
 .detail h3.artifact { margin: 0.25rem 0 0.3rem; font-size: 1.2rem; }
@@ -258,7 +265,7 @@ details.relgroup ul.members li:last-child { border-bottom: none; }
   padding: 0.25rem 0.7rem; font-size: 0.82rem; color: var(--muted);
   border: 1px solid var(--line); border-radius: 2px; background: var(--bg);
 }
-#graph-host svg { width: 100%; height: auto; background: var(--bg); border: 1px solid var(--line); max-width: 70rem; }
+#graph-host svg { width: 100%; height: auto; max-height: 68vh; background: var(--bg); border: 1px solid var(--line); display: block; }
 #graph-host text { font-family: var(--sans); fill: var(--text); }
 #graph-host circle { stroke: #ffffff; stroke-width: 1.5; }
 #graph-host circle.anchor { stroke: var(--ink); stroke-width: 3; }
@@ -276,7 +283,7 @@ details.relgroup ul.members li:last-child { border-bottom: none; }
 #graph-host text.edgelabel { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
 #graph-host svg.focus { cursor: grab; touch-action: none; }
 #graph-host svg.focus[data-panning] { cursor: grabbing; }
-.gcontrols { display: flex; gap: 0.3rem; margin: 0 0 0.4rem; }
+.gcontrols { display: flex; gap: 0.3rem; margin: 0 0 0.4rem; justify-content: flex-end; }
 .gcontrols button {
   font: inherit; font-size: 0.78rem; padding: 0.2rem 0.6rem;
   border: 1px solid var(--line-strong); border-radius: 2px;
@@ -302,9 +309,13 @@ div.ovsearch input { width: 100%; font: inherit; padding: 0.3rem 0.5rem; border:
 footer.site { border-top: 1px solid var(--line); padding: 0.8rem 1rem 1.5rem; color: var(--muted); font-size: 0.78rem; }
 footer.site p { margin: 0.2rem 0; max-width: 78ch; }
 
+@media (max-width: 76rem) {
+  .md { grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr); }
+  .topo { display: none; }
+}
 @media (max-width: 62rem) {
   .md { grid-template-columns: minmax(0, 1fr); }
-  .master { border-right: none; border-bottom: 1px solid var(--line-strong); max-height: none; }
+  .master { border-right: none; border-bottom: 1px solid var(--line-strong); }
   body[data-pane='detail'] .master, body[data-pane='master'] .detail { display: none; }
   .backlink { display: block; }
 }
@@ -369,7 +380,7 @@ const script = String.raw`
 
   /* ---------------------------------------------------------------- routing */
 
-  var views = ['overview', 'artifacts', 'graph'];
+  var views = ['overview', 'artifacts'];
   var state = { view: 'overview', id: null, graphMode: null, cat: { k: null, s: null, c: null, f: null, q: null, x: null }, unknown: null };
 
   /*
@@ -429,19 +440,17 @@ const script = String.raw`
     var focused = /^\/graph\/focus\/(.+)$/.exec(hash);
     if (focused) {
       return {
-        view: 'graph',
-        graphMode: 'focus',
+        view: 'artifacts',
         id: decodeURIComponent(focused[1]),
         legacy: false,
         cat: cat,
+        stale: true,
       };
     }
-    if (hash === '/graph/focus') {
-      return { view: 'graph', id: null, graphMode: 'focus', legacy: false, cat: cat };
-    }
-    /* Routes earlier snapshots produced for the withdrawn layered map resolve in place. */
-    if (hash === '/graph' || hash === '/graph/layers') {
-      return { view: 'graph', id: null, graphMode: 'focus', legacy: false, cat: cat, stale: true };
+    /* Routes earlier snapshots produced for the standalone projections resolve in place: the
+       Focused Topology now lives beside the Reader on the artifacts view. */
+    if (hash === '/graph' || hash === '/graph/layers' || hash === '/graph/focus') {
+      return { view: 'artifacts', id: null, legacy: false, cat: cat, stale: true };
     }
     /* Legacy fragment produced by earlier snapshots: a bare artifact identifier. Permanent. */
     if (/^[A-Z][A-Z0-9]*(-[A-Z0-9]+)+$/.test(hash)) {
@@ -453,9 +462,6 @@ const script = String.raw`
   var hashFor = function (next) {
     if (next.view === 'artifacts') {
       return (next.id ? '#/artifacts/' + next.id : '#/artifacts') + catQuery(next.cat);
-    }
-    if (next.view === 'graph') {
-      return (next.id ? '#/graph/focus/' + next.id : '#/graph/focus') + catQuery(next.cat);
     }
     return '#/';
   };
@@ -500,7 +506,7 @@ const script = String.raw`
       return;
     }
     if (parsed.stale && !unknown) {
-      go({ view: parsed.view, graphMode: 'focus', id: parsed.id, cat: parsed.cat }, 'replace');
+      go({ view: parsed.view, id: parsed.id, cat: parsed.cat }, 'replace');
       return;
     }
     state = {
@@ -883,21 +889,9 @@ const script = String.raw`
     clear(host);
     var anchor = byId[anchorId];
     if (!anchor) {
-      var empty = el('p', 'note');
-      empty.appendChild(
-        doc.createTextNode('The Focused Topology draws the neighbourhood of the selected artifact, and nothing is selected yet. ')
+      host.appendChild(
+        el('p', 'note', 'The neighbourhood of the selected artifact is drawn here. Nothing is selected yet.')
       );
-      var toCatalog = doc.createElement('a');
-      toCatalog.href = '#/artifacts' + catQuery(state.cat);
-      toCatalog.textContent = 'Open the Catalog';
-      empty.appendChild(toCatalog);
-      empty.appendChild(doc.createTextNode(' to choose one, or '));
-      var toSearch = doc.createElement('a');
-      toSearch.href = '#/';
-      toSearch.textContent = 'search from the Overview';
-      empty.appendChild(toSearch);
-      empty.appendChild(doc.createTextNode('.'));
-      host.appendChild(empty);
       return;
     }
     var out = groupEdges(outgoing[anchorId] || [], 'out');
@@ -1191,7 +1185,7 @@ const script = String.raw`
       }
       cat.x = focusXFor(all);
       /* Disclosure is not navigation: the address changes, the history entry does not. */
-      go({ view: 'graph', graphMode: 'focus', id: anchorId, cat: cat }, 'replace');
+      go({ view: state.view, id: anchorId, cat: cat }, 'replace');
     };
     var activate = function (target) {
       if (!target) return;
@@ -1203,7 +1197,7 @@ const script = String.raw`
           if (Object.prototype.hasOwnProperty.call(state.cat, key)) cat[key] = state.cat[key];
         }
         cat.x = null;
-        go({ view: 'graph', graphMode: 'focus', id: member, cat: cat });
+        go({ view: state.view, id: member, cat: cat });
         return;
       }
       var index = target.getAttribute('data-group');
@@ -1252,16 +1246,9 @@ const script = String.raw`
     button('Fit', function () {
       view = { x: fit.x, y: fit.y, w: fit.w, h: fit.h };
       applyView();
-    });
+    }, 'key 0 · drag pans · scroll zooms · arrows pan');
     host.appendChild(controls);
     host.appendChild(svg);
-    host.appendChild(
-      el(
-        'p',
-        'note',
-        'Drag to pan, scroll to zoom, or use the buttons. With the graph focused: arrow keys pan, + and - zoom, 0 fits.',
-      ),
-    );
     /* Dense sets fall back to a legible structure: every entry stays selectable, nothing is
        drawn that cannot be read. */
     for (var lp = 0; lp < listedPanels.length; lp += 1) {
@@ -1282,12 +1269,6 @@ const script = String.raw`
     }
   };
 
-
-  var buildProjection = function () {
-    var host = doc.getElementById('graph-host');
-    if (!host) return;
-    buildFocus(host, state.id);
-  };
 
   /* ----------------------------------------------------------- ranked search */
 
@@ -1501,15 +1482,7 @@ const script = String.raw`
     }
     doc.body.setAttribute('data-pane', state.view === 'artifacts' && (state.id || state.unknown) ? 'detail' : 'master');
 
-    /* The Topology entry follows the page's one selection: opening it lands on the selected
-       artifact's neighbourhood, never on an empty prompt when something is already selected. */
-    var topoLink = doc.querySelector('nav.views a[data-view="graph"]');
-    if (topoLink) {
-      topoLink.setAttribute(
-        'href',
-        (state.id ? '#/graph/focus/' + state.id : '#/graph/focus') + catQuery(state.cat)
-      );
-    }
+
 
     if (state.view === 'artifacts') {
       /* Selecting an artifact must not cost a full list rebuild: the list is independent of the
@@ -1517,6 +1490,9 @@ const script = String.raw`
       if (listBuilt) markCurrent();
       else renderList();
       renderDetail();
+      /* The Focused Topology sits beside the Reader and follows the same selection: the third
+         region of one instrument, never a separate place. */
+      buildFocus(doc.getElementById('graph-host'), state.id);
       /* Returning to the list resumes the discovery in progress: the way back carries the state
          and names it, so the reader can see how they arrived without relying on browser chrome. */
       var back = doc.querySelector('.backlink a');
@@ -1533,7 +1509,6 @@ const script = String.raw`
           : '\u2190 All artifacts';
       }
     }
-    if (state.view === 'graph') buildProjection();
 
     /* Focus lands somewhere meaningful after a view or selection change, never lost. */
     var changedView = state.view !== lastView;
@@ -1811,7 +1786,6 @@ export function buildSnapshotHtml(
     '<nav class="views" aria-label="Snapshot views">',
     '<a href="#/" data-view="overview" aria-current="page">Overview</a>',
     '<a href="#/artifacts" data-view="artifacts">Artifacts</a>',
-    '<a href="#/graph/focus" data-view="graph">Topology</a>',
     '</nav>',
     '</header>',
     '<main id="main">',
@@ -1881,19 +1855,13 @@ export function buildSnapshotHtml(
     '<p class="counts" id="list-counts"></p>',
     '</aside>',
     '<article class="detail" id="detail"></article>',
+    '<aside class="topo" aria-label="Focused topology of the selected artifact">',
+    '<div id="graph-host"></div>',
+    '</aside>',
     '</div>',
     '</section>',
 
     // ---- Model graph: opened explicitly; built from the embedded data, never at open time.
-    '<section id="view-graph" aria-labelledby="h-graph" hidden>',
-    '<h2 class="view" id="h-graph">Topology</h2>',
-    '<p class="note">The Focused Topology, drawn on request: the selected artifact and its immediate',
-    'canonical relationships, grouped and counted, opened only where you ask. Refocusing draws a new',
-    'neighbourhood rather than growing this one. Every relationship it shows is also readable as text',
-    "on the artifact's own view.</p>",
-    '<div id="graph-host"></div>',
-    '</section>',
-
     '<p id="needs-script" class="note">This page needs JavaScript to render artifact content, which',
     'it holds entirely within this file — no network access is involved.</p>',
     '</main>',
