@@ -276,11 +276,10 @@ details.relgroup ul.members li:last-child { border-bottom: none; }
 #graph-host circle.satellite:focus-visible, #graph-host circle.member:focus-visible,
   outline: 2px solid var(--accent); outline-offset: 2px;
 }
-#graph-host line.spoke { stroke: var(--line-strong); stroke-width: 1.4; }
-#graph-host line.spoke.in { stroke-dasharray: 4 3; }
-#graph-host line.member { stroke: var(--line); stroke-width: 1; }
+#graph-host line.spoke { stroke: #7c8595; stroke-width: 1.8; vector-effect: non-scaling-stroke; }
+#graph-host line.member { stroke: #a3abba; stroke-width: 1.2; vector-effect: non-scaling-stroke; }
 #graph-host text.aggcount { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
-#graph-host .arrowhead { fill: #9aa2b3; }
+#graph-host .arrowhead { fill: #7c8595; }
 #graph-host text.satcount { font-family: var(--mono); font-size: 15px; font-weight: 700; fill: #ffffff; }
 #graph-host text.satkind { font-size: 12px; fill: var(--text); }
 #graph-host text.edgelabel { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
