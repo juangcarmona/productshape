@@ -4,39 +4,39 @@ requirements:
   FR-SNAPSHOT-009:
     status: covered
     specification:
-      - openspec/changes/add-focused-topology/specs/snapshot-generation/spec.md
+      - openspec/changes/archive/2026-08-01-add-focused-topology/specs/snapshot-generation/spec.md
     verification:
       - packages/core/src/snapshot.test.ts
-      - openspec/changes/add-focused-topology/measurements.md
+      - openspec/changes/archive/2026-08-01-add-focused-topology/measurements.md
   FR-SNAPSHOT-005:
     status: covered
     specification:
-      - openspec/changes/add-focused-topology/specs/snapshot-generation/spec.md
+      - openspec/changes/archive/2026-08-01-add-focused-topology/specs/snapshot-generation/spec.md
     verification:
       - packages/core/src/snapshot.test.ts
   FR-SNAPSHOT-006:
     status: covered
     specification:
-      - openspec/changes/add-focused-topology/specs/snapshot-generation/spec.md
+      - openspec/changes/archive/2026-08-01-add-focused-topology/specs/snapshot-generation/spec.md
     verification:
       - packages/core/src/snapshot.test.ts
   QR-SCALABILITY-001:
     status: covered
     specification:
-      - openspec/changes/add-focused-topology/specs/snapshot-generation/spec.md
+      - openspec/changes/archive/2026-08-01-add-focused-topology/specs/snapshot-generation/spec.md
     verification:
-      - openspec/changes/add-focused-topology/measurements.md
+      - openspec/changes/archive/2026-08-01-add-focused-topology/measurements.md
       - scripts/measure-snapshot.mts
   QR-PRESENTATION-001:
     status: covered
     specification:
-      - openspec/changes/add-focused-topology/specs/snapshot-generation/spec.md
+      - openspec/changes/archive/2026-08-01-add-focused-topology/specs/snapshot-generation/spec.md
     verification:
       - packages/core/src/snapshot.test.ts
       - scripts/screenshot-snapshot.mts
   QR-ACCESSIBILITY-001:
     status: covered
     specification:
-      - openspec/changes/add-focused-topology/specs/snapshot-generation/spec.md
+      - openspec/changes/archive/2026-08-01-add-focused-topology/specs/snapshot-generation/spec.md
     verification:
       - packages/core/src/snapshot.test.ts
