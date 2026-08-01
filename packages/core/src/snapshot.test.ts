@@ -1664,8 +1664,8 @@ describe('the focused topology (SLI-EXPLORER-003)', () => {
     expect(doc.querySelectorAll('#graph-host circle[data-member]').length).toBe(9);
     const labels = [...doc.querySelectorAll('#graph-host text.edgelabel')];
     expect(labels.map((t) => t.textContent).sort()).toEqual(['defined-in', 'uses-terms']);
-    // The relationship type reads as the edge's own annotation: rotated along its spoke.
-    for (const t of labels) expect(t.getAttribute('transform')).toMatch(/^rotate\(/);
+    // The relationship type reads horizontally beside its spoke: no rotation, anchored clear.
+    for (const t of labels) expect(t.getAttribute('transform')).toBeNull();
   });
 
   it('keeps every traversal available without the visual', () => {

@@ -1070,15 +1070,15 @@ const script = String.raw`
       var group = all[g];
       var count = group.edges.length;
       /* The relationship type annotates the spoke; the satellite carries the kind and the count. */
-      /* The type annotates its edge from beside it: rotated along the spoke but offset on the
-         perpendicular, so the line itself stays visible and the anchor's label is never crossed. */
+      /* The type annotates its edge from beside it: horizontal for readability, offset on the
+         perpendicular and anchored away from the line so the text never crosses it. */
       var mid = 0.62;
-      var perp = 14;
-      var lx = CX + group.radius * mid * Math.cos(group.angle) - Math.sin(group.angle) * perp;
-      var ly = CY + group.radius * mid * Math.sin(group.angle) + Math.cos(group.angle) * perp;
-      var deg = (group.angle * 180) / Math.PI;
-      if (deg > 90) deg -= 180;
-      if (deg < -90) deg += 180;
+      var perp = 10;
+      var perpX = -Math.sin(group.angle) * perp;
+      var perpY = Math.cos(group.angle) * perp;
+      var lx = CX + group.radius * mid * Math.cos(group.angle) + perpX;
+      var ly = CY + group.radius * mid * Math.sin(group.angle) + perpY;
+      var labelAnchor = perpX < -2 ? 'end' : perpX > 2 ? 'start' : 'middle';
       /* Trimmed to the circles' rims: a spoke that runs centre-to-centre buries its arrowhead
          under the node it points at. Anchor r=30, satellite r=20, plus a 3px breath. */
       var spokeLen = group.radius;
@@ -1105,10 +1105,9 @@ const script = String.raw`
         'marker-end': 'url(#spoke-arrow)',
       });
       edgeLayer.appendChild(spoke);
-      var edgeLabel = svgText(lx, ly - 5, group.relKind, 'edgelabel');
-      edgeLabel.setAttribute('transform', 'rotate(' + deg.toFixed(2) + ' ' + lx + ' ' + ly + ')');
+      var edgeLabel = svgText(lx, ly + 4, group.relKind, 'edgelabel', labelAnchor);
       nodeLayer.appendChild(edgeLabel);
-      extend(lx, ly - 4, 3.6 * group.relKind.length, 10);
+      extend(lx, ly + 4, 7.2 * group.relKind.length, 10);
 
       var sat = svgEl('circle', {
         cx: group.x,
