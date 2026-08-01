@@ -841,6 +841,9 @@ const script = String.raw`
   };
 
   var FOCUS_PREOPEN = 4;
+  /* A neighbourhood this small is more legible fully open than counted: below this many total
+     relationships every group starts open. Presentation constant, not a product rule. */
+  var FOCUS_OPEN_ALL_BELOW = 12;
   /* Past this size an opened group falls back to a structured list below the drawing: a fan of
      dozens of labelled nodes stops being legible before it stops being possible. Presentation
      constant, not a product rule. */
@@ -855,8 +858,10 @@ const script = String.raw`
   var focusOpenSet = function (groups) {
     var open = {};
     if (state.cat.x === null || state.cat.x === undefined) {
+      var total = 0;
+      for (var t = 0; t < groups.length; t += 1) total += groups[t].edges.length;
       for (var i = 0; i < groups.length; i += 1) {
-        open[i] = groups[i].edges.length <= FOCUS_PREOPEN;
+        open[i] = total <= FOCUS_OPEN_ALL_BELOW || groups[i].edges.length <= FOCUS_PREOPEN;
       }
       return open;
     }
@@ -1064,9 +1069,13 @@ const script = String.raw`
       var count = group.edges.length;
       /* The relationship type annotates the spoke; the satellite carries the kind and the count. */
       /* Sit the type label out near the satellite, where the sectors have separated. */
-      var mid = 0.74;
+      var mid = 0.5;
       var lx = CX + group.radius * mid * Math.cos(group.angle);
       var ly = CY + group.radius * mid * Math.sin(group.angle);
+      /* Rotate the label along its spoke so it reads as the edge's own annotation, kept upright. */
+      var deg = (group.angle * 180) / Math.PI;
+      if (deg > 90) deg -= 180;
+      if (deg < -90) deg += 180;
       var spoke = svgEl('line', {
         x1: group.direction === 'out' ? CX : group.x,
         y1: group.direction === 'out' ? CY : group.y,
@@ -1076,7 +1085,8 @@ const script = String.raw`
         'marker-end': 'url(#spoke-arrow)',
       });
       edgeLayer.appendChild(spoke);
-      var edgeLabel = svgText(lx, ly - 4, group.relKind, 'edgelabel');
+      var edgeLabel = svgText(lx, ly - 5, group.relKind, 'edgelabel');
+      edgeLabel.setAttribute('transform', 'rotate(' + deg.toFixed(2) + ' ' + lx + ' ' + ly + ')');
       nodeLayer.appendChild(edgeLabel);
       extend(lx, ly - 4, 3.6 * group.relKind.length, 10);
 

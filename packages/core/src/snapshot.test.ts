@@ -1555,6 +1555,12 @@ describe('the focused topology (SLI-EXPLORER-003)', () => {
       'derived-from': ['UC-H00'],
       verification: [{ scenario: 'holds' }],
     }),
+    artifact('BC-T', 'bounded-context', {}),
+    artifact('ACT-T', 'actor', { 'actor-kind': 'human' }),
+    artifact('TERM-T', 'domain-term', { 'defined-in': 'BC-T' }),
+    ...Array.from({ length: 8 }, (_, i) =>
+      artifact(`UC-T${i}`, 'use-case', { 'primary-actor': 'ACT-T', 'uses-terms': ['TERM-T'] }),
+    ),
   ];
 
   const open = (hash: string): void => {
@@ -1647,6 +1653,19 @@ describe('the focused topology (SLI-EXPLORER-003)', () => {
     open('#/artifacts');
     const note = doc.querySelector('#graph-host p.note');
     expect(note?.textContent).toContain('Nothing is selected yet');
+  });
+
+  it('opens a small neighbourhood whole: every connection visible without a click', () => {
+    open('#/artifacts/TERM-T');
+    // 9 relationships in 2 groups: both open by default, every neighbour drawn and labelled.
+    for (const s2 of [sat('defined-in'), sat('uses-terms')]) {
+      expect(s2.getAttribute('aria-expanded')).toBe('true');
+    }
+    expect(doc.querySelectorAll('#graph-host circle[data-member]').length).toBe(9);
+    const labels = [...doc.querySelectorAll('#graph-host text.edgelabel')];
+    expect(labels.map((t) => t.textContent).sort()).toEqual(['defined-in', 'uses-terms']);
+    // The relationship type reads as the edge's own annotation: rotated along its spoke.
+    for (const t of labels) expect(t.getAttribute('transform')).toMatch(/^rotate\(/);
   });
 
   it('keeps every traversal available without the visual', () => {
