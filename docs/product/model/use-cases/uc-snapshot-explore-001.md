@@ -13,20 +13,24 @@ uses-terms:
   - TERM-PRODUCT-GRAPH
   - TERM-PRODUCT-ARTIFACT
   - TERM-GRAPH-PROJECTION
+  - TERM-PRODUCT-EXPLORER
+  - TERM-FOCUSED-TOPOLOGY
 ---
 
 ## Goal
 
-A person with only a browser understands the product deeply from a Product Snapshot: what it
-does, for whom, under which rules and in which language — including the connections between
-artifacts that make the definition a graph rather than a pile of documents. They reach that
-understanding by orienting themselves, selecting one artifact, understanding its relationships,
-and moving to the next, with the page disclosing only what they have asked for at each step.
+A person with only a browser understands the product deeply from a Product Snapshot: what it does,
+for whom, under which rules and in which language — including the connections between artifacts
+that make the definition a graph rather than a pile of documents. They reach that understanding
+through the Product Explorer's four surfaces: orienting on the Overview, locating artifacts through
+the Catalog, reading them in the Artifact Reader, and traversing relationships through the Focused
+Topology — with every artifact and canonical relationship reachable, and nothing ever rendered all
+at once.
 
 ## Trigger
 
-The Product Explorer receives or opens a Product Snapshot — a file someone shared, or a page
-their team publishes at a stable address.
+The Product Explorer receives or opens a Product Snapshot — a file someone shared, or a page their
+team publishes at a stable address.
 
 ## Preconditions
 
@@ -35,71 +39,65 @@ their team publishes at a stable address.
 ## Main Flow
 
 1. The explorer opens the snapshot in a browser; no installation, account or server is involved.
-2. They are oriented: the page states which product and which model revision it reflects, how
-   many artifacts and relationships the model holds, how the artifacts divide by kind, that it is
-   a generated read-only projection, and how the kinds relate to one another in aggregate. No
-   artifact content and no artifact-level graph is displayed at this point.
-3. They reach an artifact in one of two ways: searching for an identifier, title, kind or phrase
-   they already have in mind, or browsing into a kind and narrowing the list until they recognize
-   what they want.
-4. They select one artifact. Its title, identifier, kind, status and remaining metadata appear,
-   together with its authored content rendered with the structure the author gave it. No other
-   artifact's content competes for the space, and the selected artifact is visibly marked as
-   selected wherever it also appears in a list or a projection.
-5. They read the artifact's relationships in both directions, kept apart: what the artifact
-   declares, and what refers to it through the derived reverse views the authored files never
-   state. Each relationship names its type and its direction.
-6. When they want to see rather than read those relationships, they open the focused
-   neighbourhood projection anchored on the selected artifact: one hop by default, incoming
-   distinguished from outgoing, neighbours grouped by relationship type and artifact kind, and
-   large groups collapsed with their exact counts until the explorer opens them.
-7. They follow a relationship to a neighbouring artifact, which becomes the new selection
-   everywhere on the page, and repeat from step 4 as far as their question requires.
-8. When they want broader topology, they ask for it: the layered map, which places real artifacts in
-   four fixed bands — product context, product behaviour, rules and language, product commitments —
-   and which they filter, group and collapse to keep it readable, with exact counts for whatever it
-   is hiding. It does not open on its own, and it is the broadest view the snapshot offers; there is
-   no separate drawing of the entire graph.
-9. They note the model revision the snapshot reflects, and can hand anyone a link that reopens
-   the page on the artifact they were reading.
+2. They are oriented on the **Overview**: which product and which model revision this reflects, how
+   many artifacts and relationships the model holds, how the artifacts divide by kind with an entry
+   point into each family, that the page is a generated read-only projection, and how the kinds
+   relate to one another in aggregate. Global search is one gesture away. No artifact content and
+   no artifact-level graph is displayed.
+3. They locate an artifact through the **Catalog**: searching by identifier, title or content, or
+   browsing an artifact family and narrowing it by canonical fields. The result set is
+   deterministic and its address shareable.
+4. They open an artifact in the **Reader**. Its identity, type, status, metadata and authored
+   content dominate the surface; the Catalog's query and filters survive for their return.
+5. They read the artifact's canonical relationships in the Reader, grouped by their actual meaning,
+   incoming distinguished from outgoing where direction matters, every group carrying its complete
+   count, every related artifact's name and identifier a step away.
+6. When they want to see rather than read a neighbourhood, they open the **Focused Topology**: the
+   selected artifact as focus, its immediate relationships grouped and counted, collapsed groups
+   showing complete counts, expansion only on their deliberate action.
+7. They follow a relationship — from the Reader or from the projection — and the related artifact
+   becomes the new focus everywhere: the Reader shows it, the projection refocuses on it rather
+   than accumulating, and Back returns to where they were with their context intact.
+8. They repeat from any surface as far as their question requires; at every step the address
+   reflects where they are, so any state can be shared and reopened.
+9. They note the model revision the snapshot reflects, and can hand anyone a link that reopens the
+   page on the artifact they were reading.
 
 ## Alternative Flows
 
-- Deep link arrival: the explorer opens a link addressing one artifact directly and starts from
-  that artifact, with the orientation view still one step away.
-- Retracing: the explorer uses the browser's Back and Forward to move through the artifacts and
-  views they have already visited, rather than searching for them again.
-- Unknown identifier: the link the explorer was given names an artifact this snapshot does not
-  contain — the model changed, or the identifier was mistyped. The page says so plainly, names
-  the identifier it could not resolve, and offers a way forward rather than opening empty.
-- Older link: the explorer opens a link produced by an earlier snapshot, addressing an artifact in
-  the form those snapshots used. It resolves to that artifact, and the address quietly becomes the
-  current one without leaving an extra step in their history to press Back through.
-- Unconnected artifact from the overview: the explorer notices the overview's group of artifacts that
-  hold no relationships, reads it as the fact it is, and opens one of them directly.
-- Heavily connected artifact: the selected artifact has far more neighbours than can be read at
-  once. The explorer sees exact counts per relationship type and artifact kind and expands only
-  the group they care about.
-- Isolated artifact: the selected artifact has no relationships at all. Both directions report
-  nothing rather than appearing broken, and the artifact is still reachable and readable.
-- Narrow viewport: the explorer reads on a phone or narrow window where a side-by-side
-  master–detail arrangement does not fit. The page presents the list and the artifact as separate
-  states they move between, rather than compressing a desktop layout.
-- Search finds nothing: the explorer's query matches no artifact. The page says so, and clearing
-  the query returns them to browsing without losing the artifact they had selected.
+- Deep link arrival: the explorer opens a link addressing one artifact and starts in the Reader,
+  with the Overview one step away.
+- Retracing: Back and Forward move through the surfaces, selections and discovery states they have
+  already visited.
+- Unknown identifier: the link names an artifact this snapshot does not contain. The page says so
+  plainly, names the identifier, and offers orientation and search as ways forward.
+- Older link: a bare-identifier fragment from an earlier snapshot resolves to its artifact, and the
+  address quietly becomes the current one without an extra history entry.
+- Unconnected artifact: the explorer notices the Overview's group of artifacts holding no
+  relationships, reads it as the fact it is, and opens one directly.
+- Heavily connected artifact: the focus has far more relationships than can be read at once. Every
+  group shows its complete count, and the explorer expands only what they care about; where a set
+  is too dense to draw legibly, it is presented as a structured list.
+- Isolated artifact: both directions report that there are no relationships, and the artifact reads
+  normally.
+- Narrow viewport: the Catalog and the Reader become distinct navigable states rather than a
+  compressed desktop layout.
+- Search finds nothing: the page says so and names the query; clearing it returns to browsing
+  without losing the selected artifact.
 
 ## Failure Conditions
 
-- None significant within the page: exploration is read-only. Anything the explorer cannot
-  learn from the snapshot — history, active changes, open discussion — belongs to the
-  repository side and its actors.
+- None significant within the page: exploration is read-only. Anything the explorer cannot learn
+  from the snapshot — history, active changes, open discussion — belongs to the repository side and
+  its actors.
 
 ## Postconditions
 
 - The explorer has understood the product at the depth the canonical model records, without
-  cloning, installing or reading raw Markdown, and without ever having been shown the whole
-  corpus or the whole graph at once.
-- Every artifact and every relationship in the model was reachable to them.
-- The artifact they were reading is addressable, so the same view can be reopened or shared.
-- No product knowledge was created, modified or approved: the snapshot offered no such
-  capability, and nothing the explorer did was persisted anywhere.
+  cloning, installing or reading raw Markdown, and without ever having been shown the whole corpus
+  or the whole graph at once.
+- Every artifact and every canonical relationship in the model was reachable to them, through more
+  than one surface.
+- The state they were exploring is addressable, so the same view can be reopened or shared.
+- No product knowledge was created, modified or approved: the snapshot offered no such capability,
+  and nothing the explorer did was persisted anywhere.

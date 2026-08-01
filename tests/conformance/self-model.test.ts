@@ -61,6 +61,8 @@ const expectedIds: Record<string, string[]> = {
     'TERM-REFERENCE-IMPLEMENTATION',
     // Added by CHG-SNAPSHOT-002 (progressive-disclosure Product Snapshot Explorer).
     'TERM-GRAPH-PROJECTION',
+    'TERM-PRODUCT-EXPLORER',
+    'TERM-FOCUSED-TOPOLOGY',
     // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
     'TERM-PRODUCT-SNAPSHOT',
   ],
@@ -96,6 +98,8 @@ const expectedIds: Record<string, string[]> = {
     'FR-SNAPSHOT-004',
     'FR-SNAPSHOT-005',
     'FR-SNAPSHOT-006',
+    'FR-SNAPSHOT-008',
+    'FR-SNAPSHOT-009',
   ],
   'quality-requirement': [
     'QR-PORTABILITY-001',
