@@ -136,7 +136,6 @@ nav.views a[aria-current='page'] {
 html, body { height: 100%; }
 body { display: flex; flex-direction: column; overflow: hidden; }
 header.site { flex: none; }
-footer.site { flex: none; }
 main { flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 1rem; }
 main > section { height: 100%; min-height: 0; }
 #view-overview { overflow-y: auto; }
@@ -184,7 +183,7 @@ ul.plain li { padding: 0.18rem 0; border-bottom: 1px solid var(--line); }
 ul.idlist { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.3rem 0.5rem; }
 ul.idlist a { font-family: var(--mono); font-size: 0.8rem; border: 1px solid var(--line); border-radius: 2px; padding: 0.1rem 0.4rem; }
 
-.md { display: grid; grid-template-columns: minmax(16rem, 20rem) minmax(22rem, 1fr) minmax(0, 46rem); gap: 0; border: 1px solid var(--line-strong); height: 100%; min-height: 0; }
+.md { display: grid; grid-template-columns: minmax(16rem, 20rem) minmax(24rem, 52rem) minmax(0, 1fr); gap: 0; border: 1px solid var(--line-strong); height: 100%; min-height: 0; }
 .master { border-right: 1px solid var(--line-strong); min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 .master .filters h3.findhead { margin: 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
 .master .filters { padding: 0.5rem; border-bottom: 1px solid var(--line); background: var(--panel); display: grid; gap: 0.4rem; }
@@ -215,7 +214,11 @@ ul.idlist a { font-family: var(--mono); font-size: 0.8rem; border: 1px solid var
 .master .counts { padding: 0.3rem 0.5rem; border-top: 1px solid var(--line); background: var(--panel); color: var(--muted); font-size: 0.75rem; }
 
 .detail { min-width: 0; min-height: 0; overflow-y: auto; overflow-wrap: anywhere; padding: 0.9rem 1.1rem 2rem; }
-.topo { border-left: 1px solid var(--line-strong); min-width: 0; min-height: 0; overflow-y: auto; padding: 0.5rem; background: var(--bg); }
+.topo { border-left: 1px solid var(--line-strong); min-width: 0; min-height: 0; overflow-y: auto; padding: 0.5rem; background: var(--bg); display: flex; flex-direction: column; }
+.topo #graph-host { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.topo #graph-host svg { flex: 1 1 auto; min-height: 0; height: 100%; max-height: none; }
+.topo #graph-host .denselist { flex: none; }
+.topo #graph-host p.note { flex: none; }
 .detail .placeholder { color: var(--muted); }
 .detail > header { border-bottom: 1px solid var(--line); padding-bottom: 0.5rem; margin-bottom: 0.7rem; }
 .detail h3.artifact { margin: 0.25rem 0 0.3rem; font-size: 1.2rem; }
@@ -306,8 +309,6 @@ div.ovsearch input { width: 100%; font: inherit; padding: 0.3rem 0.5rem; border:
 
 .unknown { border: 1px solid var(--line-strong); border-left: 3px solid var(--muted); padding: 0.7rem 0.9rem; max-width: 60rem; }
 .unknown .aid { font-family: var(--mono); }
-footer.site { border-top: 1px solid var(--line); padding: 0.8rem 1rem 1.5rem; color: var(--muted); font-size: 0.78rem; }
-footer.site p { margin: 0.2rem 0; max-width: 78ch; }
 
 @media (max-width: 76rem) {
   .md { grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr); }
@@ -1865,11 +1866,6 @@ export function buildSnapshotHtml(
     '<p id="needs-script" class="note">This page needs JavaScript to render artifact content, which',
     'it holds entirely within this file — no network access is involved.</p>',
     '</main>',
-    '<footer class="site">',
-    '<p>Generated projection of the product model. Read-only, regenerable, never authoritative:',
-    'the authored files in the repository remain the single source of truth.</p>',
-    '<p>Every artifact and every relationship is contained in this file and reachable from here.</p>',
-    '</footer>',
     `<script id="snapshot-data" type="application/json">${snapshotDataJson(graph, groups)}</script>`,
     `<script>\n${script}\n</script>`,
     '</body>',

@@ -296,7 +296,6 @@ describe('buildSnapshotHtml — accessibility of the opening document', () => {
     expect(opening).toContain('<header class="site">');
     expect(opening).toContain('<nav class="views" aria-label="Snapshot views">');
     expect(opening).toContain('<main id="main">');
-    expect(opening).toContain('<footer class="site">');
     expect(opening).toContain('class="skip"');
     const levels = [...opening.matchAll(/<h([1-6])[ >]/g)].map((m) => Number(m[1]));
     expect(levels[0]).toBe(1);
