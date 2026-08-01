@@ -1,0 +1,173 @@
+{
+  "schema": "prodshape/snapshot-measurement/v1",
+  "environment": {
+    "platform": "Linux 6.6.87.2-microsoft-standard-WSL2",
+    "arch": "x64",
+    "cpu": "Intel(R) Core(TM) Ultra 7 155H",
+    "cpus": 22,
+    "totalMemoryGiB": 15.4,
+    "node": "v24.14.0",
+    "note": "Generation-side figures. In-browser interaction latency is recorded separately against this same environment plus the browser version used."
+  },
+  "results": [
+    {
+      "model": "current-product-model",
+      "artifacts": 81,
+      "relationships": 210,
+      "maxDegree": 28,
+      "isolated": 3,
+      "authoredBytes": 213251,
+      "fileBytes": 367841,
+      "openingMarkupBytes": 9877,
+      "openingMarkupShare": 0.027,
+      "artifactLevelNodes": 0,
+      "artifactLevelEdges": 0,
+      "bytesPerAuthoredByte": 1.725,
+      "generationMs": {
+        "min": 6,
+        "max": 10.3
+      },
+      "generationMsPerArtifact": 0.074,
+      "selectionMs": {
+        "hardest": "FR-SNAPSHOT-005, BC-PRODUCT-DEFINITION",
+        "samples": 40,
+        "p50": 7.6,
+        "p95": 15.93,
+        "max": 17.27
+      },
+      "firstSearchMs": 9.48,
+      "focusMs": {
+        "anchors": ["BC-PRODUCT-DEFINITION", "CON-BRAND-001"],
+        "samples": 20,
+        "p50": 5.68,
+        "p95": 11.72,
+        "max": 11.72
+      },
+      "expandMs": {
+        "samples": 10,
+        "p50": 3.09,
+        "p95": 3.47,
+        "max": 3.47
+      },
+      "filterMs": {
+        "samples": 20,
+        "p50": 4.87,
+        "p95": 11.33,
+        "max": 11.33
+      },
+      "searchMs": {
+        "queries": ["ACT-AI-ASSISTANT", "product", "e"],
+        "samples": 30,
+        "p50": 4.04,
+        "p95": 7.75,
+        "max": 12.89
+      }
+    },
+    {
+      "model": "synthetic-5x",
+      "artifacts": 365,
+      "relationships": 1645,
+      "maxDegree": 91,
+      "isolated": 15,
+      "authoredBytes": 698588,
+      "fileBytes": 1268945,
+      "openingMarkupBytes": 10024,
+      "openingMarkupShare": 0.008,
+      "artifactLevelNodes": 0,
+      "artifactLevelEdges": 0,
+      "bytesPerAuthoredByte": 1.816,
+      "generationMs": {
+        "min": 29.1,
+        "max": 30.5
+      },
+      "generationMsPerArtifact": 0.08,
+      "selectionMs": {
+        "hardest": "ACT-A-001, BC-C-001",
+        "samples": 40,
+        "p50": 26.13,
+        "p95": 32.93,
+        "max": 33.12
+      },
+      "firstSearchMs": 16.92,
+      "focusMs": {
+        "anchors": ["BC-C-001", "CON-K-002"],
+        "samples": 20,
+        "p50": 20.53,
+        "p95": 32.37,
+        "max": 32.37
+      },
+      "expandMs": {
+        "samples": 10,
+        "p50": 4.91,
+        "p95": 6.15,
+        "max": 6.15
+      },
+      "filterMs": {
+        "samples": 20,
+        "p50": 15.72,
+        "p95": 26.41,
+        "max": 26.41
+      },
+      "searchMs": {
+        "queries": ["ACT-A-001", "product", "e"],
+        "samples": 30,
+        "p50": 8.65,
+        "p95": 13.2,
+        "max": 14.28
+      }
+    },
+    {
+      "model": "synthetic-10x",
+      "artifacts": 730,
+      "relationships": 3290,
+      "maxDegree": 171,
+      "isolated": 30,
+      "authoredBytes": 1394023,
+      "fileBytes": 2461844,
+      "openingMarkupBytes": 10857,
+      "openingMarkupShare": 0.004,
+      "artifactLevelNodes": 0,
+      "artifactLevelEdges": 0,
+      "bytesPerAuthoredByte": 1.766,
+      "generationMs": {
+        "min": 50.8,
+        "max": 59.4
+      },
+      "generationMsPerArtifact": 0.07,
+      "selectionMs": {
+        "hardest": "ACT-A-001, BC-C-001",
+        "samples": 40,
+        "p50": 49.63,
+        "p95": 62.16,
+        "max": 77.03
+      },
+      "firstSearchMs": 27.84,
+      "focusMs": {
+        "anchors": ["BC-C-001", "CON-K-002"],
+        "samples": 20,
+        "p50": 37.45,
+        "p95": 58.52,
+        "max": 58.52
+      },
+      "expandMs": {
+        "samples": 10,
+        "p50": 8.83,
+        "p95": 15.03,
+        "max": 15.03
+      },
+      "filterMs": {
+        "samples": 20,
+        "p50": 36.63,
+        "p95": 45.98,
+        "max": 45.98
+      },
+      "searchMs": {
+        "queries": ["ACT-A-001", "product", "e"],
+        "samples": 30,
+        "p50": 14.14,
+        "p95": 19.39,
+        "max": 19.92
+      }
+    }
+  ]
+}

@@ -133,7 +133,12 @@ nav.views a[aria-current='page'] {
   color: var(--ink); background: var(--bg); font-weight: 600;
   border-color: var(--line-strong); border-bottom: 1px solid var(--bg);
 }
-main { padding: 1rem; }
+html, body { height: 100%; }
+body { display: flex; flex-direction: column; overflow: hidden; }
+header.site { flex: none; }
+main { flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 1rem; }
+main > section { height: 100%; min-height: 0; }
+#view-overview { overflow-y: auto; }
 section[hidden] { display: none; }
 h2.view { margin: 0 0 0.7rem; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
 h3.block { margin: 1.4rem 0 0.5rem; font-size: 0.9rem; letter-spacing: 0.01em; }
@@ -178,8 +183,8 @@ ul.plain li { padding: 0.18rem 0; border-bottom: 1px solid var(--line); }
 ul.idlist { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.3rem 0.5rem; }
 ul.idlist a { font-family: var(--mono); font-size: 0.8rem; border: 1px solid var(--line); border-radius: 2px; padding: 0.1rem 0.4rem; }
 
-.md { display: grid; grid-template-columns: minmax(17rem, 22rem) minmax(0, 1fr); gap: 0; border: 1px solid var(--line-strong); }
-.master { border-right: 1px solid var(--line-strong); min-width: 0; display: flex; flex-direction: column; max-height: calc(100vh - 9rem); }
+.md { display: grid; grid-template-columns: minmax(16rem, 20rem) minmax(24rem, 46rem) minmax(0, 1fr); gap: 0; border: 1px solid var(--line-strong); height: 100%; min-height: 0; }
+.master { border-right: 1px solid var(--line-strong); min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 .master .filters h3.findhead { margin: 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
 .master .filters { padding: 0.5rem; border-bottom: 1px solid var(--line); background: var(--panel); display: grid; gap: 0.4rem; }
 .master .filters label { font-size: 0.75rem; color: var(--muted); display: grid; gap: 0.15rem; }
@@ -208,7 +213,12 @@ ul.idlist a { font-family: var(--mono); font-size: 0.8rem; border: 1px solid var
 .master .empty { padding: 0.6rem 0.5rem; color: var(--muted); font-size: 0.85rem; }
 .master .counts { padding: 0.3rem 0.5rem; border-top: 1px solid var(--line); background: var(--panel); color: var(--muted); font-size: 0.75rem; }
 
-.detail { min-width: 0; overflow-wrap: anywhere; padding: 0.9rem 1.1rem 2rem; max-width: 60rem; }
+.detail { min-width: 0; min-height: 0; overflow-y: auto; overflow-wrap: anywhere; padding: 0.9rem 1.1rem 2rem; }
+.topo { border-left: 1px solid var(--line-strong); min-width: 0; min-height: 0; overflow-y: auto; padding: 0.5rem; background: var(--bg); display: flex; flex-direction: column; }
+.topo #graph-host { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.topo #graph-host svg { flex: 1 1 auto; min-height: 0; height: 100%; max-height: none; }
+.topo #graph-host .denselist { flex: none; }
+.topo #graph-host p.note { flex: none; }
 .detail .placeholder { color: var(--muted); }
 .detail > header { border-bottom: 1px solid var(--line); padding-bottom: 0.5rem; margin-bottom: 0.7rem; }
 .detail h3.artifact { margin: 0.25rem 0 0.3rem; font-size: 1.2rem; }
@@ -255,32 +265,27 @@ details.relgroup ul.members { padding: 0.1rem 0.5rem 0.3rem; }
 }
 details.relgroup ul.members li:last-child { border-bottom: none; }
 
-nav.gmodes { display: flex; gap: 0.15rem; margin: 0 0 0.6rem; }
-nav.gmodes a {
   padding: 0.25rem 0.7rem; font-size: 0.82rem; color: var(--muted);
   border: 1px solid var(--line); border-radius: 2px; background: var(--bg);
 }
-nav.gmodes a[aria-current='true'] { color: var(--ink); font-weight: 600; border-color: var(--line-strong); background: var(--panel); }
-#graph-host svg { width: 100%; height: auto; background: var(--bg); border: 1px solid var(--line); max-width: 70rem; }
+#graph-host svg { width: 100%; height: auto; max-height: 68vh; background: var(--bg); border: 1px solid var(--line); display: block; }
 #graph-host text { font-family: var(--sans); fill: var(--text); }
 #graph-host circle { stroke: #ffffff; stroke-width: 1.5; }
 #graph-host circle.anchor { stroke: var(--ink); stroke-width: 3; }
 #graph-host circle.satellite { cursor: pointer; stroke-width: 2; }
 #graph-host circle.satellite:focus-visible, #graph-host circle.member:focus-visible,
-#graph-host circle.lnode:focus-visible {
   outline: 2px solid var(--accent); outline-offset: 2px;
 }
-#graph-host circle.member, #graph-host circle.lnode { cursor: pointer; }
-#graph-host line.spoke { stroke: var(--line-strong); stroke-width: 1.4; }
-#graph-host line.spoke.in { stroke-dasharray: 4 3; }
-#graph-host line.member { stroke: var(--line); stroke-width: 1; }
-#graph-host .arrowhead { fill: #9aa2b3; }
+#graph-host line.spoke { stroke: #47536b; stroke-width: 2.5; vector-effect: non-scaling-stroke; }
+#graph-host line.member { stroke: #8a93a5; stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+#graph-host text.aggcount { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
+#graph-host .arrowhead { fill: #47536b; }
 #graph-host text.satcount { font-family: var(--mono); font-size: 15px; font-weight: 700; fill: #ffffff; }
 #graph-host text.satkind { font-size: 12px; fill: var(--text); }
 #graph-host text.edgelabel { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
 #graph-host svg.focus { cursor: grab; touch-action: none; }
 #graph-host svg.focus[data-panning] { cursor: grabbing; }
-.gcontrols { display: flex; gap: 0.3rem; margin: 0 0 0.4rem; }
+.gcontrols { display: flex; gap: 0.3rem; margin: 0 0 0.4rem; justify-content: flex-end; }
 .gcontrols button {
   font: inherit; font-size: 0.78rem; padding: 0.2rem 0.6rem;
   border: 1px solid var(--line-strong); border-radius: 2px;
@@ -291,33 +296,30 @@ nav.gmodes a[aria-current='true'] { color: var(--ink); font-weight: 600; border-
 #graph-host text.anchorid { font-family: var(--mono); font-size: 13px; font-weight: 600; }
 #graph-host text.anchorsub { font-size: 11px; fill: var(--muted); }
 #graph-host text.axis { font-size: 11px; fill: var(--muted); letter-spacing: 0.08em; }
-#graph-host rect.band { fill: var(--panel); stroke: var(--line); }
-#graph-host text.bandname { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; }
-#graph-host text.bandcount { font-family: var(--mono); font-size: 12px; fill: var(--muted); }
-#graph-host svg.landscape { cursor: grab; touch-action: none; }
-#graph-host svg.landscape[data-panning] { cursor: grabbing; }
-#graph-host g.lsnode { cursor: pointer; }
-#graph-host g.lsnode rect.nodebox { fill: #ffffff; stroke: var(--line-strong); stroke-width: 1; }
-#graph-host g.lsnode:hover rect.nodebox { stroke: var(--accent); }
-#graph-host g.lsnode:focus-visible rect.nodebox { stroke: var(--accent); stroke-width: 2; }
-#graph-host g.lsnode:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-#graph-host g.lsnode rect.nodeaccent { stroke: none; }
-#graph-host text.nodetitle { font-size: 12px; fill: var(--ink); }
-#graph-host text.nodeid { font-family: var(--mono); font-size: 10px; }
-p.landscapesummary { margin-top: 0.5rem; }
+#graph-host rect.cell { fill: #ffffff; stroke: var(--line-strong); cursor: pointer; }
+#graph-host rect.cell.collapsed { fill: var(--panel); stroke-dasharray: 4 3; }
+#graph-host text.celltoken { font-family: var(--mono); font-size: 11px; font-weight: 700; fill: var(--muted); }
+#graph-host text.cellcount { font-family: var(--mono); font-size: 12px; fill: var(--muted); }
+#graph-host text.celllabel { font-size: 11px; fill: var(--muted); }
+
+div.ovsearch { margin: 0.6rem 0 0.2rem; max-width: 34rem; }
+div.ovsearch label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 0.2rem; }
+div.ovsearch input { width: 100%; font: inherit; padding: 0.3rem 0.5rem; border: 1px solid var(--line-strong); border-radius: 2px; background: #ffffff; }
 
 .unknown { border: 1px solid var(--line-strong); border-left: 3px solid var(--muted); padding: 0.7rem 0.9rem; max-width: 60rem; }
 .unknown .aid { font-family: var(--mono); }
-footer.site { border-top: 1px solid var(--line); padding: 0.8rem 1rem 1.5rem; color: var(--muted); font-size: 0.78rem; }
-footer.site p { margin: 0.2rem 0; max-width: 78ch; }
 
+@media (max-width: 76rem) {
+  .md { grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr); }
+  .topo { display: none; }
+}
 @media (max-width: 62rem) {
   .md { grid-template-columns: minmax(0, 1fr); }
-  .master { border-right: none; border-bottom: 1px solid var(--line-strong); max-height: none; }
+  .master { border-right: none; border-bottom: 1px solid var(--line-strong); }
   body[data-pane='detail'] .master, body[data-pane='master'] .detail { display: none; }
   .backlink { display: block; }
 }
-.backlink { display: none; margin: 0 0 0.6rem; font-size: 0.85rem; }
+.backlink { display: block; margin: 0 0 0.6rem; font-size: 0.85rem; }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
@@ -378,30 +380,78 @@ const script = String.raw`
 
   /* ---------------------------------------------------------------- routing */
 
-  var views = ['overview', 'artifacts', 'graph'];
-  var state = { view: 'overview', id: null, graphMode: null, unknown: null };
+  var views = ['overview', 'artifacts'];
+  var state = { view: 'overview', id: null, graphMode: null, cat: { k: null, s: null, c: null, f: null, q: null, x: null }, unknown: null };
+
+  /*
+   * Catalog state (FR-SNAPSHOT-008): the active query and filters are part of the address, in a
+   * fixed serialization order so identical states produce identical addresses. k = kind,
+   * s = status, c = bounded context, f = name/ID filter, q = search query.
+   */
+  var CAT_KEYS = ['k', 's', 'c', 'f', 'q', 'x'];
+  var emptyCat = function () {
+    return { k: null, s: null, c: null, f: null, q: null, x: null };
+  };
+  var catQuery = function (cat) {
+    if (!cat) return '';
+    var parts = [];
+    for (var i = 0; i < CAT_KEYS.length; i += 1) {
+      var key = CAT_KEYS[i];
+      if (cat[key]) parts.push(key + '=' + encodeURIComponent(cat[key]));
+    }
+    return parts.length > 0 ? '?' + parts.join('&') : '';
+  };
+  var catParse = function (query) {
+    var cat = emptyCat();
+    if (!query) return cat;
+    var pairs = query.split('&');
+    for (var i = 0; i < pairs.length; i += 1) {
+      var eq = pairs[i].indexOf('=');
+      if (eq < 1) continue;
+      var key = pairs[i].slice(0, eq);
+      if (CAT_KEYS.indexOf(key) < 0) continue;
+      try {
+        cat[key] = decodeURIComponent(pairs[i].slice(eq + 1)) || null;
+      } catch (err) {
+        /* An undecodable value is treated as absent rather than crashing the address. */
+      }
+    }
+    return cat;
+  };
 
   var parseHash = function (raw) {
     var hash = (raw || '').replace(/^#/, '');
-    if (hash === '' || hash === '/') return { view: 'overview', id: null, legacy: false };
-    if (/^\/artifacts\/(.+)$/.test(hash)) {
-      return { view: 'artifacts', id: decodeURIComponent(hash.replace(/^\/artifacts\//, '')), legacy: false };
+    var q = hash.indexOf('?');
+    var cat = emptyCat();
+    if (q >= 0) {
+      cat = catParse(hash.slice(q + 1));
+      hash = hash.slice(0, q);
     }
-    if (hash === '/artifacts') return { view: 'artifacts', id: null, legacy: false };
+    if (hash === '' || hash === '/') return { view: 'overview', id: null, legacy: false, cat: cat };
+    if (/^\/artifacts\/(.+)$/.test(hash)) {
+      return {
+        view: 'artifacts',
+        id: decodeURIComponent(hash.replace(/^\/artifacts\//, '')),
+        legacy: false,
+        cat: cat,
+      };
+    }
+    if (hash === '/artifacts') return { view: 'artifacts', id: null, legacy: false, cat: cat };
     var focused = /^\/graph\/focus\/(.+)$/.exec(hash);
     if (focused) {
       return {
-        view: 'graph',
-        graphMode: 'focus',
+        view: 'artifacts',
         id: decodeURIComponent(focused[1]),
         legacy: false,
+        cat: cat,
+        stale: true,
       };
     }
-    if (/^\/graph\/(layers|focus)$/.test(hash)) {
-      return { view: 'graph', id: null, graphMode: hash.replace('/graph/', ''), legacy: false };
+    /* Routes earlier snapshots produced for the standalone projections resolve in place: the
+       Focused Topology now lives beside the Reader on the artifacts view. */
+    if (hash === '/graph' || hash === '/graph/layers' || hash === '/graph/focus') {
+      return { view: 'artifacts', id: null, legacy: false, cat: cat, stale: true };
     }
-    /* The route earlier snapshots used; it opens the broad-topology projection. */
-    if (hash === '/graph') return { view: 'graph', id: null, graphMode: 'layers', legacy: false };
     /* Legacy fragment produced by earlier snapshots: a bare artifact identifier. Permanent. */
     if (/^[A-Z][A-Z0-9]*(-[A-Z0-9]+)+$/.test(hash)) {
       return { view: 'artifacts', id: hash, legacy: true };
@@ -410,10 +460,8 @@ const script = String.raw`
   };
 
   var hashFor = function (next) {
-    if (next.view === 'artifacts') return next.id ? '#/artifacts/' + next.id : '#/artifacts';
-    if (next.view === 'graph') {
-      var mode = next.graphMode || 'layers';
-      return mode === 'focus' && next.id ? '#/graph/focus/' + next.id : '#/graph/' + mode;
+    if (next.view === 'artifacts') {
+      return (next.id ? '#/artifacts/' + next.id : '#/artifacts') + catQuery(next.cat);
     }
     return '#/';
   };
@@ -435,12 +483,12 @@ const script = String.raw`
         suppress = true;
         location.hash = target;
       }
-      state = { view: next.view, id: next.id, graphMode: next.graphMode || null, unknown: next.unknown || null };
+      state = { view: next.view, id: next.id, graphMode: next.graphMode || null, cat: next.cat || emptyCat(), unknown: next.unknown || null };
       render();
       return;
     }
     if (location.hash === target) {
-      state = { view: next.view, id: next.id, graphMode: next.graphMode || null, unknown: next.unknown || null };
+      state = { view: next.view, id: next.id, graphMode: next.graphMode || null, cat: next.cat || emptyCat(), unknown: next.unknown || null };
       render();
       return;
     }
@@ -457,12 +505,18 @@ const script = String.raw`
       go({ view: 'artifacts', id: parsed.id }, 'replace');
       return;
     }
+    if (parsed.stale && !unknown) {
+      go({ view: parsed.view, id: parsed.id, cat: parsed.cat }, 'replace');
+      return;
+    }
     state = {
       view: parsed.view,
       id: unknown ? null : parsed.id,
       graphMode: parsed.graphMode || null,
+      cat: parsed.cat || emptyCat(),
       unknown: unknown,
     };
+    applyCatalogState();
     render();
   };
 
@@ -470,11 +524,48 @@ const script = String.raw`
 
   var filterKind = null;
   var filterStatus = null;
+  var filterContext = null;
   var filterText = null;
+  var searchSync = null;
+
+  /** Reflect the address's catalog state into the filter variables and their controls. */
+  var applyCatalogState = function () {
+    filterKind = state.cat.k || null;
+    filterStatus = state.cat.s || null;
+    filterContext = state.cat.c || null;
+    filterText = state.cat.f || null;
+    var controls = [
+      ['f-kind', filterKind],
+      ['f-status', filterStatus],
+      ['f-context', filterContext],
+      ['f-text', filterText],
+      ['q-body', state.cat.q],
+    ];
+    for (var i = 0; i < controls.length; i += 1) {
+      var node = doc.getElementById(controls[i][0]);
+      if (node && node.value !== (controls[i][1] || '')) node.value = controls[i][1] || '';
+    }
+    if (listBuilt) renderList();
+    if (searchSync) searchSync();
+  };
+
+  /** Every filter or query change re-addresses the catalog in place: shareable, never history. */
+  var catalogChanged = function () {
+    state.cat = {
+      k: filterKind,
+      s: filterStatus,
+      c: filterContext,
+      f: filterText,
+      q: state.cat.q,
+      x: state.cat.x,
+    };
+    go({ view: state.view, id: state.id, graphMode: state.graphMode, cat: state.cat }, 'replace');
+  };
 
   var matchesFilters = function (a) {
     if (filterKind && a.kind !== filterKind) return false;
     if (filterStatus && a.status !== filterStatus) return false;
+    if (filterContext && a.context !== filterContext) return false;
     if (filterText) {
       var needle = filterText.toLowerCase();
       if (a.id.toLowerCase().indexOf(needle) < 0 && (a.title || '').toLowerCase().indexOf(needle) < 0) {
@@ -490,7 +581,9 @@ const script = String.raw`
     var links = doc.querySelectorAll('#artifact-list a[href^="#/artifacts/"]');
     var wanted = state.id ? '#/artifacts/' + state.id : null;
     for (var i = 0; i < links.length; i += 1) {
-      if (wanted && links[i].getAttribute('href') === wanted) {
+      var href = links[i].getAttribute('href') || '';
+      var path = href.indexOf('?') >= 0 ? href.slice(0, href.indexOf('?')) : href;
+      if (wanted && path === wanted) {
         links[i].setAttribute('aria-current', 'true');
       } else {
         links[i].removeAttribute('aria-current');
@@ -518,7 +611,7 @@ const script = String.raw`
         var a = members[m];
         var li = el('li');
         var link = doc.createElement('a');
-        link.href = '#/artifacts/' + a.id;
+        link.href = '#/artifacts/' + a.id + catQuery(state.cat);
         link.appendChild(tokenFor(a.kind));
         link.appendChild(el('span', 'name', a.title || a.id));
         link.appendChild(el('span', 'aid', a.id));
@@ -578,7 +671,7 @@ const script = String.raw`
     li.appendChild(el('span', 'dir', direction === 'out' ? '→' : '←'));
     if (other) li.appendChild(tokenFor(other.kind));
     var link = doc.createElement('a');
-    link.href = '#/artifacts/' + otherId;
+    link.href = '#/artifacts/' + otherId + catQuery(state.cat);
     link.textContent = other && other.title ? other.title : otherId;
     li.appendChild(link);
     li.appendChild(el('span', 'aid mono', otherId));
@@ -747,15 +840,44 @@ const script = String.raw`
   };
 
   var FOCUS_PREOPEN = 4;
+  /* A neighbourhood this small is more legible fully open than counted: below this many total
+     relationships every group starts open. Presentation constant, not a product rule. */
+  var FOCUS_OPEN_ALL_BELOW = 12;
+  /* Past this size an opened group falls back to a structured list below the drawing: a fan of
+     dozens of labelled nodes stops being legible before it stops being possible. Presentation
+     constant, not a product rule. */
+  var FOCUS_LIST_ABOVE = 24;
 
   /**
-   * Which satellites the reader has opened, keyed by anchor and group. Held here so re-rendering the
-   * projection preserves what they opened — and so opening one satellite leaves every other one
-   * exactly where it was, rather than the view re-anchoring under their hand.
+   * Which groups are open is explicit reader state, carried in the address (?x=0.2). x absent
+   * means the defaults (small groups open); 'x=-' means everything closed; otherwise x lists the
+   * open group indices in the projection's deterministic group order. Addressable, shareable,
+   * never persisted anywhere else.
    */
-  var focusOpen = {};
-  var groupKey = function (anchorId, group) {
-    return anchorId + '|' + group.direction + '|' + group.relKind + '|' + group.kind;
+  var focusOpenSet = function (groups) {
+    var open = {};
+    if (state.cat.x === null || state.cat.x === undefined) {
+      var total = 0;
+      for (var t = 0; t < groups.length; t += 1) total += groups[t].edges.length;
+      for (var i = 0; i < groups.length; i += 1) {
+        open[i] = total <= FOCUS_OPEN_ALL_BELOW || groups[i].edges.length <= FOCUS_PREOPEN;
+      }
+      return open;
+    }
+    if (state.cat.x === '-') return open;
+    var parts = String(state.cat.x).split('.');
+    for (var j = 0; j < parts.length; j += 1) {
+      var index = parseInt(parts[j], 10);
+      if (!isNaN(index)) open[index] = true;
+    }
+    return open;
+  };
+  var focusXFor = function (groups) {
+    var indices = [];
+    for (var i = 0; i < groups.length; i += 1) {
+      if (groups[i].open) indices.push(i);
+    }
+    return indices.length === 0 ? '-' : indices.join('.');
   };
 
   /**
@@ -772,7 +894,9 @@ const script = String.raw`
     clear(host);
     var anchor = byId[anchorId];
     if (!anchor) {
-      host.appendChild(el('p', 'note', 'Select an artifact to see its neighbourhood.'));
+      host.appendChild(
+        el('p', 'note', 'The neighbourhood of the selected artifact is drawn here. Nothing is selected yet.')
+      );
       return;
     }
     var out = groupEdges(outgoing[anchorId] || [], 'out');
@@ -782,8 +906,8 @@ const script = String.raw`
     var CX = 500;
     var CY = 500;
     var R = 210;
-    var RING = 150;
-    var LABEL_ARC = 150;
+    var RING = 125;
+    var LABEL_ARC = 95;
     var GUARD = 0.12;
 
     var bounds = { minX: CX - 40, maxX: CX + 40, minY: CY - 40, maxY: CY + 40 };
@@ -829,11 +953,7 @@ const script = String.raw`
 
     /* How much angular room each group wants: one unit closed, more when open. */
     var weigh = function (group) {
-      var key = groupKey(anchorId, group);
-      group.open = Object.prototype.hasOwnProperty.call(focusOpen, key)
-        ? focusOpen[key]
-        : group.edges.length <= FOCUS_PREOPEN;
-      if (!group.open) return 1;
+      if (!group.open || group.listed) return 1;
       return Math.max(1, Math.min(6, group.edges.length / 2));
     };
 
@@ -880,11 +1000,21 @@ const script = String.raw`
         cursor += slice;
       }
     };
+    var all = out.concat(inc);
+    var openNow = focusOpenSet(all);
+    for (var gi = 0; gi < all.length; gi += 1) {
+      all[gi].open = Boolean(openNow[gi]);
+      all[gi].listed = all[gi].open && all[gi].edges.length > FOCUS_LIST_ABOVE;
+    }
     allocate(out, 'out');
     allocate(inc, 'in');
-    var all = out.concat(inc);
 
+    var listedPanels = [];
     var openMembers = function (group) {
+      if (group.listed) {
+        listedPanels.push(group);
+        return;
+      }
       var m = group.edges.length;
       /* Members fan inside the group's own sector, wrapping to a further ring when the arc at this
          radius cannot hold their labels. Rings grow outward; the viewBox grows with them. */
@@ -909,6 +1039,9 @@ const script = String.raw`
               x2: mx,
               y2: my,
               class: 'member',
+              stroke: '#8a93a5',
+              'stroke-width': 1.6,
+              'vector-effect': 'non-scaling-stroke',
             }),
           );
           var dot = svgEl('circle', {
@@ -937,22 +1070,44 @@ const script = String.raw`
       var group = all[g];
       var count = group.edges.length;
       /* The relationship type annotates the spoke; the satellite carries the kind and the count. */
-      /* Sit the type label out near the satellite, where the sectors have separated. */
-      var mid = 0.74;
-      var lx = CX + group.radius * mid * Math.cos(group.angle);
-      var ly = CY + group.radius * mid * Math.sin(group.angle);
+      /* The type annotates its edge from beside it: horizontal for readability, offset on the
+         perpendicular and anchored away from the line so the text never crosses it. */
+      var mid = 0.62;
+      var perp = 10;
+      var perpX = -Math.sin(group.angle) * perp;
+      var perpY = Math.cos(group.angle) * perp;
+      var lx = CX + group.radius * mid * Math.cos(group.angle) + perpX;
+      var ly = CY + group.radius * mid * Math.sin(group.angle) + perpY;
+      var labelAnchor = perpX < -2 ? 'end' : perpX > 2 ? 'start' : 'middle';
+      /* Trimmed to the circles' rims: a spoke that runs centre-to-centre buries its arrowhead
+         under the node it points at. Anchor r=30, satellite r=20, plus a 3px breath. */
+      var spokeLen = group.radius;
+      var ux = Math.cos(group.angle);
+      var uy = Math.sin(group.angle);
+      var fromAnchor = group.direction === 'out';
+      var startR = fromAnchor ? 33 : 23;
+      var endR = fromAnchor ? 23 : 33;
+      var sx = fromAnchor ? CX + ux * startR : group.x - ux * startR;
+      var sy = fromAnchor ? CY + uy * startR : group.y - uy * startR;
+      var ex = fromAnchor ? group.x - ux * endR : CX + ux * endR;
+      var ey = fromAnchor ? group.y - uy * endR : CY + uy * endR;
+      /* Stroke carried on the element itself: presentation attributes survive any stylesheet
+         accident, and this line is the one thing the projection cannot afford to lose. */
       var spoke = svgEl('line', {
-        x1: group.direction === 'out' ? CX : group.x,
-        y1: group.direction === 'out' ? CY : group.y,
-        x2: group.direction === 'out' ? group.x : CX,
-        y2: group.direction === 'out' ? group.y : CY,
+        x1: sx,
+        y1: sy,
+        x2: ex,
+        y2: ey,
         class: 'spoke',
+        stroke: '#47536b',
+        'stroke-width': 2.5,
+        'vector-effect': 'non-scaling-stroke',
         'marker-end': 'url(#spoke-arrow)',
       });
       edgeLayer.appendChild(spoke);
-      var edgeLabel = svgText(lx, ly - 4, group.relKind, 'edgelabel');
+      var edgeLabel = svgText(lx, ly + 4, group.relKind, 'edgelabel', labelAnchor);
       nodeLayer.appendChild(edgeLabel);
-      extend(lx, ly - 4, 3.6 * group.relKind.length, 10);
+      extend(lx, ly + 4, 7.2 * group.relKind.length, 10);
 
       var sat = svgEl('circle', {
         cx: group.x,
@@ -968,7 +1123,8 @@ const script = String.raw`
       describe(
         sat,
         (group.direction === 'out' ? 'outgoing ' : 'incoming ') +
-          group.relKind + ' · ' + (LABELS[group.kind] || group.kind) + ' · ' + count,
+          group.relKind + ' · ' + (LABELS[group.kind] || group.kind) + ' · ' + count +
+          (group.listed ? ' — too many to draw legibly; shown as a list below the drawing' : ''),
       );
       nodeLayer.appendChild(sat);
       nodeLayer.appendChild(svgText(group.x, group.y + 5, String(count), 'satcount'));
@@ -995,11 +1151,11 @@ const script = String.raw`
     });
     describe(anchorNode, anchor.title + ' — ' + anchorId);
     nodeLayer.appendChild(anchorNode);
-    nodeLayer.appendChild(svgText(CX, CY + 52, anchorId, 'anchorid'));
-    nodeLayer.appendChild(
-      svgText(CX, CY + 68, total + (total === 1 ? ' relationship' : ' relationships'), 'anchorsub'),
-    );
-    extend(CX, CY + 68, 3.6 * anchorId.length, 24);
+    /* The ID labels the anchor from whichever hemisphere carries no spokes, so it never sits on
+       a connection; with both hemispheres busy it stays below, where spokes are already trimmed. */
+    var idY = out.length === 0 ? CY - 44 : CY + 52;
+    nodeLayer.appendChild(svgText(CX, idY, anchorId, 'anchorid'));
+    extend(CX, idY, 3.6 * anchorId.length, 12);
 
     var PADV = 20;
     var fit = {
@@ -1052,14 +1208,26 @@ const script = String.raw`
     svg.addEventListener('pointerleave', endDrag);
 
     var toggle = function (index) {
-      focusOpen[groupKey(anchorId, all[index])] = !all[index].open;
-      buildFocus(host, anchorId);
+      all[index].open = !all[index].open;
+      var cat = {};
+      for (var key in state.cat) {
+        if (Object.prototype.hasOwnProperty.call(state.cat, key)) cat[key] = state.cat[key];
+      }
+      cat.x = focusXFor(all);
+      /* Disclosure is not navigation: the address changes, the history entry does not. */
+      go({ view: state.view, id: anchorId, cat: cat }, 'replace');
     };
     var activate = function (target) {
       if (!target) return;
       var member = target.getAttribute('data-member');
       if (member) {
-        go({ view: 'graph', graphMode: 'focus', id: member });
+        /* Refocusing produces a newly focused projection: the disclosure does not accumulate. */
+        var cat = {};
+        for (var key in state.cat) {
+          if (Object.prototype.hasOwnProperty.call(state.cat, key)) cat[key] = state.cat[key];
+        }
+        cat.x = null;
+        go({ view: state.view, id: member, cat: cat });
         return;
       }
       var index = target.getAttribute('data-group');
@@ -1108,16 +1276,22 @@ const script = String.raw`
     button('Fit', function () {
       view = { x: fit.x, y: fit.y, w: fit.w, h: fit.h };
       applyView();
-    });
+    }, 'key 0 · drag pans · scroll zooms · arrows pan');
     host.appendChild(controls);
     host.appendChild(svg);
-    host.appendChild(
-      el(
-        'p',
-        'note',
-        'Drag to pan, scroll to zoom, or use the buttons. With the graph focused: arrow keys pan, + and - zoom, 0 fits.',
-      ),
-    );
+    /* Dense sets fall back to a legible structure: every entry stays selectable, nothing is
+       drawn that cannot be read. */
+    for (var lp = 0; lp < listedPanels.length; lp += 1) {
+      var listedGroup = listedPanels[lp];
+      var panel = el('div', 'denselist');
+      var head = el('p', 'glabel solo');
+      head.appendChild(el('span', null, groupLabel(listedGroup, listedGroup.direction)));
+      head.appendChild(el('span', 'gcount', listedGroup.edges.length));
+      head.appendChild(el('span', 'note', ' too many to draw legibly — listed instead'));
+      panel.appendChild(head);
+      panel.appendChild(memberList(listedGroup.edges, listedGroup.direction));
+      host.appendChild(panel);
+    }
     if (total === 0) {
       host.appendChild(
         el('p', 'note', 'This artifact declares no relationships and is referenced by none.'),
@@ -1125,273 +1299,6 @@ const script = String.raw`
     }
   };
 
-
-  var LAYER_BANDS = [
-    { name: 'Product context', kinds: ['actor', 'bounded-context'] },
-    { name: 'Product behaviour', kinds: ['journey', 'use-case'] },
-    { name: 'Rules and language', kinds: ['business-rule', 'domain-term'] },
-    {
-      name: 'Product commitments',
-      kinds: ['functional-requirement', 'quality-requirement', 'constraint'],
-    },
-  ];
-
-  /* Node and grid geometry in canvas units. Fixed, so placement never depends on rendered text. */
-  var LS = {
-    nodeW: 196,
-    nodeH: 34,
-    gapX: 10,
-    gapY: 8,
-    padX: 18,
-    bandPadTop: 30,
-    bandPadBottom: 14,
-    bandGap: 14,
-    width: 1680,
-  };
-
-  /**
-   * The Product Landscape: the complete product in four permanently visible bands, every artifact its own
-   * stable, individually reachable node carrying its title.
-   *
-   * Placement is a deterministic grid — within a band, artifacts group by kind in the fixed kind order and
-   * fill columns then rows in the compiled graph's own sort order. Position is a pure function of the model:
-   * nothing settles, nothing is seeded, and no rendered text is measured, so identical content always
-   * produces identical geometry.
-   *
-   * Nothing is aggregated and nothing is hidden. Node size is fixed and the canvas grows instead, because
-   * shrinking nodes to fit a viewport is what produces the anonymous dots FR-SNAPSHOT-005 forbids. Reaching
-   * readable detail is what pan, zoom and fit are for; the landscape is explicitly not a poster.
-   */
-  var landscapeLayout = function () {
-    var cols = Math.max(1, Math.floor((LS.width - 2 * LS.padX + LS.gapX) / (LS.nodeW + LS.gapX)));
-    var bands = [];
-    var nodes = [];
-    var y = 10;
-    for (var b = 0; b < LAYER_BANDS.length; b += 1) {
-      var members = [];
-      for (var k = 0; k < LAYER_BANDS[b].kinds.length; k += 1) {
-        var kind = LAYER_BANDS[b].kinds[k];
-        for (var i = 0; i < ARTIFACTS.length; i += 1) {
-          if (ARTIFACTS[i].kind === kind) members.push(ARTIFACTS[i]);
-        }
-      }
-      /* Only bands the model populates are rendered. */
-      if (members.length === 0) continue;
-      var rows = Math.ceil(members.length / cols);
-      var bandH = LS.bandPadTop + rows * (LS.nodeH + LS.gapY) - LS.gapY + LS.bandPadBottom;
-      for (var m = 0; m < members.length; m += 1) {
-        nodes.push({
-          artifact: members[m],
-          x: LS.padX + (m % cols) * (LS.nodeW + LS.gapX),
-          y: y + LS.bandPadTop + Math.floor(m / cols) * (LS.nodeH + LS.gapY),
-        });
-      }
-      bands.push({ name: LAYER_BANDS[b].name, y: y, h: bandH, count: members.length });
-      y += bandH + LS.bandGap;
-    }
-    return { bands: bands, nodes: nodes, height: y, cols: cols };
-  };
-
-  var buildLandscape = function (host) {
-    clear(host);
-    var layout = landscapeLayout();
-
-    var svg = svgEl('svg', {
-      role: 'img',
-      class: 'landscape',
-      'aria-label':
-        'Product landscape: ' + layout.nodes.length + ' artifacts in ' + layout.bands.length + ' bands',
-    });
-    var defs = svgEl('defs', {});
-    var clip = svgEl('clipPath', { id: 'ls-title-clip', clipPathUnits: 'objectBoundingBox' });
-    clip.appendChild(svgEl('rect', { x: 0, y: 0, width: 1, height: 1 }));
-    defs.appendChild(clip);
-    svg.appendChild(defs);
-    var bandLayer = svgEl('g', { class: 'bands' });
-    var nodeLayer = svgEl('g', { class: 'nodes' });
-    svg.appendChild(bandLayer);
-    svg.appendChild(nodeLayer);
-
-    for (var b = 0; b < layout.bands.length; b += 1) {
-      var band = layout.bands[b];
-      bandLayer.appendChild(
-        svgEl('rect', {
-          x: 8,
-          y: band.y,
-          width: LS.width - 16,
-          height: band.h,
-          class: 'band',
-        }),
-      );
-      bandLayer.appendChild(svgText(18, band.y + 20, band.name, 'bandname', 'start'));
-      bandLayer.appendChild(
-        svgText(LS.width - 18, band.y + 20, String(band.count), 'bandcount', 'end'),
-      );
-    }
-
-    for (var n = 0; n < layout.nodes.length; n += 1) {
-      var item = layout.nodes[n];
-      var a = item.artifact;
-      var g = svgEl('g', {
-        class: 'lsnode',
-        'data-member': a.id,
-        tabindex: '0',
-        role: 'link',
-        'aria-label': a.title + ' — ' + a.id + ' — ' + a.kindName,
-      });
-      describe(g, a.title + ' — ' + a.id + ' — ' + a.kindName);
-      g.appendChild(
-        svgEl('rect', { x: item.x, y: item.y, width: LS.nodeW, height: LS.nodeH, class: 'nodebox' }),
-      );
-      /* Kind colour touches the accent bar and the identifier only, never the node's surface: a lane of
-         forty nodes has to read as names, not as forty coloured blocks. */
-      g.appendChild(
-        svgEl('rect', {
-          x: item.x,
-          y: item.y,
-          width: 4,
-          height: LS.nodeH,
-          class: 'nodeaccent',
-          fill: COLORS[a.kind] || '#4f5560',
-        }),
-      );
-      /* Truncated to the node's width by character budget rather than by clipping, so the rendered
-         geometry stays measurable and the full title still reaches the reader through the accessible
-         name, the tooltip and the artifact's own view. */
-      var maxChars = Math.floor((LS.nodeW - 20) / 6.4);
-      var shown = a.title.length > maxChars ? a.title.slice(0, maxChars - 1) + '…' : a.title;
-      g.appendChild(svgText(item.x + 12, item.y + 15, shown, 'nodetitle', 'start'));
-      var idText = svgText(item.x + 12, item.y + 28, a.id, 'nodeid', 'start');
-      idText.setAttribute('fill', COLORS[a.kind] || '#4f5560');
-      g.appendChild(idText);
-      nodeLayer.appendChild(g);
-    }
-
-    var fit = { x: 0, y: 0, w: LS.width, h: layout.height };
-    var view = { x: fit.x, y: fit.y, w: fit.w, h: fit.h };
-    var applyView = function () {
-      svg.setAttribute('viewBox', view.x + ' ' + view.y + ' ' + view.w + ' ' + view.h);
-    };
-    applyView();
-
-    var zoomBy = function (factor, cx, cy) {
-      var nw = view.w * factor;
-      if (nw < fit.w / 24 || nw > fit.w * 2) return;
-      view = {
-        x: cx - (cx - view.x) * factor,
-        y: cy - (cy - view.y) * factor,
-        w: nw,
-        h: view.h * factor,
-      };
-      applyView();
-    };
-    svg.addEventListener('wheel', function (ev) {
-      ev.preventDefault();
-      var rect = svg.getBoundingClientRect();
-      var px = view.x + ((ev.clientX - rect.left) / rect.width) * view.w;
-      var py = view.y + ((ev.clientY - rect.top) / rect.height) * view.h;
-      zoomBy(ev.deltaY > 0 ? 1.15 : 1 / 1.15, px, py);
-    });
-    var dragging = null;
-    svg.addEventListener('pointerdown', function (ev) {
-      if (ev.target instanceof Element && ev.target.closest('[data-member]')) return;
-      dragging = { x: ev.clientX, y: ev.clientY, vx: view.x, vy: view.y };
-      svg.setAttribute('data-panning', 'true');
-    });
-    svg.addEventListener('pointermove', function (ev) {
-      if (!dragging) return;
-      var rect = svg.getBoundingClientRect();
-      view.x = dragging.vx - ((ev.clientX - dragging.x) / rect.width) * view.w;
-      view.y = dragging.vy - ((ev.clientY - dragging.y) / rect.height) * view.h;
-      applyView();
-    });
-    var endDrag = function () {
-      dragging = null;
-      svg.removeAttribute('data-panning');
-    };
-    svg.addEventListener('pointerup', endDrag);
-    svg.addEventListener('pointerleave', endDrag);
-
-    /* Selection keeps the wiring the layered map already had; what selection means is a later slice. */
-    var activate = function (target) {
-      if (!target) return;
-      var member = target.getAttribute('data-member');
-      if (member) go({ view: 'graph', graphMode: 'focus', id: member });
-    };
-    svg.addEventListener('click', function (ev) {
-      activate(ev.target instanceof Element ? ev.target.closest('[data-member]') : null);
-    });
-    svg.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Enter' || ev.key === ' ') {
-        activate(ev.target instanceof Element ? ev.target.closest('[data-member]') : null);
-        ev.preventDefault();
-        return;
-      }
-      var step = view.w / 12;
-      if (ev.key === '+' || ev.key === '=') zoomBy(1 / 1.2, view.x + view.w / 2, view.y + view.h / 2);
-      else if (ev.key === '-') zoomBy(1.2, view.x + view.w / 2, view.y + view.h / 2);
-      else if (ev.key === '0') {
-        view = { x: fit.x, y: fit.y, w: fit.w, h: fit.h };
-        applyView();
-      } else if (ev.key === 'ArrowLeft') view.x -= step;
-      else if (ev.key === 'ArrowRight') view.x += step;
-      else if (ev.key === 'ArrowUp') view.y -= step;
-      else if (ev.key === 'ArrowDown') view.y += step;
-      else return;
-      applyView();
-      ev.preventDefault();
-    });
-
-    var controls = el('div', 'gcontrols');
-    var button = function (label, onClick) {
-      var btn = doc.createElement('button');
-      btn.type = 'button';
-      btn.textContent = label;
-      btn.addEventListener('click', onClick);
-      controls.appendChild(btn);
-    };
-    button('Zoom in', function () {
-      zoomBy(1 / 1.2, view.x + view.w / 2, view.y + view.h / 2);
-    });
-    button('Zoom out', function () {
-      zoomBy(1.2, view.x + view.w / 2, view.y + view.h / 2);
-    });
-    button('Fit', function () {
-      view = { x: fit.x, y: fit.y, w: fit.w, h: fit.h };
-      applyView();
-    });
-    host.appendChild(controls);
-    host.appendChild(svg);
-    var summary = el('p', 'note landscapesummary');
-    summary.textContent =
-      layout.bands.length +
-      (layout.bands.length === 1 ? ' band · ' : ' bands · ') +
-      layout.nodes.length +
-      ' of ' +
-      ARTIFACTS.length +
-      ' artifacts individually represented · none aggregated, none hidden. ' +
-      'Bands group the model; they state no order, cause or dependency. ' +
-      'Drag to pan, scroll to zoom, or use the buttons; with the map focused, arrow keys pan, + and - zoom, 0 fits.';
-    host.appendChild(summary);
-  };
-
-
-  var buildProjection = function () {
-    var host = doc.getElementById('graph-host');
-    if (!host) return;
-    var mode = state.graphMode || 'layers';
-    var tabs = doc.querySelectorAll('nav.gmodes a[data-mode]');
-    for (var i = 0; i < tabs.length; i += 1) {
-      if (tabs[i].getAttribute('data-mode') === mode) tabs[i].setAttribute('aria-current', 'true');
-      else tabs[i].removeAttribute('aria-current');
-      var href = tabs[i].getAttribute('data-mode') === 'focus' && state.id
-        ? '#/graph/focus'
-        : '#/graph/' + tabs[i].getAttribute('data-mode');
-      tabs[i].setAttribute('href', href);
-    }
-    if (mode === 'focus') buildFocus(host, state.id);
-    else buildLandscape(host);
-  };
 
   /* ----------------------------------------------------------- ranked search */
 
@@ -1541,7 +1448,7 @@ const script = String.raw`
         var head = el('span', 'hithead');
         head.appendChild(tokenFor(hit.artifact.kind));
         var link = doc.createElement('a');
-        link.href = '#/artifacts/' + hit.artifact.id;
+        link.href = '#/artifacts/' + hit.artifact.id + catQuery(state.cat);
         link.textContent = hit.artifact.title || hit.artifact.id;
         head.appendChild(link);
         head.appendChild(el('span', 'aid mono', hit.artifact.id));
@@ -1554,7 +1461,15 @@ const script = String.raw`
       }
     };
 
-    input.addEventListener('input', render);
+    input.addEventListener('input', function () {
+      render();
+      var q = input.value.trim() || null;
+      if (q !== state.cat.q && state.view === 'artifacts') {
+        state.cat.q = q;
+        go({ view: state.view, id: state.id, graphMode: state.graphMode, cat: state.cat }, 'replace');
+      }
+    });
+    searchSync = render;
     input.addEventListener('keydown', function (ev) {
       if (ev.key === 'Escape') {
         input.value = '';
@@ -1571,7 +1486,7 @@ const script = String.raw`
         markActive();
         ev.preventDefault();
       } else if (ev.key === 'Enter' && active >= 0) {
-        go({ view: 'artifacts', id: shown[active].artifact.id });
+        go({ view: 'artifacts', id: shown[active].artifact.id, cat: state.cat });
         ev.preventDefault();
       }
     });
@@ -1597,14 +1512,33 @@ const script = String.raw`
     }
     doc.body.setAttribute('data-pane', state.view === 'artifacts' && (state.id || state.unknown) ? 'detail' : 'master');
 
+
+
     if (state.view === 'artifacts') {
       /* Selecting an artifact must not cost a full list rebuild: the list is independent of the
          selection, so only the current marker moves. */
       if (listBuilt) markCurrent();
       else renderList();
       renderDetail();
+      /* The Focused Topology sits beside the Reader and follows the same selection: the third
+         region of one instrument, never a separate place. */
+      buildFocus(doc.getElementById('graph-host'), state.id);
+      /* Returning to the list resumes the discovery in progress: the way back carries the state
+         and names it, so the reader can see how they arrived without relying on browser chrome. */
+      var back = doc.querySelector('.backlink a');
+      if (back) {
+        back.setAttribute('href', '#/artifacts' + catQuery(state.cat));
+        var crumbs = [];
+        if (state.cat.k) crumbs.push(LABELS[state.cat.k] || state.cat.k);
+        if (state.cat.s) crumbs.push(state.cat.s);
+        if (state.cat.c) crumbs.push(state.cat.c);
+        if (state.cat.f) crumbs.push('filter \u201C' + state.cat.f + '\u201D');
+        if (state.cat.q) crumbs.push('search \u201C' + state.cat.q + '\u201D');
+        back.textContent = crumbs.length > 0
+          ? '\u2190 Results \u00B7 ' + crumbs.join(' \u00B7 ')
+          : '\u2190 All artifacts';
+      }
     }
-    if (state.view === 'graph') buildProjection();
 
     /* Focus lands somewhere meaningful after a view or selection change, never lost. */
     var changedView = state.view !== lastView;
@@ -1631,6 +1565,7 @@ const script = String.raw`
   var filters = {
     kind: doc.getElementById('f-kind'),
     status: doc.getElementById('f-status'),
+    context: doc.getElementById('f-context'),
     text: doc.getElementById('f-text'),
   };
   if (filters.kind) {
@@ -1638,6 +1573,7 @@ const script = String.raw`
       filterKind = filters.kind.value || null;
       renderList();
       markCurrent();
+      catalogChanged();
     });
   }
   if (filters.status) {
@@ -1645,6 +1581,15 @@ const script = String.raw`
       filterStatus = filters.status.value || null;
       renderList();
       markCurrent();
+      catalogChanged();
+    });
+  }
+  if (filters.context) {
+    filters.context.addEventListener('change', function () {
+      filterContext = filters.context.value || null;
+      renderList();
+      markCurrent();
+      catalogChanged();
     });
   }
   if (filters.text) {
@@ -1652,6 +1597,19 @@ const script = String.raw`
       filterText = filters.text.value.trim() || null;
       renderList();
       markCurrent();
+      catalogChanged();
+    });
+  }
+  var overviewSearch = doc.getElementById('ov-q');
+  if (overviewSearch) {
+    /* Global search from the first screen: submitting lands in the Catalog with the query live. */
+    overviewSearch.addEventListener('keydown', function (ev) {
+      if (ev.key !== 'Enter') return;
+      ev.preventDefault();
+      var q = overviewSearch.value.trim() || null;
+      var cat = emptyCat();
+      cat.q = q;
+      go({ view: 'artifacts', id: null, cat: cat });
     });
   }
   wireSearch();
@@ -1736,6 +1694,10 @@ function snapshotDataJson(graph: ProductGraph, groups: Map<string, LoadedArtifac
         kindName: kindLabels[kind] ?? kind,
         title: a.title ?? (a.id as string),
         status: a.status ?? 'unknown',
+        context:
+          typeof a.frontmatter['bounded-context'] === 'string'
+            ? a.frontmatter['bounded-context']
+            : null,
         meta: metaPairs(a.frontmatter),
         body: shiftHeadings(renderMarkdown(a.body.trim())),
       });
@@ -1805,7 +1767,7 @@ export function buildSnapshotHtml(
   const kindRows: string[] = [];
   for (const [kind, members] of groups) {
     kindRows.push(
-      `<li>${token(kind)} <a href="#/artifacts">${escapeHtml(kindLabels[kind] ?? kind)}</a><span class="count">${members.length}</span></li>`,
+      `<li>${token(kind)} <a href="#/artifacts?k=${encodeURIComponent(kind)}">${escapeHtml(kindLabels[kind] ?? kind)}</a><span class="count">${members.length}</span></li>`,
     );
   }
 
@@ -1817,6 +1779,19 @@ export function buildSnapshotHtml(
   const statusOptions = statuses
     .map((s) => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`)
     .join('');
+  const contexts = [
+    ...new Set(
+      artifacts
+        .map((a) => a.frontmatter['bounded-context'])
+        .filter((c): c is string => typeof c === 'string'),
+    ),
+  ].sort();
+  const contextFilter =
+    contexts.length > 0
+      ? `<label for="f-context">Bounded context<select id="f-context"><option value="">Any context</option>${contexts
+          .map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`)
+          .join('')}</select></label>`
+      : '';
 
   const lines = [
     '<!doctype html>',
@@ -1841,7 +1816,6 @@ export function buildSnapshotHtml(
     '<nav class="views" aria-label="Snapshot views">',
     '<a href="#/" data-view="overview" aria-current="page">Overview</a>',
     '<a href="#/artifacts" data-view="artifacts">Artifacts</a>',
-    '<a href="#/graph" data-view="graph">Model map</a>',
     '</nav>',
     '</header>',
     '<main id="main">',
@@ -1852,6 +1826,10 @@ export function buildSnapshotHtml(
     '<p class="lead">This page is a generated, read-only projection of a product model at the',
     'revision stamped above. It is regenerated from the authored files at any time and is never',
     'authoritative. Nothing here can be edited, and nothing you do is stored.</p>',
+    '<div class="ovsearch" role="search">',
+    '<label for="ov-q">Search the product</label>',
+    '<input id="ov-q" type="search" autocomplete="off" placeholder="Identifier, title or phrase — press Enter">',
+    '</div>',
     '<dl class="metrics">',
     `<div><dt>Artifacts</dt><dd>${graph.nodes.length}</dd></div>`,
     `<div><dt>Relationships</dt><dd>${graph.edges.length}</dd></div>`,
@@ -1896,6 +1874,7 @@ export function buildSnapshotHtml(
     '<h3 class="findhead" id="h-find">Find an artifact</h3>',
     `<label for="f-kind">Kind<select id="f-kind"><option value="">All kinds</option>${kindOptions}</select></label>`,
     `<label for="f-status">Status<select id="f-status"><option value="">Any status</option>${statusOptions}</select></label>`,
+    contextFilter,
     '<label for="f-text">Filter by name or ID<input id="f-text" type="search" autocomplete="off"></label>',
     '<label for="q-body">Search</label>',
     '<input id="q-body" type="search" autocomplete="off" role="combobox" aria-expanded="true" aria-controls="q-body-results" aria-describedby="q-body-status">',
@@ -1906,31 +1885,16 @@ export function buildSnapshotHtml(
     '<p class="counts" id="list-counts"></p>',
     '</aside>',
     '<article class="detail" id="detail"></article>',
+    '<aside class="topo" aria-label="Focused topology of the selected artifact">',
+    '<div id="graph-host"></div>',
+    '</aside>',
     '</div>',
     '</section>',
 
     // ---- Model graph: opened explicitly; built from the embedded data, never at open time.
-    '<section id="view-graph" aria-labelledby="h-graph" hidden>',
-    '<h2 class="view" id="h-graph">Model map</h2>',
-    '<nav class="gmodes" aria-label="Projections">',
-    '<a href="#/graph/layers" data-mode="layers">Landscape</a>',
-    '<a href="#/graph/focus" data-mode="focus">Focused neighbourhood</a>',
-    '</nav>',
-    '<p class="note">The landscape places every artifact in one of four fixed bands as its own node —',
-    'nothing aggregated, nothing hidden — and is navigated by panning, zooming and fitting rather than',
-    "read at one fixed scale. The focused neighbourhood orbits one artifact's relationship groups around",
-    "it. Every relationship either shows is also readable as text on the artifact's own view.</p>",
-    '<div id="graph-host"></div>',
-    '</section>',
-
     '<p id="needs-script" class="note">This page needs JavaScript to render artifact content, which',
     'it holds entirely within this file — no network access is involved.</p>',
     '</main>',
-    '<footer class="site">',
-    '<p>Generated projection of the product model. Read-only, regenerable, never authoritative:',
-    'the authored files in the repository remain the single source of truth.</p>',
-    '<p>Every artifact and every relationship is contained in this file and reachable from here.</p>',
-    '</footer>',
     `<script id="snapshot-data" type="application/json">${snapshotDataJson(graph, groups)}</script>`,
     `<script>\n${script}\n</script>`,
     '</body>',

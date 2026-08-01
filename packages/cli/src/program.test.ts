@@ -384,7 +384,7 @@ describe('self-application', () => {
   it('validates this repository with exit 0', async () => {
     const result = await run(['validate'], repoRoot);
     expect(result.code).toBe(0);
-    // 81 artifacts, zero diagnostics, after CHG-SNAPSHOT-002 was promoted.
-    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across 81 artifact\(s\)/);
+    // 85 artifacts, zero diagnostics, after CHG-SNAPSHOT-004 was promoted.
+    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across 85 artifact\(s\)/);
   });
 });

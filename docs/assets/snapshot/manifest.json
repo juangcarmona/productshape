@@ -5,175 +5,114 @@
       "name": "01-overview-desktop",
       "route": "#/",
       "viewport": "1440x900",
-      "model": "product",
       "caption": "Opening view: orientation only — no artifact body, no artifact-level graph."
     },
     {
       "name": "02-artifact-detail-desktop",
       "route": "#/artifacts/UC-SNAPSHOT-EXPLORE-001",
       "viewport": "1440x900",
-      "model": "product",
       "caption": "Master-detail: one active artifact, with grouped relationships below its body."
     },
     {
       "name": "03-relationship-groups-collapsed",
       "route": "#/artifacts/BC-PRODUCT-DEFINITION",
       "viewport": "1440x2400",
-      "model": "product",
       "caption": "The most connected artifact (27 relationships): groups carry exact counts and the large ones start collapsed."
     },
     {
       "name": "04-relationship-groups-expanded",
       "route": "#/artifacts/BC-PRODUCT-DEFINITION",
       "viewport": "1440x2400",
-      "model": "product",
       "caption": "The same artifact with every group expanded: exactly the counted members appear."
     },
     {
       "name": "05-artifact-detail-narrow",
       "route": "#/artifacts/UC-SNAPSHOT-EXPLORE-001",
       "viewport": "430x900",
-      "model": "product",
       "caption": "Narrow viewport: the detail is its own state, reached from the list."
     },
     {
       "name": "06-artifact-list-narrow",
       "route": "#/artifacts",
       "viewport": "430x900",
-      "model": "product",
       "caption": "Narrow viewport: the list is its own state, not a compressed desktop layout."
     },
     {
       "name": "07-long-title-and-body",
       "route": "#/artifacts/CON-SDD-AGNOSTIC",
       "viewport": "430x900",
-      "model": "product",
       "caption": "Long title and body wrap within their container; the page does not scroll sideways."
     },
     {
       "name": "08-unknown-identifier",
       "route": "#/artifacts/UC-DOES-NOT-EXIST",
       "viewport": "1440x900",
-      "model": "product",
       "caption": "An identifier this snapshot does not contain is named, with a way onward."
-    },
-    {
-      "name": "09-landscape-fitted",
-      "route": "#/graph/layers",
-      "viewport": "1440x2400",
-      "model": "product",
-      "caption": "The Product Landscape, fitted: four permanently visible bands, every artifact its own titled node, nothing aggregated and nothing hidden."
-    },
-    {
-      "name": "22-landscape-readable",
-      "route": "#/graph/layers",
-      "viewport": "1440x900",
-      "model": "product",
-      "caption": "The same landscape zoomed to readable detail, where each node identifies itself by title with its identifier beneath."
-    },
-    {
-      "name": "23-landscape-focus-ring",
-      "route": "#/graph/layers",
-      "viewport": "1440x900",
-      "model": "product",
-      "caption": "Keyboard focus on a landscape node, with the focus ring visible."
-    },
-    {
-      "name": "24-landscape-narrow",
-      "route": "#/graph/layers",
-      "viewport": "430x900",
-      "model": "product",
-      "caption": "The landscape on a narrow viewport."
-    },
-    {
-      "name": "26-landscape-730",
-      "route": "#/graph/layers",
-      "viewport": "1440x3200",
-      "model": "synthetic-10x",
-      "caption": "The complete landscape at the largest reference scale: 730 artifacts, every one its own node, none aggregated away."
-    },
-    {
-      "name": "25-landscape-no-colour",
-      "route": "#/graph/layers",
-      "viewport": "1440x900",
-      "model": "product",
-      "caption": "The landscape rendered without colour: band and kind remain determinable from text and position."
     },
     {
       "name": "17-focus-typical",
       "route": "#/graph/focus/UC-SNAPSHOT-EXPLORE-001",
       "viewport": "1440x900",
-      "model": "product",
       "caption": "Focused neighbourhood of a typical artifact: outgoing groups above the anchor, incoming below, small groups already open."
     },
     {
       "name": "18-focus-hardest",
       "route": "#/graph/focus/BC-PRODUCT-DEFINITION",
       "viewport": "1440x900",
-      "model": "product",
       "caption": "The hardest artifact in the model: 27 relationships become 5 satellites, the large ones closed with exact counts."
     },
     {
       "name": "19-focus-expanded",
       "route": "#/graph/focus/BC-PRODUCT-DEFINITION",
       "viewport": "1440x900",
-      "model": "product",
       "caption": "One satellite opened: its members fan out beside it and every other satellite stays exactly where it was."
     },
     {
       "name": "20-focus-isolated",
       "route": "#/graph/focus/CON-NO-WEB-UI",
       "viewport": "1440x900",
-      "model": "product",
       "caption": "An artifact with no relationships says so rather than drawing an empty diagram."
     },
     {
       "name": "10-focus-visible",
       "route": "#/artifacts",
       "viewport": "1440x900",
-      "model": "product",
       "caption": "Keyboard focus is visible: the focus ring on the first list entry."
     },
     {
       "name": "11-no-colour",
       "route": "#/artifacts/BC-PRODUCT-DEFINITION",
       "viewport": "1440x900",
-      "model": "product",
       "caption": "Rendered without colour: kind, status, selection and relationship direction remain determinable."
     },
     {
       "name": "12-search-ranked",
       "route": "#/artifacts",
       "viewport": "1440x2400",
-      "model": "product",
       "caption": "Ranked search for \"product\": 73 matches, top 25 shown, identifier and title matches above body-only ones."
     },
     {
       "name": "13-search-snippet",
       "route": "#/artifacts",
       "viewport": "1440x900",
-      "model": "product",
       "caption": "A body match shows a snippet of the matching content, inserted as text."
     },
     {
       "name": "14-search-keyboard-active",
       "route": "#/artifacts",
       "viewport": "1440x900",
-      "model": "product",
       "caption": "Arrow keys move an active result, reported with aria-activedescendant; Enter follows it."
     },
     {
       "name": "15-search-no-results",
       "route": "#/artifacts",
       "viewport": "1440x900",
-      "model": "product",
       "caption": "A query matching nothing says so, and repeats the query it searched for."
     },
     {
       "name": "16-search-narrow",
       "route": "#/artifacts",
       "viewport": "430x900",
-      "model": "product",
       "caption": "Search results on a narrow viewport."
     }
   ]
