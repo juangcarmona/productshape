@@ -1632,6 +1632,23 @@ describe('the focused topology (SLI-EXPLORER-003)', () => {
     expect(doc.querySelectorAll('#graph-host circle[data-member]').length).toBe(0);
   });
 
+  it('follows the page selection into the Topology, and never opens empty while something is selected', () => {
+    open('#/artifacts/UC-H00?k=use-case');
+    const nav = doc.querySelector('nav.views a[data-view="graph"]');
+    expect(nav?.getAttribute('href')).toBe('#/graph/focus/UC-H00?k=use-case');
+    dom.window.location.hash = nav?.getAttribute('href') ?? '';
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+    expect(doc.querySelectorAll('#graph-host circle[data-group]').length).toBeGreaterThan(0);
+  });
+
+  it('offers a way forward when nothing is selected yet', () => {
+    open('#/graph/focus');
+    const note = doc.querySelector('#graph-host p.note');
+    expect(note?.textContent).toContain('nothing is selected yet');
+    expect(note?.querySelector('a[href^="#/artifacts"]')).not.toBeNull();
+    expect(note?.querySelector('a[href="#/"]')).not.toBeNull();
+  });
+
   it('keeps every traversal available without the visual', () => {
     open('#/artifacts/UC-H00');
     const readerLinks = [...doc.querySelectorAll('#detail .rels a[href^="#/artifacts/"]')];

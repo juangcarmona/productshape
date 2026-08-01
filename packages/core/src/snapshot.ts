@@ -883,7 +883,21 @@ const script = String.raw`
     clear(host);
     var anchor = byId[anchorId];
     if (!anchor) {
-      host.appendChild(el('p', 'note', 'Select an artifact to see its neighbourhood.'));
+      var empty = el('p', 'note');
+      empty.appendChild(
+        doc.createTextNode('The Focused Topology draws the neighbourhood of the selected artifact, and nothing is selected yet. ')
+      );
+      var toCatalog = doc.createElement('a');
+      toCatalog.href = '#/artifacts' + catQuery(state.cat);
+      toCatalog.textContent = 'Open the Catalog';
+      empty.appendChild(toCatalog);
+      empty.appendChild(doc.createTextNode(' to choose one, or '));
+      var toSearch = doc.createElement('a');
+      toSearch.href = '#/';
+      toSearch.textContent = 'search from the Overview';
+      empty.appendChild(toSearch);
+      empty.appendChild(doc.createTextNode('.'));
+      host.appendChild(empty);
       return;
     }
     var out = groupEdges(outgoing[anchorId] || [], 'out');
@@ -1486,6 +1500,16 @@ const script = String.raw`
       }
     }
     doc.body.setAttribute('data-pane', state.view === 'artifacts' && (state.id || state.unknown) ? 'detail' : 'master');
+
+    /* The Topology entry follows the page's one selection: opening it lands on the selected
+       artifact's neighbourhood, never on an empty prompt when something is already selected. */
+    var topoLink = doc.querySelector('nav.views a[data-view="graph"]');
+    if (topoLink) {
+      topoLink.setAttribute(
+        'href',
+        (state.id ? '#/graph/focus/' + state.id : '#/graph/focus') + catQuery(state.cat)
+      );
+    }
 
     if (state.view === 'artifacts') {
       /* Selecting an artifact must not cost a full list rebuild: the list is independent of the
