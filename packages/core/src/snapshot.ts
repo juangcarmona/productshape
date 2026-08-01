@@ -183,7 +183,7 @@ ul.plain li { padding: 0.18rem 0; border-bottom: 1px solid var(--line); }
 ul.idlist { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.3rem 0.5rem; }
 ul.idlist a { font-family: var(--mono); font-size: 0.8rem; border: 1px solid var(--line); border-radius: 2px; padding: 0.1rem 0.4rem; }
 
-.md { display: grid; grid-template-columns: minmax(16rem, 20rem) minmax(24rem, 52rem) minmax(0, 1fr); gap: 0; border: 1px solid var(--line-strong); height: 100%; min-height: 0; }
+.md { display: grid; grid-template-columns: minmax(16rem, 20rem) minmax(24rem, 46rem) minmax(0, 1fr); gap: 0; border: 1px solid var(--line-strong); height: 100%; min-height: 0; }
 .master { border-right: 1px solid var(--line-strong); min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 .master .filters h3.findhead { margin: 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
 .master .filters { padding: 0.5rem; border-bottom: 1px solid var(--line); background: var(--panel); display: grid; gap: 0.4rem; }
@@ -276,10 +276,10 @@ details.relgroup ul.members li:last-child { border-bottom: none; }
 #graph-host circle.satellite:focus-visible, #graph-host circle.member:focus-visible,
   outline: 2px solid var(--accent); outline-offset: 2px;
 }
-#graph-host line.spoke { stroke: #7c8595; stroke-width: 1.8; vector-effect: non-scaling-stroke; }
-#graph-host line.member { stroke: #a3abba; stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+#graph-host line.spoke { stroke: #47536b; stroke-width: 2.5; vector-effect: non-scaling-stroke; }
+#graph-host line.member { stroke: #8a93a5; stroke-width: 1.6; vector-effect: non-scaling-stroke; }
 #graph-host text.aggcount { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
-#graph-host .arrowhead { fill: #7c8595; }
+#graph-host .arrowhead { fill: #47536b; }
 #graph-host text.satcount { font-family: var(--mono); font-size: 15px; font-weight: 700; fill: #ffffff; }
 #graph-host text.satkind { font-size: 12px; fill: var(--text); }
 #graph-host text.edgelabel { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
@@ -906,8 +906,8 @@ const script = String.raw`
     var CX = 500;
     var CY = 500;
     var R = 210;
-    var RING = 150;
-    var LABEL_ARC = 150;
+    var RING = 125;
+    var LABEL_ARC = 95;
     var GUARD = 0.12;
 
     var bounds = { minX: CX - 40, maxX: CX + 40, minY: CY - 40, maxY: CY + 40 };
@@ -1039,6 +1039,9 @@ const script = String.raw`
               x2: mx,
               y2: my,
               class: 'member',
+              stroke: '#8a93a5',
+              'stroke-width': 1.6,
+              'vector-effect': 'non-scaling-stroke',
             }),
           );
           var dot = svgEl('circle', {
@@ -1088,12 +1091,17 @@ const script = String.raw`
       var sy = fromAnchor ? CY + uy * startR : group.y - uy * startR;
       var ex = fromAnchor ? group.x - ux * endR : CX + ux * endR;
       var ey = fromAnchor ? group.y - uy * endR : CY + uy * endR;
+      /* Stroke carried on the element itself: presentation attributes survive any stylesheet
+         accident, and this line is the one thing the projection cannot afford to lose. */
       var spoke = svgEl('line', {
         x1: sx,
         y1: sy,
         x2: ex,
         y2: ey,
         class: 'spoke',
+        stroke: '#47536b',
+        'stroke-width': 2.5,
+        'vector-effect': 'non-scaling-stroke',
         'marker-end': 'url(#spoke-arrow)',
       });
       edgeLayer.appendChild(spoke);
@@ -1144,8 +1152,11 @@ const script = String.raw`
     });
     describe(anchorNode, anchor.title + ' — ' + anchorId);
     nodeLayer.appendChild(anchorNode);
-    nodeLayer.appendChild(svgText(CX, CY + 52, anchorId, 'anchorid'));
-    extend(CX, CY + 52, 3.6 * anchorId.length, 12);
+    /* The ID labels the anchor from whichever hemisphere carries no spokes, so it never sits on
+       a connection; with both hemispheres busy it stays below, where spokes are already trimmed. */
+    var idY = out.length === 0 ? CY - 44 : CY + 52;
+    nodeLayer.appendChild(svgText(CX, idY, anchorId, 'anchorid'));
+    extend(CX, idY, 3.6 * anchorId.length, 12);
 
     var PADV = 20;
     var fit = {
