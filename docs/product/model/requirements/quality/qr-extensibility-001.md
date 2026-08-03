@@ -5,7 +5,7 @@ title: Admit new SDD adapters through the stable handoff contract
 status: active
 quality-attribute: extensibility
 applies-to:
-  - UC-HANDOFF-001
+  - UC-CITATIONS-VERIFY-001
   - BC-DELIVERY-INTEGRATION
 verification:
   - scenario: A new SDD adapter is built on the handoff contract without product-model changes

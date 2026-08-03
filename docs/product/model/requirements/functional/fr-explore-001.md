@@ -5,7 +5,6 @@ title: Provide a product-graph-aware idea-exploration skill
 status: active
 derived-from:
   - UC-EXPLORE-001
-  - UC-CHANGE-001
   - BR-AI-001
 verification:
   - scenario: The AI assistant reads the full product model before asking the first question

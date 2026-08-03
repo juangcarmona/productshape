@@ -7,7 +7,7 @@ quality-attribute: determinism
 applies-to:
   - UC-VALIDATE-001
   - UC-IMPACT-001
-  - UC-HANDOFF-STATUS-001
+  - UC-CITATIONS-VERIFY-001
   - UC-SNAPSHOT-001
 verification:
   - scenario: Repeated runs over identical content produce byte-identical generated outputs

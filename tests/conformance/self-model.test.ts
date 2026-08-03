@@ -14,8 +14,6 @@ const expectedIds: Record<string, string[]> = {
   ],
   journey: [
     'JRN-ADOPT-001',
-    'JRN-CHANGE-001',
-    'JRN-SDD-HANDOFF-001',
     // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
     'JRN-SNAPSHOT-001',
   ],
@@ -25,12 +23,9 @@ const expectedIds: Record<string, string[]> = {
     'UC-VALIDATE-001',
     'UC-INSPECT-001',
     'UC-IMPACT-001',
-    'UC-CHANGE-001',
-    'UC-SLICE-001',
-    'UC-HANDOFF-001',
-    'UC-HANDOFF-STATUS-001',
-    'UC-COVERAGE-001',
-    'UC-PROMOTE-001',
+    // Added by RFC #4 (citation contract).
+    'UC-CITE-001',
+    'UC-CITATIONS-VERIFY-001',
     // Added by CHG-CLI-POLISH-001 (adoption improvements).
     'UC-SCHEMA-001',
     'UC-FIX-001',
@@ -51,9 +46,6 @@ const expectedIds: Record<string, string[]> = {
   'domain-term': [
     'TERM-PRODUCT-ARTIFACT',
     'TERM-PRODUCT-GRAPH',
-    'TERM-PRODUCT-CHANGE',
-    'TERM-DELIVERY-SLICE',
-    'TERM-PRODUCT-HANDOFF',
     'TERM-PRODUCT-CONTEXT',
     'TERM-CURRENT-PRODUCT-MODEL',
     // Added by CHG-BRAND-001 (ProductShape brand adoption).
@@ -75,14 +67,11 @@ const expectedIds: Record<string, string[]> = {
     'FR-GRAPH-001',
     'FR-INSPECT-001',
     'FR-IMPACT-001',
-    'FR-CHANGE-OVERLAY-001',
-    'FR-SLICE-VALIDATE-001',
-    'FR-HANDOFF-001',
-    'FR-HANDOFF-STALE-001',
-    'FR-PROMOTE-001',
+    // Added by RFC #4 (citation contract).
+    'FR-CITE-001',
+    'FR-CITATIONS-VERIFY-001',
     'FR-DISTRIBUTION-001',
     'FR-OPENSPEC-001',
-    'FR-COVERAGE-001',
     // Added by CHG-CLI-POLISH-001 (adoption improvements).
     'FR-SCHEMA-001',
     'FR-FIX-001',

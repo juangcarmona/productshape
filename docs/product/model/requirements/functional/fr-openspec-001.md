@@ -4,7 +4,7 @@ type: functional-requirement
 title: Integrate with OpenSpec through sidecar artifacts
 status: active
 derived-from:
-  - UC-HANDOFF-001
+  - UC-CITATIONS-VERIFY-001
   - BR-SDD-001
   - CON-SDD-AGNOSTIC
 verification:

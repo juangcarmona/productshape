@@ -7,7 +7,7 @@ quality-attribute: portability
 applies-to:
   - UC-INIT-001
   - UC-VALIDATE-001
-  - UC-HANDOFF-001
+  - UC-CITE-001
 verification:
   - scenario: The full test suite passes on Linux, Windows and macOS
   - scenario: Validation of the same repository yields identical diagnostics on all three platforms
