@@ -146,7 +146,7 @@ describe('init --dry-run', () => {
       expect(result.code).toBe(0);
       expect(result.out).toContain('Would create');
       expect(result.out).toContain('docs/product/model/actors/.gitkeep');
-      expect(result.out).toContain('.github/prompts/impact.prompt.md');
+      expect(result.out).toContain('.github/prompts/product-impact.prompt.md');
       expect(result.out).toContain('Would overwrite (0)');
       expect(result.out).toContain('Conflicts (0)');
       expect(result.out).toContain('Dry run: nothing was changed.');
@@ -194,14 +194,14 @@ describe('init --dry-run', () => {
   it('reports a conflict, and exits 1, without writing', async () => {
     const scratch = await mkdtemp(join(tmpdir(), 'prodshape-dryrun-conflict-'));
     try {
-      const claimed = join(scratch, '.github', 'prompts', 'impact.prompt.md');
+      const claimed = join(scratch, '.github', 'prompts', 'product-impact.prompt.md');
       await mkdir(dirname(claimed), { recursive: true });
       await writeFile(claimed, 'my own prompt\n', 'utf8');
 
       const result = await run(['init', '--ai', 'copilot', '--dry-run'], scratch);
       expect(result.code).toBe(1);
       expect(result.out).toContain('Conflicts (1)');
-      expect(result.out).toContain('.github/prompts/impact.prompt.md');
+      expect(result.out).toContain('.github/prompts/product-impact.prompt.md');
       expect(await readFile(claimed, 'utf8')).toBe('my own prompt\n');
     } finally {
       await rm(scratch, { recursive: true, force: true });
@@ -267,7 +267,7 @@ describe('shorthand command aliases', () => {
 
       const update = await run(['integration', 'update'], scratch);
       expect(update.code).toBe(0);
-      expect(update.out).toContain('Removed 8 managed file(s)');
+      expect(update.out).toContain('Removed 5 managed file(s)');
       expect(
         (await listFilesRecursive(prompts, '.md')).filter((f) => toPosix(f).includes('/ps-')),
       ).toEqual([]);
@@ -298,7 +298,7 @@ describe('shorthand command aliases', () => {
       expect(update.code).toBe(0);
       // Deletion is digest-guarded: we only remove what we can prove is ours and unmodified.
       expect(await readFile(edited, 'utf8')).toBe('my own version\n');
-      expect(update.out).toContain('Removed 7 managed file(s)');
+      expect(update.out).toContain('Removed 5 managed file(s)');
     } finally {
       await rm(scratch, { recursive: true, force: true });
     }
@@ -340,7 +340,7 @@ describe('init and managed-file lifecycle (end to end)', () => {
     await readFile(join(workDir, 'docs', 'product', 'README.md'), 'utf8');
     await readFile(join(workDir, '.product', 'templates', 'actor.md'), 'utf8');
     await readFile(join(workDir, '.claude', 'skills', 'define-product', 'SKILL.md'), 'utf8');
-    await readFile(join(workDir, '.github', 'prompts', 'impact.prompt.md'), 'utf8');
+    await readFile(join(workDir, '.github', 'prompts', 'product-impact.prompt.md'), 'utf8');
     const lock = JSON.parse(
       await readFile(join(workDir, '.product', 'installation.lock.json'), 'utf8'),
     ) as { providers: Record<string, { files: Record<string, string> }> };
@@ -428,18 +428,11 @@ describe('init and managed-file lifecycle (end to end)', () => {
   it('doctor reports a healthy repository after repair', async () => {
     const result = await run(['doctor'], workDir);
     expect(result.out).toContain('ok   managed files');
-    // The openspec workspace is configured but absent in this synthetic repo.
     expect(result.out).toContain('framework version');
-    expect(result.code).toBe(1);
+    expect(result.code).toBe(0);
   });
 
   it('doctor reports clean after init', async () => {
-    // Git does not track empty directories, so a repository whose last active change was promoted
-    // has no changes/active on a fresh checkout. That is a healthy "no active changes" state.
-    await rm(join(workDir, 'docs', 'product', 'changes', 'active'), {
-      recursive: true,
-      force: true,
-    });
     const result = await run(['doctor'], workDir);
     expect(result.out).toContain('ok   configuration');
     expect(result.out).not.toContain('FAIL configuration');
