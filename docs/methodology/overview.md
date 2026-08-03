@@ -1,14 +1,15 @@
 # Methodology overview
 
 Product Definition as Code keeps a canonical, versioned, machine-validatable definition of your
-product in your repository — plain Markdown with YAML frontmatter — and evolves it only through
-explicit, reviewed changes. It sits _before_ your backlog and before Spec-Driven Development
-(SDD): the definition says what the product is; backlog items and SDD specs describe increments
-against it.
+product in your repository — plain Markdown with YAML frontmatter — and evolves it through
+native pull requests. It sits _before_ your backlog and before Spec-Driven Development (SDD): the
+definition says what the product is; backlog items and SDD specs cite it rather than re-stating
+it.
 
-Five minutes here gives you the artifact families, the product graph, the three operations, and
-the end-to-end change flow. Everything has a normative contract in the
-[specification](../specification/index.md); these pages explain, the specification decides.
+Five minutes here gives you the artifact families, the product graph, the operations, and the
+citation contract. The normative contracts live in the
+[specification repository](https://github.com/product-definition-as-code/spec); these pages
+explain, the specification decides.
 
 ## The artifact families
 
@@ -33,25 +34,29 @@ Each artifact declares its relationships in frontmatter: a use case names its `p
 its governing rules, the terms it uses. Those typed references make the definition a directed
 graph, compiled by tooling from the Markdown — never authored as a graph, always rebuildable,
 never a database. Each relationship is authored in exactly one direction; every reverse view is
-derived. The graph is what powers validation, impact analysis and handoff context selection.
+derived. The graph is what powers validation, impact analysis and citation resolution.
 Details in [The product graph](product-graph.md).
 
-## Three operations
+## Operations
 
 - **[Define](define.md)** — greenfield. Establish a product definition from intent: actors first,
   then journeys, use cases, rules, terms, requirements, with open questions kept visible.
 - **[Recover](recover.md)** — brownfield. Reconstruct candidate product knowledge from an
-  existing system, with provenance and confidence, for a human to validate. Automated recovery is
-  out of scope in v0.1; the workflow and its extension point are defined.
-- **[Explore](change.md#0-explore-the-idea-optional)** — pre-change. A product-graph-aware
-  thinking partner (`ps:explore`) that helps clarify a fuzzy idea against the existing model
-  before committing to a change. Optional: engineers with a clear request skip it.
-- **[Change](change.md)** — the center of v0.1, working end to end. Every semantic evolution
-  after the initial baseline goes through an explicit, validated, human-approved Product Change.
+  existing system, with provenance and confidence, for a human to validate.
+- **Explore** — pre-change. A product-graph-aware thinking partner (`ps:explore`) that helps
+  clarify a fuzzy idea against the existing model before committing to a change.
+- **Validate** — the structural gate. `prodshape validate` checks the full tree; a proposal that
+  fails validation MUST NOT be merged (CI gate).
+- **Cite** — emit a citation record from a consumer document to a product artifact, carrying the
+  artifact ID, a content digest, and an optional scenario anchor.
+- **Verify citations** — `prodshape citations verify` recomputes digests and reports one status
+  per citation: `current`, `stale`, `tampered` or `unresolved`.
 
-## From change to promotion
+## Change as pull request
 
-The Change operation carries a modification from request to canonical definition:
+The baseline is the canonical product model on the repository's canonical branch. A change is
+the repository's native branch-review-merge mechanism: a pull request. There is no bespoke
+change artifact, no overlay, no promotion step.
 
 ```text
 Fuzzy idea
@@ -61,49 +66,44 @@ ps:explore ──────── reads the product graph; surfaces gaps and a
         │           areas; sharpens the idea through conversation
         │
         ▼
-Product Definition (baseline)
+Pull request ────── edits docs/product/model/ directly; CI runs
+        │           prodshape validate; human reviews and merges
+        ▼
+Baseline ────────── the merged model is the new canonical definition
         │
         ▼
-Product Change ──── explicit delta: additions, modifications, removals,
-        │           rationale, open questions; human approves
-        ▼
-Delivery Slice ──── coherent vertical increment of the change,
-        │           with requirement coverage; human approves
-        ▼
-Backlog Item ────── references product artifacts by stable ID
-        │           (never copies the definition)
-        ▼
-Product Handoff ─── generated, framework-independent package of exactly
-        │           the product subgraph one increment needs
+Consumer docs ───── cite product artifacts by ID + digest + anchor;
+        │           prodshape citations verify detects drift
         ▼
 SDD workflow ────── e.g. OpenSpec: proposal, specs, design, tasks
-        │           (native SDD ownership, unchanged)
-        ▼
-Implementation ───▶ Verification
-        │
-        ▼
-Promotion ───────── explicit, human-triggered: the verified change is
-                    applied to the baseline; the loop closes
+                    (native SDD ownership, unchanged)
 ```
 
-Nothing on this path is implicit. Tools validate structure at every step; humans approve the
-change, the slices and the promotion; AI assists with drafting and analysis in between. Slicing
-is explained in [Delivery slicing](delivery-slicing.md), backlog references in
-[Backlog projection](backlog-projection.md), and the SDD boundary in
-[SDD handoff](sdd-handoff.md).
+Merging is a human decision. Tools MUST NOT merge, auto-approve or self-merge model changes.
+Consumers of the model MUST NOT write to it; they cite it.
+
+## The citation contract
+
+A citation is a machine-verifiable reference from a consumer document (an SDD spec, a task, an
+agent prompt file, a design doc) to canonical product text. It records the target artifact `id`,
+a content `digest`, and an optional `anchor` (a verification scenario id). When the canonical
+content changes, the citation reports `stale` — drift is machine-detectable rather than silent.
+
+See the
+[citation contract](https://github.com/product-definition-as-code/spec/blob/main/spec/citation-contract.md)
+in the specification repository for the normative details.
 
 ## Division of responsibility
 
 - **Deterministic tooling** (the `prodshape` CLI) enforces structure: schemas, IDs,
-  relationships, lifecycle, overlay validation, digests. Same input, same result, every platform.
-- **AI skills** do semantic reasoning: drafting, impact interpretation, slice proposals. AI
-  preserves unanswered questions and never invents product decisions.
-- **Humans** make the calls that define the product: change approval, slice approval, promotion.
+  relationships, digests, citation verification. Same input, same result, every platform.
+- **AI skills** do semantic reasoning: drafting, impact interpretation, exploration. AI preserves
+  unanswered questions and never invents product decisions.
+- **Humans** make the calls that define the product: PR review and merge.
 
 ## Where to go next
 
 - [Manifesto](../manifesto.md) — why this layer exists.
-- [The product graph](product-graph.md) · [Define](define.md) · [Recover](recover.md) ·
-  [Change](change.md) · [Delivery slicing](delivery-slicing.md) ·
-  [Backlog projection](backlog-projection.md) · [SDD handoff](sdd-handoff.md)
-- [Specification](../specification/index.md) — the normative contracts behind all of it.
+- [The product graph](product-graph.md) · [Define](define.md) · [Recover](recover.md)
+- [Validation](../specification/validation.md) — diagnostic codes and exit codes.
+- [Specification](https://github.com/product-definition-as-code/spec) — the normative contracts.

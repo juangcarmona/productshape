@@ -21,14 +21,11 @@ docs/product/
 │   │   ├── quality/
 │   │   └── constraints/
 │   └── index.md  Human navigation only — never a generated index
-└── changes/     Product Changes
-    ├── active/
-    ├── completed/
-    └── rejected/
+└── changes-archive/  Historical Product Changes (retired, inert)
 ```
 
 The authority rules for these paths are normative in
-[the specification](../specification/index.md#canonical-authority).
+[the specification](https://github.com/product-definition-as-code/spec).
 
 Validate the model with `prodshape validate`. The allowed frontmatter of any artifact kind is
 printed by `prodshape schema <kind>` and enumerated in the
@@ -36,17 +33,12 @@ printed by `prodshape schema <kind>` and enumerated in the
 also installs an authoring template per kind under `.product/templates/`. This repository authors
 from the specification directly, so it has none.
 
-## How this baseline came to exist
+## How this baseline evolves
 
-This initial model was authored directly under the **initial-baseline bootstrap exception**:
-
-> An initial product baseline MAY be established directly during product initialization or the
-> first Define operation. Once that baseline has been accepted, every subsequent semantic
-> evolution of the product MUST be represented through a Product Change.
-
-That exception has been used — once. From here on, every semantic change to `model/` goes through
-a Product Change under `changes/` and reaches the baseline only by explicit promotion
-(`prodshape change promote`). See [Product Changes](../specification/product-changes.md).
+The baseline changes through exactly one operation: a human merging a validated proposed revision
+(a pull request). Everything else is a proposal. `prodshape validate` runs as a CI gate; a proposal
+that fails structural validation MUST NOT be merged. Consumer documents cite product artifacts by
+ID + digest + anchor; `prodshape citations verify` detects drift.
 
 ## Scope of this model
 

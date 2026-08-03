@@ -48,13 +48,15 @@ Two assertions carry the whole design:
 Evolution is explicit end to end:
 
 ```text
-Product Definition → Product Change → Delivery Slice → Backlog Item → Product Handoff
-  → native SDD workflow → Implementation → Verification → explicit Promotion
+Product Definition → Pull Request (validated, human-merged) → Baseline
+  → Consumer docs cite artifacts by ID + digest → citations verify detects drift
+  → native SDD workflow → Implementation → Verification
 ```
 
-Nothing modifies the product model silently: changes are proposed as validated deltas, delivered
-through your SDD framework, and applied to the baseline only by explicit promotion. The five-minute
-explanation is [the methodology overview](docs/methodology/overview.md).
+Nothing modifies the product model silently: changes are pull requests that must pass
+`prodshape validate` before merge (CI gate). Consumer documents cite product artifacts rather than
+re-stating them, so drift is machine-detectable. The five-minute explanation is
+[the methodology overview](docs/methodology/overview.md).
 
 ## The artifacts
 
@@ -72,10 +74,9 @@ The current product model is a set of Markdown artifacts, each with a stable imm
 | Quality Requirement    | `QR-`   | A measurable quality obligation                      |
 | Constraint             | `CON-`  | An externally imposed or deliberately fixed boundary |
 
-Three further kinds carry the change flow: Product Changes (`CHG-`), Delivery Slices (`SLI-`) and
-Product Handoffs (`HOF-`). Contracts, required sections and lifecycles are normative in
-[the specification](docs/specification/artifacts.md); `templates/` has a conformant starting point
-for each kind.
+Contracts, required sections and lifecycles are normative in
+[the specification](https://github.com/product-definition-as-code/spec); `templates/` has a
+conformant starting point for each kind.
 
 Frontmatter is a **closed** contract — an unrecognised property is an error, never silently
 ignored — so the allowed fields of every kind are enumerated in the
@@ -103,24 +104,17 @@ this, how far, in which direction" — deterministically, with no semantic claim
 When the idea is fuzzy, `/ps:explore` is the entry point: it reads the product graph, reasons
 from a structural high-altitude view (surfacing gaps, inconsistencies and affected artifacts),
 and helps clarify the request before committing to a change. When the model is new or minimal it
-explains the artifact vocabulary instead. It ends with an explicit offer to proceed to
-`/ps:change`.
+explains the artifact vocabulary instead.
 
-A modification request never edits the model directly. It becomes a Product Change: a delta with
-rationale, operations (`add`/`modify`/`remove`) and complete proposed future-state artifacts,
-validated as an overlay on the baseline without touching it. Once approved, the change is
-decomposed into delivery slices — implementable, verifiable product increments with explicit
-requirement coverage. Each slice projects to a backlog item and generates a Product Handoff: a
-framework-independent package of exactly the product subgraph that increment needs, with content
-digests so staleness is detectable per artifact.
+A modification request is a pull request: direct edits to `docs/product/model/`, validated by
+`prodshape validate` as a full tree (CI gate). Merging is a human decision; tools MUST NOT merge,
+auto-approve or self-merge model changes. The merged model is the new canonical baseline.
 
-Your SDD framework consumes the handoff and runs its native workflow unchanged. With the OpenSpec
-adapter, the handoff lands as sidecar files inside a normal OpenSpec change; OpenSpec's lifecycle
-is untouched and archiving never promotes. When all slices are done and coverage evidence exists, a
-human explicitly promotes the Product Change, which applies it to the baseline. Details:
-[change](docs/methodology/change.md), [delivery slicing](docs/methodology/delivery-slicing.md),
-[SDD handoff](docs/methodology/sdd-handoff.md) and the
-[handoff contract](docs/specification/handoff-contract.md).
+Consumer documents (SDD specs, tasks, agent prompts, design docs) cite product artifacts by ID +
+content digest + optional scenario anchor, so drift between a consumer document and the canonical
+model is machine-detectable rather than silent. `prodshape citations verify` recomputes digests
+and reports one status per citation: `current`, `stale`, `tampered` or `unresolved`. Details:
+[change-as-PR and the citation contract](docs/methodology/overview.md).
 
 ## Packages
 
@@ -161,7 +155,7 @@ to run against — 64 artifacts, zero diagnostics:
 ```bash
 node packages/cli/dist/bin.js validate
 node packages/cli/dist/bin.js graph --format mermaid
-node packages/cli/dist/bin.js inspect FR-COVERAGE-001
+node packages/cli/dist/bin.js inspect FR-CITE-001
 node packages/cli/dist/bin.js impact BR-SDD-001 --direction incoming
 ```
 
@@ -175,12 +169,12 @@ prodshape fix --filenames --dry-run           # what would be renamed to match i
 prodshape fix --filenames                     # rename them (resolves PRODUCT101)
 ```
 
-For a new repository, scaffold the model plus the AI and SDD integrations with:
+For a new repository, scaffold the model plus the AI integrations with:
 
 ```bash
-prodshape init --ai claude --sdd openspec --dry-run   # report every path, write nothing
-prodshape init --ai claude --sdd openspec             # then apply it
-prodshape doctor                                      # check the result is healthy
+prodshape init --ai claude --dry-run           # report every path, write nothing
+prodshape init --ai claude                     # then apply it
+prodshape doctor                               # check the result is healthy
 ```
 
 `--ai` takes a comma-separated list (`--ai claude,copilot`). `--dry-run` reports what would be
@@ -191,7 +185,7 @@ running first in a repository that already has content — and it works as a CI 
 as `node packages/cli/dist/bin.js`. The package installs `product-definition` alongside it — a
 v0.x compatibility alias with identical output, removed before v1. The
 `/product:*` commands stay canonical and are always generated; `/ps:*` is an opt-in shorthand
-(`/ps:explore`, `/ps:change`, `/ps:impact`, `/ps:handoff`), enabled with `init --shorthand` or by setting
+(`/ps:explore`, `/ps:impact`), enabled with `init --shorthand` or by setting
 `integrations.shorthand-commands: true`. This repository has it enabled.
 
 What you can read alongside:
@@ -214,8 +208,8 @@ Adoption guides for the four entry paths: [greenfield](docs/adoption/greenfield.
 ## Current status
 
 v0.1 established the whole loop: the methodology and normative specification, the graph core with
-deterministic validation, Product Changes with overlay validation and explicit promotion, the six AI
-skills with generated Claude Code and GitHub Copilot integrations, and the OpenSpec adapter. It is
+deterministic validation, the citation contract with `cite` and `citations verify`, the AI skills
+with generated Claude Code and GitHub Copilot integrations, and the OpenSpec adapter. It is
 published to npm under the `@prodshape/*` scope, and the public brand is settled — ProductShape, the
 reference implementation of the Product Definition as Code methodology.
 
@@ -228,10 +222,9 @@ discoverable — an optional `provenance` object on every artifact kind, a
 filename drift that was unfixable by hand on Windows, and `prodshape init --dry-run` for the "what
 will this do to my repository?" question that has to be answered before running anything.
 
-The loop is not a diagram here; the repository runs on it. Three Product Changes have gone through
-it end to end — `CHG-TRACEABILITY-001`, `CHG-BRAND-001` and `CHG-CLI-POLISH-001` — each sliced,
-handed off into a native OpenSpec change, implemented, covered with evidence and explicitly promoted.
-The model that results is the one the CLI validates above.
+The loop is not a diagram here; the repository runs on it. This repository defines itself with its
+own methodology — the model the CLI validates above is the product definition of ProductShape itself,
+evolved through pull requests and verified by citations.
 
 Remaining open decisions are in [OPEN-DECISIONS.md](OPEN-DECISIONS.md), and what is deliberately not
 built is below.
