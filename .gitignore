@@ -20,3 +20,6 @@ Thumbs.db
 packages/cli/schemas/
 packages/cli/assets/
 packages/cli/*.tgz
+
+# vscode settings
+.vscode/
