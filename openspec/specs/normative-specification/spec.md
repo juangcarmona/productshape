@@ -2,22 +2,22 @@
 
 ## Purpose
 
-The normative specification documents that fix the methodology's artifact, relationship and handoff contracts.
+The normative specification documents that fix the methodology's artifact, relationship and citation contracts.
 
 ## Requirements
 
 ### Requirement: The specification defines every artifact type normatively
 
-The specification SHALL define, using RFC-style normative language (MUST, MUST NOT, SHOULD, SHOULD NOT, MAY), the structure and semantics of Actors, Journeys, Use Cases, Business Rules, Domain Terms, Bounded Contexts, Functional Requirements, Quality Requirements, Constraints, Product Changes, Delivery Slices and Product Handoffs, including required frontmatter fields and required body sections.
+The specification SHALL define, using RFC-style normative language (MUST, MUST NOT, SHOULD, SHOULD NOT, MAY), the structure and semantics of Actors, Journeys, Use Cases, Business Rules, Domain Terms, Bounded Contexts, Functional Requirements, Quality Requirements and Constraints, including required frontmatter fields and required body sections.
 
 #### Scenario: Looking up an artifact contract
 
 - **WHEN** an author needs the required sections of a Use Case
-- **THEN** `docs/specification/artifacts.md` lists its frontmatter contract and required body sections normatively
+- **THEN** the specification repo lists its frontmatter contract and required body sections normatively
 
 ### Requirement: Identifier rules are fixed
 
-The specification SHALL define stable immutable IDs with the fixed prefixes ACT-, JRN-, UC-, BR-, TERM-, BC-, FR-, QR-, CON-, CHG-, SLI- and HOF-, state that IDs become immutable after first acceptance into the current model, are never reused, and are never inferred from file paths, and that file-name alignment is a warning, not an identity mechanism.
+The specification SHALL define stable immutable IDs with the fixed prefixes ACT-, JRN-, UC-, BR-, TERM-, BC-, FR-, QR- and CON-, state that IDs become immutable after first acceptance into the current model, are never reused, and are never inferred from file paths, and that file-name alignment is a warning, not an identity mechanism. Retired prefixes (CHG-, SLI-, HOF-) are never reused.
 
 #### Scenario: Renaming an artifact file
 
@@ -35,34 +35,43 @@ The specification SHALL define the canonical relationship fields per source arti
 
 ### Requirement: Canonical authority inside docs/product is explicit
 
-The specification SHALL distinguish canonical current semantics (`docs/product/model/**/*.md`), canonical proposed change definitions (`changes/active/**/change.md`), canonical proposed future-state artifacts (`changes/active/**/proposed/**/*.md`), authoritative delivery decomposition (`changes/active/**/slices/*.yaml`) and generated non-canonical outputs (handoffs, context documents, graph files, indexes, diagrams, traceability reports). `docs/product/model/index.md` SHALL be defined as a human navigation document that never duplicates relationships.
+The specification SHALL distinguish canonical current semantics (`docs/product/model/**/*.md`) from generated non-canonical outputs (graph files, indexes, diagrams, traceability reports). `docs/product/model/index.md` SHALL be defined as a human navigation document that never duplicates relationships. The baseline changes through exactly one operation: a human merging a validated proposed revision (a pull request).
 
 #### Scenario: Determining whether a file may be edited by hand
 
-- **WHEN** a contributor asks whether `product-context.md` may be edited
+- **WHEN** a contributor asks whether a generated graph file may be edited
 - **THEN** the specification identifies it as generated and non-canonical
 
-### Requirement: Lifecycle states are schema-specific
+### Requirement: Lifecycle states are artifact-specific
 
-The specification SHALL define three separate lifecycles — artifact status (draft, active, deprecated, retired), Product Change status (draft, proposed, approved, in-progress, implemented, rejected, superseded) and Delivery Slice status (draft, proposed, approved, in-progress, completed, cancelled) — and SHALL NOT define a shared generic status enum.
+The specification SHALL define artifact status (draft, active, deprecated, retired) as the only lifecycle enum. Retired lifecycles (Product Change status, Delivery Slice status) are never reused.
 
-#### Scenario: Validating a slice status value
+#### Scenario: Validating an artifact status value
 
-- **WHEN** a Delivery Slice declares `status: retired`
-- **THEN** the specification defines this as invalid because `retired` belongs to the artifact lifecycle only
+- **WHEN** an artifact declares `status: published`
+- **THEN** the specification defines this as invalid because `published` is not in the artifact lifecycle enum
 
-### Requirement: Product Change semantics are separated from the current model
+### Requirement: Change-as-PR replaces the push pipeline
 
-The specification SHALL define Product Changes as explicit deltas (add, modify, remove) with complete proposed future-state artifacts, validated as an overlay against the baseline, promoted only explicitly, and SHALL include the initial-baseline bootstrap exception.
+The specification SHALL define the baseline as the canonical product model on the repository's canonical branch, changes as native pull requests validated by full-tree structural validation (CI gate), and merging as a human decision. Tools MUST NOT merge, auto-approve or self-merge model changes. The bootstrap exception is deleted; the initial baseline enters through the same mechanism as every later change.
 
 #### Scenario: Requesting a change
 
-- **WHEN** a stakeholder requests a product modification after the baseline is accepted
-- **THEN** the specification requires a Product Change and forbids silent modification of `docs/product/model`
+- **WHEN** a stakeholder requests a product modification
+- **THEN** the specification requires a pull request and forbids silent modification of `docs/product/model`
+
+### Requirement: The citation contract is the delivery boundary
+
+The specification SHALL define a citation as a machine-verifiable reference from a consumer document to canonical product text, carrying the target artifact `id`, a content `digest`, and an optional `anchor` (a verification scenario id). The specification SHALL define four citation statuses (current, stale, tampered, unresolved) and the diagnostics PRODUCT042, PRODUCT060, PRODUCT061, PRODUCT062 and PRODUCT063. Consumers MUST NOT write to the canonical product model; they cite it.
+
+#### Scenario: A consumer document cites an artifact
+
+- **WHEN** an SDD spec cites `FR-X` with a recorded digest
+- **THEN** `prodshape citations verify` computes the status and reports drift if the canonical content changed
 
 ### Requirement: Validation diagnostics are enumerated with stable codes
 
-The specification SHALL enumerate the deterministic validation errors and warnings with stable `PRODUCT###` diagnostic codes, the machine-readable diagnostic fields (severity, code, message, source file, artifact ID, field, target ID) and the CLI exit codes 0, 1, 2 and 3.
+The specification SHALL enumerate the deterministic validation errors and warnings with stable `PRODUCT###` diagnostic codes, the machine-readable diagnostic fields (severity, code, message, source file, artifact ID, field, target ID) and the CLI exit codes 0, 1, 2 and 3. Retired codes are never reused.
 
 #### Scenario: A tool consumes diagnostics
 
@@ -76,7 +85,7 @@ The specification SHALL define what it means for a repository and for an impleme
 #### Scenario: Judging a fixture
 
 - **WHEN** a fixture artifact violates a normative statement
-- **THEN** `docs/specification/conformance.md` classifies which diagnostic the violation maps to
+- **THEN** the specification classifies which diagnostic the violation maps to
 
 ### Requirement: The allowed frontmatter of every document kind is documented and generated
 

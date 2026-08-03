@@ -8,7 +8,7 @@ This repository's own product model, keeping the reference implementation define
 
 ### Requirement: The repository defines itself with its own methodology
 
-The repository SHALL contain an initial current product model under `docs/product/model` covering the adoption and change workflow, established under the initial-baseline bootstrap exception, with at minimum: actors ACT-PRODUCT-ENGINEER, ACT-REPOSITORY-MAINTAINER, ACT-AI-ASSISTANT; journeys JRN-ADOPT-001, JRN-CHANGE-001, JRN-SDD-HANDOFF-001; use cases UC-INIT-001, UC-DEFINE-001, UC-VALIDATE-001, UC-INSPECT-001, UC-IMPACT-001, UC-CHANGE-001, UC-SLICE-001, UC-HANDOFF-001, UC-HANDOFF-STATUS-001, UC-PROMOTE-001; business rules BR-CANONICAL-001, BR-IDENTITY-001, BR-RELATIONSHIPS-001, BR-CHANGE-001, BR-SDD-001, BR-AI-001; domain terms TERM-PRODUCT-ARTIFACT, TERM-PRODUCT-GRAPH, TERM-PRODUCT-CHANGE, TERM-DELIVERY-SLICE, TERM-PRODUCT-HANDOFF, TERM-PRODUCT-CONTEXT, TERM-CURRENT-PRODUCT-MODEL; bounded contexts BC-PRODUCT-DEFINITION, BC-DELIVERY-INTEGRATION; the fifteen functional requirements FR-INIT-001 through FR-COVERAGE-001 listed in the founding brief; quality requirements QR-PORTABILITY-001, QR-DETERMINISM-001, QR-EXPLAINABILITY-001, QR-EXTENSIBILITY-001; and constraints CON-MARKDOWN-001, CON-NO-GRAPH-DATABASE, CON-NO-WEB-UI, CON-SDD-AGNOSTIC, CON-PUBLIC-GENERIC.
+The repository SHALL contain a current product model under `docs/product/model` covering the adoption, validation and citation workflow, evolved through pull requests (change-as-PR), with at minimum: actors ACT-PRODUCT-ENGINEER, ACT-REPOSITORY-MAINTAINER, ACT-AI-ASSISTANT, ACT-PRODUCT-EXPLORER; journeys JRN-ADOPT-001, JRN-SNAPSHOT-001; use cases UC-INIT-001, UC-DEFINE-001, UC-VALIDATE-001, UC-INSPECT-001, UC-IMPACT-001, UC-CITE-001, UC-CITATIONS-VERIFY-001, UC-SCHEMA-001, UC-FIX-001, UC-EXPLORE-001, UC-SNAPSHOT-001, UC-SNAPSHOT-EXPLORE-001; business rules BR-CANONICAL-001, BR-IDENTITY-001, BR-RELATIONSHIPS-001, BR-CHANGE-001, BR-SDD-001, BR-AI-001; domain terms TERM-PRODUCT-ARTIFACT, TERM-PRODUCT-GRAPH, TERM-PRODUCT-CONTEXT, TERM-CURRENT-PRODUCT-MODEL; bounded contexts BC-PRODUCT-DEFINITION, BC-DELIVERY-INTEGRATION; functional requirements FR-INIT-001, FR-PARSE-001, FR-VALIDATE-001, FR-VALIDATE-002, FR-GRAPH-001, FR-INSPECT-001, FR-IMPACT-001, FR-CITE-001, FR-CITATIONS-VERIFY-001, FR-DISTRIBUTION-001, FR-OPENSPEC-001, FR-SCHEMA-001, FR-FIX-001, FR-DOCTOR-001, FR-EXPLORE-001, FR-SNAPSHOT-001 through FR-SNAPSHOT-009; quality requirements QR-PORTABILITY-001, QR-DETERMINISM-001, QR-EXPLAINABILITY-001, QR-EXTENSIBILITY-001, QR-ACCESSIBILITY-001, QR-PRESENTATION-001, QR-SCALABILITY-001; and constraints CON-MARKDOWN-001, CON-NO-GRAPH-DATABASE, CON-NO-WEB-UI, CON-SDD-AGNOSTIC, CON-PUBLIC-GENERIC, CON-BRAND-001.
 
 #### Scenario: Model completeness check
 
@@ -40,7 +40,7 @@ The repository SHALL contain `.product/config.yaml` conforming to the configurat
 #### Scenario: Reading the configuration
 
 - **WHEN** tooling reads `.product/config.yaml`
-- **THEN** the model and changes paths resolve to the self-hosted product definition
+- **THEN** the model path resolves to the self-hosted product definition
 
 ### Requirement: The baseline describes every capability the toolkit actually has
 
