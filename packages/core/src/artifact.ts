@@ -12,8 +12,8 @@ export const productArtifactTypes = [
 
 export type ProductArtifactType = (typeof productArtifactTypes)[number];
 
-/** Markdown-authored document types (product artifacts). */
-export const markdownDocumentTypes = [...productArtifactTypes] as const;
+/** Markdown-authored document types (product artifacts plus the change-draft definition). */
+export const markdownDocumentTypes = [...productArtifactTypes, 'product-change'] as const;
 
 export type MarkdownDocumentType = (typeof markdownDocumentTypes)[number];
 
@@ -27,6 +27,7 @@ export const idPrefixByType: Record<MarkdownDocumentType, string> = {
   'functional-requirement': 'FR',
   'quality-requirement': 'QR',
   constraint: 'CON',
+  'product-change': 'CHG',
 };
 
 export const requiredBodySections: Record<MarkdownDocumentType, string[]> = {
@@ -53,6 +54,12 @@ export const requiredBodySections: Record<MarkdownDocumentType, string[]> = {
   'functional-requirement': ['Requirement', 'Rationale', 'Acceptance Scenarios'],
   'quality-requirement': ['Requirement', 'Measurement', 'Verification'],
   constraint: ['Constraint', 'Rationale', 'Consequences'],
+  'product-change': [
+    'Intent',
+    'Affected Artifacts',
+    'Open Questions',
+    'Out of Scope',
+  ],
 };
 
 export function isMarkdownDocumentType(value: unknown): value is MarkdownDocumentType {

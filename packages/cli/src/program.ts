@@ -1,4 +1,5 @@
 import { Command, CommanderError } from 'commander';
+import { runChangeList, runChangeValidate } from './commands/change.js';
 import { runCite } from './commands/cite.js';
 import { runCitationsVerify } from './commands/citations.js';
 import { runDoctorCommand } from './commands/doctor.js';
@@ -75,6 +76,22 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .description('Check repository structure, configuration and managed files')
     .action(async () => {
       capture.code = await runDoctorCommand(io);
+    });
+
+  const change = program.command('change').description('Draft and validate product changes');
+  change
+    .command('validate')
+    .description('Validate the working tree as a proposed change (full-tree validation)')
+    .option('--format <format>', 'output format: text or json', 'text')
+    .action(async (options: { format: 'text' | 'json' }) => {
+      capture.code = await runChangeValidate(io, options);
+    });
+  change
+    .command('list')
+    .description('List change drafts under docs/product/changes/')
+    .option('--format <format>', 'output format: text or json', 'text')
+    .action(async (options: { format: 'text' | 'json' }) => {
+      capture.code = await runChangeList(io, options);
     });
 
   program

@@ -384,7 +384,7 @@ describe('self-application', () => {
   it('validates this repository with exit 0', async () => {
     const result = await run(['validate'], repoRoot);
     expect(result.code).toBe(0);
-    // 72 artifacts, zero diagnostics, after RFC #4 delivery-model reset.
-    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across 72 artifact\(s\)/);
+    // 74 artifacts, zero diagnostics, after RFC #4 delivery-model reset + change recovery.
+    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across 74 artifact\(s\)/);
   });
 });

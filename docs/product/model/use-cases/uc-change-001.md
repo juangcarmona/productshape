@@ -1,0 +1,50 @@
+---
+id: UC-CHANGE-001
+type: use-case
+title: Draft a product change
+status: active
+primary-actor: ACT-PRODUCT-ENGINEER
+supporting-actors:
+  - ACT-AI-ASSISTANT
+bounded-context: BC-PRODUCT-DEFINITION
+governed-by:
+  - BR-CHANGE-001
+  - BR-AI-001
+uses-terms:
+  - TERM-CURRENT-PRODUCT-MODEL
+---
+
+## Goal
+
+Produce a structured change draft and proposed artifacts in the working tree, validated before the pull request is opened.
+
+## Trigger
+
+The Product Engineer or AI Assistant receives a modification request and wants AI-assisted drafting of the affected artifacts.
+
+## Preconditions
+
+- The product model exists and validates.
+
+## Main Flow
+
+1. The actor creates a change draft (`change.md`) with a `CHG-` ID, intent, and affected-artifacts list.
+2. The AI Assistant reads the product graph and identifies which artifacts need to be added, modified, or removed.
+3. The AI Assistant drafts the proposed artifacts directly into `docs/product/model/`.
+4. The actor runs `prodshape change validate` to validate the working tree as a proposed change.
+5. The actor resolves open questions and adjusts the drafted artifacts.
+6. The actor opens a pull request with the proposed changes.
+
+## Alternative Flows
+
+- The engineer may draft artifacts manually without AI assistance.
+
+## Failure Conditions
+
+- `prodshape change validate` reports errors (the proposed change is structurally invalid).
+- Open questions remain unresolved.
+
+## Postconditions
+
+- The working tree contains a valid proposed change.
+- A change draft exists with intent, affected artifacts, and open questions.

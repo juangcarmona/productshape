@@ -61,7 +61,7 @@ describe('self-hosted model through the full pipeline', () => {
     // TERM-REFERENCE-IMPLEMENTATION) are referenced from UC-INIT-001.
     const warnings = diagnostics.filter((d) => d.severity === 'warning');
     expect(warnings).toEqual([]);
-    expect(graph.nodes).toHaveLength(72);
+    expect(graph.nodes).toHaveLength(74);
     expect(graph.edges.length).toBeGreaterThan(60);
   });
 });
@@ -69,7 +69,7 @@ describe('self-hosted model through the full pipeline', () => {
 describe('bundled schemas', () => {
   it('are byte-identical to the canonical schemas directory', async () => {
     const canonical = await listFilesRecursive(schemasDir, '.schema.json');
-    expect(canonical.length).toBe(10);
+    expect(canonical.length).toBe(11);
     for (const file of canonical) {
       const name = file.split(/[\\/]/).pop() as string;
       const bundled = join(repoRoot, 'packages', 'core', 'schemas', name);

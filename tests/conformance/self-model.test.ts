@@ -26,6 +26,8 @@ const expectedIds: Record<string, string[]> = {
     // Added by RFC #4 (citation contract).
     'UC-CITE-001',
     'UC-CITATIONS-VERIFY-001',
+    // Recovered: change drafting (adapted to change-as-PR).
+    'UC-CHANGE-001',
     // Added by CHG-CLI-POLISH-001 (adoption improvements).
     'UC-SCHEMA-001',
     'UC-FIX-001',
@@ -70,6 +72,8 @@ const expectedIds: Record<string, string[]> = {
     // Added by RFC #4 (citation contract).
     'FR-CITE-001',
     'FR-CITATIONS-VERIFY-001',
+    // Recovered: change drafting (adapted to change-as-PR).
+    'FR-CHANGE-001',
     'FR-DISTRIBUTION-001',
     'FR-OPENSPEC-001',
     // Added by CHG-CLI-POLISH-001 (adoption improvements).

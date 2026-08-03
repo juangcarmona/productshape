@@ -49,11 +49,11 @@ describe('bundled assets', () => {
     }
   });
 
-  it('loads four skills, five commands and nine templates', async () => {
+  it('loads five skills, six commands and ten templates', async () => {
     const assets = await loadBundledAssets();
-    expect(assets.skills).toHaveLength(4);
-    expect(assets.commands).toHaveLength(5);
-    expect(assets.templates).toHaveLength(9);
+    expect(assets.skills).toHaveLength(5);
+    expect(assets.commands).toHaveLength(6);
+    expect(assets.templates).toHaveLength(10);
     expect(assets.version).toMatch(/^\d+\.\d+\.\d+$/);
   });
 });
@@ -222,7 +222,7 @@ describe('shorthand command aliases', () => {
       const onPaths = (await listFilesRecursive(join(on, '.github', 'prompts'), '.md')).map((f) =>
         toPosix(f),
       );
-      expect(onPaths.filter((p) => p.includes('/ps-'))).toHaveLength(5);
+      expect(onPaths.filter((p) => p.includes('/ps-'))).toHaveLength(6);
       // Persisted, not just applied: `integration update` re-renders from configuration.
       expect(await readFile(join(on, '.product', 'config.yaml'), 'utf8')).toContain(
         'shorthand-commands: true',
@@ -233,7 +233,7 @@ describe('shorthand command aliases', () => {
         (await listFilesRecursive(join(on, '.github', 'prompts'), '.md')).filter((f) =>
           toPosix(f).includes('/ps-'),
         ),
-      ).toHaveLength(5);
+      ).toHaveLength(6);
     } finally {
       await rm(off, { recursive: true, force: true });
       await rm(on, { recursive: true, force: true });
@@ -249,7 +249,7 @@ describe('shorthand command aliases', () => {
       const prompts = join(scratch, '.github', 'prompts');
       expect(
         (await listFilesRecursive(prompts, '.md')).filter((f) => toPosix(f).includes('/ps-')),
-      ).toHaveLength(5);
+      ).toHaveLength(6);
 
       const config = join(scratch, '.product', 'config.yaml');
       const current = await readFile(config, 'utf8');
@@ -261,7 +261,7 @@ describe('shorthand command aliases', () => {
 
       const update = await run(['integration', 'update'], scratch);
       expect(update.code).toBe(0);
-      expect(update.out).toContain('Removed 5 managed file(s)');
+      expect(update.out).toContain('Removed 6 managed file(s)');
       expect(
         (await listFilesRecursive(prompts, '.md')).filter((f) => toPosix(f).includes('/ps-')),
       ).toEqual([]);

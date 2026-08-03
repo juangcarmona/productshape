@@ -7,7 +7,7 @@ const templatesDir = join(repoRoot, 'templates');
 describe('templates conform to their schemas', () => {
   it('every Markdown template validates', async () => {
     const files = await listFilesRecursive(templatesDir, '.md');
-    expect(files).toHaveLength(9);
+    expect(files).toHaveLength(10);
     for (const file of files) {
       const result = await validateMarkdownDocument(file);
       expect.soft(result.diagnostics, result.file).toEqual([]);

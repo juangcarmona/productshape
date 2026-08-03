@@ -262,7 +262,20 @@ The nine artifact types of the current product model.
 
 ### Product Change
 
-`CHG-`. The Markdown-authored definition of a proposed change to the baseline. Authored by hand and validated through the same schema path as the artifacts. Semantics, lifecycle and overlay rules are in [Product Changes](product-changes.md).
+`CHG-`. A lightweight drafting aid for a proposed product change. Lives under `docs/product/changes/` while work is in flight; deleted or archived when the PR merges. Not a normative model artifact — no overlay, no promotion, no lifecycle states beyond draft/done.
+
+<!-- BEGIN GENERATED: product-change -->
+
+| Field | Required | Type | Allowed values | Notes |
+| --- | --- | --- | --- | --- |
+| `id` | yes | string | `^CHG-[A-Z0-9]+(-[A-Z0-9]+)*$` |  |
+| `type` | yes | const | `product-change` |  |
+| `title` | yes | string |  | Must not be empty. |
+| `status` | yes | enum | `draft`, `done` | draft while the change is in flight; done when the PR is ready to merge. |
+| `affected-artifacts` | no | array of string |  | Artifact IDs this change intends to add, modify or remove. Informational — not validated as an overlay. |
+| `affected-artifacts[]` | yes | string | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$` |  |
+
+<!-- END GENERATED: product-change -->
 
 Note that `provenance` is **not** accepted here. A recovery change carries provenance on its proposed artifacts, which are ordinary artifact documents, not on the change itself.
 
