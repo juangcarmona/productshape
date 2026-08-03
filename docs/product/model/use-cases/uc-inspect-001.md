@@ -16,13 +16,11 @@ uses-terms:
 
 ## Goal
 
-A complete picture of one artifact, obtained by its stable ID: what it is, where it lives, what
-it references, what references it, and what work currently touches it.
+A complete picture of one artifact, obtained by its stable ID: what it is, where it lives, what it references, what references it, and what work currently touches it.
 
 ## Trigger
 
-The Product Engineer runs `prodshape inspect <ID>`, typically before proposing a
-modification or while reviewing someone else's.
+The Product Engineer runs `prodshape inspect <ID>`, typically before proposing a modification or while reviewing someone else's.
 
 ## Preconditions
 
@@ -31,11 +29,9 @@ modification or while reviewing someone else's.
 ## Main Flow
 
 1. The engineer runs `prodshape inspect <ID>`.
-2. The artifact's metadata is shown: type, title, status and its canonical path in the
-   repository.
+2. The artifact's metadata is shown: type, title, status and its canonical path in the repository.
 3. Its outgoing relationships are listed — everything the artifact declares in its frontmatter.
-4. Its incoming relationships are listed as derived views: everything in the model that
-   references this artifact, computed rather than authored.
+4. Its incoming relationships are listed as derived views: everything in the model that references this artifact, computed rather than authored.
 5. Active Product Changes that add, modify or remove the artifact are listed.
 6. Delivery Slices whose scope includes the artifact are listed.
 7. Product Handoffs that packaged the artifact are listed.
@@ -46,8 +42,7 @@ modification or while reviewing someone else's.
 
 ## Failure Conditions
 
-- Unknown ID: the command reports clearly that no artifact carries that ID, so a typo is
-  distinguishable from a missing artifact.
+- Unknown ID: the command reports clearly that no artifact carries that ID, so a typo is distinguishable from a missing artifact.
 
 ## Postconditions
 

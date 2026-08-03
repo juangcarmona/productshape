@@ -32,107 +32,50 @@ Out of scope:
 
 ## Requirement
 
-The product MUST generate a Product Snapshot from the authored product model with a single CLI
-command. The output MUST be exactly one self-contained HTML file: no external scripts, styles,
-fonts, images or data are fetched at open time, and the page MUST function completely when opened
-from local disk without any server. The page MUST record the source revision of the model it was
-generated from, visibly to the reader. Generation MUST be deterministic — identical model content
-MUST yield a byte-identical file — and MUST never modify any authored file. When artifacts cannot
-be parsed, generation MUST report diagnostics rather than emit a page that silently omits part of
-the model.
+The product MUST generate a Product Snapshot from the authored product model with a single CLI command. The output MUST be exactly one self-contained HTML file: no external scripts, styles, fonts, images or data are fetched at open time, and the page MUST function completely when opened from local disk without any server. The page MUST record the source revision of the model it was generated from, visibly to the reader. Generation MUST be deterministic — identical model content MUST yield a byte-identical file — and MUST never modify any authored file. When artifacts cannot be parsed, generation MUST report diagnostics rather than emit a page that silently omits part of the model.
 
 ## Rationale
 
-Self-containment is what makes the snapshot shareable to its actual audience: one file that can
-be attached, messaged or hosted anywhere, opened by someone who will never install anything. The
-recorded source revision borrows the pattern that already makes Product Handoffs trustworthy —
-"which state of the model am I looking at?" gets a deterministic answer instead of a guess.
-Byte-identical regeneration keeps the snapshot firmly in the family of derived outputs: a changed
-snapshot always signals a changed model, never a nondeterministic generator. Refusing to silently
-omit unparseable artifacts protects the snapshot's claim to be an honest projection — a page that
-quietly dropped part of the model would mislead exactly the reader least equipped to notice.
+Self-containment is what makes the snapshot shareable to its actual audience: one file that can be attached, messaged or hosted anywhere, opened by someone who will never install anything. The recorded source revision borrows the pattern that already makes Product Handoffs trustworthy — "which state of the model am I looking at?" gets a deterministic answer instead of a guess. Byte-identical regeneration keeps the snapshot firmly in the family of derived outputs: a changed snapshot always signals a changed model, never a nondeterministic generator. Refusing to silently omit unparseable artifacts protects the snapshot's claim to be an honest projection — a page that quietly dropped part of the model would mislead exactly the reader least equipped to notice.
 
 ## Acceptance Scenarios
 
-- An engineer runs the snapshot command in a repository with a valid model. Exactly one HTML
-  file is produced under the generated-output area; opened from local disk with networking
-  disabled, every capability of the page works.
-- The generated page is inspected: the model's source revision is displayed where a reader finds
-  it without searching.
-- The snapshot is generated twice from the same commit, on two different platforms. The two
-  files are byte-identical.
-- One artifact file is made unparseable. Generation reports a diagnostic naming the file; no
-  snapshot is produced that silently lacks the artifact.
+- An engineer runs the snapshot command in a repository with a valid model. Exactly one HTML file is produced under the generated-output area; opened from local disk with networking disabled, every capability of the page works.
+- The generated page is inspected: the model's source revision is displayed where a reader finds it without searching.
+- The snapshot is generated twice from the same commit, on two different platforms. The two files are byte-identical.
+- One artifact file is made unparseable. Generation reports a diagnostic naming the file; no snapshot is produced that silently lacks the artifact.
 
 ### FR-SNAPSHOT-002 — Navigate the product graph within the snapshot page
 
 ## Requirement
 
-The generated Product Snapshot MUST let a reader browse all product artifacts organized by kind,
-read each artifact's rendered content, and follow each artifact's relationships in both
-directions — the relationships its frontmatter declares and the derived reverse views computed
-from the rest of the model — as navigable links: on an artifact's rendered view, every reference
-to another artifact is a link that navigates to it. The page MUST include a graph visualization
-conveying the model's overall shape, in which selecting a node shows or highlights that
-artifact's relationships (its neighborhood), and a client-side search
-over artifact IDs, titles and content that works without network access. Every artifact MUST
-display its status, and the page MUST offer no capability to create, edit, annotate or approve
-anything.
+The generated Product Snapshot MUST let a reader browse all product artifacts organized by kind, read each artifact's rendered content, and follow each artifact's relationships in both directions — the relationships its frontmatter declares and the derived reverse views computed from the rest of the model — as navigable links: on an artifact's rendered view, every reference to another artifact is a link that navigates to it. The page MUST include a graph visualization conveying the model's overall shape, in which selecting a node shows or highlights that artifact's relationships (its neighborhood), and a client-side search over artifact IDs, titles and content that works without network access. Every artifact MUST display its status, and the page MUST offer no capability to create, edit, annotate or approve anything.
 
 ## Rationale
 
-The relationships are the methodology: a pile of rendered documents would communicate less than
-the repository already does, because the graph — who serves whom, what governs what, what derives
-from what — is where the product's coherence lives. Making the derived reverse views navigable is
-the snapshot's core value: the authored files never state them, the CLI computes them for
-engineers, and the snapshot is where everyone else finally sees them. Search and visualization
-serve the two ways a reader arrives: knowing what they are looking for, and not knowing what
-exists. Displaying statuses keeps the projection honest about the model's maturity, and the
-absence of any editing capability is what lets the snapshot remain a projection rather than
-becoming a second home for product truth.
+The relationships are the methodology: a pile of rendered documents would communicate less than the repository already does, because the graph — who serves whom, what governs what, what derives from what — is where the product's coherence lives. Making the derived reverse views navigable is the snapshot's core value: the authored files never state them, the CLI computes them for engineers, and the snapshot is where everyone else finally sees them. Search and visualization serve the two ways a reader arrives: knowing what they are looking for, and not knowing what exists. Displaying statuses keeps the projection honest about the model's maturity, and the absence of any editing capability is what lets the snapshot remain a projection rather than becoming a second home for product truth.
 
 ## Acceptance Scenarios
 
-- A reader opens the snapshot, picks a kind, opens an artifact, and reads the same knowledge the
-  authored file carries.
-- From a use case, the reader follows an outgoing link to the business rule that governs it, and
-  an incoming derived link to the requirement that derives from it — neither direction requiring
-  the reader to know which side authored the edge.
-- The reader opens the graph visualization, grasps the model's shape, selects one node, and
-  sees that artifact's relationships highlighted.
-- The reader searches for a term they heard in a meeting and lands on the matching artifacts,
-  with the browser offline.
-- A draft artifact is visibly distinguishable from an active one, and no control on the page
-  creates or changes anything.
+- A reader opens the snapshot, picks a kind, opens an artifact, and reads the same knowledge the authored file carries.
+- From a use case, the reader follows an outgoing link to the business rule that governs it, and an incoming derived link to the requirement that derives from it — neither direction requiring the reader to know which side authored the edge.
+- The reader opens the graph visualization, grasps the model's shape, selects one node, and sees that artifact's relationships highlighted.
+- The reader searches for a term they heard in a meeting and lands on the matching artifacts, with the browser offline.
+- A draft artifact is visibly distinguishable from an active one, and no control on the page creates or changes anything.
 
 ### QR-DETERMINISM-001 — Produce identical results for identical product content
 
 ## Requirement
 
-The product MUST produce identical results whenever the product content is identical. Generated
-outputs MUST be byte-identical across runs and across platforms — including the generated Product
-Snapshot — diagnostics MUST appear in a deterministic order (by file, then code, then target), and
-impact analysis and handoff status MUST return the same answers for the same content. Results MUST
-be independent of the checkout's line endings, path separators, file discovery order and any other
-environmental accident.
+The product MUST produce identical results whenever the product content is identical. Generated outputs MUST be byte-identical across runs and across platforms — including the generated Product Snapshot — diagnostics MUST appear in a deterministic order (by file, then code, then target), and impact analysis and handoff status MUST return the same answers for the same content. Results MUST be independent of the checkout's line endings, path separators, file discovery order and any other environmental accident.
 
 ## Measurement
 
-Conformance is measured by repeated-run comparison: each operation is executed multiple times over
-the same content — including once after re-checkout with altered line endings and on a different
-platform — and outputs are compared. The threshold is exact: generated files byte-identical,
-machine-readable diagnostics identical in content and order, impact results and handoff statuses
-identical. Digests are compared as rendered values and must match across line-ending
-configurations, since digest computation normalizes line endings by contract. A single differing
-byte or reordered diagnostic is a failure.
+Conformance is measured by repeated-run comparison: each operation is executed multiple times over the same content — including once after re-checkout with altered line endings and on a different platform — and outputs are compared. The threshold is exact: generated files byte-identical, machine-readable diagnostics identical in content and order, impact results and handoff statuses identical. Digests are compared as rendered values and must match across line-ending configurations, since digest computation normalizes line endings by contract. A single differing byte or reordered diagnostic is a failure.
 
 ## Verification
 
-Automated determinism tests run validation, impact analysis, handoff status and snapshot
-generation twice in one session and once per supported platform over committed fixtures, asserting
-equality of outputs against each other and against committed golden files. A dedicated fixture is
-checked out with CRLF endings to prove digest and output stability. These tests are part of the
-release gate, so no version ships with a nondeterministic operation.
+Automated determinism tests run validation, impact analysis, handoff status and snapshot generation twice in one session and once per supported platform over committed fixtures, asserting equality of outputs against each other and against committed golden files. A dedicated fixture is checked out with CRLF endings to prove digest and output stability. These tests are part of the release gate, so no version ships with a nondeterministic operation.
 
 ## Affected behaviour
 
@@ -140,92 +83,60 @@ release gate, so no version ships with a nondeterministic operation.
 
 ## Intended Outcome
 
-The repository holds a validated initial product baseline: a structured, machine-checkable
-product definition that the team accepts as the canonical account of the product, ready to evolve
-through explicit changes from this point on.
+The repository holds a validated initial product baseline: a structured, machine-checkable product definition that the team accepts as the canonical account of the product, ready to evolve through explicit changes from this point on.
 
 ## Entry Conditions
 
 - A repository exists (new or established) whose product the team wants to define as code.
 - The Repository Maintainer can install tooling and commit to the repository.
-- The team has product knowledge to capture — as intent, conversations, documents or an existing
-  system.
+- The team has product knowledge to capture — as intent, conversations, documents or an existing system.
 
 ## Journey Narrative
 
-The Repository Maintainer initializes Product Definition as Code in the repository, choosing any
-AI providers and an SDD framework integration during setup. With the structure and configuration
-in place, the team establishes the initial product model: actors first, then journeys, use cases,
-rules, terms and requirements, keeping open questions visible. This is the one moment in the
-product's life when authoring directly into the baseline is allowed — the initial-baseline
-bootstrap exception; every semantic evolution afterwards goes through a Product Change. The team
-runs validation repeatedly as the model grows, resolving each diagnostic, until the definition is
-structurally coherent and a human review marks the artifacts active.
+The Repository Maintainer initializes Product Definition as Code in the repository, choosing any AI providers and an SDD framework integration during setup. With the structure and configuration in place, the team establishes the initial product model: actors first, then journeys, use cases, rules, terms and requirements, keeping open questions visible. This is the one moment in the product's life when authoring directly into the baseline is allowed — the initial-baseline bootstrap exception; every semantic evolution afterwards goes through a Product Change. The team runs validation repeatedly as the model grows, resolving each diagnostic, until the definition is structurally coherent and a human review marks the artifacts active.
 
 ## Variants and Branches
 
-- Brownfield adoption: instead of defining the model from intent, the team follows the Recover
-  workflow, which reconstructs candidate product knowledge from the existing system for a human
-  to validate before it enters the baseline.
-- Existing SDD framework: a repository already using an SDD framework configures that
-  integration during initialization, so later handoffs land in the workflow the team already
-  runs.
+- Brownfield adoption: instead of defining the model from intent, the team follows the Recover workflow, which reconstructs candidate product knowledge from the existing system for a human to validate before it enters the baseline.
+- Existing SDD framework: a repository already using an SDD framework configures that integration during initialization, so later handoffs land in the workflow the team already runs.
 
 ## Completion Conditions
 
 - The product definition structure and configuration exist in the repository.
 - Validation passes with no errors on the initial model.
-- The initial artifacts are active and the team treats the baseline as canonical: subsequent
-  modifications are expressed as Product Changes.
+- The initial artifacts are active and the team treats the baseline as canonical: subsequent modifications are expressed as Product Changes.
 
 ### JRN-CHANGE-001 — Evolve an existing product definition
 
 ## Intended Outcome
 
-An approved Product Change, sliced into coherent delivery increments and ready for delivery,
-while the current product baseline remains untouched until the change is later promoted.
+An approved Product Change, sliced into coherent delivery increments and ready for delivery, while the current product baseline remains untouched until the change is later promoted.
 
 ## Entry Conditions
 
 - A validated product baseline exists in the repository.
-- Someone has requested or discovered a needed modification to the product: new behaviour,
-  changed behaviour or removal.
+- Someone has requested or discovered a needed modification to the product: new behaviour, changed behaviour or removal.
 
 ## Journey Narrative
 
-The Product Engineer starts by understanding the current state: inspecting the artifacts the
-modification touches, seeing their relationships, and checking which active changes already
-affect them. They then analyze the structural impact of the intended modification — what is
-directly and transitively connected — before deciding its true scope. With that picture, they
-express the modification as a Product Change: complete proposed future-state artifacts for every
-addition, modification and removal, together with rationale and any open questions. The change
-overlay is validated against the baseline, and a human reviews and approves it. Finally the
-approved change is sliced into vertical increments, each with explicit requirement coverage,
-dependencies and verification, and each slice is approved by a human. Throughout, the baseline
-stays exactly as it was.
+The Product Engineer starts by understanding the current state: inspecting the artifacts the modification touches, seeing their relationships, and checking which active changes already affect them. They then analyze the structural impact of the intended modification — what is directly and transitively connected — before deciding its true scope. With that picture, they express the modification as a Product Change: complete proposed future-state artifacts for every addition, modification and removal, together with rationale and any open questions. The change overlay is validated against the baseline, and a human reviews and approves it. Finally the approved change is sliced into vertical increments, each with explicit requirement coverage, dependencies and verification, and each slice is approved by a human. Throughout, the baseline stays exactly as it was.
 
 ## Variants and Branches
 
-- Rejected change: a reviewer who finds the change unsound moves it to rejected; the baseline is
-  unaffected and the analysis remains available for a future attempt.
-- Concurrent changes: when two active changes overlap on the same artifacts, the overlap is
-  surfaced and one change must be rebased onto the other's outcome before both can proceed.
+- Rejected change: a reviewer who finds the change unsound moves it to rejected; the baseline is unaffected and the analysis remains available for a future attempt.
+- Concurrent changes: when two active changes overlap on the same artifacts, the overlap is surfaced and one change must be rebased onto the other's outcome before both can proceed.
 
 ## Completion Conditions
 
-- The Product Change is approved, with a validated overlay and recorded rationale and open
-  questions.
+- The Product Change is approved, with a validated overlay and recorded rationale and open questions.
 - Every part of the change is covered by approved Delivery Slices or explicitly deferred.
-- The current product model contains no trace of the change yet: promotion is a separate,
-  later act.
+- The current product model contains no trace of the change yet: promotion is a separate, later act.
 
 ### JRN-SDD-HANDOFF-001 — Deliver one product increment through an SDD workflow
 
 ## Intended Outcome
 
-One approved Delivery Slice is implemented and verified through the team's native SDD workflow,
-and — once every slice of the Product Change is done — the change is explicitly promoted into the
-product baseline, closing the loop from definition to delivered product.
+One approved Delivery Slice is implemented and verified through the team's native SDD workflow, and — once every slice of the Product Change is done — the change is explicitly promoted into the product baseline, closing the loop from definition to delivered product.
 
 ## Entry Conditions
 
@@ -234,75 +145,42 @@ product baseline, closing the loop from definition to delivered product.
 
 ## Journey Narrative
 
-The Product Engineer generates a Product Handoff for an approved slice: a stable, framework-
-independent package of exactly the product subgraph that increment needs, delivered into the
-configured SDD framework alongside its native artifacts. From there the SDD workflow runs
-natively — proposal, specs, design, tasks, implementation — which from Product Definition's
-perspective is a waiting period. Before and during implementation, handoff status is checked so
-the delivery team knows whether the packaged product knowledge is still current. As
-implementation completes, coverage evidence is mapped back to the requirements each slice
-implements and the coverage check verifies the mapping: every implemented requirement must carry
-resolvable specification and verification evidence before the SDD change closes. When all slices
-of the change are completed or explicitly cancelled, the Repository Maintainer promotes the
-change: a deliberate, human-triggered act that applies the verified delta to the baseline.
+The Product Engineer generates a Product Handoff for an approved slice: a stable, framework- independent package of exactly the product subgraph that increment needs, delivered into the configured SDD framework alongside its native artifacts. From there the SDD workflow runs natively — proposal, specs, design, tasks, implementation — which from Product Definition's perspective is a waiting period. Before and during implementation, handoff status is checked so the delivery team knows whether the packaged product knowledge is still current. As implementation completes, coverage evidence is mapped back to the requirements each slice implements and the coverage check verifies the mapping: every implemented requirement must carry resolvable specification and verification evidence before the SDD change closes. When all slices of the change are completed or explicitly cancelled, the Repository Maintainer promotes the change: a deliberate, human-triggered act that applies the verified delta to the baseline.
 
 ## Variants and Branches
 
-- Stale handoff: when referenced product knowledge changes mid-delivery, the handoff is reported
-  stale and is regenerated before implementation continues.
-- Uncovered requirements: requirements a slice claims to implement but that lack coverage
-  evidence fail the coverage check and block SDD closure until covered or explicitly rescoped.
-- Contradiction discovered downstream: when the SDD workflow uncovers a conflict with the
-  product definition, it is reported back as a question on the Product Change rather than
-  resolved silently in delivery artifacts.
+- Stale handoff: when referenced product knowledge changes mid-delivery, the handoff is reported stale and is regenerated before implementation continues.
+- Uncovered requirements: requirements a slice claims to implement but that lack coverage evidence fail the coverage check and block SDD closure until covered or explicitly rescoped.
+- Contradiction discovered downstream: when the SDD workflow uncovers a conflict with the product definition, it is reported back as a question on the Product Change rather than resolved silently in delivery artifacts.
 
 ## Completion Conditions
 
-- The slice's implementation is verified and its requirement coverage evidence is recorded and
-  checked.
-- The Product Change is promoted: its delta is part of the baseline and the change is completed
-  with its history preserved.
+- The slice's implementation is verified and its requirement coverage evidence is recorded and checked.
+- The Product Change is promoted: its delta is part of the baseline and the change is completed with its history preserved.
 
 ### JRN-SNAPSHOT-001 — Understand the product without the repository
 
 ## Intended Outcome
 
-A person with no access to the repository — and no intention of ever getting any — understands
-the product deeply: its actors, journeys, use cases, rules, language and requirements, and how
-they connect. The understanding comes from a Product Snapshot: a static, self-contained page
-generated from the canonical model and shared as a single file.
+A person with no access to the repository — and no intention of ever getting any — understands the product deeply: its actors, journeys, use cases, rules, language and requirements, and how they connect. The understanding comes from a Product Snapshot: a static, self-contained page generated from the canonical model and shared as a single file.
 
 ## Entry Conditions
 
 - A validated product model exists in a repository.
-- Someone outside the repository workflow wants to understand the product — a stakeholder
-  preparing a decision, a product owner reviewing scope, a new teammate, or anyone else curious
-  about what the product actually is.
+- Someone outside the repository workflow wants to understand the product — a stakeholder preparing a decision, a product owner reviewing scope, a new teammate, or anyone else curious about what the product actually is.
 
 ## Journey Narrative
 
-Someone on the repository side — typically the Product Engineer — generates a Product Snapshot
-with a single CLI command: one self-contained HTML file projecting the current product model,
-stamped with the revision it was generated from. They share it however the team shares files: a
-message, an email, an intranet page. The Product Explorer opens it in a browser and explores:
-starting from the artifact kinds, opening an actor or a journey, following its relationships in
-both directions — including the derived reverse views the authored files never state — glancing
-at the graph to see the product's shape, and searching when they know what they are looking for.
-When the model evolves, anyone on the repository side regenerates the snapshot and shares it
-again; the stamped revision makes it obvious which state of the product a given page reflects.
+Someone on the repository side — typically the Product Engineer — generates a Product Snapshot with a single CLI command: one self-contained HTML file projecting the current product model, stamped with the revision it was generated from. They share it however the team shares files: a message, an email, an intranet page. The Product Explorer opens it in a browser and explores: starting from the artifact kinds, opening an actor or a journey, following its relationships in both directions — including the derived reverse views the authored files never state — glancing at the graph to see the product's shape, and searching when they know what they are looking for. When the model evolves, anyone on the repository side regenerates the snapshot and shares it again; the stamped revision makes it obvious which state of the product a given page reflects.
 
 ## Variants and Branches
 
-- Self-service generation: a developer who has the repository anyway generates the snapshot for
-  their own reading — the explorer and the generator are the same person wearing two hats.
-- Published snapshot: a team hosts the generated file at a stable address (static hosting,
-  intranet, repository pages) so explorers always find the latest snapshot in the same place.
-  Hosting is the adopter's concern; the product only generates the file.
+- Self-service generation: a developer who has the repository anyway generates the snapshot for their own reading — the explorer and the generator are the same person wearing two hats.
+- Published snapshot: a team hosts the generated file at a stable address (static hosting, intranet, repository pages) so explorers always find the latest snapshot in the same place. Hosting is the adopter's concern; the product only generates the file.
 
 ## Completion Conditions
 
-- The Product Explorer can answer, from the snapshot alone, what the product does, for whom,
-  under which rules, and in which language — at the depth the canonical model records.
+- The Product Explorer can answer, from the snapshot alone, what the product does, for whom, under which rules, and in which language — at the depth the canonical model records.
 - The snapshot they used declares the model revision it reflects.
 - The canonical model was never touched: exploration is entirely read-only.
 
@@ -310,13 +188,11 @@ again; the stamped revision makes it obvious which state of the product a given 
 
 ## Goal
 
-Before and during implementation, know whether the product knowledge a handoff packaged still
-matches the product model — so delivery never proceeds unknowingly on outdated product context.
+Before and during implementation, know whether the product knowledge a handoff packaged still matches the product model — so delivery never proceeds unknowingly on outdated product context.
 
 ## Trigger
 
-The Product Engineer runs `prodshape handoff status <path>`, most often automatically
-from a hook before implementation work starts in the SDD workflow.
+The Product Engineer runs `prodshape handoff status <path>`, most often automatically from a hook before implementation work starts in the SDD workflow.
 
 ## Preconditions
 
@@ -325,18 +201,14 @@ from a hook before implementation work starts in the SDD workflow.
 ## Main Flow
 
 1. The actor or hook runs `prodshape handoff status <path>`.
-2. The artifacts the handoff references are compared, by content, against their current state in
-   the product model.
+2. The artifacts the handoff references are compared, by content, against their current state in the product model.
 3. The verdict is reported: the handoff is current, and implementation can proceed on it.
 
 ## Alternative Flows
 
-- Stale: one or more referenced artifacts have changed since the handoff was generated; the
-  verdict names each changed artifact so the engineer can judge the impact and regenerate.
-- Invalid: the handoff itself does not satisfy its contract; the verdict says so rather than
-  guessing at currency.
-- Source revision unavailable: the recorded source revision cannot be resolved; the verdict
-  reports that currency cannot be fully established.
+- Stale: one or more referenced artifacts have changed since the handoff was generated; the verdict names each changed artifact so the engineer can judge the impact and regenerate.
+- Invalid: the handoff itself does not satisfy its contract; the verdict says so rather than guessing at currency.
+- Source revision unavailable: the recorded source revision cannot be resolved; the verdict reports that currency cannot be fully established.
 
 ## Failure Conditions
 
@@ -344,24 +216,19 @@ from a hook before implementation work starts in the SDD workflow.
 
 ## Postconditions
 
-- The actor knows whether the handoff is current, stale (and for which artifacts), invalid, or
-  unverifiable.
-- Staleness was judged only by the content of the artifacts the handoff references: unrelated
-  repository activity never makes a handoff stale.
+- The actor knows whether the handoff is current, stale (and for which artifacts), invalid, or unverifiable.
+- Staleness was judged only by the content of the artifacts the handoff references: unrelated repository activity never makes a handoff stale.
 - Neither the handoff nor the product model was modified.
 
 ### UC-IMPACT-001 — Analyze structural impact of a product artifact
 
 ## Goal
 
-Before changing an artifact, know everything structurally connected to it: which artifacts,
-changes, slices and handoffs would be touched by a modification, distinguished by distance and
-direction.
+Before changing an artifact, know everything structurally connected to it: which artifacts, changes, slices and handoffs would be touched by a modification, distinguished by distance and direction.
 
 ## Trigger
 
-The Product Engineer runs `prodshape impact <ID>`, optionally bounding the traversal by
-depth or restricting it to one direction.
+The Product Engineer runs `prodshape impact <ID>`, optionally bounding the traversal by depth or restricting it to one direction.
 
 ## Preconditions
 
@@ -371,17 +238,14 @@ depth or restricting it to one direction.
 
 1. The engineer runs `prodshape impact <ID>` with any depth or direction options.
 2. The product graph is traversed deterministically from the artifact.
-3. Connected artifacts are reported, distinguishing direct from transitive connections and
-   incoming from outgoing relationships.
+3. Connected artifacts are reported, distinguishing direct from transitive connections and incoming from outgoing relationships.
 4. Active Product Changes affected by the artifact are reported.
 5. Delivery Slices and Product Handoffs whose scope includes the artifact are reported.
 6. The same input always yields the same result: the analysis is repeatable anywhere.
 
 ## Alternative Flows
 
-- Semantic interpretation: the AI Assistant takes the structural result as input and reasons
-  about what the connections mean for the intended modification — a separate, explicitly
-  AI-assisted activity layered on top of the deterministic traversal.
+- Semantic interpretation: the AI Assistant takes the structural result as input and reasons about what the connections mean for the intended modification — a separate, explicitly AI-assisted activity layered on top of the deterministic traversal.
 
 ## Failure Conditions
 
@@ -390,24 +254,18 @@ depth or restricting it to one direction.
 ## Postconditions
 
 - The engineer holds a deterministic map of everything structurally connected to the artifact.
-- No semantic claim has been made: structural impact says what is connected, never whether or
-  how the connected artifacts must change. That judgment belongs to the semantic analysis and,
-  ultimately, to humans.
+- No semantic claim has been made: structural impact says what is connected, never whether or how the connected artifacts must change. That judgment belongs to the semantic analysis and, ultimately, to humans.
 - The repository state is unmodified.
 
 ### UC-SNAPSHOT-001 — Generate a Product Snapshot page
 
 ## Goal
 
-The current product model becomes one static, self-contained HTML file — a Product Snapshot —
-that anyone can explore in a browser without the repository, the CLI or any server, stamped with
-the model revision it was generated from and reproducible byte-for-byte from the same content.
+The current product model becomes one static, self-contained HTML file — a Product Snapshot — that anyone can explore in a browser without the repository, the CLI or any server, stamped with the model revision it was generated from and reproducible byte-for-byte from the same content.
 
 ## Trigger
 
-The Product Engineer runs `prodshape graph --format html`, typically when someone outside the
-repository workflow needs to understand the product, or after a promotion so a shared snapshot
-reflects the new baseline.
+The Product Engineer runs `prodshape graph --format html`, typically when someone outside the repository workflow needs to understand the product, or after a promotion so a shared snapshot reflects the new baseline.
 
 ## Preconditions
 
@@ -416,50 +274,38 @@ reflects the new baseline.
 ## Main Flow
 
 1. The engineer runs `prodshape graph --format html`.
-2. The product graph is compiled from the authored artifacts, including all derived reverse
-   relationships.
+2. The product graph is compiled from the authored artifacts, including all derived reverse relationships.
 3. Every artifact is rendered — frontmatter and body — into the page, organized by kind.
 4. A graph visualization and a client-side search index are embedded into the same file.
 5. The source revision of the model is recorded visibly in the page.
-6. The snapshot is written as a single self-contained HTML file under the generated-output area,
-   and the command reports where.
+6. The snapshot is written as a single self-contained HTML file under the generated-output area, and the command reports where.
 7. The engineer shares the file however the team shares files; no serving or hosting is involved.
 
 ## Alternative Flows
 
-- Regeneration: the model has evolved since the last snapshot; running the command again
-  produces a fresh snapshot with the new revision stamp, replacing nothing canonical — the
-  previous file was only ever a projection.
-- Chosen destination: the engineer directs the output to a specific path, for example a
-  directory their team publishes as static content.
+- Regeneration: the model has evolved since the last snapshot; running the command again produces a fresh snapshot with the new revision stamp, replacing nothing canonical — the previous file was only ever a projection.
+- Chosen destination: the engineer directs the output to a specific path, for example a directory their team publishes as static content.
 
 ## Failure Conditions
 
-- No product model: the command reports that there is nothing to project rather than producing
-  an empty page.
-- Malformed artifacts: files that cannot be parsed are reported with diagnostics; the command
-  does not emit a snapshot that silently omits part of the model.
+- No product model: the command reports that there is nothing to project rather than producing an empty page.
+- Malformed artifacts: files that cannot be parsed are reported with diagnostics; the command does not emit a snapshot that silently omits part of the model.
 
 ## Postconditions
 
-- One self-contained HTML file exists, opening correctly from local disk with no network access
-  and no server.
+- One self-contained HTML file exists, opening correctly from local disk with no network access and no server.
 - The page records the model revision it was generated from.
-- The canonical model is untouched; the snapshot is a derived, regenerable projection and never
-  authoritative.
+- The canonical model is untouched; the snapshot is a derived, regenerable projection and never authoritative.
 
 ### UC-SNAPSHOT-EXPLORE-001 — Explore the product through a snapshot page
 
 ## Goal
 
-A person with only a browser understands the product deeply from a Product Snapshot: what it
-does, for whom, under which rules and in which language — including the connections between
-artifacts that make the definition a graph rather than a pile of documents.
+A person with only a browser understands the product deeply from a Product Snapshot: what it does, for whom, under which rules and in which language — including the connections between artifacts that make the definition a graph rather than a pile of documents.
 
 ## Trigger
 
-The Product Explorer receives or opens a Product Snapshot — a file someone shared, or a page
-their team publishes at a stable address.
+The Product Explorer receives or opens a Product Snapshot — a file someone shared, or a page their team publishes at a stable address.
 
 ## Preconditions
 
@@ -469,47 +315,35 @@ their team publishes at a stable address.
 
 1. The explorer opens the snapshot in a browser; no installation, account or server is involved.
 2. They see the product's artifacts organized by kind, with each artifact's status visible.
-3. They open an artifact and read its rendered content — the same knowledge the authored file
-   carries, presented for reading.
-4. They follow the artifact's relationships in both directions: what it declares, and what
-   references it through the derived reverse views.
-5. They view the graph visualization to grasp the product's overall shape and each artifact's
-   neighborhood.
+3. They open an artifact and read its rendered content — the same knowledge the authored file carries, presented for reading.
+4. They follow the artifact's relationships in both directions: what it declares, and what references it through the derived reverse views.
+5. They view the graph visualization to grasp the product's overall shape and each artifact's neighborhood.
 6. They search across artifacts when they know what they are looking for.
 7. They note the model revision the snapshot reflects.
 
 ## Alternative Flows
 
-- Deep link: the explorer lands directly on one artifact via a link someone shared and starts
-  exploring from there.
-- Stale snapshot in hand: the explorer notices the revision stamp is older than what the team
-  reports current and asks the repository side for a regenerated snapshot.
+- Deep link: the explorer lands directly on one artifact via a link someone shared and starts exploring from there.
+- Stale snapshot in hand: the explorer notices the revision stamp is older than what the team reports current and asks the repository side for a regenerated snapshot.
 
 ## Failure Conditions
 
-- None significant within the page: exploration is read-only. Anything the explorer cannot
-  learn from the snapshot — history, active changes, open discussion — belongs to the
-  repository side and its actors.
+- None significant within the page: exploration is read-only. Anything the explorer cannot learn from the snapshot — history, active changes, open discussion — belongs to the repository side and its actors.
 
 ## Postconditions
 
-- The explorer has understood the product at the depth the canonical model records, without
-  cloning, installing or reading raw Markdown.
-- No product knowledge was created, modified or approved: the snapshot offered no such
-  capability.
+- The explorer has understood the product at the depth the canonical model records, without cloning, installing or reading raw Markdown.
+- No product knowledge was created, modified or approved: the snapshot offered no such capability.
 
 ### UC-VALIDATE-001 — Validate the product model
 
 ## Goal
 
-A deterministic verdict on the structural coherence of the product model: either the model
-satisfies every structural contract, or a precise list of diagnostics says exactly what does not.
+A deterministic verdict on the structural coherence of the product model: either the model satisfies every structural contract, or a precise list of diagnostics says exactly what does not.
 
 ## Trigger
 
-The Product Engineer runs `prodshape validate` — directly, from a repository hook, or in
-a continuous integration pipeline. The AI Assistant runs it after drafting to check its own
-output.
+The Product Engineer runs `prodshape validate` — directly, from a repository hook, or in a continuous integration pipeline. The AI Assistant runs it after drafting to check its own output.
 
 ## Preconditions
 
@@ -519,27 +353,20 @@ output.
 
 1. The actor runs `prodshape validate`.
 2. All product artifacts are discovered from their canonical locations.
-3. Each artifact is checked for structural conformance: frontmatter contract, required body
-   sections, identity rules.
-4. Every declared relationship is checked: the referenced ID must exist and its type must be
-   allowed for that relationship.
-5. Lifecycle rules are checked, including references from active artifacts to retired or
-   deprecated ones.
+3. Each artifact is checked for structural conformance: frontmatter contract, required body sections, identity rules.
+4. Every declared relationship is checked: the referenced ID must exist and its type must be allowed for that relationship.
+5. Lifecycle rules are checked, including references from active artifacts to retired or deprecated ones.
 6. Diagnostics are reported with stable codes, each naming the file and artifact concerned.
-7. The command exits with a code reflecting the outcome: success when no errors exist, failure
-   otherwise.
+7. The command exits with a code reflecting the outcome: success when no errors exist, failure otherwise.
 
 ## Alternative Flows
 
-- Change overlay: with `--change <ID>`, validation checks the model as it would look with that
-  Product Change applied, without touching the baseline.
-- Machine-readable output: with `--format json`, the same diagnostics are emitted in a form other
-  tools can consume.
+- Change overlay: with `--change <ID>`, validation checks the model as it would look with that Product Change applied, without touching the baseline.
+- Machine-readable output: with `--format json`, the same diagnostics are emitted in a form other tools can consume.
 
 ## Failure Conditions
 
-- Structural errors exist: the command exits non-zero and lists every diagnostic with its stable
-  code, file and artifact, so nothing must be fixed blind.
+- Structural errors exist: the command exits non-zero and lists every diagnostic with its stable code, file and artifact, so nothing must be fixed blind.
 
 ## Postconditions
 
@@ -552,30 +379,17 @@ output.
 
 ## Rule
 
-Structural invariants of the product definition — schema conformance, identity, reference
-resolution, lifecycle rules, overlay application and content digests — MUST be enforced
-exclusively by deterministic tooling; AI models perform semantic reasoning only, and everything
-they produce is validated by that same deterministic tooling.
+Structural invariants of the product definition — schema conformance, identity, reference resolution, lifecycle rules, overlay application and content digests — MUST be enforced exclusively by deterministic tooling; AI models perform semantic reasoning only, and everything they produce is validated by that same deterministic tooling.
 
 ## Rationale
 
-Structural correctness must be reproducible: the same files must yield the same diagnostics on
-every machine, every run, forever. AI models are probabilistic, so delegating schema checks,
-reference resolution or digest computation to a model would make validation results vary between
-runs and erode trust in every downstream artifact — overlays, handoffs, staleness reports. The
-division of labour is strict and complementary: AI is valuable for drafting artifacts, spotting
-semantic gaps, suggesting distinctions between terms and reviewing rationale, while the
-deterministic toolchain remains the sole judge of whether the result is structurally valid.
+Structural correctness must be reproducible: the same files must yield the same diagnostics on every machine, every run, forever. AI models are probabilistic, so delegating schema checks, reference resolution or digest computation to a model would make validation results vary between runs and erode trust in every downstream artifact — overlays, handoffs, staleness reports. The division of labour is strict and complementary: AI is valuable for drafting artifacts, spotting semantic gaps, suggesting distinctions between terms and reviewing rationale, while the deterministic toolchain remains the sole judge of whether the result is structurally valid.
 
 ## Examples
 
-- An AI assistant drafts a new business-rule artifact. The draft passes through the same
-  `prodshape validate` command as any human-authored file; the assistant's confidence
-  counts for nothing if a reference does not resolve.
-- Repository hooks that guard the product model run deterministic commands such as validation and
-  doctor checks. No hook ever asks a model to judge whether an artifact is valid.
-- Staleness of a Product Handoff is decided by comparing content digests, a pure computation. An
-  AI summary of "what probably changed" may accompany the report but never determines staleness.
+- An AI assistant drafts a new business-rule artifact. The draft passes through the same `prodshape validate` command as any human-authored file; the assistant's confidence counts for nothing if a reference does not resolve.
+- Repository hooks that guard the product model run deterministic commands such as validation and doctor checks. No hook ever asks a model to judge whether an artifact is valid.
+- Staleness of a Product Handoff is decided by comparing content digests, a pure computation. An AI summary of "what probably changed" may accompany the report but never determines staleness.
 
 ## Exceptions
 
@@ -585,30 +399,17 @@ None.
 
 ## Rule
 
-The authored files under the product root — Markdown product artifacts and authored delivery-slice
-YAML — are the single source of truth for product knowledge; every product graph, index, diagram,
-handoff and context document is derived from them and MUST be reproducible from them at any time.
+The authored files under the product root — Markdown product artifacts and authored delivery-slice YAML — are the single source of truth for product knowledge; every product graph, index, diagram, handoff and context document is derived from them and MUST be reproducible from them at any time.
 
 ## Rationale
 
-A product definition only stays trustworthy if there is exactly one place where knowledge lives.
-The moment a generated index, diagram or handoff can hold knowledge that the authored artifacts do
-not, the two drift apart and nobody can say which one is right. Keeping authored artifacts
-canonical means reviews, diffs and Git history always operate on the real product definition, and
-derived outputs can be deleted, regenerated or reformatted freely without any loss of meaning. It
-also keeps AI assistance safe: an assistant may draft canonical files for a human to review, but
-nothing an assistant or a tool generates downstream can silently become authoritative.
+A product definition only stays trustworthy if there is exactly one place where knowledge lives. The moment a generated index, diagram or handoff can hold knowledge that the authored artifacts do not, the two drift apart and nobody can say which one is right. Keeping authored artifacts canonical means reviews, diffs and Git history always operate on the real product definition, and derived outputs can be deleted, regenerated or reformatted freely without any loss of meaning. It also keeps AI assistance safe: an assistant may draft canonical files for a human to review, but nothing an assistant or a tool generates downstream can silently become authoritative.
 
 ## Examples
 
-- A team member edits a generated managed file to "fix" a description. `prodshape doctor`
-  detects the manual modification and reports it; the fix belongs in the authored artifact, after
-  which regeneration reproduces the corrected output.
-- All generated output — the compiled product graph, reverse indexes, diagrams, product-context
-  documents — is deleted from a working copy. Nothing is lost: a single rebuild from the authored
-  artifacts restores every derived file identically.
-- A Product Handoff becomes stale because an authored artifact changed. The handoff is regenerated
-  from the canonical files; the handoff itself is never hand-patched to match.
+- A team member edits a generated managed file to "fix" a description. `prodshape doctor` detects the manual modification and reports it; the fix belongs in the authored artifact, after which regeneration reproduces the corrected output.
+- All generated output — the compiled product graph, reverse indexes, diagrams, product-context documents — is deleted from a working copy. Nothing is lost: a single rebuild from the authored artifacts restores every derived file identically.
+- A Product Handoff becomes stale because an authored artifact changed. The handoff is regenerated from the canonical files; the handoff itself is never hand-patched to match.
 
 ## Exceptions
 
@@ -618,29 +419,18 @@ None.
 
 ## Rule
 
-Every product artifact is identified and referenced exclusively through its stable, immutable
-artifact ID; file paths, file names, titles and generated locations do not define identity, and an
-ID once assigned MUST never be reused for a different artifact.
+Every product artifact is identified and referenced exclusively through its stable, immutable artifact ID; file paths, file names, titles and generated locations do not define identity, and an ID once assigned MUST never be reused for a different artifact.
 
 ## Rationale
 
-Product knowledge outlives any particular file layout. Teams reorganise folders, rename files and
-retitle artifacts as understanding improves; none of that should break traceability. Anchoring
-identity in the ID lets every relationship — governed-by, defined-in, derived-from, handoff
-references — survive reorganisation untouched, and lets Product Changes and Product Handoffs refer
-to artifacts across time without ambiguity. Forbidding ID reuse protects history: a retired ID
-still means what it always meant, so old changes, slices and handoffs remain readable years later.
+Product knowledge outlives any particular file layout. Teams reorganise folders, rename files and retitle artifacts as understanding improves; none of that should break traceability. Anchoring identity in the ID lets every relationship — governed-by, defined-in, derived-from, handoff references — survive reorganisation untouched, and lets Product Changes and Product Handoffs refer to artifacts across time without ambiguity. Forbidding ID reuse protects history: a retired ID still means what it always meant, so old changes, slices and handoffs remain readable years later.
 
 ## Examples
 
-- A domain-term file is moved and renamed during a folder cleanup. Every reference to its ID keeps
-  resolving; validation reports no broken relationships, because nothing about identity changed.
-- A file whose name no longer matches its artifact ID is at most a warning from validation — a
-  housekeeping nudge, never an identity error.
-- An author retires `TERM-PRODUCT-SNAPSHOT` and later wants to introduce a new, unrelated concept
-  under the same ID. Validation rejects the reuse; the new concept receives a fresh ID.
-- A use case references a business rule as `governed-by: BR-CANONICAL-001`, never by the rule's
-  title or file path.
+- A domain-term file is moved and renamed during a folder cleanup. Every reference to its ID keeps resolving; validation reports no broken relationships, because nothing about identity changed.
+- A file whose name no longer matches its artifact ID is at most a warning from validation — a housekeeping nudge, never an identity error.
+- An author retires `TERM-PRODUCT-SNAPSHOT` and later wants to introduce a new, unrelated concept under the same ID. Validation rejects the reuse; the new concept receives a fresh ID.
+- A use case references a business rule as `governed-by: BR-CANONICAL-001`, never by the rule's title or file path.
 
 ## Exceptions
 
@@ -650,29 +440,18 @@ None.
 
 ## Rule
 
-Every relationship between product artifacts has exactly one canonical authored direction — one
-source artifact type, one frontmatter field, one allowed target set — and all reverse views are
-derived by tooling; users MUST NOT author or maintain reciprocal references.
+Every relationship between product artifacts has exactly one canonical authored direction — one source artifact type, one frontmatter field, one allowed target set — and all reverse views are derived by tooling; users MUST NOT author or maintain reciprocal references.
 
 ## Rationale
 
-Bidirectional references maintained by hand always drift: one side gets updated, the other does
-not, and the model quietly contradicts itself. Choosing a single canonical direction per
-relationship makes every edit atomic — declaring or removing a relationship touches exactly one
-file — and makes the derived reverse view trustworthy by construction, because it is recomputed
-from the canonical files every time the product graph is compiled. It also keeps authoring cheap:
-adding a domain term to a context requires no edit to the context at all.
+Bidirectional references maintained by hand always drift: one side gets updated, the other does not, and the model quietly contradicts itself. Choosing a single canonical direction per relationship makes every edit atomic — declaring or removing a relationship touches exactly one file — and makes the derived reverse view trustworthy by construction, because it is recomputed from the canonical files every time the product graph is compiled. It also keeps authoring cheap: adding a domain term to a context requires no edit to the context at all.
 
 ## Examples
 
-- A domain term declares `defined-in: BC-PRODUCT-DEFINITION`. The bounded context's owned terms
-  are computed from every term that points at it; the context file itself lists nothing.
-- An author adds an `owns-terms` field to a bounded context's frontmatter. Validation rejects it
-  as an unknown property — ownership is derived from each term's `defined-in`, never authored.
-- A use case declares `governed-by` on a business rule. The rule's "governed use cases" view
-  appears in inspection output and generated indexes as a derived field, not in the rule's file.
-- Deleting a term's `defined-in` reference updates the context's derived owned-terms view on the
-  next graph compilation with no second edit anywhere.
+- A domain term declares `defined-in: BC-PRODUCT-DEFINITION`. The bounded context's owned terms are computed from every term that points at it; the context file itself lists nothing.
+- An author adds an `owns-terms` field to a bounded context's frontmatter. Validation rejects it as an unknown property — ownership is derived from each term's `defined-in`, never authored.
+- A use case declares `governed-by` on a business rule. The rule's "governed use cases" view appears in inspection output and generated indexes as a derived field, not in the rule's file.
+- Deleting a term's `defined-in` reference updates the context's derived owned-terms view on the next graph compilation with no second edit anywhere.
 
 ## Exceptions
 
@@ -682,34 +461,17 @@ None.
 
 ## Rule
 
-SDD frameworks receive product knowledge exclusively through versioned Product Handoffs, retain
-native ownership of their own specification, design, task and verification artifacts, MAY report
-questions and contradictions back, and MUST NOT silently rewrite canonical product knowledge.
+SDD frameworks receive product knowledge exclusively through versioned Product Handoffs, retain native ownership of their own specification, design, task and verification artifacts, MAY report questions and contradictions back, and MUST NOT silently rewrite canonical product knowledge.
 
 ## Rationale
 
-An SDD framework is excellent at driving one implementation increment from spec to verified code,
-but its artifacts are scoped to that increment and expressed in its own conventions. If SDD
-artifacts could redefine product semantics, the product definition would fragment across
-framework-specific formats and the canonical model would stop being canonical. The handoff
-boundary keeps both sides strong: the product model supplies a stable, versioned contract with
-digests and a source revision, and the SDD framework works natively — its proposals, specs and
-tasks are never mirrored into or overwritten by the product side. Feedback still flows, but as
-explicit questions and contradictions that a human resolves through the change process, never as
-silent edits.
+An SDD framework is excellent at driving one implementation increment from spec to verified code, but its artifacts are scoped to that increment and expressed in its own conventions. If SDD artifacts could redefine product semantics, the product definition would fragment across framework-specific formats and the canonical model would stop being canonical. The handoff boundary keeps both sides strong: the product model supplies a stable, versioned contract with digests and a source revision, and the SDD framework works natively — its proposals, specs and tasks are never mirrored into or overwritten by the product side. Feedback still flows, but as explicit questions and contradictions that a human resolves through the change process, never as silent edits.
 
 ## Examples
 
-- Product knowledge for an OpenSpec increment arrives as a Product Handoff with sidecar files
-  placed alongside the OpenSpec change; OpenSpec keeps full native ownership of its proposal,
-  specs and tasks, and the sidecars are consumed as read-only context.
-- During implementation a developer discovers that two active business rules contradict each
-  other for an edge case. The contradiction returns as an open question on the originating
-  Product Change; it is resolved there and, if needed, promoted — the SDD framework never patches
-  the rules itself.
-- An SDD tool proposes rewording a domain term to match its spec language. The rewording is
-  raised as feedback on the product side; nothing in the canonical model changes until a Product
-  Change says so.
+- Product knowledge for an OpenSpec increment arrives as a Product Handoff with sidecar files placed alongside the OpenSpec change; OpenSpec keeps full native ownership of its proposal, specs and tasks, and the sidecars are consumed as read-only context.
+- During implementation a developer discovers that two active business rules contradict each other for an edge case. The contradiction returns as an open question on the originating Product Change; it is resolved there and, if needed, promoted — the SDD framework never patches the rules itself.
+- An SDD tool proposes rewording a domain term to match its spec language. The rewording is raised as feedback on the product side; nothing in the canonical model changes until a Product Change says so.
 
 ## Exceptions
 
@@ -721,217 +483,118 @@ None.
 
 ## Responsibility
 
-The language of projecting product knowledge into delivery: carving approved Product Changes into
-Delivery Slices, relating slices to backlog references, generating Product Handoffs and their
-Product Context documents, tracking requirement coverage across a change, judging handoff
-staleness, and adapting the whole projection to specific SDD frameworks. This context owns the
-boundary across which product knowledge reaches the people and tools that implement it.
+The language of projecting product knowledge into delivery: carving approved Product Changes into Delivery Slices, relating slices to backlog references, generating Product Handoffs and their Product Context documents, tracking requirement coverage across a change, judging handoff staleness, and adapting the whole projection to specific SDD frameworks. This context owns the boundary across which product knowledge reaches the people and tools that implement it.
 
 ## Language
 
-Speech here is about increments and contracts, not about meaning. Its core words are slice,
-handoff, context, coverage, staleness, work-item reference, digest and adapter. "Implements"
-here means a slice's or handoff's declared coverage of requirements, not code. "Stale" is a
-precise per-artifact judgment — a digest mismatch against current canonical content — never a
-feeling that a document is old. "Adapter" names the translation to one SDD framework's native
-layout, such as the OpenSpec sidecar placement.
+Speech here is about increments and contracts, not about meaning. Its core words are slice, handoff, context, coverage, staleness, work-item reference, digest and adapter. "Implements" here means a slice's or handoff's declared coverage of requirements, not code. "Stale" is a precise per-artifact judgment — a digest mismatch against current canonical content — never a feeling that a document is old. "Adapter" names the translation to one SDD framework's native layout, such as the OpenSpec sidecar placement.
 
 ## Boundaries
 
-Outside this context lie: the definition and evolution of product knowledge itself — artifacts,
-the graph, changes, overlays, promotion — which belong to Product Definition; the internals of
-SDD frameworks, whose proposals, specs, tasks and verification workflows remain natively theirs;
-and backlog tools, which this context references by work-item identifier but never models. This
-context packages and projects knowledge; it never redefines it.
+Outside this context lie: the definition and evolution of product knowledge itself — artifacts, the graph, changes, overlays, promotion — which belong to Product Definition; the internals of SDD frameworks, whose proposals, specs, tasks and verification workflows remain natively theirs; and backlog tools, which this context references by work-item identifier but never models. This context packages and projects knowledge; it never redefines it.
 
 ## External Relationships
 
-Upstream, Product Definition supplies the current product model and approved Product Changes;
-this context consumes them read-only and returns questions and contradictions discovered during
-delivery as feedback on the originating change. Downstream, SDD frameworks such as OpenSpec
-receive versioned Product Handoffs with accompanying Product Context through framework-specific
-adapters, while keeping native ownership of their own artifacts. Delivery tracking tools connect
-only through work-item references carried on slices and handoffs.
+Upstream, Product Definition supplies the current product model and approved Product Changes; this context consumes them read-only and returns questions and contradictions discovered during delivery as feedback on the originating change. Downstream, SDD frameworks such as OpenSpec receive versioned Product Handoffs with accompanying Product Context through framework-specific adapters, while keeping native ownership of their own artifacts. Delivery tracking tools connect only through work-item references carried on slices and handoffs.
 
 ### BC-PRODUCT-DEFINITION — Product Definition
 
 ## Responsibility
 
-The language of describing and evolving a product as code: what a product artifact is, how
-identity works, how artifacts relate to form the product graph, what the current product model
-contains, how Product Changes propose evolution as overlays, and how deterministic validation
-keeps all of it structurally sound. Everything that decides what the product definition means —
-and how that meaning changes over time — belongs here.
+The language of describing and evolving a product as code: what a product artifact is, how identity works, how artifacts relate to form the product graph, what the current product model contains, how Product Changes propose evolution as overlays, and how deterministic validation keeps all of it structurally sound. Everything that decides what the product definition means — and how that meaning changes over time — belongs here.
 
 ## Language
 
-Speech in this context is about knowledge and its evolution, not about delivery. Its core words
-are artifact, identity, canonical, derived, graph, baseline, overlay, change, promotion,
-diagnostic and validation. "Change" here always means a Product Change — a versioned semantic
-delta with future-state artifacts — never a Git commit or a work item. "Valid" always means
-deterministically checked against the published contracts, never a matter of judgment.
+Speech in this context is about knowledge and its evolution, not about delivery. Its core words are artifact, identity, canonical, derived, graph, baseline, overlay, change, promotion, diagnostic and validation. "Change" here always means a Product Change — a versioned semantic delta with future-state artifacts — never a Git commit or a work item. "Valid" always means deterministically checked against the published contracts, never a matter of judgment.
 
 ## Boundaries
 
-Outside this context lie: the projection of product knowledge into delivery (slices, handoffs,
-context documents, coverage and staleness), which belongs to Delivery Integration; SDD
-frameworks' own specification and task workflows; backlog tools and their items; and source-code
-structure — bounded contexts here are product-language boundaries, never implementation modules.
-This context defines what changes mean; it does not schedule, assign or implement them.
+Outside this context lie: the projection of product knowledge into delivery (slices, handoffs, context documents, coverage and staleness), which belongs to Delivery Integration; SDD frameworks' own specification and task workflows; backlog tools and their items; and source-code structure — bounded contexts here are product-language boundaries, never implementation modules. This context defines what changes mean; it does not schedule, assign or implement them.
 
 ## External Relationships
 
-Delivery Integration is the sole downstream consumer of this context's output: approved Product
-Changes and the current product model cross the boundary to be carved into slices and packaged
-into handoffs. Feedback flows back across the same boundary — questions and contradictions
-discovered during delivery return as open questions on the originating Product Change, where they
-are resolved in this context's terms. Version control underlies the context as the provenance and
-history mechanism, but carries no product semantics of its own.
+Delivery Integration is the sole downstream consumer of this context's output: approved Product Changes and the current product model cross the boundary to be carved into slices and packaged into handoffs. Feedback flows back across the same boundary — questions and contradictions discovered during delivery return as open questions on the originating Product Change, where they are resolved in this context's terms. Version control underlies the context as the provenance and history mechanism, but carries no product semantics of its own.
 
 ### TERM-CURRENT-PRODUCT-MODEL — Current Product Model
 
 ## Definition
 
-The set of product artifacts under the model area of the product root, describing the product as
-currently defined — behaviour that is implemented and accepted. It is called the baseline when a
-Product Change is validated against it: the fixed reference state that overlay validation applies
-a change's operations to without modifying it.
+The set of product artifacts under the model area of the product root, describing the product as currently defined — behaviour that is implemented and accepted. It is called the baseline when a Product Change is validated against it: the fixed reference state that overlay validation applies a change's operations to without modifying it.
 
 ## Distinguish From
 
-- **Proposed future-state artifacts inside a Product Change.** Those describe what an artifact
-  would become if the change were promoted. Until promotion, they are proposals; the current
-  product model contains only accepted knowledge.
-- **The product graph.** The graph is a derived view compiled from the current product model (or
-  from an overlay). The model is the authored files; the graph can always be rebuilt from them.
-- **The repository.** The repository also holds changes, slices, handoffs, templates and
-  generated output. The current product model is only the accepted artifact set, not everything
-  under version control.
+- **Proposed future-state artifacts inside a Product Change.** Those describe what an artifact would become if the change were promoted. Until promotion, they are proposals; the current product model contains only accepted knowledge.
+- **The product graph.** The graph is a derived view compiled from the current product model (or from an overlay). The model is the authored files; the graph can always be rebuilt from them.
+- **The repository.** The repository also holds changes, slices, handoffs, templates and generated output. The current product model is only the accepted artifact set, not everything under version control.
 
 ## Usage
 
-The current product model is what `prodshape validate` checks when no change is in
-scope, the baseline that every overlay is applied to, the source from which Product Handoffs
-package subgraphs, and the reference against which handoff staleness is judged. Promotion is
-defined as the only operation, after the initial bootstrap, that modifies it.
+The current product model is what `prodshape validate` checks when no change is in scope, the baseline that every overlay is applied to, the source from which Product Handoffs package subgraphs, and the reference against which handoff staleness is judged. Promotion is defined as the only operation, after the initial bootstrap, that modifies it.
 
 ### TERM-PRODUCT-ARTIFACT — Product Artifact
 
 ## Definition
 
-An independently addressable unit of product knowledge carrying a stable immutable ID: an Actor,
-Journey, Use Case, Business Rule, Domain Term, Bounded Context, Functional Requirement, Quality
-Requirement or Constraint. Each product artifact is an authored Markdown file with typed YAML
-frontmatter and required body sections, lives in the current product model, and participates in
-the product graph through canonical relationships declared in its frontmatter.
+An independently addressable unit of product knowledge carrying a stable immutable ID: an Actor, Journey, Use Case, Business Rule, Domain Term, Bounded Context, Functional Requirement, Quality Requirement or Constraint. Each product artifact is an authored Markdown file with typed YAML frontmatter and required body sections, lives in the current product model, and participates in the product graph through canonical relationships declared in its frontmatter.
 
 ## Distinguish From
 
-- **Product Change and Delivery Slice.** Both carry stable IDs and are validated by the same
-  toolchain, but neither is a product artifact: they describe evolution and delivery of the model
-  rather than the model itself, and they follow their own lifecycles, not the artifact lifecycle.
-- **Generated outputs.** Compiled graphs, reverse indexes, diagrams, handoffs and context
-  documents may render artifact content, but they are derived and reproducible; only the authored
-  file is the artifact.
-- **A file.** The artifact is the identified unit of knowledge; the file is merely its current
-  storage location. Moving or renaming the file does not create or destroy an artifact.
+- **Product Change and Delivery Slice.** Both carry stable IDs and are validated by the same toolchain, but neither is a product artifact: they describe evolution and delivery of the model rather than the model itself, and they follow their own lifecycles, not the artifact lifecycle.
+- **Generated outputs.** Compiled graphs, reverse indexes, diagrams, handoffs and context documents may render artifact content, but they are derived and reproducible; only the authored file is the artifact.
+- **A file.** The artifact is the identified unit of knowledge; the file is merely its current storage location. Moving or renaming the file does not create or destroy an artifact.
 
 ## Usage
 
-Product artifacts are what `prodshape validate` checks, what the graph compiler turns
-into nodes, what Product Changes add, modify or remove, and what Product Handoffs reference by ID
-and digest. When the methodology says "artifact" without qualification, it means a product
-artifact in the current product model.
+Product artifacts are what `prodshape validate` checks, what the graph compiler turns into nodes, what Product Changes add, modify or remove, and what Product Handoffs reference by ID and digest. When the methodology says "artifact" without qualification, it means a product artifact in the current product model.
 
 ### TERM-PRODUCT-GRAPH — Product Graph
 
 ## Definition
 
-The derived directed graph whose nodes are product artifacts and whose typed edges are the
-canonical relationships declared in artifact frontmatter, together with the reverse indexes
-computed from them. The graph is compiled from the authored files on demand and is the structure
-over which reachability, structural impact and reference validation are computed.
+The derived directed graph whose nodes are product artifacts and whose typed edges are the canonical relationships declared in artifact frontmatter, together with the reverse indexes computed from them. The graph is compiled from the authored files on demand and is the structure over which reachability, structural impact and reference validation are computed.
 
 ## Distinguish From
 
-- **A graph database.** The product graph is explicitly not a database or a stored system of
-  record. It is a compilation result: rebuild it whenever needed, discard it freely, and expect
-  the same graph from the same files every time.
-- **The artifact files themselves.** The files are canonical; the graph is derived from them.
-  Nothing may be authored "in the graph" — an edge exists only because some artifact's
-  frontmatter declares the canonical direction of that relationship.
-- **A diagram.** Diagrams are one rendering of the graph for humans. The graph itself is the
-  typed structure that tooling traverses, whether or not anything is drawn.
+- **A graph database.** The product graph is explicitly not a database or a stored system of record. It is a compilation result: rebuild it whenever needed, discard it freely, and expect the same graph from the same files every time.
+- **The artifact files themselves.** The files are canonical; the graph is derived from them. Nothing may be authored "in the graph" — an edge exists only because some artifact's frontmatter declares the canonical direction of that relationship.
+- **A diagram.** Diagrams are one rendering of the graph for humans. The graph itself is the typed structure that tooling traverses, whether or not anything is drawn.
 
 ## Usage
 
-The graph compiler builds the product graph during validation, inspection and handoff generation.
-Structural impact queries ("what is reachable from this artifact, in this direction, to this
-depth") and reachability diagnostics ("is this requirement connected to any actor") are answered
-by traversing it. Derived views such as a bounded context's owned terms are read from the graph,
-never from authored files.
+The graph compiler builds the product graph during validation, inspection and handoff generation. Structural impact queries ("what is reachable from this artifact, in this direction, to this depth") and reachability diagnostics ("is this requirement connected to any actor") are answered by traversing it. Derived views such as a bounded context's owned terms are read from the graph, never from authored files.
 
 ### TERM-PRODUCT-HANDOFF — Product Handoff
 
 ## Definition
 
-A generated, framework-independent contract that packages the product subgraph relevant to one
-delivery increment for consumption by an SDD framework. A handoff carries the referenced artifact
-list, a content digest per artifact, the source revision it was generated from and a work-item
-reference, so a consumer can verify exactly which product knowledge it was given and detect when
-that knowledge has since moved on.
+A generated, framework-independent contract that packages the product subgraph relevant to one delivery increment for consumption by an SDD framework. A handoff carries the referenced artifact list, a content digest per artifact, the source revision it was generated from and a work-item reference, so a consumer can verify exactly which product knowledge it was given and detect when that knowledge has since moved on.
 
 ## Distinguish From
 
-- **Product Context.** The readable companion document generated alongside a handoff for humans.
-  The handoff is the machine contract with digests and references; the context is its prose
-  rendering and is non-canonical.
-- **An SDD proposal or spec.** Those are owned natively by the SDD framework and describe how an
-  increment will be implemented. The handoff is produced by the product side and only supplies
-  the product knowledge the increment rests on.
-- **A backlog item.** A backlog item is a tracking reference in a delivery tool. A handoff points
-  at one via its work-item reference but is itself the versioned knowledge package, not the
-  tracking record.
+- **Product Context.** The readable companion document generated alongside a handoff for humans. The handoff is the machine contract with digests and references; the context is its prose rendering and is non-canonical.
+- **An SDD proposal or spec.** Those are owned natively by the SDD framework and describe how an increment will be implemented. The handoff is produced by the product side and only supplies the product knowledge the increment rests on.
+- **A backlog item.** A backlog item is a tracking reference in a delivery tool. A handoff points at one via its work-item reference but is itself the versioned knowledge package, not the tracking record.
 
 ## Usage
 
-Handoffs are generated from Delivery Slices, versioned, and consumed read-only by SDD adapters
-such as the OpenSpec integration. Staleness is judged per referenced artifact by comparing the
-handoff's digests against current canonical content, and a stale handoff is regenerated, never
-hand-edited.
+Handoffs are generated from Delivery Slices, versioned, and consumed read-only by SDD adapters such as the OpenSpec integration. Staleness is judged per referenced artifact by comparing the handoff's digests against current canonical content, and a stale handoff is regenerated, never hand-edited.
 
 ### TERM-PRODUCT-SNAPSHOT — Product Snapshot
 
 ## Definition
 
-A generated, read-only, self-contained static projection of the product graph at a recorded
-source revision — one HTML file rendering every artifact, its relationships in both directions,
-a graph visualization and a search index, explorable in a browser with no repository, tooling or
-server. A snapshot is derived and regenerable at any time; it is read-only by nature — there is
-nothing on it to edit — and it is never authoritative.
+A generated, read-only, self-contained static projection of the product graph at a recorded source revision — one HTML file rendering every artifact, its relationships in both directions, a graph visualization and a search index, explorable in a browser with no repository, tooling or server. A snapshot is derived and regenerable at any time; it is read-only by nature — there is nothing on it to edit — and it is never authoritative.
 
 ## Distinguish From
 
-- **The Product Graph.** The graph is the derived structure the toolkit computes and reasons
-  over; the snapshot is one rendering of that structure for human exploration. The graph exists
-  for tools and validation, the snapshot for people without the repository.
-- **A Product Handoff.** Both record the source revision they were generated from, so staleness
-  is deterministically answerable. But a handoff packages the subgraph one delivery increment
-  needs, for consumption by an SDD framework; a snapshot projects the whole model, for
-  consumption by a person.
-- **The Product Context document.** Also a generated readable projection — but scoped to one
-  handoff and rendered as prose for a delivery reader. The snapshot covers the entire model and
-  is navigational rather than linear.
-- **A web application.** A snapshot involves no server, no database, no session and no editing;
-  it is a file. The product's constraints continue to forbid interactive web applications.
+- **The Product Graph.** The graph is the derived structure the toolkit computes and reasons over; the snapshot is one rendering of that structure for human exploration. The graph exists for tools and validation, the snapshot for people without the repository.
+- **A Product Handoff.** Both record the source revision they were generated from, so staleness is deterministically answerable. But a handoff packages the subgraph one delivery increment needs, for consumption by an SDD framework; a snapshot projects the whole model, for consumption by a person.
+- **The Product Context document.** Also a generated readable projection — but scoped to one handoff and rendered as prose for a delivery reader. The snapshot covers the entire model and is navigational rather than linear.
+- **A web application.** A snapshot involves no server, no database, no session and no editing; it is a file. The product's constraints continue to forbid interactive web applications.
 
 ## Usage
 
-The graph command's HTML format (`prodshape graph --format html`) generates a Product Snapshot
-from the current model, stamping the source revision into the page. The Product Explorer's journey is built on it: it is the artifact that
-crosses the boundary between the repository and the people who will never open one. Its recorded
-revision is how anyone judges whether a shared snapshot still reflects the current model — the
-same currency question Product Handoffs answer with the same mechanism.
+The graph command's HTML format (`prodshape graph --format html`) generates a Product Snapshot from the current model, stamping the source revision into the page. The Product Explorer's journey is built on it: it is the artifact that crosses the boundary between the repository and the people who will never open one. Its recorded revision is how anyone judges whether a shared snapshot still reflects the current model — the same currency question Product Handoffs answer with the same mechanism.
 
 ## Constraints
 
@@ -939,189 +602,97 @@ same currency question Product Handoffs answer with the same mechanism.
 
 ## Constraint
 
-The methodology is named "Product Definition as Code" and retains that name. Its reference
-implementation is publicly branded "ProductShape" — the name under which the toolkit is
-distributed and the public identity it presents. Public identity MUST keep the two distinct:
-"Product Definition as Code" names the ideas, the normative specification and the versioned
-contracts; "ProductShape" names the tool and the namespace under which it ships. No public-facing
-surface may present ProductShape as the methodology or "Product Definition as Code" as a product
-name, and the reference implementation MUST NOT ship publicly without this settled brand. The
-concrete distribution identifiers chosen for ProductShape are recorded in the adopting Product
-Change and realized in implementation; this constraint fixes the policy, not the mechanics.
+The methodology is named "Product Definition as Code" and retains that name. Its reference implementation is publicly branded "ProductShape" — the name under which the toolkit is distributed and the public identity it presents. Public identity MUST keep the two distinct: "Product Definition as Code" names the ideas, the normative specification and the versioned contracts; "ProductShape" names the tool and the namespace under which it ships. No public-facing surface may present ProductShape as the methodology or "Product Definition as Code" as a product name, and the reference implementation MUST NOT ship publicly without this settled brand. The concrete distribution identifiers chosen for ProductShape are recorded in the adopting Product Change and realized in implementation; this constraint fixes the policy, not the mechanics.
 
 ## Rationale
 
-A methodology and an implementation of it are different things with different lifecycles and
-audiences. The methodology is a set of ideas and a specification that could be implemented more
-than once; the reference implementation is one shipped toolkit that must claim a brand, a package
-namespace and a release channel to exist publicly. Fixing the brand as a distinct layer above the
-methodology name lets the tool carry a memorable public identity — which shipping requires —
-without binding the methodology's contracts to it, and keeps either free to evolve without dragging
-the other. It settles, deliberately and on the record, a naming decision that was left open
-precisely so it would not harden into an accidental brand at first publish.
+A methodology and an implementation of it are different things with different lifecycles and audiences. The methodology is a set of ideas and a specification that could be implemented more than once; the reference implementation is one shipped toolkit that must claim a brand, a package namespace and a release channel to exist publicly. Fixing the brand as a distinct layer above the methodology name lets the tool carry a memorable public identity — which shipping requires — without binding the methodology's contracts to it, and keeps either free to evolve without dragging the other. It settles, deliberately and on the record, a naming decision that was left open precisely so it would not harden into an accidental brand at first publish.
 
 ## Consequences
 
-- Impossible: shipping the reference implementation publicly without a settled brand; presenting
-  "Product Definition as Code" as the name of a product; presenting "ProductShape" as the
-  methodology rather than as an implementation of it.
-- Harder: nothing structural — but the two-name discipline must be maintained wherever both names
-  appear, so documentation and public copy carry a small, permanent editorial obligation.
-- Mandatory: the public brand of the reference implementation is ProductShape; the methodology name
-  is used for the ideas, the specification and the contracts; and the distinction is made explicit
-  wherever a reader could otherwise conflate them.
+- Impossible: shipping the reference implementation publicly without a settled brand; presenting "Product Definition as Code" as the name of a product; presenting "ProductShape" as the methodology rather than as an implementation of it.
+- Harder: nothing structural — but the two-name discipline must be maintained wherever both names appear, so documentation and public copy carry a small, permanent editorial obligation.
+- Mandatory: the public brand of the reference implementation is ProductShape; the methodology name is used for the ideas, the specification and the contracts; and the distinction is made explicit wherever a reader could otherwise conflate them.
 
 ### CON-MARKDOWN-001 — Canonical product knowledge lives in authored files under version control
 
 ## Constraint
 
-All canonical product knowledge is expressed in authored Markdown and YAML files inside the
-repository, versioned by the repository's own version control. No database, service, wiki, tracker
-or any other external store holds product truth; anything outside the authored files is at most a
-derived, regenerable projection.
+All canonical product knowledge is expressed in authored Markdown and YAML files inside the repository, versioned by the repository's own version control. No database, service, wiki, tracker or any other external store holds product truth; anything outside the authored files is at most a derived, regenerable projection.
 
 ## Rationale
 
-This boundary is deliberately fixed by the methodology itself: "as code" is the founding premise.
-Product knowledge kept in files gains everything source code already has — diffs, reviews,
-branches, history, blame and offline access — and stays equally readable to humans and AI
-assistants without any intermediary system. The moment truth moves into an external store, the
-repository becomes a copy, copies drift, and the review-based change flow the methodology is built
-on loses its subject.
+This boundary is deliberately fixed by the methodology itself: "as code" is the founding premise. Product knowledge kept in files gains everything source code already has — diffs, reviews, branches, history, blame and offline access — and stays equally readable to humans and AI assistants without any intermediary system. The moment truth moves into an external store, the repository becomes a copy, copies drift, and the review-based change flow the methodology is built on loses its subject.
 
 ## Consequences
 
-- Impossible: querying or editing product truth through any system of record other than the
-  repository; a "live" product definition that differs from the committed files.
-- Harder: concurrent editing at scale and rich text or embedded media, which are limited to what
-  Markdown in a repository can express; large models must be navigated with tooling rather than a
-  database.
-- Mandatory: every knowledge change is a file change that travels through version control review;
-  all tooling reads and writes authored files; derived stores, caches and indexes must be
-  reproducible from the files at any time and can never be authoritative.
+- Impossible: querying or editing product truth through any system of record other than the repository; a "live" product definition that differs from the committed files.
+- Harder: concurrent editing at scale and rich text or embedded media, which are limited to what Markdown in a repository can express; large models must be navigated with tooling rather than a database.
+- Mandatory: every knowledge change is a file change that travels through version control review; all tooling reads and writes authored files; derived stores, caches and indexes must be reproducible from the files at any time and can never be authoritative.
 
 ### CON-NO-GRAPH-DATABASE — The product graph must not require a graph database
 
 ## Constraint
 
-The product graph is always derivable from the authored files by the toolkit alone. Neither
-authoring, validating, inspecting nor handing off product knowledge may require a graph database
-or any other running server; the graph exists as a regenerable artifact, never as a system that
-must be installed, operated or kept in sync.
+The product graph is always derivable from the authored files by the toolkit alone. Neither authoring, validating, inspecting nor handing off product knowledge may require a graph database or any other running server; the graph exists as a regenerable artifact, never as a system that must be installed, operated or kept in sync.
 
 ## Rationale
 
-The methodology must be adoptable by cloning a repository and running a command-line tool. Every
-piece of required infrastructure is an adoption tax and an operational liability: a graph database
-would need installation, upgrades, backups and synchronization with the files — and the instant it
-held anything the files did not, it would compete with them for truth. Keeping the graph a derived
-file preserves the canonical-source rule and keeps the whole toolkit runnable on a laptop, in CI
-and in an air-gapped environment alike.
+The methodology must be adoptable by cloning a repository and running a command-line tool. Every piece of required infrastructure is an adoption tax and an operational liability: a graph database would need installation, upgrades, backups and synchronization with the files — and the instant it held anything the files did not, it would compete with them for truth. Keeping the graph a derived file preserves the canonical-source rule and keeps the whole toolkit runnable on a laptop, in CI and in an air-gapped environment alike.
 
 ## Consequences
 
-- Impossible: any workflow that depends on a persistent graph service, live graph subscriptions,
-  or graph state that cannot be rebuilt from the repository.
-- Harder: ad-hoc graph queries are limited to what the tooling computes — inspection, impact
-  analysis and the generated graph output — rather than an open query language; very large graphs
-  are recompiled rather than incrementally served.
-- Mandatory: the toolkit must be able to rebuild the complete graph from the authored files at any
-  time, and adopters carry no server dependency of any kind for working with the product graph.
+- Impossible: any workflow that depends on a persistent graph service, live graph subscriptions, or graph state that cannot be rebuilt from the repository.
+- Harder: ad-hoc graph queries are limited to what the tooling computes — inspection, impact analysis and the generated graph output — rather than an open query language; very large graphs are recompiled rather than incrementally served.
+- Mandatory: the toolkit must be able to rebuild the complete graph from the authored files at any time, and adopters carry no server dependency of any kind for working with the product graph.
 
 ### CON-NO-WEB-UI — The product provides no interactive web application; static snapshot projections are permitted
 
 ## Constraint
 
-The product ships no interactive web application of any kind: no browser-based editor, no
-dashboard, no portal, no hosted or served surface through which product knowledge is created,
-modified or approved. The one permitted web-facing form is the Product Snapshot: a generated,
-static, self-contained, read-only projection of the product model, regenerable at any time from
-the authored files and never authoritative. All authoring and evolution of the product definition
-happens through the authored files, the command-line tool and AI assistants operating on the
-repository.
+The product ships no interactive web application of any kind: no browser-based editor, no dashboard, no portal, no hosted or served surface through which product knowledge is created, modified or approved. The one permitted web-facing form is the Product Snapshot: a generated, static, self-contained, read-only projection of the product model, regenerable at any time from the authored files and never authoritative. All authoring and evolution of the product definition happens through the authored files, the command-line tool and AI assistants operating on the repository.
 
 ## Rationale
 
-The original boundary deferred every web surface from v0.1 to keep the focus on the substance of
-the methodology, while stating the condition under which a web surface could ever arrive: as a
-projection over the same files and commands, never as a new home for product truth. The Product
-Snapshot satisfies that condition exactly — it is read-only by nature, involves no server, and
-holds nothing the authored files do not. The rule that matters is therefore not "no web" but "no
-interactive web application": a surface where product knowledge could be viewed and edited
-outside the files and their review flow remains exactly the pattern the methodology rejects,
-while a static projection extends the product's reach to people who will never clone a
-repository, without moving truth anywhere.
+The original boundary deferred every web surface from v0.1 to keep the focus on the substance of the methodology, while stating the condition under which a web surface could ever arrive: as a projection over the same files and commands, never as a new home for product truth. The Product Snapshot satisfies that condition exactly — it is read-only by nature, involves no server, and holds nothing the authored files do not. The rule that matters is therefore not "no web" but "no interactive web application": a surface where product knowledge could be viewed and edited outside the files and their review flow remains exactly the pattern the methodology rejects, while a static projection extends the product's reach to people who will never clone a repository, without moving truth anywhere.
 
 ## Consequences
 
-- Impossible: browsing, editing or approving product knowledge through a hosted or local web
-  application; any web surface that holds product state the authored files do not; a snapshot
-  that accepts input, requires a server, or fetches remote resources to function.
-- Harder: real-time or collaborative consumption — a snapshot reflects the model at its recorded
-  revision and is only as current as its last regeneration.
-- Mandatory: every product capability remains fully usable through files and the command line;
-  the snapshot is generated output, reproducible from the authored files at any time; any richer
-  web surface in the future must still arrive as a projection over the same files and commands,
-  never as a new home for product truth.
+- Impossible: browsing, editing or approving product knowledge through a hosted or local web application; any web surface that holds product state the authored files do not; a snapshot that accepts input, requires a server, or fetches remote resources to function.
+- Harder: real-time or collaborative consumption — a snapshot reflects the model at its recorded revision and is only as current as its last regeneration.
+- Mandatory: every product capability remains fully usable through files and the command line; the snapshot is generated output, reproducible from the authored files at any time; any richer web surface in the future must still arrive as a projection over the same files and commands, never as a new home for product truth.
 
 ### CON-PUBLIC-GENERIC — The public framework stays generic and free of private context
 
 ## Constraint
 
-The public framework — specification, toolkit, templates, skills, fixtures and documentation —
-contains no corporate processes, no private product details, no private prompts and no
-organization-specific terminology. Learnings from real adoptions flow back only in generic form:
-as generic issues, synthetic fixtures or sanitized documentation.
+The public framework — specification, toolkit, templates, skills, fixtures and documentation — contains no corporate processes, no private product details, no private prompts and no organization-specific terminology. Learnings from real adoptions flow back only in generic form: as generic issues, synthetic fixtures or sanitized documentation.
 
 ## Rationale
 
-The framework is developed in the open while being exercised on real products inside real
-organizations. Those two facts must never mix: private product knowledge leaking into a public
-repository is a confidentiality breach, and organization-specific vocabulary or process baked into
-the framework would silently narrow it until it fits only its first adopters. Fixing this boundary
-protects the organizations that self-apply the framework and protects the framework's claim to be
-generally adoptable.
+The framework is developed in the open while being exercised on real products inside real organizations. Those two facts must never mix: private product knowledge leaking into a public repository is a confidentiality breach, and organization-specific vocabulary or process baked into the framework would silently narrow it until it fits only its first adopters. Fixing this boundary protects the organizations that self-apply the framework and protects the framework's claim to be generally adoptable.
 
 ## Consequences
 
-- Impossible: committing real product artifacts, internal process descriptions, private prompts,
-  customer names or organization-specific terminology to the public repository; using a real
-  private model as a test fixture or documentation example.
-- Harder: feeding adoption experience back — every lesson must first be translated into a generic
-  issue, a synthetic fixture reproducing the structural situation, or sanitized documentation,
-  which costs effort and loses some specificity.
-- Mandatory: examples and fixtures are synthetic; contributions from private adoptions are
-  reviewed for leaked context before they land; the framework's vocabulary stays the methodology's
-  own, never an adopting organization's.
+- Impossible: committing real product artifacts, internal process descriptions, private prompts, customer names or organization-specific terminology to the public repository; using a real private model as a test fixture or documentation example.
+- Harder: feeding adoption experience back — every lesson must first be translated into a generic issue, a synthetic fixture reproducing the structural situation, or sanitized documentation, which costs effort and loses some specificity.
+- Mandatory: examples and fixtures are synthetic; contributions from private adoptions are reviewed for leaked context before they land; the framework's vocabulary stays the methodology's own, never an adopting organization's.
 
 ### CON-SDD-AGNOSTIC — Product Definition remains independent of any SDD framework
 
 ## Constraint
 
-The product model admits no concept, folder convention, artifact format or lifecycle state from
-any SDD framework. Integration with SDD frameworks happens exclusively through the versioned
-handoff contract and framework-specific adapters; nothing on the product side may assume, name or
-depend on a particular framework.
+The product model admits no concept, folder convention, artifact format or lifecycle state from any SDD framework. Integration with SDD frameworks happens exclusively through the versioned handoff contract and framework-specific adapters; nothing on the product side may assume, name or depend on a particular framework.
 
 ## Rationale
 
-SDD frameworks are younger and more volatile than the product knowledge they help deliver, and
-teams choose different ones — or replace them mid-product. If a framework's concepts leaked into
-the product model, the product definition would inherit that framework's churn and its adopters,
-and switching frameworks would mean rewriting product truth that never actually changed. Fixing
-the boundary at a versioned contract keeps product knowledge durable across delivery fashions and
-keeps every framework equally supportable through an adapter.
+SDD frameworks are younger and more volatile than the product knowledge they help deliver, and teams choose different ones — or replace them mid-product. If a framework's concepts leaked into the product model, the product definition would inherit that framework's churn and its adopters, and switching frameworks would mean rewriting product truth that never actually changed. Fixing the boundary at a versioned contract keeps product knowledge durable across delivery fashions and keeps every framework equally supportable through an adapter.
 
 ## Consequences
 
-- Impossible: product artifacts that reference framework-native concepts, statuses or folders;
-  framework-specific fields in the product model; a product lifecycle coupled to a framework's
-  change lifecycle (archiving an SDD change can never promote a Product Change).
-- Harder: exploiting a specific framework's richer native features from the product side — any
-  such convenience must be expressed in the adapter, behind the contract.
-- Mandatory: every framework integration is delivered as an adapter consuming the versioned
-  handoff contract; framework knowledge lives only in adapters; the contract is versioned so
-  adapters can evolve without destabilizing the product model or each other.
+- Impossible: product artifacts that reference framework-native concepts, statuses or folders; framework-specific fields in the product model; a product lifecycle coupled to a framework's change lifecycle (archiving an SDD change can never promote a Product Change).
+- Harder: exploiting a specific framework's richer native features from the product side — any such convenience must be expressed in the adapter, behind the contract.
+- Mandatory: every framework integration is delivered as an adapter consuming the versioned handoff contract; framework knowledge lives only in adapters; the contract is versioned so adapters can evolve without destabilizing the product model or each other.
 
 ## Actors
 
@@ -1129,57 +700,43 @@ keeps every framework equally supportable through an adapter.
 
 ## Purpose
 
-The AI Assistant is an AI coding or product assistant (for example Claude Code or GitHub Copilot)
-that executes the canonical skills of the methodology. It supplies the semantic reasoning that
-deterministic tooling cannot: drafting, interpretation, analysis and proposal.
+The AI Assistant is an AI coding or product assistant (for example Claude Code or GitHub Copilot) that executes the canonical skills of the methodology. It supplies the semantic reasoning that deterministic tooling cannot: drafting, interpretation, analysis and proposal.
 
 ## Goals
 
-- Produce draft artifacts, change proposals, slice proposals and handoff context that a human can
-  review quickly and trust.
-- Surface gaps, ambiguities and contradictions in the product model instead of papering over
-  them.
+- Produce draft artifacts, change proposals, slice proposals and handoff context that a human can review quickly and trust.
+- Surface gaps, ambiguities and contradictions in the product model instead of papering over them.
 
 ## Responsibilities
 
 - Draft product artifacts from stated intent, following the artifact contracts.
 - Analyze the semantic meaning of a proposed change on top of structural impact results.
 - Propose Delivery Slices for approved changes and prepare Product Handoff context.
-- Audit the model for semantic weaknesses: vague rules, untraceable requirements, inconsistent
-  terminology.
+- Audit the model for semantic weaknesses: vague rules, untraceable requirements, inconsistent terminology.
 
 ## Boundaries
 
-- Performs semantic reasoning only; structural invariants are enforced exclusively by the
-  deterministic tooling, never by the assistant's judgment.
+- Performs semantic reasoning only; structural invariants are enforced exclusively by the deterministic tooling, never by the assistant's judgment.
 - Never approves changes or slices, and never promotes a change into the baseline.
-- Never invents product decisions: when information is missing it records an open question and
-  stops rather than choosing an answer.
-- Always preserves existing open questions; it may propose answers but never silently resolves or
-  deletes them.
+- Never invents product decisions: when information is missing it records an open question and stops rather than choosing an answer.
+- Always preserves existing open questions; it may propose answers but never silently resolves or deletes them.
 
 ### ACT-PRODUCT-ENGINEER — Product Engineer
 
 ## Purpose
 
-The Product Engineer defines and evolves what the product is. They turn intent, discussion and
-discovery into explicit product artifacts, and they carry every semantic modification through the
-change flow so the product definition stays the single trustworthy account of the product.
+The Product Engineer defines and evolves what the product is. They turn intent, discussion and discovery into explicit product artifacts, and they carry every semantic modification through the change flow so the product definition stays the single trustworthy account of the product.
 
 ## Goals
 
-- Keep a coherent, traceable product definition in which every requirement can be followed back
-  to the actors, journeys, use cases and rules it serves.
-- Express every intended modification as an explicit, reviewable Product Change rather than as an
-  unrecorded edit.
-- Hand delivery teams and SDD workflows precise, self-contained product context — exactly the
-  knowledge one increment needs, nothing more.
+- Keep a coherent, traceable product definition in which every requirement can be followed back to the actors, journeys, use cases and rules it serves.
+- Express every intended modification as an explicit, reviewable Product Change rather than as an unrecorded edit.
+- Hand delivery teams and SDD workflows precise, self-contained product context — exactly the knowledge one increment needs, nothing more.
 - Keep open questions visible until a human answers them.
 
 ## Responsibilities
 
-- Author and refine product artifacts: actors, journeys, use cases, rules, terms, contexts and
-  requirements.
+- Author and refine product artifacts: actors, journeys, use cases, rules, terms, contexts and requirements.
 - Inspect artifacts and analyze structural impact before proposing modifications.
 - Create Product Changes with complete proposed artifacts, rationale and open questions.
 - Slice approved changes into delivery increments and generate Product Handoffs for them.
@@ -1187,82 +744,61 @@ change flow so the product definition stays the single trustworthy account of th
 
 ## Boundaries
 
-- Does not unilaterally approve their own changes into the baseline when a Repository Maintainer
-  role exists; approval and promotion are review acts.
-- Does not own or edit the native artifacts of the configured SDD framework; the handoff boundary
-  separates product definition from delivery specification.
+- Does not unilaterally approve their own changes into the baseline when a Repository Maintainer role exists; approval and promotion are review acts.
+- Does not own or edit the native artifacts of the configured SDD framework; the handoff boundary separates product definition from delivery specification.
 - Does not maintain reverse relationships by hand; derived views come from tooling.
 
 ### ACT-PRODUCT-EXPLORER — Product Explorer
 
 ## Purpose
 
-The Product Explorer wants to understand the product deeply without touching the machinery that
-defines it. They may be a stakeholder, a product owner, a developer from another team, or anyone
-else with a legitimate interest in what the product is — what defines them is not their role but
-their relationship to the repository: they never clone it, never run a command-line tool, and
-never read raw Markdown.
+The Product Explorer wants to understand the product deeply without touching the machinery that defines it. They may be a stakeholder, a product owner, a developer from another team, or anyone else with a legitimate interest in what the product is — what defines them is not their role but their relationship to the repository: they never clone it, never run a command-line tool, and never read raw Markdown.
 
 ## Goals
 
-- Understand what the product is — its actors, journeys, use cases, rules, language and
-  requirements — from a single shareable page, using nothing but a browser.
-- Follow the product's internal connections: who a use case serves, which rules govern it, which
-  requirements derive from it.
-- Trust that what they are reading is an honest projection of the canonical definition, and know
-  which revision of the model it reflects.
+- Understand what the product is — its actors, journeys, use cases, rules, language and requirements — from a single shareable page, using nothing but a browser.
+- Follow the product's internal connections: who a use case serves, which rules govern it, which requirements derive from it.
+- Trust that what they are reading is an honest projection of the canonical definition, and know which revision of the model it reflects.
 
 ## Responsibilities
 
 - Explore the Product Snapshot they are given: browse, read, follow relationships, search.
-- Direct questions, corrections and ideas to the people who carry them into the definition —
-  typically a Product Engineer — rather than assuming the snapshot itself is a channel.
+- Direct questions, corrections and ideas to the people who carry them into the definition — typically a Product Engineer — rather than assuming the snapshot itself is a channel.
 
 ## Boundaries
 
 - Reads projections only; never authors, edits or approves product artifacts.
-- Holds no responsibility for the currency of the snapshot they were given; generating and
-  regenerating it belongs to the repository side.
-- Participates in the product's evolution only through conversation with the actors who work in
-  the repository, never through the snapshot.
+- Holds no responsibility for the currency of the snapshot they were given; generating and regenerating it belongs to the repository side.
+- Participates in the product's evolution only through conversation with the actors who work in the repository, never through the snapshot.
 
 ### ACT-REPOSITORY-MAINTAINER — Repository Maintainer
 
 ## Purpose
 
-The Repository Maintainer is accountable for the repository that hosts a product definition. They
-make the toolkit available, keep its configuration and integrations healthy, and act as the human
-gate through which changes enter the accepted product baseline.
+The Repository Maintainer is accountable for the repository that hosts a product definition. They make the toolkit available, keep its configuration and integrations healthy, and act as the human gate through which changes enter the accepted product baseline.
 
 ## Goals
 
-- A repository where the product definition structure, configuration and integrations work
-  reliably for everyone who contributes.
-- A baseline that only ever moves through validated, human-approved, explicitly promoted Product
-  Changes.
+- A repository where the product definition structure, configuration and integrations work reliably for everyone who contributes.
+- A baseline that only ever moves through validated, human-approved, explicitly promoted Product Changes.
 - Confidence that nothing in the definition was overwritten, promoted or altered silently.
 
 ## Responsibilities
 
-- Initialize Product Definition as Code in the repository and install the chosen AI and SDD
-  integrations.
+- Initialize Product Definition as Code in the repository and install the chosen AI and SDD integrations.
 - Keep configuration current as the repository, team and integrations evolve.
 - Review and approve Product Changes and Delivery Slices.
 - Perform promotion: apply an implemented, verified change to the baseline as a deliberate act.
 
 ## Boundaries
 
-- Does not author most product semantics day to day; drafting and evolving artifacts is primarily
-  the Product Engineer's work.
-- Does not bypass validation: a change or promotion that fails structural checks is not approved
-  or executed regardless of urgency.
+- Does not author most product semantics day to day; drafting and evolving artifacts is primarily the Product Engineer's work.
+- Does not bypass validation: a change or promotion that fails structural checks is not approved or executed regardless of urgency.
 - Does not delegate approval or promotion decisions to automation or to an AI assistant.
 
 ## Open questions
 
-None. Three questions raised during drafting were resolved by the product owner at approval; the
-resolutions are recorded at the end of the Rationale section and reflected in the proposed
-artifacts.
+None. Three questions raised during drafting were resolved by the product owner at approval; the resolutions are recorded at the end of the Rationale section and reflected in the proposed artifacts.
 
 ## Traceability
 

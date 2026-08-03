@@ -26,8 +26,7 @@
 
 ## 4. Dogfooding
 
-- [x] 4.1 Create CHG-TRACEABILITY-001 (add UC-COVERAGE-001; modify FR-COVERAGE-001,
-      JRN-SDD-HANDOFF-001) with slices and open questions resolved
+- [x] 4.1 Create CHG-TRACEABILITY-001 (add UC-COVERAGE-001; modify FR-COVERAGE-001, JRN-SDD-HANDOFF-001) with slices and open questions resolved
 - [x] 4.2 Approve, slice (SLI-TRACEABILITY-001), commit, record synthetic GitHub work item
 - [x] 4.3 Generate handoff into native OpenSpec change add-coverage-validation
 - [x] 4.4 Implement the native change; map product-coverage.yaml to specs and tests

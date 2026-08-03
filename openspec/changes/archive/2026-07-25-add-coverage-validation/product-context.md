@@ -28,36 +28,18 @@ Out of scope:
 
 ## Requirement
 
-The product MUST verify, before an SDD change implementing a handoff is closed or archived, that
-every requirement the handoff implements has a coverage mapping linking it to specification and
-verification evidence. A requirement without such a mapping MUST be reported with the documented
-error code, and the report MUST arrive before closure so the gap can be fixed while the work is
-still open. Coverage MUST be established deterministically from the declared mappings; the product
-MUST NOT infer coverage from file names, folder placement or any other resemblance heuristic, and
-MUST verify that every declared evidence path exists.
+The product MUST verify, before an SDD change implementing a handoff is closed or archived, that every requirement the handoff implements has a coverage mapping linking it to specification and verification evidence. A requirement without such a mapping MUST be reported with the documented error code, and the report MUST arrive before closure so the gap can be fixed while the work is still open. Coverage MUST be established deterministically from the declared mappings; the product MUST NOT infer coverage from file names, folder placement or any other resemblance heuristic, and MUST verify that every declared evidence path exists.
 
 ## Rationale
 
-A handoff makes a promise: these requirements will be implemented. Coverage validation is where
-the promise is checked before the delivery work disappears into an archive. Without it, "the slice
-is done" is an assertion nobody can audit, and promotion — which relies on coverage evidence —
-would rest on trust rather than record. Determinism is essential to the value of the check: a
-mapping is a claim someone wrote down and can be held to, whereas a file that merely happens to be
-named like a requirement proves nothing. Guessing coverage would convert the strongest gate in the
-flow into a false sense of safety.
+A handoff makes a promise: these requirements will be implemented. Coverage validation is where the promise is checked before the delivery work disappears into an archive. Without it, "the slice is done" is an assertion nobody can audit, and promotion — which relies on coverage evidence — would rest on trust rather than record. Determinism is essential to the value of the check: a mapping is a claim someone wrote down and can be held to, whereas a file that merely happens to be named like a requirement proves nothing. Guessing coverage would convert the strongest gate in the flow into a false sense of safety.
 
 ## Acceptance Scenarios
 
-- An SDD change implements a handoff covering three requirements, but the coverage mapping links
-  only two to specification and verification evidence. Coverage validation reports the third with
-  the documented error code, and closure is flagged as blocked until the mapping is completed.
-- A file whose name matches a requirement ID exists in the SDD change, but no mapping declares it
-  as evidence. The requirement is still reported as uncovered: resemblance is not coverage.
-- A mapping declares evidence at a path that does not exist. The check fails naming the dangling
-  path, because a claim that cannot be resolved is not evidence.
-- Every implemented requirement has a declared mapping to its specification and verification
-  evidence, and each mapping resolves. Coverage validation passes deterministically, and repeated
-  runs over the same content produce the identical report.
+- An SDD change implements a handoff covering three requirements, but the coverage mapping links only two to specification and verification evidence. Coverage validation reports the third with the documented error code, and closure is flagged as blocked until the mapping is completed.
+- A file whose name matches a requirement ID exists in the SDD change, but no mapping declares it as evidence. The requirement is still reported as uncovered: resemblance is not coverage.
+- A mapping declares evidence at a path that does not exist. The check fails naming the dangling path, because a claim that cannot be resolved is not evidence.
+- Every implemented requirement has a declared mapping to its specification and verification evidence, and each mapping resolves. Coverage validation passes deterministically, and repeated runs over the same content produce the identical report.
 
 ## Affected behaviour
 
@@ -65,9 +47,7 @@ flow into a false sense of safety.
 
 ## Intended Outcome
 
-One approved Delivery Slice is implemented and verified through the team's native SDD workflow,
-and — once every slice of the Product Change is done — the change is explicitly promoted into the
-product baseline, closing the loop from definition to delivered product.
+One approved Delivery Slice is implemented and verified through the team's native SDD workflow, and — once every slice of the Product Change is done — the change is explicitly promoted into the product baseline, closing the loop from definition to delivered product.
 
 ## Entry Conditions
 
@@ -76,48 +56,28 @@ product baseline, closing the loop from definition to delivered product.
 
 ## Journey Narrative
 
-The Product Engineer generates a Product Handoff for an approved slice: a stable, framework-
-independent package of exactly the product subgraph that increment needs, delivered into the
-configured SDD framework alongside its native artifacts. From there the SDD workflow runs
-natively — proposal, specs, design, tasks, implementation — which from Product Definition's
-perspective is a waiting period. Before and during implementation, handoff status is checked so
-the delivery team knows whether the packaged product knowledge is still current. As
-implementation completes, coverage evidence is mapped back to the requirements each slice
-implements and the coverage check verifies the mapping: every implemented requirement must carry
-resolvable specification and verification evidence before the SDD change closes. When all slices
-of the change are completed or explicitly cancelled, the Repository Maintainer promotes the
-change: a deliberate, human-triggered act that applies the verified delta to the baseline.
+The Product Engineer generates a Product Handoff for an approved slice: a stable, framework- independent package of exactly the product subgraph that increment needs, delivered into the configured SDD framework alongside its native artifacts. From there the SDD workflow runs natively — proposal, specs, design, tasks, implementation — which from Product Definition's perspective is a waiting period. Before and during implementation, handoff status is checked so the delivery team knows whether the packaged product knowledge is still current. As implementation completes, coverage evidence is mapped back to the requirements each slice implements and the coverage check verifies the mapping: every implemented requirement must carry resolvable specification and verification evidence before the SDD change closes. When all slices of the change are completed or explicitly cancelled, the Repository Maintainer promotes the change: a deliberate, human-triggered act that applies the verified delta to the baseline.
 
 ## Variants and Branches
 
-- Stale handoff: when referenced product knowledge changes mid-delivery, the handoff is reported
-  stale and is regenerated before implementation continues.
-- Uncovered requirements: requirements a slice claims to implement but that lack coverage
-  evidence fail the coverage check and block SDD closure until covered or explicitly rescoped.
-- Contradiction discovered downstream: when the SDD workflow uncovers a conflict with the
-  product definition, it is reported back as a question on the Product Change rather than
-  resolved silently in delivery artifacts.
+- Stale handoff: when referenced product knowledge changes mid-delivery, the handoff is reported stale and is regenerated before implementation continues.
+- Uncovered requirements: requirements a slice claims to implement but that lack coverage evidence fail the coverage check and block SDD closure until covered or explicitly rescoped.
+- Contradiction discovered downstream: when the SDD workflow uncovers a conflict with the product definition, it is reported back as a question on the Product Change rather than resolved silently in delivery artifacts.
 
 ## Completion Conditions
 
-- The slice's implementation is verified and its requirement coverage evidence is recorded and
-  checked.
-- The Product Change is promoted: its delta is part of the baseline and the change is completed
-  with its history preserved.
+- The slice's implementation is verified and its requirement coverage evidence is recorded and checked.
+- The Product Change is promoted: its delta is part of the baseline and the change is completed with its history preserved.
 
 ### UC-COVERAGE-001 — Check requirement coverage of an SDD change
 
 ## Goal
 
-A deterministic verdict on one SDD change: every requirement its sidecar handoff implements is
-either covered by declared specification and verification evidence, or named as uncovered while
-the work is still open.
+A deterministic verdict on one SDD change: every requirement its sidecar handoff implements is either covered by declared specification and verification evidence, or named as uncovered while the work is still open.
 
 ## Trigger
 
-The Product Engineer runs `product-definition coverage check <sdd-change>` — directly, from a
-hook before SDD closure, or in a continuous integration pipeline. The AI Assistant runs it before
-reporting an increment as ready.
+The Product Engineer runs `product-definition coverage check <sdd-change>` — directly, from a hook before SDD closure, or in a continuous integration pipeline. The AI Assistant runs it before reporting an increment as ready.
 
 ## Preconditions
 
@@ -128,22 +88,17 @@ reporting an increment as ready.
 
 1. The actor runs the coverage check against the SDD change.
 2. The sidecar handoff is read to learn which requirements the increment implements.
-3. The declared coverage mapping is validated: every implemented requirement must be mapped to
-   specification and verification evidence.
-4. Every declared evidence path is checked for existence; resemblance to a requirement ID counts
-   for nothing.
-5. The verdict is reported: covered requirements, uncovered requirements with the documented
-   error code, and a failing exit when anything is uncovered.
+3. The declared coverage mapping is validated: every implemented requirement must be mapped to specification and verification evidence.
+4. Every declared evidence path is checked for existence; resemblance to a requirement ID counts for nothing.
+5. The verdict is reported: covered requirements, uncovered requirements with the documented error code, and a failing exit when anything is uncovered.
 
 ## Alternative Flows
 
-- Partial coverage: a requirement mapped as partially covered is reported as a warning so the
-  gap is a visible, deliberate decision.
+- Partial coverage: a requirement mapped as partially covered is reported as a warning so the gap is a visible, deliberate decision.
 
 ## Failure Conditions
 
-- The coverage mapping is missing or malformed: the check fails naming every implemented
-  requirement as uncovered.
+- The coverage mapping is missing or malformed: the check fails naming every implemented requirement as uncovered.
 - A declared evidence path does not exist: the check fails naming the path.
 - The mapping references a different handoff than the sidecar: the check fails.
 
@@ -156,14 +111,11 @@ reporting an increment as ready.
 
 ## Goal
 
-An approved Delivery Slice becomes a stable, framework-independent package of exactly the
-product subgraph that increment needs — delivered into the configured SDD framework so the
-delivery workflow starts from precise product context instead of rediscovering it.
+An approved Delivery Slice becomes a stable, framework-independent package of exactly the product subgraph that increment needs — delivered into the configured SDD framework so the delivery workflow starts from precise product context instead of rediscovering it.
 
 ## Trigger
 
-The Product Engineer runs handoff generation for an approved slice, with the AI Assistant
-preparing the readable product context that accompanies the packaged artifacts.
+The Product Engineer runs handoff generation for an approved slice, with the AI Assistant preparing the readable product context that accompanies the packaged artifacts.
 
 ## Preconditions
 
@@ -174,37 +126,26 @@ preparing the readable product context that accompanies the packaged artifacts.
 ## Main Flow
 
 1. The engineer requests a handoff for the approved slice.
-2. The product subgraph the slice needs is selected: the requirements it implements, the
-   artifacts it affects, and the connected knowledge — rules, terms, actors — that gives them
-   meaning.
-3. The selection is packaged in a framework-independent form, referencing every artifact by its
-   stable ID.
-4. Content digests and the source revision of the product model are recorded in the handoff, so
-   its currency can be checked later.
-5. A readable product context document is prepared, presenting the packaged knowledge in the
-   order a delivery reader needs it.
-6. The handoff is delivered into the configured SDD framework as sidecar files placed alongside
-   the framework's native artifacts.
+2. The product subgraph the slice needs is selected: the requirements it implements, the artifacts it affects, and the connected knowledge — rules, terms, actors — that gives them meaning.
+3. The selection is packaged in a framework-independent form, referencing every artifact by its stable ID.
+4. Content digests and the source revision of the product model are recorded in the handoff, so its currency can be checked later.
+5. A readable product context document is prepared, presenting the packaged knowledge in the order a delivery reader needs it.
+6. The handoff is delivered into the configured SDD framework as sidecar files placed alongside the framework's native artifacts.
 7. The engineer confirms the handoff is in place and delivery can begin.
 
 ## Alternative Flows
 
-- Regeneration: a handoff that has gone stale is generated again for the same slice, replacing
-  the previous package with fresh digests and source revision.
+- Regeneration: a handoff that has gone stale is generated again for the same slice, replacing the previous package with fresh digests and source revision.
 
 ## Failure Conditions
 
-- Non-approved slice: generation is refused for a slice that is not approved; the actor is told
-  which approval is missing.
-- Structurally invalid handoff: if the packaged result violates the handoff contract, the
-  process stops and reports the diagnostics; nothing partial is delivered.
+- Non-approved slice: generation is refused for a slice that is not approved; the actor is told which approval is missing.
+- Structurally invalid handoff: if the packaged result violates the handoff contract, the process stops and reports the diagnostics; nothing partial is delivered.
 
 ## Postconditions
 
-- The handoff exists in the SDD framework's workspace as sidecar files, with digests and source
-  revision recorded.
-- The SDD framework's native artifacts are untouched: the handoff sits beside them, never inside
-  them.
+- The handoff exists in the SDD framework's workspace as sidecar files, with digests and source revision recorded.
+- The SDD framework's native artifacts are untouched: the handoff sits beside them, never inside them.
 
 ## Governing rules
 
@@ -212,30 +153,17 @@ preparing the readable product context that accompanies the packaged artifacts.
 
 ## Rule
 
-Structural invariants of the product definition — schema conformance, identity, reference
-resolution, lifecycle rules, overlay application and content digests — MUST be enforced
-exclusively by deterministic tooling; AI models perform semantic reasoning only, and everything
-they produce is validated by that same deterministic tooling.
+Structural invariants of the product definition — schema conformance, identity, reference resolution, lifecycle rules, overlay application and content digests — MUST be enforced exclusively by deterministic tooling; AI models perform semantic reasoning only, and everything they produce is validated by that same deterministic tooling.
 
 ## Rationale
 
-Structural correctness must be reproducible: the same files must yield the same diagnostics on
-every machine, every run, forever. AI models are probabilistic, so delegating schema checks,
-reference resolution or digest computation to a model would make validation results vary between
-runs and erode trust in every downstream artifact — overlays, handoffs, staleness reports. The
-division of labour is strict and complementary: AI is valuable for drafting artifacts, spotting
-semantic gaps, suggesting distinctions between terms and reviewing rationale, while the
-deterministic toolchain remains the sole judge of whether the result is structurally valid.
+Structural correctness must be reproducible: the same files must yield the same diagnostics on every machine, every run, forever. AI models are probabilistic, so delegating schema checks, reference resolution or digest computation to a model would make validation results vary between runs and erode trust in every downstream artifact — overlays, handoffs, staleness reports. The division of labour is strict and complementary: AI is valuable for drafting artifacts, spotting semantic gaps, suggesting distinctions between terms and reviewing rationale, while the deterministic toolchain remains the sole judge of whether the result is structurally valid.
 
 ## Examples
 
-- An AI assistant drafts a new business-rule artifact. The draft passes through the same
-  `product-definition validate` command as any human-authored file; the assistant's confidence
-  counts for nothing if a reference does not resolve.
-- Repository hooks that guard the product model run deterministic commands such as validation and
-  doctor checks. No hook ever asks a model to judge whether an artifact is valid.
-- Staleness of a Product Handoff is decided by comparing content digests, a pure computation. An
-  AI summary of "what probably changed" may accompany the report but never determines staleness.
+- An AI assistant drafts a new business-rule artifact. The draft passes through the same `product-definition validate` command as any human-authored file; the assistant's confidence counts for nothing if a reference does not resolve.
+- Repository hooks that guard the product model run deterministic commands such as validation and doctor checks. No hook ever asks a model to judge whether an artifact is valid.
+- Staleness of a Product Handoff is decided by comparing content digests, a pure computation. An AI summary of "what probably changed" may accompany the report but never determines staleness.
 
 ## Exceptions
 
@@ -245,34 +173,17 @@ None.
 
 ## Rule
 
-SDD frameworks receive product knowledge exclusively through versioned Product Handoffs, retain
-native ownership of their own specification, design, task and verification artifacts, MAY report
-questions and contradictions back, and MUST NOT silently rewrite canonical product knowledge.
+SDD frameworks receive product knowledge exclusively through versioned Product Handoffs, retain native ownership of their own specification, design, task and verification artifacts, MAY report questions and contradictions back, and MUST NOT silently rewrite canonical product knowledge.
 
 ## Rationale
 
-An SDD framework is excellent at driving one implementation increment from spec to verified code,
-but its artifacts are scoped to that increment and expressed in its own conventions. If SDD
-artifacts could redefine product semantics, the product definition would fragment across
-framework-specific formats and the canonical model would stop being canonical. The handoff
-boundary keeps both sides strong: the product model supplies a stable, versioned contract with
-digests and a source revision, and the SDD framework works natively — its proposals, specs and
-tasks are never mirrored into or overwritten by the product side. Feedback still flows, but as
-explicit questions and contradictions that a human resolves through the change process, never as
-silent edits.
+An SDD framework is excellent at driving one implementation increment from spec to verified code, but its artifacts are scoped to that increment and expressed in its own conventions. If SDD artifacts could redefine product semantics, the product definition would fragment across framework-specific formats and the canonical model would stop being canonical. The handoff boundary keeps both sides strong: the product model supplies a stable, versioned contract with digests and a source revision, and the SDD framework works natively — its proposals, specs and tasks are never mirrored into or overwritten by the product side. Feedback still flows, but as explicit questions and contradictions that a human resolves through the change process, never as silent edits.
 
 ## Examples
 
-- Product knowledge for an OpenSpec increment arrives as a Product Handoff with sidecar files
-  placed alongside the OpenSpec change; OpenSpec keeps full native ownership of its proposal,
-  specs and tasks, and the sidecars are consumed as read-only context.
-- During implementation a developer discovers that two active business rules contradict each
-  other for an edge case. The contradiction returns as an open question on the originating
-  Product Change; it is resolved there and, if needed, promoted — the SDD framework never patches
-  the rules itself.
-- An SDD tool proposes rewording a domain term to match its spec language. The rewording is
-  raised as feedback on the product side; nothing in the canonical model changes until a Product
-  Change says so.
+- Product knowledge for an OpenSpec increment arrives as a Product Handoff with sidecar files placed alongside the OpenSpec change; OpenSpec keeps full native ownership of its proposal, specs and tasks, and the sidecars are consumed as read-only context.
+- During implementation a developer discovers that two active business rules contradict each other for an edge case. The contradiction returns as an open question on the originating Product Change; it is resolved there and, if needed, promoted — the SDD framework never patches the rules itself.
+- An SDD tool proposes rewording a domain term to match its spec language. The rewording is raised as feedback on the product side; nothing in the canonical model changes until a Product Change says so.
 
 ## Exceptions
 
@@ -284,121 +195,66 @@ None.
 
 ## Responsibility
 
-The language of projecting product knowledge into delivery: carving approved Product Changes into
-Delivery Slices, relating slices to backlog references, generating Product Handoffs and their
-Product Context documents, tracking requirement coverage across a change, judging handoff
-staleness, and adapting the whole projection to specific SDD frameworks. This context owns the
-boundary across which product knowledge reaches the people and tools that implement it.
+The language of projecting product knowledge into delivery: carving approved Product Changes into Delivery Slices, relating slices to backlog references, generating Product Handoffs and their Product Context documents, tracking requirement coverage across a change, judging handoff staleness, and adapting the whole projection to specific SDD frameworks. This context owns the boundary across which product knowledge reaches the people and tools that implement it.
 
 ## Language
 
-Speech here is about increments and contracts, not about meaning. Its core words are slice,
-handoff, context, coverage, staleness, work-item reference, digest and adapter. "Implements"
-here means a slice's or handoff's declared coverage of requirements, not code. "Stale" is a
-precise per-artifact judgment — a digest mismatch against current canonical content — never a
-feeling that a document is old. "Adapter" names the translation to one SDD framework's native
-layout, such as the OpenSpec sidecar placement.
+Speech here is about increments and contracts, not about meaning. Its core words are slice, handoff, context, coverage, staleness, work-item reference, digest and adapter. "Implements" here means a slice's or handoff's declared coverage of requirements, not code. "Stale" is a precise per-artifact judgment — a digest mismatch against current canonical content — never a feeling that a document is old. "Adapter" names the translation to one SDD framework's native layout, such as the OpenSpec sidecar placement.
 
 ## Boundaries
 
-Outside this context lie: the definition and evolution of product knowledge itself — artifacts,
-the graph, changes, overlays, promotion — which belong to Product Definition; the internals of
-SDD frameworks, whose proposals, specs, tasks and verification workflows remain natively theirs;
-and backlog tools, which this context references by work-item identifier but never models. This
-context packages and projects knowledge; it never redefines it.
+Outside this context lie: the definition and evolution of product knowledge itself — artifacts, the graph, changes, overlays, promotion — which belong to Product Definition; the internals of SDD frameworks, whose proposals, specs, tasks and verification workflows remain natively theirs; and backlog tools, which this context references by work-item identifier but never models. This context packages and projects knowledge; it never redefines it.
 
 ## External Relationships
 
-Upstream, Product Definition supplies the current product model and approved Product Changes;
-this context consumes them read-only and returns questions and contradictions discovered during
-delivery as feedback on the originating change. Downstream, SDD frameworks such as OpenSpec
-receive versioned Product Handoffs with accompanying Product Context through framework-specific
-adapters, while keeping native ownership of their own artifacts. Delivery tracking tools connect
-only through work-item references carried on slices and handoffs.
+Upstream, Product Definition supplies the current product model and approved Product Changes; this context consumes them read-only and returns questions and contradictions discovered during delivery as feedback on the originating change. Downstream, SDD frameworks such as OpenSpec receive versioned Product Handoffs with accompanying Product Context through framework-specific adapters, while keeping native ownership of their own artifacts. Delivery tracking tools connect only through work-item references carried on slices and handoffs.
 
 ### TERM-DELIVERY-SLICE — Delivery Slice
 
 ## Definition
 
-A coherent, implementable, verifiable product increment carved out of an approved Product Change.
-A slice declares exactly which requirements it implements, which product artifacts it affects and
-which other slices it depends on, so that requirement coverage across a change is explicit and
-checkable rather than implied by backlog wording.
+A coherent, implementable, verifiable product increment carved out of an approved Product Change. A slice declares exactly which requirements it implements, which product artifacts it affects and which other slices it depends on, so that requirement coverage across a change is explicit and checkable rather than implied by backlog wording.
 
 ## Distinguish From
 
-- **A user story.** A story is a delivery-tool artifact written for planning conversations. A
-  slice is a product increment of exactly one Product Change, defined by coverage declarations —
-  which requirements it implements and verifies — not by narrative format. A slice may be
-  referenced by a backlog item, but the slice carries the semantics.
-- **A technical task.** Tasks decompose implementation work and belong to the SDD framework or
-  the team. A slice never lists tasks; it states what portion of the change's obligations it
-  delivers.
-- **A requirement.** Requirements state what the product must do; a slice groups requirements
-  into one increment of delivery. One requirement may be covered by one slice and depended on by
-  several others.
+- **A user story.** A story is a delivery-tool artifact written for planning conversations. A slice is a product increment of exactly one Product Change, defined by coverage declarations — which requirements it implements and verifies — not by narrative format. A slice may be referenced by a backlog item, but the slice carries the semantics.
+- **A technical task.** Tasks decompose implementation work and belong to the SDD framework or the team. A slice never lists tasks; it states what portion of the change's obligations it delivers.
+- **A requirement.** Requirements state what the product must do; a slice groups requirements into one increment of delivery. One requirement may be covered by one slice and depended on by several others.
 
 ## Usage
 
-Delivery Slices are authored as YAML under the product root, follow their own lifecycle distinct
-from artifacts and changes, and are the unit from which Product Handoffs are generated. Coverage
-tooling reports which requirements of an approved change are covered by slices and which remain
-unassigned.
+Delivery Slices are authored as YAML under the product root, follow their own lifecycle distinct from artifacts and changes, and are the unit from which Product Handoffs are generated. Coverage tooling reports which requirements of an approved change are covered by slices and which remain unassigned.
 
 ### TERM-PRODUCT-CONTEXT — Product Context
 
 ## Definition
 
-The generated human-readable document, `product-context.md`, that accompanies a Product Handoff.
-It renders the handoff's product subgraph as prose a developer or an AI coding assistant can read
-in place — the relevant requirements, rules, terms and their relationships — without traversing
-the product model itself. It is non-canonical and reproducible at any time.
+The generated human-readable document, `product-context.md`, that accompanies a Product Handoff. It renders the handoff's product subgraph as prose a developer or an AI coding assistant can read in place — the relevant requirements, rules, terms and their relationships — without traversing the product model itself. It is non-canonical and reproducible at any time.
 
 ## Distinguish From
 
-- **The Product Handoff.** The handoff is the machine contract the context accompanies: artifact
-  references, digests, source revision, work-item reference. The context is the readable
-  companion; staleness, coverage and verification are always judged against the handoff, never
-  against the context's prose.
-- **Canonical product artifacts.** Artifacts are authored and are the source of truth. The
-  context is generated from them; editing it changes nothing and is lost on regeneration. Any
-  correction it seems to need belongs in the authored artifacts.
+- **The Product Handoff.** The handoff is the machine contract the context accompanies: artifact references, digests, source revision, work-item reference. The context is the readable companion; staleness, coverage and verification are always judged against the handoff, never against the context's prose.
+- **Canonical product artifacts.** Artifacts are authored and are the source of truth. The context is generated from them; editing it changes nothing and is lost on regeneration. Any correction it seems to need belongs in the authored artifacts.
 
 ## Usage
 
-A Product Context is generated together with its handoff and placed where the consuming SDD
-framework and its coding assistants will find it — for example alongside an OpenSpec change as a
-sidecar. It is the document a developer opens to understand the product intent behind an
-increment, and it is regenerated whenever the handoff is.
+A Product Context is generated together with its handoff and placed where the consuming SDD framework and its coding assistants will find it — for example alongside an OpenSpec change as a sidecar. It is the document a developer opens to understand the product intent behind an increment, and it is regenerated whenever the handoff is.
 
 ### TERM-PRODUCT-HANDOFF — Product Handoff
 
 ## Definition
 
-A generated, framework-independent contract that packages the product subgraph relevant to one
-delivery increment for consumption by an SDD framework. A handoff carries the referenced artifact
-list, a content digest per artifact, the source revision it was generated from and a work-item
-reference, so a consumer can verify exactly which product knowledge it was given and detect when
-that knowledge has since moved on.
+A generated, framework-independent contract that packages the product subgraph relevant to one delivery increment for consumption by an SDD framework. A handoff carries the referenced artifact list, a content digest per artifact, the source revision it was generated from and a work-item reference, so a consumer can verify exactly which product knowledge it was given and detect when that knowledge has since moved on.
 
 ## Distinguish From
 
-- **Product Context.** The readable companion document generated alongside a handoff for humans.
-  The handoff is the machine contract with digests and references; the context is its prose
-  rendering and is non-canonical.
-- **An SDD proposal or spec.** Those are owned natively by the SDD framework and describe how an
-  increment will be implemented. The handoff is produced by the product side and only supplies
-  the product knowledge the increment rests on.
-- **A backlog item.** A backlog item is a tracking reference in a delivery tool. A handoff points
-  at one via its work-item reference but is itself the versioned knowledge package, not the
-  tracking record.
+- **Product Context.** The readable companion document generated alongside a handoff for humans. The handoff is the machine contract with digests and references; the context is its prose rendering and is non-canonical.
+- **An SDD proposal or spec.** Those are owned natively by the SDD framework and describe how an increment will be implemented. The handoff is produced by the product side and only supplies the product knowledge the increment rests on.
+- **A backlog item.** A backlog item is a tracking reference in a delivery tool. A handoff points at one via its work-item reference but is itself the versioned knowledge package, not the tracking record.
 
 ## Usage
 
-Handoffs are generated from Delivery Slices, versioned, and consumed read-only by SDD adapters
-such as the OpenSpec integration. Staleness is judged per referenced artifact by comparing the
-handoff's digests against current canonical content, and a stale handoff is regenerated, never
-hand-edited.
+Handoffs are generated from Delivery Slices, versioned, and consumed read-only by SDD adapters such as the OpenSpec integration. Staleness is judged per referenced artifact by comparing the handoff's digests against current canonical content, and a stale handoff is regenerated, never hand-edited.
 
 ## Constraints
 
@@ -406,88 +262,49 @@ hand-edited.
 
 ## Constraint
 
-Version 0.1 of the product ships no web interface of any kind: no browser-based editor, viewer,
-dashboard or portal. All interaction with the product definition happens through the authored
-files, the command-line tool and AI assistants operating on the repository.
+Version 0.1 of the product ships no web interface of any kind: no browser-based editor, viewer, dashboard or portal. All interaction with the product definition happens through the authored files, the command-line tool and AI assistants operating on the repository.
 
 ## Rationale
 
-This boundary is deliberately fixed to keep v0.1 focused on the substance of the methodology: the
-artifact contracts, deterministic validation, the change flow and the handoff contract. A web
-interface would multiply the surface to design, build and support before the model it would
-display has proven itself, and it would tempt the product toward exactly the pattern the
-methodology rejects — a place where product knowledge is viewed and edited outside the files and
-their review flow. Files, CLI and AI assistants together already cover authoring, navigation and
-enforcement for the adopters v0.1 targets.
+This boundary is deliberately fixed to keep v0.1 focused on the substance of the methodology: the artifact contracts, deterministic validation, the change flow and the handoff contract. A web interface would multiply the surface to design, build and support before the model it would display has proven itself, and it would tempt the product toward exactly the pattern the methodology rejects — a place where product knowledge is viewed and edited outside the files and their review flow. Files, CLI and AI assistants together already cover authoring, navigation and enforcement for the adopters v0.1 targets.
 
 ## Consequences
 
-- Impossible: browsing, editing or approving product knowledge through a hosted or local web
-  application; graphical dashboards as a supported product surface in v0.1.
-- Harder: reaching stakeholders who will not read Markdown or run a command-line tool; visual
-  exploration is limited to generated outputs such as diagrams rendered by external viewers.
-- Mandatory: every product capability must be fully usable through files and the command line;
-  documentation and onboarding must assume no graphical surface; any future web interface must
-  arrive as a projection over the same files and commands, never as a new home for product truth.
+- Impossible: browsing, editing or approving product knowledge through a hosted or local web application; graphical dashboards as a supported product surface in v0.1.
+- Harder: reaching stakeholders who will not read Markdown or run a command-line tool; visual exploration is limited to generated outputs such as diagrams rendered by external viewers.
+- Mandatory: every product capability must be fully usable through files and the command line; documentation and onboarding must assume no graphical surface; any future web interface must arrive as a projection over the same files and commands, never as a new home for product truth.
 
 ### CON-PUBLIC-GENERIC — The public framework stays generic and free of private context
 
 ## Constraint
 
-The public framework — specification, toolkit, templates, skills, fixtures and documentation —
-contains no corporate processes, no private product details, no private prompts and no
-organization-specific terminology. Learnings from real adoptions flow back only in generic form:
-as generic issues, synthetic fixtures or sanitized documentation.
+The public framework — specification, toolkit, templates, skills, fixtures and documentation — contains no corporate processes, no private product details, no private prompts and no organization-specific terminology. Learnings from real adoptions flow back only in generic form: as generic issues, synthetic fixtures or sanitized documentation.
 
 ## Rationale
 
-The framework is developed in the open while being exercised on real products inside real
-organizations. Those two facts must never mix: private product knowledge leaking into a public
-repository is a confidentiality breach, and organization-specific vocabulary or process baked into
-the framework would silently narrow it until it fits only its first adopters. Fixing this boundary
-protects the organizations that dogfood the framework and protects the framework's claim to be
-generally adoptable.
+The framework is developed in the open while being exercised on real products inside real organizations. Those two facts must never mix: private product knowledge leaking into a public repository is a confidentiality breach, and organization-specific vocabulary or process baked into the framework would silently narrow it until it fits only its first adopters. Fixing this boundary protects the organizations that dogfood the framework and protects the framework's claim to be generally adoptable.
 
 ## Consequences
 
-- Impossible: committing real product artifacts, internal process descriptions, private prompts,
-  customer names or organization-specific terminology to the public repository; using a real
-  private model as a test fixture or documentation example.
-- Harder: feeding adoption experience back — every lesson must first be translated into a generic
-  issue, a synthetic fixture reproducing the structural situation, or sanitized documentation,
-  which costs effort and loses some specificity.
-- Mandatory: examples and fixtures are synthetic; contributions from private adoptions are
-  reviewed for leaked context before they land; the framework's vocabulary stays the methodology's
-  own, never an adopting organization's.
+- Impossible: committing real product artifacts, internal process descriptions, private prompts, customer names or organization-specific terminology to the public repository; using a real private model as a test fixture or documentation example.
+- Harder: feeding adoption experience back — every lesson must first be translated into a generic issue, a synthetic fixture reproducing the structural situation, or sanitized documentation, which costs effort and loses some specificity.
+- Mandatory: examples and fixtures are synthetic; contributions from private adoptions are reviewed for leaked context before they land; the framework's vocabulary stays the methodology's own, never an adopting organization's.
 
 ### CON-SDD-AGNOSTIC — Product Definition remains independent of any SDD framework
 
 ## Constraint
 
-The product model admits no concept, folder convention, artifact format or lifecycle state from
-any SDD framework. Integration with SDD frameworks happens exclusively through the versioned
-handoff contract and framework-specific adapters; nothing on the product side may assume, name or
-depend on a particular framework.
+The product model admits no concept, folder convention, artifact format or lifecycle state from any SDD framework. Integration with SDD frameworks happens exclusively through the versioned handoff contract and framework-specific adapters; nothing on the product side may assume, name or depend on a particular framework.
 
 ## Rationale
 
-SDD frameworks are younger and more volatile than the product knowledge they help deliver, and
-teams choose different ones — or replace them mid-product. If a framework's concepts leaked into
-the product model, the product definition would inherit that framework's churn and its adopters,
-and switching frameworks would mean rewriting product truth that never actually changed. Fixing
-the boundary at a versioned contract keeps product knowledge durable across delivery fashions and
-keeps every framework equally supportable through an adapter.
+SDD frameworks are younger and more volatile than the product knowledge they help deliver, and teams choose different ones — or replace them mid-product. If a framework's concepts leaked into the product model, the product definition would inherit that framework's churn and its adopters, and switching frameworks would mean rewriting product truth that never actually changed. Fixing the boundary at a versioned contract keeps product knowledge durable across delivery fashions and keeps every framework equally supportable through an adapter.
 
 ## Consequences
 
-- Impossible: product artifacts that reference framework-native concepts, statuses or folders;
-  framework-specific fields in the product model; a product lifecycle coupled to a framework's
-  change lifecycle (archiving an SDD change can never promote a Product Change).
-- Harder: exploiting a specific framework's richer native features from the product side — any
-  such convenience must be expressed in the adapter, behind the contract.
-- Mandatory: every framework integration is delivered as an adapter consuming the versioned
-  handoff contract; framework knowledge lives only in adapters; the contract is versioned so
-  adapters can evolve without destabilizing the product model or each other.
+- Impossible: product artifacts that reference framework-native concepts, statuses or folders; framework-specific fields in the product model; a product lifecycle coupled to a framework's change lifecycle (archiving an SDD change can never promote a Product Change).
+- Harder: exploiting a specific framework's richer native features from the product side — any such convenience must be expressed in the adapter, behind the contract.
+- Mandatory: every framework integration is delivered as an adapter consuming the versioned handoff contract; framework knowledge lives only in adapters; the contract is versioned so adapters can evolve without destabilizing the product model or each other.
 
 ## Actors
 
@@ -495,57 +312,43 @@ keeps every framework equally supportable through an adapter.
 
 ## Purpose
 
-The AI Assistant is an AI coding or product assistant (for example Claude Code or GitHub Copilot)
-that executes the canonical skills of the methodology. It supplies the semantic reasoning that
-deterministic tooling cannot: drafting, interpretation, analysis and proposal.
+The AI Assistant is an AI coding or product assistant (for example Claude Code or GitHub Copilot) that executes the canonical skills of the methodology. It supplies the semantic reasoning that deterministic tooling cannot: drafting, interpretation, analysis and proposal.
 
 ## Goals
 
-- Produce draft artifacts, change proposals, slice proposals and handoff context that a human can
-  review quickly and trust.
-- Surface gaps, ambiguities and contradictions in the product model instead of papering over
-  them.
+- Produce draft artifacts, change proposals, slice proposals and handoff context that a human can review quickly and trust.
+- Surface gaps, ambiguities and contradictions in the product model instead of papering over them.
 
 ## Responsibilities
 
 - Draft product artifacts from stated intent, following the artifact contracts.
 - Analyze the semantic meaning of a proposed change on top of structural impact results.
 - Propose Delivery Slices for approved changes and prepare Product Handoff context.
-- Audit the model for semantic weaknesses: vague rules, untraceable requirements, inconsistent
-  terminology.
+- Audit the model for semantic weaknesses: vague rules, untraceable requirements, inconsistent terminology.
 
 ## Boundaries
 
-- Performs semantic reasoning only; structural invariants are enforced exclusively by the
-  deterministic tooling, never by the assistant's judgment.
+- Performs semantic reasoning only; structural invariants are enforced exclusively by the deterministic tooling, never by the assistant's judgment.
 - Never approves changes or slices, and never promotes a change into the baseline.
-- Never invents product decisions: when information is missing it records an open question and
-  stops rather than choosing an answer.
-- Always preserves existing open questions; it may propose answers but never silently resolves or
-  deletes them.
+- Never invents product decisions: when information is missing it records an open question and stops rather than choosing an answer.
+- Always preserves existing open questions; it may propose answers but never silently resolves or deletes them.
 
 ### ACT-PRODUCT-ENGINEER — Product Engineer
 
 ## Purpose
 
-The Product Engineer defines and evolves what the product is. They turn intent, discussion and
-discovery into explicit product artifacts, and they carry every semantic modification through the
-change flow so the product definition stays the single trustworthy account of the product.
+The Product Engineer defines and evolves what the product is. They turn intent, discussion and discovery into explicit product artifacts, and they carry every semantic modification through the change flow so the product definition stays the single trustworthy account of the product.
 
 ## Goals
 
-- Keep a coherent, traceable product definition in which every requirement can be followed back
-  to the actors, journeys, use cases and rules it serves.
-- Express every intended modification as an explicit, reviewable Product Change rather than as an
-  unrecorded edit.
-- Hand delivery teams and SDD workflows precise, self-contained product context — exactly the
-  knowledge one increment needs, nothing more.
+- Keep a coherent, traceable product definition in which every requirement can be followed back to the actors, journeys, use cases and rules it serves.
+- Express every intended modification as an explicit, reviewable Product Change rather than as an unrecorded edit.
+- Hand delivery teams and SDD workflows precise, self-contained product context — exactly the knowledge one increment needs, nothing more.
 - Keep open questions visible until a human answers them.
 
 ## Responsibilities
 
-- Author and refine product artifacts: actors, journeys, use cases, rules, terms, contexts and
-  requirements.
+- Author and refine product artifacts: actors, journeys, use cases, rules, terms, contexts and requirements.
 - Inspect artifacts and analyze structural impact before proposing modifications.
 - Create Product Changes with complete proposed artifacts, rationale and open questions.
 - Slice approved changes into delivery increments and generate Product Handoffs for them.
@@ -553,10 +356,8 @@ change flow so the product definition stays the single trustworthy account of th
 
 ## Boundaries
 
-- Does not unilaterally approve their own changes into the baseline when a Repository Maintainer
-  role exists; approval and promotion are review acts.
-- Does not own or edit the native artifacts of the configured SDD framework; the handoff boundary
-  separates product definition from delivery specification.
+- Does not unilaterally approve their own changes into the baseline when a Repository Maintainer role exists; approval and promotion are review acts.
+- Does not own or edit the native artifacts of the configured SDD framework; the handoff boundary separates product definition from delivery specification.
 - Does not maintain reverse relationships by hand; derived views come from tooling.
 
 ## Open questions

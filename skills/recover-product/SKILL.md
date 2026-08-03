@@ -7,44 +7,29 @@ description: Generate candidate product knowledge from a brownfield system, with
 
 ## Purpose
 
-Reconstruct candidate product knowledge — actors, journeys, use cases, business rules, domain
-terms, requirements — from the evidence a shipped system leaves behind. The output is always
-CANDIDATE knowledge: draft artifacts carrying provenance and confidence, contradictions surfaced
-as open questions, nothing canonical until a human validates the semantics. Full automated
-recovery is out of scope in v0.1; this skill defines the workflow and the extension point that
-future recovery tooling implements.
+Reconstruct candidate product knowledge — actors, journeys, use cases, business rules, domain terms, requirements — from the evidence a shipped system leaves behind. The output is always CANDIDATE knowledge: draft artifacts carrying provenance and confidence, contradictions surfaced as open questions, nothing canonical until a human validates the semantics. Full automated recovery is out of scope in v0.1; this skill defines the workflow and the extension point that future recovery tooling implements.
 
 ## When to use
 
-- A system exists in production but has no product definition, or only a partial one, and the
-  team wants candidate artifacts reconstructed from evidence.
-- A baseline exists but a subsystem's behaviour was never captured; recovery proposes it as an
-  explicit delta through a recovery Product Change.
+- A system exists in production but has no product definition, or only a partial one, and the team wants candidate artifacts reconstructed from evidence.
+- A baseline exists but a subsystem's behaviour was never captured; recovery proposes it as an explicit delta through a recovery Product Change.
 
-Do not use this skill for greenfield intent (use `define-product`) or to review an existing
-model (use `audit-product-model`).
+Do not use this skill for greenfield intent (use `define-product`) or to review an existing model (use `audit-product-model`).
 
 ## Required inputs
 
-- Access to at least one evidence source: source code, tests, API surfaces, user interfaces,
-  database schemas, production behaviour (logs, traces, usage), documentation, tickets and
-  history, or stakeholder input relayed by the user.
-- Whether a baseline exists under `docs/product/model`. With a baseline, recovery output goes
-  into a recovery Product Change; without one, it produces draft candidates for the bootstrap.
-- The scope the user wants recovered (whole system, one subsystem, one behaviour area). If not
-  stated, ask before sweeping the codebase.
+- Access to at least one evidence source: source code, tests, API surfaces, user interfaces, database schemas, production behaviour (logs, traces, usage), documentation, tickets and history, or stakeholder input relayed by the user.
+- Whether a baseline exists under `docs/product/model`. With a baseline, recovery output goes into a recovery Product Change; without one, it produces draft candidates for the bootstrap.
+- The scope the user wants recovered (whole system, one subsystem, one behaviour area). If not stated, ask before sweeping the codebase.
 
 ## Files to read
 
 - `docs/methodology/recover.md` — the recovery contract this skill implements.
 - `docs/specification/artifacts.md` — target artifact contracts and required body sections.
-- `docs/specification/frontmatter-reference.md` — the exact allowed frontmatter per artifact kind,
-  including the `provenance` object and its permitted values.
+- `docs/specification/frontmatter-reference.md` — the exact allowed frontmatter per artifact kind, including the `provenance` object and its permitted values.
 - `docs/specification/product-changes.md` — recovery-change structure and operations.
-- Artifact templates in the framework's `templates/` (installed copies may be under
-  `.product/templates/`).
-- `references/evidence-sources.md` in this skill — what each evidence source is good for and its
-  typical confidence.
+- Artifact templates in the framework's `templates/` (installed copies may be under `.product/templates/`).
+- `references/evidence-sources.md` in this skill — what each evidence source is good for and its typical confidence.
 - Existing artifacts under `docs/product/model`, so candidates extend rather than duplicate.
 
 ## Deterministic commands
@@ -59,19 +44,11 @@ Structural facts come from these commands, never from your own judgement (BR-AI-
 
 ## Reasoning procedure
 
-1. Inventory available evidence. For the requested scope, list which sources actually exist and
-   are reachable: code, tests, APIs, UI, database schemas, production behaviour, documentation,
-   tickets, stakeholder input. Record what is missing — absent evidence bounds confidence.
-2. Extract observed behaviour. From code, tests, schemas and APIs, state what the system
-   verifiably does ("the system rejects orders above 10,000"). Each observation cites the exact
-   evidence: file and path, test name, endpoint, table or column.
-3. Separate inferred intent. Hypotheses about why ("requires approval because of fraud risk")
-   are recorded as inference, explicitly labeled, never merged into observed statements.
-4. Assign provenance and confidence to every candidate claim: which evidence produced it, and
-   high, medium or low support. A rule enforced by code and pinned by tests is high; a meaning
-   guessed from a column name is low.
-5. Record provenance in the frontmatter of every candidate, so it is queryable and validated
-   rather than buried in prose:
+1. Inventory available evidence. For the requested scope, list which sources actually exist and are reachable: code, tests, APIs, UI, database schemas, production behaviour, documentation, tickets, stakeholder input. Record what is missing — absent evidence bounds confidence.
+2. Extract observed behaviour. From code, tests, schemas and APIs, state what the system verifiably does ("the system rejects orders above 10,000"). Each observation cites the exact evidence: file and path, test name, endpoint, table or column.
+3. Separate inferred intent. Hypotheses about why ("requires approval because of fraud risk") are recorded as inference, explicitly labeled, never merged into observed statements.
+4. Assign provenance and confidence to every candidate claim: which evidence produced it, and high, medium or low support. A rule enforced by code and pinned by tests is high; a meaning guessed from a column name is low.
+5. Record provenance in the frontmatter of every candidate, so it is queryable and validated rather than buried in prose:
 
    ```yaml
    provenance:
@@ -80,72 +57,46 @@ Structural facts come from these commands, never from your own judgement (BR-AI-
      recovered-from: observation
    ```
 
-   `source` and `confidence` are required whenever provenance is present; `recovered-from` is
-   `observation`, `inference`, `interview` or `documentation`, and may be omitted when the evidence
-   is genuinely more than one of these. Keep the reasoning — which claim is observed, which is
-   inferred, and what the evidence does not settle — in the artifact body. A draft whose confidence
-   is `low` is reported as `PRODUCT111`, so the queue of candidates needing human validation is
-   derivable from validation output rather than tracked by hand.
+   `source` and `confidence` are required whenever provenance is present; `recovered-from` is `observation`, `inference`, `interview` or `documentation`, and may be omitted when the evidence is genuinely more than one of these. Keep the reasoning — which claim is observed, which is inferred, and what the evidence does not settle — in the artifact body. A draft whose confidence is `low` is reported as `PRODUCT111`, so the queue of candidates needing human validation is derivable from validation output rather than tracked by hand.
 
-6. Surface contradictions as open questions. When code disagrees with documentation, tests
-   contradict stakeholders, or one term carries two meanings, record the conflict and both
-   sources as an open question. Never pick a winner silently.
-7. Write the candidates: draft artifacts from templates (`status: draft`), named by lowercase
-   ID. Without a baseline, write them under `docs/product/model` as bootstrap candidates; with a
-   baseline, create a recovery Product Change and write them under its `proposed/`, listed in
-   `operations`.
+6. Surface contradictions as open questions. When code disagrees with documentation, tests contradict stakeholders, or one term carries two meanings, record the conflict and both sources as an open question. Never pick a winner silently.
+7. Write the candidates: draft artifacts from templates (`status: draft`), named by lowercase ID. Without a baseline, write them under `docs/product/model` as bootstrap candidates; with a baseline, create a recovery Product Change and write them under its `proposed/`, listed in `operations`.
 8. Run deterministic validation and fix every structural error.
-9. Hand over to a human with the candidate list, per-candidate confidence, all contradictions
-   and open questions, and the evidence gaps. The human validates semantics, resolves or defers
-   contradictions, and approves what enters the model.
+9. Hand over to a human with the candidate list, per-candidate confidence, all contradictions and open questions, and the evidence gaps. The human validates semantics, resolves or defers contradictions, and approves what enters the model.
 
 ## Allowed modifications
 
-- Creating and editing draft candidate artifacts under `docs/product/model` only when no
-  accepted baseline exists yet (bootstrap recovery).
-- Creating a recovery Product Change under `docs/product/changes/active/<chg-id>/` and its
-  `change.md` and `proposed/` artifacts when a baseline exists.
+- Creating and editing draft candidate artifacts under `docs/product/model` only when no accepted baseline exists yet (bootstrap recovery).
+- Creating a recovery Product Change under `docs/product/changes/active/<chg-id>/` and its `change.md` and `proposed/` artifacts when a baseline exists.
 - Editing candidates you created in this session.
 
 ## Forbidden actions
 
-- Treating any recovered claim as canonical: candidates stay `draft`; a human must validate
-  semantics before anything becomes `active`.
+- Treating any recovered claim as canonical: candidates stay `draft`; a human must validate semantics before anything becomes `active`.
 - Modifying `docs/product/model` directly when an accepted baseline exists.
-- Presenting inferred intent as observed behaviour, or emitting a candidate without provenance —
-  candidates without provenance are opinions.
+- Presenting inferred intent as observed behaviour, or emitting a candidate without provenance — candidates without provenance are opinions.
 - Resolving contradictions between evidence sources yourself; they remain open questions.
-- Inventing frontmatter fields. Each kind accepts exactly the properties its schema defines —
-  `provenance` is the one recovery adds, and it accepts only its own defined sub-fields. Anything
-  outside that is rejected as `PRODUCT002`. Check with `schema <kind>` rather than guessing.
+- Inventing frontmatter fields. Each kind accepts exactly the properties its schema defines — `provenance` is the one recovery adds, and it accepts only its own defined sub-fields. Anything outside that is rejected as `PRODUCT002`. Check with `schema <kind>` rather than guessing.
 - Marking artifacts `active`, approving changes or slices, or promoting.
 - Replacing deterministic validation with your own reading of files (BR-AI-001).
 
 ## Human approval points
 
-- Confirm the recovery scope and target (bootstrap candidates vs recovery change) before
-  sweeping evidence.
-- Ask the user for stakeholder input when evidence conflicts or intent is unrecoverable from
-  artifacts alone — stakeholders are often the only source for "why".
-- Final gate: present candidates, confidence, contradictions and gaps; the human validates every
-  claim before anything is approved. Stop and wait.
+- Confirm the recovery scope and target (bootstrap candidates vs recovery change) before sweeping evidence.
+- Ask the user for stakeholder input when evidence conflicts or intent is unrecoverable from artifacts alone — stakeholders are often the only source for "why".
+- Final gate: present candidates, confidence, contradictions and gaps; the human validates every claim before anything is approved. Stop and wait.
 
 ## Expected outputs
 
-- Draft candidate artifacts (or a recovery Product Change containing them), each carrying
-  `provenance` frontmatter with its source, its confidence, and where classifiable the recovery
-  method, and labelling each body claim observed or inferred.
+- Draft candidate artifacts (or a recovery Product Change containing them), each carrying `provenance` frontmatter with its source, its confidence, and where classifiable the recovery method, and labelling each body claim observed or inferred.
 - Every contradiction between evidence sources recorded as an explicit open question.
 - A clean structural validation run (`validate` or `change validate <CHG-ID>`).
-- A recovery summary for the human: candidates by confidence level, unresolved contradictions,
-  and evidence sources that were unavailable or unexamined.
+- A recovery summary for the human: candidates by confidence level, unresolved contradictions, and evidence sources that were unavailable or unexamined.
 
 ## Completion checks
 
-- Every candidate carries `provenance` frontmatter with a source and a confidence, and labels each
-  body claim observed or inferred; no unlabeled mixtures.
+- Every candidate carries `provenance` frontmatter with a source and a confidence, and labels each body claim observed or inferred; no unlabeled mixtures.
 - No contradiction was silently resolved; all appear as open questions.
 - All candidates are `status: draft`; nothing was marked active, approved or promoted.
-- `prodshape validate` (or `change validate <CHG-ID>`) was run after the last edit and
-  reports no errors.
+- `prodshape validate` (or `change validate <CHG-ID>`) was run after the last edit and reports no errors.
 - The human validation handover was issued, including confidence breakdown and evidence gaps.

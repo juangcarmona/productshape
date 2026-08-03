@@ -31,157 +31,74 @@ Out of scope:
 
 ## Requirement
 
-The product MUST generate every provider-specific AI integration — skills, commands and hooks —
-from a single set of canonical assets. Each generated file MUST carry a managed-file header
-identifying it as generated and recording version metadata. Generation MUST be reproducible: the
-same canonical assets, the same target and the same repository configuration produce identical
-files. The product MUST provide an update command that regenerates the installed integrations, and
-it MUST detect and report a managed file that has been modified by hand instead of silently
-overwriting or silently keeping the edit.
+The product MUST generate every provider-specific AI integration — skills, commands and hooks — from a single set of canonical assets. Each generated file MUST carry a managed-file header identifying it as generated and recording version metadata. Generation MUST be reproducible: the same canonical assets, the same target and the same repository configuration produce identical files. The product MUST provide an update command that regenerates the installed integrations, and it MUST detect and report a managed file that has been modified by hand instead of silently overwriting or silently keeping the edit.
 
-Where a rendering choice is offered, it MUST be recorded in the repository configuration rather than
-supplied per invocation, so that regenerating the integrations cannot silently reverse a decision the
-repository has already made.
+Where a rendering choice is offered, it MUST be recorded in the repository configuration rather than supplied per invocation, so that regenerating the integrations cannot silently reverse a decision the repository has already made.
 
-The product MUST remove a managed file that it previously generated and that the current canonical
-assets and configuration no longer produce. Removal MUST be conditional on the file still matching
-the content recorded for it: a file that has diverged MUST be left in place and reported, never
-deleted. Removal MUST be reported alongside what was written.
+The product MUST remove a managed file that it previously generated and that the current canonical assets and configuration no longer produce. Removal MUST be conditional on the file still matching the content recorded for it: a file that has diverged MUST be left in place and reported, never deleted. Removal MUST be reported alongside what was written.
 
 ## Rationale
 
-The methodology is delivered to AI assistants through provider-specific files, and each provider
-wants them in its own shape. If those files were maintained per provider by hand, they would
-drift — one assistant would follow yesterday's methodology while another follows today's. A single
-canonical source with generated projections keeps every provider teaching the same rules, and the
-managed-file header tells both humans and tools which files are projections. Detecting manual
-edits closes the canonical loop: an improvement made in a generated file would otherwise be lost
-at the next update, so the product surfaces it and directs the fix to the canonical asset.
+The methodology is delivered to AI assistants through provider-specific files, and each provider wants them in its own shape. If those files were maintained per provider by hand, they would drift — one assistant would follow yesterday's methodology while another follows today's. A single canonical source with generated projections keeps every provider teaching the same rules, and the managed-file header tells both humans and tools which files are projections. Detecting manual edits closes the canonical loop: an improvement made in a generated file would otherwise be lost at the next update, so the product surfaces it and directs the fix to the canonical asset.
 
-Reproducibility is stated over configuration as well as assets because a rendering choice is a real
-input to the output. Omitting it would make the guarantee false the moment any such choice exists,
-and a guarantee that is false is worse than a narrower one that holds. Recording the choice in
-configuration rather than accepting it per invocation is what keeps the guarantee usable: otherwise
-regeneration would depend on how the command was typed, and drift detection would be comparing
-against whichever rendering happened last.
+Reproducibility is stated over configuration as well as assets because a rendering choice is a real input to the output. Omitting it would make the guarantee false the moment any such choice exists, and a guarantee that is false is worse than a narrower one that holds. Recording the choice in configuration rather than accepting it per invocation is what keeps the guarantee usable: otherwise regeneration would depend on how the command was typed, and drift detection would be comparing against whichever rendering happened last.
 
-Ownership of a generated file is a claim about its absence as well as its presence. A file the
-product stops generating is dropped from the record of what it owns, and from that moment no
-integrity check covers it: it is neither regenerated, nor reported as drifted, nor removed. It
-persists, indistinguishable from something the user wrote, teaching an assistant instructions the
-repository no longer intends. Leaving it is the more damaging choice. The digest condition is what
-makes removal safe to state as an obligation — the product removes only what it can prove is its own
-and untouched, and anything a human has touched stops being the product's to delete.
+Ownership of a generated file is a claim about its absence as well as its presence. A file the product stops generating is dropped from the record of what it owns, and from that moment no integrity check covers it: it is neither regenerated, nor reported as drifted, nor removed. It persists, indistinguishable from something the user wrote, teaching an assistant instructions the repository no longer intends. Leaving it is the more damaging choice. The digest condition is what makes removal safe to state as an obligation — the product removes only what it can prove is its own and untouched, and anything a human has touched stops being the product's to delete.
 
 ## Acceptance Scenarios
 
-- A repository is initialized with an AI provider selected. The installed skills, commands and
-  hooks each begin with a managed-file header naming the generating product and the asset version.
-- The installed integration files are deleted and the update command is run with unchanged
-  canonical assets and configuration. The regenerated files are byte-identical to the originals.
-- A user edits one managed file by hand. The doctor and update commands report the modification
-  with its documented diagnostic code and do not silently discard or silently preserve the edit.
-- A repository turns off a rendering choice it previously had on, then regenerates. The files that
-  choice produced are removed, their removal is reported, and drift detection is clean afterwards.
-- One of those files had been edited by hand. It is left in place and reported rather than removed,
-  and the rest of the removal proceeds.
+- A repository is initialized with an AI provider selected. The installed skills, commands and hooks each begin with a managed-file header naming the generating product and the asset version.
+- The installed integration files are deleted and the update command is run with unchanged canonical assets and configuration. The regenerated files are byte-identical to the originals.
+- A user edits one managed file by hand. The doctor and update commands report the modification with its documented diagnostic code and do not silently discard or silently preserve the edit.
+- A repository turns off a rendering choice it previously had on, then regenerates. The files that choice produced are removed, their removal is reported, and drift detection is clean afterwards.
+- One of those files had been edited by hand. It is left in place and reported rather than removed, and the rest of the removal proceeds.
 
 ### FR-DOCTOR-001 — Report repository health without changing anything
 
 ## Requirement
 
-The product MUST provide a health report covering the state of an adopting repository: its
-configuration, the product structure, the authoring templates, the managed integration files, the
-framework version they were generated with, the configured SDD workspace, and the outcome of
-validating the current model. Each check MUST be reported individually, with an outcome and, when it
-fails, the command that repairs it. The report MUST exit non-zero when any check fails.
+The product MUST provide a health report covering the state of an adopting repository: its configuration, the product structure, the authoring templates, the managed integration files, the framework version they were generated with, the configured SDD workspace, and the outcome of validating the current model. Each check MUST be reported individually, with an outcome and, when it fails, the command that repairs it. The report MUST exit non-zero when any check fails.
 
-Producing the report MUST NOT modify the repository. In particular it MUST NOT write generated
-outputs as a side effect of the validation it reports.
+Producing the report MUST NOT modify the repository. In particular it MUST NOT write generated outputs as a side effect of the validation it reports.
 
-A component that is optional MUST NOT be reported as a failure merely for being absent. A repository
-that authors artifacts without installed templates, or that has installed no AI integrations, is
-healthy; the report MUST distinguish "absent by choice" from "present but broken", and MUST report a
-partially present component as a failure because that state can only result from damage.
+A component that is optional MUST NOT be reported as a failure merely for being absent. A repository that authors artifacts without installed templates, or that has installed no AI integrations, is healthy; the report MUST distinguish "absent by choice" from "present but broken", and MUST report a partially present component as a failure because that state can only result from damage.
 
 ## Rationale
 
-Adopters need one question answered — "is this repository set up correctly?" — without reading five
-documents to learn what correct looks like. Diagnosis is also the only safe first move in a
-repository someone else configured, which is why it must be read-only: a command people are told to
-run when they suspect something is wrong cannot itself change anything, or it becomes the thing they
-are afraid to run.
+Adopters need one question answered — "is this repository set up correctly?" — without reading five documents to learn what correct looks like. Diagnosis is also the only safe first move in a repository someone else configured, which is why it must be read-only: a command people are told to run when they suspect something is wrong cannot itself change anything, or it becomes the thing they are afraid to run.
 
-The absent-versus-broken distinction is what makes the report trustworthy rather than noisy. Every
-optional component reported as a failure trains adopters to ignore failures, and the checks that
-matter are then lost among the ones that do not. A partial component is the opposite case: nothing a
-user does deliberately leaves half the templates installed, so that state is always worth reporting.
+The absent-versus-broken distinction is what makes the report trustworthy rather than noisy. Every optional component reported as a failure trains adopters to ignore failures, and the checks that matter are then lost among the ones that do not. A partial component is the opposite case: nothing a user does deliberately leaves half the templates installed, so that state is always worth reporting.
 
-Health reporting is separated from asset generation because the two obligations answer different
-questions and change independently. Generation is about producing correct files from canonical
-sources; diagnosis is about whether a repository is in a state where the toolkit can work at all,
-and it reaches across configuration, model and workspace that generation knows nothing about.
+Health reporting is separated from asset generation because the two obligations answer different questions and change independently. Generation is about producing correct files from canonical sources; diagnosis is about whether a repository is in a state where the toolkit can work at all, and it reaches across configuration, model and workspace that generation knows nothing about.
 
 ## Acceptance Scenarios
 
-- A maintainer runs the health report on a correctly configured repository whose model validates. Every
-  check reports success, the model validation line states the error, warning and artifact counts, and
-  the command exits zero.
-- A managed integration file has been edited by hand. The managed-files check fails, names the drift,
-  and the output states the command that regenerates it.
-- The health report is produced in a repository with no generated outputs directory. Afterwards the
-  directory still does not exist: reporting created nothing.
-- A repository has never installed the authoring templates. The templates check reports their absence
-  as informational and the overall report can still succeed. In a second repository where some but not
-  all templates are present, the same check fails and names the missing ones.
+- A maintainer runs the health report on a correctly configured repository whose model validates. Every check reports success, the model validation line states the error, warning and artifact counts, and the command exits zero.
+- A managed integration file has been edited by hand. The managed-files check fails, names the drift, and the output states the command that regenerates it.
+- The health report is produced in a repository with no generated outputs directory. Afterwards the directory still does not exist: reporting created nothing.
+- A repository has never installed the authoring templates. The templates check reports their absence as informational and the overall report can still succeed. In a second repository where some but not all templates are present, the same check fails and names the missing ones.
 
 ### FR-INIT-001 — Initialize a repository without destroying user content
 
 ## Requirement
 
-The product MUST provide an initialization command that creates the product definition structure,
-a valid repository configuration and the artifact templates in the target repository. The command
-MUST NOT overwrite any pre-existing file that contains user content unless the user gives explicit
-confirmation or passes `--force`. Re-running initialization in an already initialized repository
-MUST add only what is missing and leave existing user content untouched. On success the command
-MUST print a summary of what was created together with the recommended next steps.
+The product MUST provide an initialization command that creates the product definition structure, a valid repository configuration and the artifact templates in the target repository. The command MUST NOT overwrite any pre-existing file that contains user content unless the user gives explicit confirmation or passes `--force`. Re-running initialization in an already initialized repository MUST add only what is missing and leave existing user content untouched. On success the command MUST print a summary of what was created together with the recommended next steps.
 
-The product MUST be able to report what initialization would do to every path — create, preserve,
-regenerate, overwrite, or refuse as a conflict — without writing anything. The report MUST agree with
-what applying it produces; a report that could differ from the outcome is worse than none, because it
-is trusted. Initialization MUST NOT modify any file the user owns outside the paths it creates, and
-in particular MUST NOT edit the repository's ignore rules on the user's behalf.
+The product MUST be able to report what initialization would do to every path — create, preserve, regenerate, overwrite, or refuse as a conflict — without writing anything. The report MUST agree with what applying it produces; a report that could differ from the outcome is worse than none, because it is trusted. Initialization MUST NOT modify any file the user owns outside the paths it creates, and in particular MUST NOT edit the repository's ignore rules on the user's behalf.
 
 ## Rationale
 
-Adoption begins with initialization, and adopters run it inside repositories that already contain
-code, documentation and history they care about. If the first command a team runs can silently
-destroy their files, the methodology loses trust before a single artifact is authored. Because the
-authored files are canonical, protecting them at initialization time is not a convenience but a
-direct obligation of the canonical-source rule. A printed next-step guide turns a bare directory
-tree into a starting point: the maintainer knows immediately what to author and how to validate it.
+Adoption begins with initialization, and adopters run it inside repositories that already contain code, documentation and history they care about. If the first command a team runs can silently destroy their files, the methodology loses trust before a single artifact is authored. Because the authored files are canonical, protecting them at initialization time is not a convenience but a direct obligation of the canonical-source rule. A printed next-step guide turns a bare directory tree into a starting point: the maintainer knows immediately what to author and how to validate it.
 
-Reporting without acting is the other half of that trust, and it is a distinct obligation rather than
-a convenience: the question "what will this do to my repository?" is the one an adopter must answer
-before running anything, and answering it by running the command and inspecting the damage is not an
-answer. Requiring the report to agree with the outcome is what makes it worth having — an approximate
-preview would be consulted once, found wrong, and never trusted again.
+Reporting without acting is the other half of that trust, and it is a distinct obligation rather than a convenience: the question "what will this do to my repository?" is the one an adopter must answer before running anything, and answering it by running the command and inspecting the damage is not an answer. Requiring the report to agree with the outcome is what makes it worth having — an approximate preview would be consulted once, found wrong, and never trusted again.
 
 ## Acceptance Scenarios
 
-- In a repository with no product structure, `prodshape init` creates the product tree,
-  writes a valid configuration and renders the artifact templates; afterwards the repository
-  validates cleanly with an empty model.
-- Initialization is run where a file it would create already exists with user content. The command
-  stops and asks for explicit confirmation; without confirmation or `--force`, the file is left
-  byte-identical and the command reports which files were skipped.
-- Initialization completes and the output names every created file and directory, followed by the
-  recommended next steps: define the initial product model, then run validation.
-- A maintainer asks what initialization would do in a repository that already contains documentation.
-  Every path is reported by outcome, no file is written, and the repository is byte-identical
-  afterwards.
-- The same repository is then initialized for real. The number of files the report said would be
-  created equals the number created.
+- In a repository with no product structure, `prodshape init` creates the product tree, writes a valid configuration and renders the artifact templates; afterwards the repository validates cleanly with an empty model.
+- Initialization is run where a file it would create already exists with user content. The command stops and asks for explicit confirmation; without confirmation or `--force`, the file is left byte-identical and the command reports which files were skipped.
+- Initialization completes and the output names every created file and directory, followed by the recommended next steps: define the initial product model, then run validation.
+- A maintainer asks what initialization would do in a repository that already contains documentation. Every path is reported by outcome, no file is written, and the repository is byte-identical afterwards.
+- The same repository is then initialized for real. The number of files the report said would be created equals the number created.
 
 ## Affected behaviour
 
@@ -189,58 +106,38 @@ preview would be consulted once, found wrong, and never trusted again.
 
 ## Intended Outcome
 
-The repository holds a validated initial product baseline: a structured, machine-checkable
-product definition that the team accepts as the canonical account of the product, ready to evolve
-through explicit changes from this point on.
+The repository holds a validated initial product baseline: a structured, machine-checkable product definition that the team accepts as the canonical account of the product, ready to evolve through explicit changes from this point on.
 
 ## Entry Conditions
 
 - A repository exists (new or established) whose product the team wants to define as code.
 - The Repository Maintainer can install tooling and commit to the repository.
-- The team has product knowledge to capture — as intent, conversations, documents or an existing
-  system.
+- The team has product knowledge to capture — as intent, conversations, documents or an existing system.
 
 ## Journey Narrative
 
-The Repository Maintainer initializes Product Definition as Code in the repository, choosing any
-AI providers and an SDD framework integration during setup. With the structure and configuration
-in place, the team establishes the initial product model: actors first, then journeys, use cases,
-rules, terms and requirements, keeping open questions visible. This is the one moment in the
-product's life when authoring directly into the baseline is allowed — the initial-baseline
-bootstrap exception; every semantic evolution afterwards goes through a Product Change. The team
-runs validation repeatedly as the model grows, resolving each diagnostic, until the definition is
-structurally coherent and a human review marks the artifacts active.
+The Repository Maintainer initializes Product Definition as Code in the repository, choosing any AI providers and an SDD framework integration during setup. With the structure and configuration in place, the team establishes the initial product model: actors first, then journeys, use cases, rules, terms and requirements, keeping open questions visible. This is the one moment in the product's life when authoring directly into the baseline is allowed — the initial-baseline bootstrap exception; every semantic evolution afterwards goes through a Product Change. The team runs validation repeatedly as the model grows, resolving each diagnostic, until the definition is structurally coherent and a human review marks the artifacts active.
 
 ## Variants and Branches
 
-- Brownfield adoption: instead of defining the model from intent, the team follows the Recover
-  workflow, which reconstructs candidate product knowledge from the existing system for a human
-  to validate before it enters the baseline.
-- Existing SDD framework: a repository already using an SDD framework configures that
-  integration during initialization, so later handoffs land in the workflow the team already
-  runs.
+- Brownfield adoption: instead of defining the model from intent, the team follows the Recover workflow, which reconstructs candidate product knowledge from the existing system for a human to validate before it enters the baseline.
+- Existing SDD framework: a repository already using an SDD framework configures that integration during initialization, so later handoffs land in the workflow the team already runs.
 
 ## Completion Conditions
 
 - The product definition structure and configuration exist in the repository.
 - Validation passes with no errors on the initial model.
-- The initial artifacts are active and the team treats the baseline as canonical: subsequent
-  modifications are expressed as Product Changes.
+- The initial artifacts are active and the team treats the baseline as canonical: subsequent modifications are expressed as Product Changes.
 
 ### UC-INIT-001 — Initialize Product Definition in a repository
 
 ## Goal
 
-The repository gains everything needed to define a product as code: the product definition
-structure, valid configuration, artifact templates, and — when chosen — installed AI and SDD
-integrations, without disturbing anything already in the repository. Initialization is the moment
-a repository adopts the methodology by installing its reference implementation, so the two must
-stay distinguishable from the very first command.
+The repository gains everything needed to define a product as code: the product definition structure, valid configuration, artifact templates, and — when chosen — installed AI and SDD integrations, without disturbing anything already in the repository. Initialization is the moment a repository adopts the methodology by installing its reference implementation, so the two must stay distinguishable from the very first command.
 
 ## Trigger
 
-The Repository Maintainer runs `prodshape init`, optionally selecting AI providers and
-an SDD framework through command options or interactive prompts.
+The Repository Maintainer runs `prodshape init`, optionally selecting AI providers and an SDD framework through command options or interactive prompts.
 
 ## Preconditions
 
@@ -249,44 +146,29 @@ an SDD framework through command options or interactive prompts.
 
 ## Main Flow
 
-1. The maintainer runs `prodshape init` and chooses AI providers and an SDD framework,
-   or none.
-2. The product tree is created under `docs/product`: a home for the current model, with a directory
-   per artifact kind, and a home for Product Changes with one directory per lifecycle state. The
-   per-kind layout is a recommendation the maintainer can decline; artifacts are discovered wherever
-   they sit under the model directory.
+1. The maintainer runs `prodshape init` and chooses AI providers and an SDD framework, or none.
+2. The product tree is created under `docs/product`: a home for the current model, with a directory per artifact kind, and a home for Product Changes with one directory per lifecycle state. The per-kind layout is a recommendation the maintainer can decline; artifacts are discovered wherever they sit under the model directory.
 3. The repository configuration is written, recording the chosen integrations.
-4. Artifact templates are rendered into the repository so authors start from the contracts
-   rather than blank files.
+4. Artifact templates are rendered into the repository so authors start from the contracts rather than blank files.
 5. The selected AI skills and SDD adapter are installed for the chosen providers and framework.
-6. The command prints what was created and the recommended next steps: define the initial model,
-   then validate.
+6. The command prints what was created and the recommended next steps: define the initial model, then validate.
 
 ## Alternative Flows
 
-- No integrations: the maintainer selects neither AI providers nor an SDD framework; the
-  structure and configuration are created and integrations can be added later by running
-  initialization again.
-- Re-initialization: running the command in an already initialized repository adds what is
-  missing and leaves existing user content alone.
-- Report only: the maintainer asks what initialization would do without doing it. Every path is
-  reported by what would happen to it — created, preserved, regenerated, overwritten, or in
-  conflict — and nothing is written. This is the usual first step in a repository that already has
-  content, where the maintainer needs to know the answer before accepting the risk.
+- No integrations: the maintainer selects neither AI providers nor an SDD framework; the structure and configuration are created and integrations can be added later by running initialization again.
+- Re-initialization: running the command in an already initialized repository adds what is missing and leaves existing user content alone.
+- Report only: the maintainer asks what initialization would do without doing it. Every path is reported by what would happen to it — created, preserved, regenerated, overwritten, or in conflict — and nothing is written. This is the usual first step in a repository that already has content, where the maintainer needs to know the answer before accepting the risk.
 
 ## Failure Conditions
 
-- A file the command would create already exists with user content: the command stops and asks
-  for explicit confirmation, or requires `--force`; it never overwrites silently.
-- An unsupported provider or framework is requested: the command reports the supported options
-  and makes no changes.
+- A file the command would create already exists with user content: the command stops and asks for explicit confirmation, or requires `--force`; it never overwrites silently.
+- An unsupported provider or framework is requested: the command reports the supported options and makes no changes.
 
 ## Postconditions
 
 - The product definition structure exists in the repository.
 - The configuration is present and valid.
-- Chosen integrations are installed, and no pre-existing file was overwritten without explicit
-  consent.
+- Chosen integrations are installed, and no pre-existing file was overwritten without explicit consent.
 
 ## Governing rules
 
@@ -294,30 +176,17 @@ an SDD framework through command options or interactive prompts.
 
 ## Rule
 
-Structural invariants of the product definition — schema conformance, identity, reference
-resolution, lifecycle rules, overlay application and content digests — MUST be enforced
-exclusively by deterministic tooling; AI models perform semantic reasoning only, and everything
-they produce is validated by that same deterministic tooling.
+Structural invariants of the product definition — schema conformance, identity, reference resolution, lifecycle rules, overlay application and content digests — MUST be enforced exclusively by deterministic tooling; AI models perform semantic reasoning only, and everything they produce is validated by that same deterministic tooling.
 
 ## Rationale
 
-Structural correctness must be reproducible: the same files must yield the same diagnostics on
-every machine, every run, forever. AI models are probabilistic, so delegating schema checks,
-reference resolution or digest computation to a model would make validation results vary between
-runs and erode trust in every downstream artifact — overlays, handoffs, staleness reports. The
-division of labour is strict and complementary: AI is valuable for drafting artifacts, spotting
-semantic gaps, suggesting distinctions between terms and reviewing rationale, while the
-deterministic toolchain remains the sole judge of whether the result is structurally valid.
+Structural correctness must be reproducible: the same files must yield the same diagnostics on every machine, every run, forever. AI models are probabilistic, so delegating schema checks, reference resolution or digest computation to a model would make validation results vary between runs and erode trust in every downstream artifact — overlays, handoffs, staleness reports. The division of labour is strict and complementary: AI is valuable for drafting artifacts, spotting semantic gaps, suggesting distinctions between terms and reviewing rationale, while the deterministic toolchain remains the sole judge of whether the result is structurally valid.
 
 ## Examples
 
-- An AI assistant drafts a new business-rule artifact. The draft passes through the same
-  `prodshape validate` command as any human-authored file; the assistant's confidence
-  counts for nothing if a reference does not resolve.
-- Repository hooks that guard the product model run deterministic commands such as validation and
-  doctor checks. No hook ever asks a model to judge whether an artifact is valid.
-- Staleness of a Product Handoff is decided by comparing content digests, a pure computation. An
-  AI summary of "what probably changed" may accompany the report but never determines staleness.
+- An AI assistant drafts a new business-rule artifact. The draft passes through the same `prodshape validate` command as any human-authored file; the assistant's confidence counts for nothing if a reference does not resolve.
+- Repository hooks that guard the product model run deterministic commands such as validation and doctor checks. No hook ever asks a model to judge whether an artifact is valid.
+- Staleness of a Product Handoff is decided by comparing content digests, a pure computation. An AI summary of "what probably changed" may accompany the report but never determines staleness.
 
 ## Exceptions
 
@@ -327,30 +196,17 @@ None.
 
 ## Rule
 
-The authored files under the product root — Markdown product artifacts and authored delivery-slice
-YAML — are the single source of truth for product knowledge; every product graph, index, diagram,
-handoff and context document is derived from them and MUST be reproducible from them at any time.
+The authored files under the product root — Markdown product artifacts and authored delivery-slice YAML — are the single source of truth for product knowledge; every product graph, index, diagram, handoff and context document is derived from them and MUST be reproducible from them at any time.
 
 ## Rationale
 
-A product definition only stays trustworthy if there is exactly one place where knowledge lives.
-The moment a generated index, diagram or handoff can hold knowledge that the authored artifacts do
-not, the two drift apart and nobody can say which one is right. Keeping authored artifacts
-canonical means reviews, diffs and Git history always operate on the real product definition, and
-derived outputs can be deleted, regenerated or reformatted freely without any loss of meaning. It
-also keeps AI assistance safe: an assistant may draft canonical files for a human to review, but
-nothing an assistant or a tool generates downstream can silently become authoritative.
+A product definition only stays trustworthy if there is exactly one place where knowledge lives. The moment a generated index, diagram or handoff can hold knowledge that the authored artifacts do not, the two drift apart and nobody can say which one is right. Keeping authored artifacts canonical means reviews, diffs and Git history always operate on the real product definition, and derived outputs can be deleted, regenerated or reformatted freely without any loss of meaning. It also keeps AI assistance safe: an assistant may draft canonical files for a human to review, but nothing an assistant or a tool generates downstream can silently become authoritative.
 
 ## Examples
 
-- A team member edits a generated managed file to "fix" a description. `prodshape doctor`
-  detects the manual modification and reports it; the fix belongs in the authored artifact, after
-  which regeneration reproduces the corrected output.
-- All generated output — the compiled product graph, reverse indexes, diagrams, product-context
-  documents — is deleted from a working copy. Nothing is lost: a single rebuild from the authored
-  artifacts restores every derived file identically.
-- A Product Handoff becomes stale because an authored artifact changed. The handoff is regenerated
-  from the canonical files; the handoff itself is never hand-patched to match.
+- A team member edits a generated managed file to "fix" a description. `prodshape doctor` detects the manual modification and reports it; the fix belongs in the authored artifact, after which regeneration reproduces the corrected output.
+- All generated output — the compiled product graph, reverse indexes, diagrams, product-context documents — is deleted from a working copy. Nothing is lost: a single rebuild from the authored artifacts restores every derived file identically.
+- A Product Handoff becomes stale because an authored artifact changed. The handoff is regenerated from the canonical files; the handoff itself is never hand-patched to match.
 
 ## Exceptions
 
@@ -362,135 +218,79 @@ None.
 
 ## Responsibility
 
-The language of describing and evolving a product as code: what a product artifact is, how
-identity works, how artifacts relate to form the product graph, what the current product model
-contains, how Product Changes propose evolution as overlays, and how deterministic validation
-keeps all of it structurally sound. Everything that decides what the product definition means —
-and how that meaning changes over time — belongs here.
+The language of describing and evolving a product as code: what a product artifact is, how identity works, how artifacts relate to form the product graph, what the current product model contains, how Product Changes propose evolution as overlays, and how deterministic validation keeps all of it structurally sound. Everything that decides what the product definition means — and how that meaning changes over time — belongs here.
 
 ## Language
 
-Speech in this context is about knowledge and its evolution, not about delivery. Its core words
-are artifact, identity, canonical, derived, graph, baseline, overlay, change, promotion,
-diagnostic and validation. "Change" here always means a Product Change — a versioned semantic
-delta with future-state artifacts — never a Git commit or a work item. "Valid" always means
-deterministically checked against the published contracts, never a matter of judgment.
+Speech in this context is about knowledge and its evolution, not about delivery. Its core words are artifact, identity, canonical, derived, graph, baseline, overlay, change, promotion, diagnostic and validation. "Change" here always means a Product Change — a versioned semantic delta with future-state artifacts — never a Git commit or a work item. "Valid" always means deterministically checked against the published contracts, never a matter of judgment.
 
 ## Boundaries
 
-Outside this context lie: the projection of product knowledge into delivery (slices, handoffs,
-context documents, coverage and staleness), which belongs to Delivery Integration; SDD
-frameworks' own specification and task workflows; backlog tools and their items; and source-code
-structure — bounded contexts here are product-language boundaries, never implementation modules.
-This context defines what changes mean; it does not schedule, assign or implement them.
+Outside this context lie: the projection of product knowledge into delivery (slices, handoffs, context documents, coverage and staleness), which belongs to Delivery Integration; SDD frameworks' own specification and task workflows; backlog tools and their items; and source-code structure — bounded contexts here are product-language boundaries, never implementation modules. This context defines what changes mean; it does not schedule, assign or implement them.
 
 ## External Relationships
 
-Delivery Integration is the sole downstream consumer of this context's output: approved Product
-Changes and the current product model cross the boundary to be carved into slices and packaged
-into handoffs. Feedback flows back across the same boundary — questions and contradictions
-discovered during delivery return as open questions on the originating Product Change, where they
-are resolved in this context's terms. Version control underlies the context as the provenance and
-history mechanism, but carries no product semantics of its own.
+Delivery Integration is the sole downstream consumer of this context's output: approved Product Changes and the current product model cross the boundary to be carved into slices and packaged into handoffs. Feedback flows back across the same boundary — questions and contradictions discovered during delivery return as open questions on the originating Product Change, where they are resolved in this context's terms. Version control underlies the context as the provenance and history mechanism, but carries no product semantics of its own.
 
 ### TERM-CURRENT-PRODUCT-MODEL — Current Product Model
 
 ## Definition
 
-The set of product artifacts under the model area of the product root, describing the product as
-currently defined — behaviour that is implemented and accepted. It is called the baseline when a
-Product Change is validated against it: the fixed reference state that overlay validation applies
-a change's operations to without modifying it.
+The set of product artifacts under the model area of the product root, describing the product as currently defined — behaviour that is implemented and accepted. It is called the baseline when a Product Change is validated against it: the fixed reference state that overlay validation applies a change's operations to without modifying it.
 
 ## Distinguish From
 
-- **Proposed future-state artifacts inside a Product Change.** Those describe what an artifact
-  would become if the change were promoted. Until promotion, they are proposals; the current
-  product model contains only accepted knowledge.
-- **The product graph.** The graph is a derived view compiled from the current product model (or
-  from an overlay). The model is the authored files; the graph can always be rebuilt from them.
-- **The repository.** The repository also holds changes, slices, handoffs, templates and
-  generated output. The current product model is only the accepted artifact set, not everything
-  under version control.
+- **Proposed future-state artifacts inside a Product Change.** Those describe what an artifact would become if the change were promoted. Until promotion, they are proposals; the current product model contains only accepted knowledge.
+- **The product graph.** The graph is a derived view compiled from the current product model (or from an overlay). The model is the authored files; the graph can always be rebuilt from them.
+- **The repository.** The repository also holds changes, slices, handoffs, templates and generated output. The current product model is only the accepted artifact set, not everything under version control.
 
 ## Usage
 
-The current product model is what `prodshape validate` checks when no change is in
-scope, the baseline that every overlay is applied to, the source from which Product Handoffs
-package subgraphs, and the reference against which handoff staleness is judged. Promotion is
-defined as the only operation, after the initial bootstrap, that modifies it.
+The current product model is what `prodshape validate` checks when no change is in scope, the baseline that every overlay is applied to, the source from which Product Handoffs package subgraphs, and the reference against which handoff staleness is judged. Promotion is defined as the only operation, after the initial bootstrap, that modifies it.
 
 ### TERM-METHODOLOGY — Methodology
 
 ## Definition
 
-A long-lived, implementation-independent body of ideas and a normative specification for how a kind
-of work is done. In this project the methodology is Product Definition as Code: the artifact
-families, the relationships that connect them, the three operations (Define, Recover, Change) and
-the normative specification. The methodology outlives any single tool that implements it.
+A long-lived, implementation-independent body of ideas and a normative specification for how a kind of work is done. In this project the methodology is Product Definition as Code: the artifact families, the relationships that connect them, the three operations (Define, Recover, Change) and the normative specification. The methodology outlives any single tool that implements it.
 
 ## Distinguish From
 
-A Reference Implementation, which is a concrete toolkit that realizes a methodology. The methodology
-is the concept and the contract; a reference implementation is one embodiment of it. "Product
-Definition as Code" is always the methodology and is never used as a product name.
+A Reference Implementation, which is a concrete toolkit that realizes a methodology. The methodology is the concept and the contract; a reference implementation is one embodiment of it. "Product Definition as Code" is always the methodology and is never used as a product name.
 
 ## Usage
 
-Used to name the durable concept when separating it from any implementation — in the manifesto, the
-specification, the adoption guides and AI reasoning. When a statement is about the ideas or the
-contracts rather than about a shipped tool, it is about the methodology.
+Used to name the durable concept when separating it from any implementation — in the manifesto, the specification, the adoption guides and AI reasoning. When a statement is about the ideas or the contracts rather than about a shipped tool, it is about the methodology.
 
 ### TERM-PRODUCT-ARTIFACT — Product Artifact
 
 ## Definition
 
-An independently addressable unit of product knowledge carrying a stable immutable ID: an Actor,
-Journey, Use Case, Business Rule, Domain Term, Bounded Context, Functional Requirement, Quality
-Requirement or Constraint. Each product artifact is an authored Markdown file with typed YAML
-frontmatter and required body sections, lives in the current product model, and participates in
-the product graph through canonical relationships declared in its frontmatter.
+An independently addressable unit of product knowledge carrying a stable immutable ID: an Actor, Journey, Use Case, Business Rule, Domain Term, Bounded Context, Functional Requirement, Quality Requirement or Constraint. Each product artifact is an authored Markdown file with typed YAML frontmatter and required body sections, lives in the current product model, and participates in the product graph through canonical relationships declared in its frontmatter.
 
 ## Distinguish From
 
-- **Product Change and Delivery Slice.** Both carry stable IDs and are validated by the same
-  toolchain, but neither is a product artifact: they describe evolution and delivery of the model
-  rather than the model itself, and they follow their own lifecycles, not the artifact lifecycle.
-- **Generated outputs.** Compiled graphs, reverse indexes, diagrams, handoffs and context
-  documents may render artifact content, but they are derived and reproducible; only the authored
-  file is the artifact.
-- **A file.** The artifact is the identified unit of knowledge; the file is merely its current
-  storage location. Moving or renaming the file does not create or destroy an artifact.
+- **Product Change and Delivery Slice.** Both carry stable IDs and are validated by the same toolchain, but neither is a product artifact: they describe evolution and delivery of the model rather than the model itself, and they follow their own lifecycles, not the artifact lifecycle.
+- **Generated outputs.** Compiled graphs, reverse indexes, diagrams, handoffs and context documents may render artifact content, but they are derived and reproducible; only the authored file is the artifact.
+- **A file.** The artifact is the identified unit of knowledge; the file is merely its current storage location. Moving or renaming the file does not create or destroy an artifact.
 
 ## Usage
 
-Product artifacts are what `prodshape validate` checks, what the graph compiler turns
-into nodes, what Product Changes add, modify or remove, and what Product Handoffs reference by ID
-and digest. When the methodology says "artifact" without qualification, it means a product
-artifact in the current product model.
+Product artifacts are what `prodshape validate` checks, what the graph compiler turns into nodes, what Product Changes add, modify or remove, and what Product Handoffs reference by ID and digest. When the methodology says "artifact" without qualification, it means a product artifact in the current product model.
 
 ### TERM-REFERENCE-IMPLEMENTATION — Reference Implementation
 
 ## Definition
 
-A concrete toolkit that implements a methodology end to end and demonstrates it in practice. The
-reference implementation of Product Definition as Code is ProductShape: the shipped toolkit that
-realizes the methodology's artifacts, graph, changes, handoffs and promotion. Just as OpenSpec is
-an implementation of Spec-Driven Development, ProductShape is an implementation of Product
-Definition as Code.
+A concrete toolkit that implements a methodology end to end and demonstrates it in practice. The reference implementation of Product Definition as Code is ProductShape: the shipped toolkit that realizes the methodology's artifacts, graph, changes, handoffs and promotion. Just as OpenSpec is an implementation of Spec-Driven Development, ProductShape is an implementation of Product Definition as Code.
 
 ## Distinguish From
 
-The Methodology it implements — the ideas and the specification, Product Definition as Code, which
-ProductShape does not own and could share with a future alternative implementation. A different
-implementation of the same methodology would carry a different brand while speaking the same
-methodology contracts (the schema identifiers, the artifact families, the diagnostics).
+The Methodology it implements — the ideas and the specification, Product Definition as Code, which ProductShape does not own and could share with a future alternative implementation. A different implementation of the same methodology would carry a different brand while speaking the same methodology contracts (the schema identifiers, the artifact families, the diagnostics).
 
 ## Usage
 
-Used to name ProductShape's role relative to the methodology. "ProductShape" names the tool and its
-public identity; "Product Definition as Code" names the methodology it implements. When a statement
-is about the shipped toolkit rather than the ideas, it is about the reference implementation.
+Used to name ProductShape's role relative to the methodology. "ProductShape" names the tool and its public identity; "Product Definition as Code" names the methodology it implements. When a statement is about the shipped toolkit rather than the ideas, it is about the reference implementation.
 
 ## Constraints
 
@@ -498,152 +298,81 @@ is about the shipped toolkit rather than the ideas, it is about the reference im
 
 ## Constraint
 
-The methodology is named "Product Definition as Code" and retains that name. Its reference
-implementation is publicly branded "ProductShape" — the name under which the toolkit is
-distributed and the public identity it presents. Public identity MUST keep the two distinct:
-"Product Definition as Code" names the ideas, the normative specification and the versioned
-contracts; "ProductShape" names the tool and the namespace under which it ships. No public-facing
-surface may present ProductShape as the methodology or "Product Definition as Code" as a product
-name, and the reference implementation MUST NOT ship publicly without this settled brand. The
-concrete distribution identifiers chosen for ProductShape are recorded in the adopting Product
-Change and realized in implementation; this constraint fixes the policy, not the mechanics.
+The methodology is named "Product Definition as Code" and retains that name. Its reference implementation is publicly branded "ProductShape" — the name under which the toolkit is distributed and the public identity it presents. Public identity MUST keep the two distinct: "Product Definition as Code" names the ideas, the normative specification and the versioned contracts; "ProductShape" names the tool and the namespace under which it ships. No public-facing surface may present ProductShape as the methodology or "Product Definition as Code" as a product name, and the reference implementation MUST NOT ship publicly without this settled brand. The concrete distribution identifiers chosen for ProductShape are recorded in the adopting Product Change and realized in implementation; this constraint fixes the policy, not the mechanics.
 
 ## Rationale
 
-A methodology and an implementation of it are different things with different lifecycles and
-audiences. The methodology is a set of ideas and a specification that could be implemented more
-than once; the reference implementation is one shipped toolkit that must claim a brand, a package
-namespace and a release channel to exist publicly. Fixing the brand as a distinct layer above the
-methodology name lets the tool carry a memorable public identity — which shipping requires —
-without binding the methodology's contracts to it, and keeps either free to evolve without dragging
-the other. It settles, deliberately and on the record, a naming decision that was left open
-precisely so it would not harden into an accidental brand at first publish.
+A methodology and an implementation of it are different things with different lifecycles and audiences. The methodology is a set of ideas and a specification that could be implemented more than once; the reference implementation is one shipped toolkit that must claim a brand, a package namespace and a release channel to exist publicly. Fixing the brand as a distinct layer above the methodology name lets the tool carry a memorable public identity — which shipping requires — without binding the methodology's contracts to it, and keeps either free to evolve without dragging the other. It settles, deliberately and on the record, a naming decision that was left open precisely so it would not harden into an accidental brand at first publish.
 
 ## Consequences
 
-- Impossible: shipping the reference implementation publicly without a settled brand; presenting
-  "Product Definition as Code" as the name of a product; presenting "ProductShape" as the
-  methodology rather than as an implementation of it.
-- Harder: nothing structural — but the two-name discipline must be maintained wherever both names
-  appear, so documentation and public copy carry a small, permanent editorial obligation.
-- Mandatory: the public brand of the reference implementation is ProductShape; the methodology name
-  is used for the ideas, the specification and the contracts; and the distinction is made explicit
-  wherever a reader could otherwise conflate them.
+- Impossible: shipping the reference implementation publicly without a settled brand; presenting "Product Definition as Code" as the name of a product; presenting "ProductShape" as the methodology rather than as an implementation of it.
+- Harder: nothing structural — but the two-name discipline must be maintained wherever both names appear, so documentation and public copy carry a small, permanent editorial obligation.
+- Mandatory: the public brand of the reference implementation is ProductShape; the methodology name is used for the ideas, the specification and the contracts; and the distinction is made explicit wherever a reader could otherwise conflate them.
 
 ### CON-MARKDOWN-001 — Canonical product knowledge lives in authored files under version control
 
 ## Constraint
 
-All canonical product knowledge is expressed in authored Markdown and YAML files inside the
-repository, versioned by the repository's own version control. No database, service, wiki, tracker
-or any other external store holds product truth; anything outside the authored files is at most a
-derived, regenerable projection.
+All canonical product knowledge is expressed in authored Markdown and YAML files inside the repository, versioned by the repository's own version control. No database, service, wiki, tracker or any other external store holds product truth; anything outside the authored files is at most a derived, regenerable projection.
 
 ## Rationale
 
-This boundary is deliberately fixed by the methodology itself: "as code" is the founding premise.
-Product knowledge kept in files gains everything source code already has — diffs, reviews,
-branches, history, blame and offline access — and stays equally readable to humans and AI
-assistants without any intermediary system. The moment truth moves into an external store, the
-repository becomes a copy, copies drift, and the review-based change flow the methodology is built
-on loses its subject.
+This boundary is deliberately fixed by the methodology itself: "as code" is the founding premise. Product knowledge kept in files gains everything source code already has — diffs, reviews, branches, history, blame and offline access — and stays equally readable to humans and AI assistants without any intermediary system. The moment truth moves into an external store, the repository becomes a copy, copies drift, and the review-based change flow the methodology is built on loses its subject.
 
 ## Consequences
 
-- Impossible: querying or editing product truth through any system of record other than the
-  repository; a "live" product definition that differs from the committed files.
-- Harder: concurrent editing at scale and rich text or embedded media, which are limited to what
-  Markdown in a repository can express; large models must be navigated with tooling rather than a
-  database.
-- Mandatory: every knowledge change is a file change that travels through version control review;
-  all tooling reads and writes authored files; derived stores, caches and indexes must be
-  reproducible from the files at any time and can never be authoritative.
+- Impossible: querying or editing product truth through any system of record other than the repository; a "live" product definition that differs from the committed files.
+- Harder: concurrent editing at scale and rich text or embedded media, which are limited to what Markdown in a repository can express; large models must be navigated with tooling rather than a database.
+- Mandatory: every knowledge change is a file change that travels through version control review; all tooling reads and writes authored files; derived stores, caches and indexes must be reproducible from the files at any time and can never be authoritative.
 
 ### CON-NO-GRAPH-DATABASE — The product graph must not require a graph database
 
 ## Constraint
 
-The product graph is always derivable from the authored files by the toolkit alone. Neither
-authoring, validating, inspecting nor handing off product knowledge may require a graph database
-or any other running server; the graph exists as a regenerable artifact, never as a system that
-must be installed, operated or kept in sync.
+The product graph is always derivable from the authored files by the toolkit alone. Neither authoring, validating, inspecting nor handing off product knowledge may require a graph database or any other running server; the graph exists as a regenerable artifact, never as a system that must be installed, operated or kept in sync.
 
 ## Rationale
 
-The methodology must be adoptable by cloning a repository and running a command-line tool. Every
-piece of required infrastructure is an adoption tax and an operational liability: a graph database
-would need installation, upgrades, backups and synchronization with the files — and the instant it
-held anything the files did not, it would compete with them for truth. Keeping the graph a derived
-file preserves the canonical-source rule and keeps the whole toolkit runnable on a laptop, in CI
-and in an air-gapped environment alike.
+The methodology must be adoptable by cloning a repository and running a command-line tool. Every piece of required infrastructure is an adoption tax and an operational liability: a graph database would need installation, upgrades, backups and synchronization with the files — and the instant it held anything the files did not, it would compete with them for truth. Keeping the graph a derived file preserves the canonical-source rule and keeps the whole toolkit runnable on a laptop, in CI and in an air-gapped environment alike.
 
 ## Consequences
 
-- Impossible: any workflow that depends on a persistent graph service, live graph subscriptions,
-  or graph state that cannot be rebuilt from the repository.
-- Harder: ad-hoc graph queries are limited to what the tooling computes — inspection, impact
-  analysis and the generated graph output — rather than an open query language; very large graphs
-  are recompiled rather than incrementally served.
-- Mandatory: the toolkit must be able to rebuild the complete graph from the authored files at any
-  time, and adopters carry no server dependency of any kind for working with the product graph.
+- Impossible: any workflow that depends on a persistent graph service, live graph subscriptions, or graph state that cannot be rebuilt from the repository.
+- Harder: ad-hoc graph queries are limited to what the tooling computes — inspection, impact analysis and the generated graph output — rather than an open query language; very large graphs are recompiled rather than incrementally served.
+- Mandatory: the toolkit must be able to rebuild the complete graph from the authored files at any time, and adopters carry no server dependency of any kind for working with the product graph.
 
 ### CON-NO-WEB-UI — The product provides no web interface in v0.1
 
 ## Constraint
 
-Version 0.1 of the product ships no web interface of any kind: no browser-based editor, viewer,
-dashboard or portal. All interaction with the product definition happens through the authored
-files, the command-line tool and AI assistants operating on the repository.
+Version 0.1 of the product ships no web interface of any kind: no browser-based editor, viewer, dashboard or portal. All interaction with the product definition happens through the authored files, the command-line tool and AI assistants operating on the repository.
 
 ## Rationale
 
-This boundary is deliberately fixed to keep v0.1 focused on the substance of the methodology: the
-artifact contracts, deterministic validation, the change flow and the handoff contract. A web
-interface would multiply the surface to design, build and support before the model it would
-display has proven itself, and it would tempt the product toward exactly the pattern the
-methodology rejects — a place where product knowledge is viewed and edited outside the files and
-their review flow. Files, CLI and AI assistants together already cover authoring, navigation and
-enforcement for the adopters v0.1 targets.
+This boundary is deliberately fixed to keep v0.1 focused on the substance of the methodology: the artifact contracts, deterministic validation, the change flow and the handoff contract. A web interface would multiply the surface to design, build and support before the model it would display has proven itself, and it would tempt the product toward exactly the pattern the methodology rejects — a place where product knowledge is viewed and edited outside the files and their review flow. Files, CLI and AI assistants together already cover authoring, navigation and enforcement for the adopters v0.1 targets.
 
 ## Consequences
 
-- Impossible: browsing, editing or approving product knowledge through a hosted or local web
-  application; graphical dashboards as a supported product surface in v0.1.
-- Harder: reaching stakeholders who will not read Markdown or run a command-line tool; visual
-  exploration is limited to generated outputs such as diagrams rendered by external viewers.
-- Mandatory: every product capability must be fully usable through files and the command line;
-  documentation and onboarding must assume no graphical surface; any future web interface must
-  arrive as a projection over the same files and commands, never as a new home for product truth.
+- Impossible: browsing, editing or approving product knowledge through a hosted or local web application; graphical dashboards as a supported product surface in v0.1.
+- Harder: reaching stakeholders who will not read Markdown or run a command-line tool; visual exploration is limited to generated outputs such as diagrams rendered by external viewers.
+- Mandatory: every product capability must be fully usable through files and the command line; documentation and onboarding must assume no graphical surface; any future web interface must arrive as a projection over the same files and commands, never as a new home for product truth.
 
 ### CON-PUBLIC-GENERIC — The public framework stays generic and free of private context
 
 ## Constraint
 
-The public framework — specification, toolkit, templates, skills, fixtures and documentation —
-contains no corporate processes, no private product details, no private prompts and no
-organization-specific terminology. Learnings from real adoptions flow back only in generic form:
-as generic issues, synthetic fixtures or sanitized documentation.
+The public framework — specification, toolkit, templates, skills, fixtures and documentation — contains no corporate processes, no private product details, no private prompts and no organization-specific terminology. Learnings from real adoptions flow back only in generic form: as generic issues, synthetic fixtures or sanitized documentation.
 
 ## Rationale
 
-The framework is developed in the open while being exercised on real products inside real
-organizations. Those two facts must never mix: private product knowledge leaking into a public
-repository is a confidentiality breach, and organization-specific vocabulary or process baked into
-the framework would silently narrow it until it fits only its first adopters. Fixing this boundary
-protects the organizations that self-apply the framework and protects the framework's claim to be
-generally adoptable.
+The framework is developed in the open while being exercised on real products inside real organizations. Those two facts must never mix: private product knowledge leaking into a public repository is a confidentiality breach, and organization-specific vocabulary or process baked into the framework would silently narrow it until it fits only its first adopters. Fixing this boundary protects the organizations that self-apply the framework and protects the framework's claim to be generally adoptable.
 
 ## Consequences
 
-- Impossible: committing real product artifacts, internal process descriptions, private prompts,
-  customer names or organization-specific terminology to the public repository; using a real
-  private model as a test fixture or documentation example.
-- Harder: feeding adoption experience back — every lesson must first be translated into a generic
-  issue, a synthetic fixture reproducing the structural situation, or sanitized documentation,
-  which costs effort and loses some specificity.
-- Mandatory: examples and fixtures are synthetic; contributions from private adoptions are
-  reviewed for leaked context before they land; the framework's vocabulary stays the methodology's
-  own, never an adopting organization's.
+- Impossible: committing real product artifacts, internal process descriptions, private prompts, customer names or organization-specific terminology to the public repository; using a real private model as a test fixture or documentation example.
+- Harder: feeding adoption experience back — every lesson must first be translated into a generic issue, a synthetic fixture reproducing the structural situation, or sanitized documentation, which costs effort and loses some specificity.
+- Mandatory: examples and fixtures are synthetic; contributions from private adoptions are reviewed for leaked context before they land; the framework's vocabulary stays the methodology's own, never an adopting organization's.
 
 ## Actors
 
@@ -651,40 +380,30 @@ generally adoptable.
 
 ## Purpose
 
-The Repository Maintainer is accountable for the repository that hosts a product definition. They
-make the toolkit available, keep its configuration and integrations healthy, and act as the human
-gate through which changes enter the accepted product baseline.
+The Repository Maintainer is accountable for the repository that hosts a product definition. They make the toolkit available, keep its configuration and integrations healthy, and act as the human gate through which changes enter the accepted product baseline.
 
 ## Goals
 
-- A repository where the product definition structure, configuration and integrations work
-  reliably for everyone who contributes.
-- A baseline that only ever moves through validated, human-approved, explicitly promoted Product
-  Changes.
+- A repository where the product definition structure, configuration and integrations work reliably for everyone who contributes.
+- A baseline that only ever moves through validated, human-approved, explicitly promoted Product Changes.
 - Confidence that nothing in the definition was overwritten, promoted or altered silently.
 
 ## Responsibilities
 
-- Initialize Product Definition as Code in the repository and install the chosen AI and SDD
-  integrations.
+- Initialize Product Definition as Code in the repository and install the chosen AI and SDD integrations.
 - Keep configuration current as the repository, team and integrations evolve.
 - Review and approve Product Changes and Delivery Slices.
 - Perform promotion: apply an implemented, verified change to the baseline as a deliberate act.
 
 ## Boundaries
 
-- Does not author most product semantics day to day; drafting and evolving artifacts is primarily
-  the Product Engineer's work.
-- Does not bypass validation: a change or promotion that fails structural checks is not approved
-  or executed regardless of urgency.
+- Does not author most product semantics day to day; drafting and evolving artifacts is primarily the Product Engineer's work.
+- Does not bypass validation: a change or promotion that fails structural checks is not approved or executed regardless of urgency.
 - Does not delegate approval or promotion decisions to automation or to an AI assistant.
 
 ## Open questions
 
-None. One judgement was made rather than deferred: whether orphan deletion should be modelled at all,
-or treated as an implementation detail of regeneration. It is modelled, because the test is not "is
-this interesting" but "can a reader of the model discover everything the product does to their
-files", and deletion fails that test.
+None. One judgement was made rather than deferred: whether orphan deletion should be modelled at all, or treated as an implementation detail of regeneration. It is modelled, because the test is not "is this interesting" but "can a reader of the model discover everything the product does to their files", and deletion fails that test.
 
 ## Traceability
 

@@ -17,15 +17,11 @@ uses-terms:
 
 ## Goal
 
-A deterministic verdict on whether every citation in a set of consumer documents still points
-to the canonical content it was recorded against: each citation is `current`, `stale`, `tampered`
-or `unresolved`.
+A deterministic verdict on whether every citation in a set of consumer documents still points to the canonical content it was recorded against: each citation is `current`, `stale`, `tampered` or `unresolved`.
 
 ## Trigger
 
-The Product Engineer runs `prodshape citations verify` — directly, from a repository hook, or in
-a continuous integration pipeline. The AI Assistant runs it after drafting consumer documents to
-check that its citations are current.
+The Product Engineer runs `prodshape citations verify` — directly, from a repository hook, or in a continuous integration pipeline. The AI Assistant runs it after drafting consumer documents to check that its citations are current.
 
 ## Preconditions
 
@@ -43,8 +39,7 @@ check that its citations are current.
 
 ## Alternative Flows
 
-- The repository's `warnings-as-errors` configuration escalates stale citations (PRODUCT061) to
-  errors, blocking the pipeline.
+- The repository's `warnings-as-errors` configuration escalates stale citations (PRODUCT061) to errors, blocking the pipeline.
 
 ## Failure Conditions
 

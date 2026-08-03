@@ -16,14 +16,11 @@ uses-terms:
 
 ## Goal
 
-Before changing an artifact, know everything structurally connected to it: which artifacts,
-changes, slices and handoffs would be touched by a modification, distinguished by distance and
-direction.
+Before changing an artifact, know everything structurally connected to it: which artifacts, changes, slices and handoffs would be touched by a modification, distinguished by distance and direction.
 
 ## Trigger
 
-The Product Engineer runs `prodshape impact <ID>`, optionally bounding the traversal by
-depth or restricting it to one direction.
+The Product Engineer runs `prodshape impact <ID>`, optionally bounding the traversal by depth or restricting it to one direction.
 
 ## Preconditions
 
@@ -33,17 +30,14 @@ depth or restricting it to one direction.
 
 1. The engineer runs `prodshape impact <ID>` with any depth or direction options.
 2. The product graph is traversed deterministically from the artifact.
-3. Connected artifacts are reported, distinguishing direct from transitive connections and
-   incoming from outgoing relationships.
+3. Connected artifacts are reported, distinguishing direct from transitive connections and incoming from outgoing relationships.
 4. Active Product Changes affected by the artifact are reported.
 5. Delivery Slices and Product Handoffs whose scope includes the artifact are reported.
 6. The same input always yields the same result: the analysis is repeatable anywhere.
 
 ## Alternative Flows
 
-- Semantic interpretation: the AI Assistant takes the structural result as input and reasons
-  about what the connections mean for the intended modification — a separate, explicitly
-  AI-assisted activity layered on top of the deterministic traversal.
+- Semantic interpretation: the AI Assistant takes the structural result as input and reasons about what the connections mean for the intended modification — a separate, explicitly AI-assisted activity layered on top of the deterministic traversal.
 
 ## Failure Conditions
 
@@ -52,7 +46,5 @@ depth or restricting it to one direction.
 ## Postconditions
 
 - The engineer holds a deterministic map of everything structurally connected to the artifact.
-- No semantic claim has been made: structural impact says what is connected, never whether or
-  how the connected artifacts must change. That judgment belongs to the semantic analysis and,
-  ultimately, to humans.
+- No semantic claim has been made: structural impact says what is connected, never whether or how the connected artifacts must change. That judgment belongs to the semantic analysis and, ultimately, to humans.
 - The repository state is unmodified.

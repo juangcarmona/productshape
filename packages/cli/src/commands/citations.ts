@@ -29,9 +29,10 @@ export async function runCitationsVerify(
 
   // The target is the consumer-documents root (default: openspec/).
   const targetDir = target ?? 'openspec';
-  const rootDir = targetDir.startsWith('/') || /^[A-Za-z]:/.test(targetDir)
-    ? targetDir
-    : `${repo.root}/${targetDir}`;
+  const rootDir =
+    targetDir.startsWith('/') || /^[A-Za-z]:/.test(targetDir)
+      ? targetDir
+      : `${repo.root}/${targetDir}`;
 
   const citations = await scanCitations(rootDir, repo.root);
   const verifications = verifyCitations(citations, artifacts);

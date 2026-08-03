@@ -18,8 +18,7 @@ The visitor has a URL to share.
 
 ## Journey Narrative
 
-The visitor submits the URL, receives a short link, and shares it. Anyone opening the short link
-reaches the original address.
+The visitor submits the URL, receives a short link, and shares it. Anyone opening the short link reaches the original address.
 
 ## Variants and Branches
 

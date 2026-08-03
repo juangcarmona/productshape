@@ -4,108 +4,38 @@ title: Orient, address and read one artifact
 status: completed
 product-change: CHG-SNAPSHOT-002
 outcome: >-
-  A Product Explorer opens the snapshot and is oriented before being asked to read anything — which
-  product, which revision, how many artifacts and relationships, how they divide by kind, how the
-  kinds relate in aggregate, which artifacts hold no relationships, and that the page is a generated
-  read-only projection — then reaches any single artifact and reads it on its own, with no other
-  artifact's content competing for the viewport. The artifact they are reading is addressable, links
-  from earlier snapshots still work, and Back and Forward retrace where they have been.
+  A Product Explorer opens the snapshot and is oriented before being asked to read anything — which product, which revision, how many artifacts and relationships, how they divide by kind, how the kinds relate in aggregate, which artifacts hold no relationships, and that the page is a generated read-only projection — then reaches any single artifact and reads it on its own, with no other artifact's content competing for the viewport. The artifact they are reading is addressable, links from earlier snapshots still work, and Back and Forward retrace where they have been.
 implements:
   - requirement: FR-SNAPSHOT-003
     coverage: full
   - requirement: FR-SNAPSHOT-002
     coverage: partial
     scope: >-
-      The master-detail reading experience: the artifact list reachable by kind and narrowed by
-      filters, exactly one active artifact detail, title, ID, kind, status and remaining metadata,
-      authored Markdown rendered with its original heading hierarchy, reachability and selectability
-      of every artifact in the model, responsive collapse of master and detail into separate
-      navigable states on narrow viewports, complete escaping of the artifact body and metadata on
-      both the generated-markup and rendered-from-data paths, and the absence of any create, edit,
-      annotate, approve or persist capability. The declared-versus-derived relationship groups,
-      related-artifact selection, relationship reachability and isolated-artifact reporting are
-      covered by SLI-SNAPSHOT-004; making the master list searchable rather than only filterable is
-      covered by SLI-SNAPSHOT-005.
+      The master-detail reading experience: the artifact list reachable by kind and narrowed by filters, exactly one active artifact detail, title, ID, kind, status and remaining metadata, authored Markdown rendered with its original heading hierarchy, reachability and selectability of every artifact in the model, responsive collapse of master and detail into separate navigable states on narrow viewports, complete escaping of the artifact body and metadata on both the generated-markup and rendered-from-data paths, and the absence of any create, edit, annotate, approve or persist capability. The declared-versus-derived relationship groups, related-artifact selection, relationship reachability and isolated-artifact reporting are covered by SLI-SNAPSHOT-004; making the master list searchable rather than only filterable is covered by SLI-SNAPSHOT-005.
   - requirement: FR-SNAPSHOT-006
     coverage: partial
     scope: >-
-      The single navigation mechanism and the selected-artifact state it owns: fragment addressing of
-      the active view and the selected artifact, the mechanism being the only owner of state
-      transitions with the address always reflecting the page state, opening at an address naming an
-      artifact from both file:// and static hosting, permanent resolution of legacy bare-identifier
-      fragments normalized in place through a history replacement with no redundant entry, Back
-      immediately after a legacy arrival leaving the snapshot, the explicit unresolved-identifier
-      state for both route forms, Back and Forward restoring visited views and selections, no
-      persistence outside the address, and convergence of the artifact list on that state.
-      Convergence of relationship links is covered by SLI-SNAPSHOT-004, of search results by
-      SLI-SNAPSHOT-005, and of graph projections — with the graph mode in the address — by
-      SLI-SNAPSHOT-006.
+      The single navigation mechanism and the selected-artifact state it owns: fragment addressing of the active view and the selected artifact, the mechanism being the only owner of state transitions with the address always reflecting the page state, opening at an address naming an artifact from both file:// and static hosting, permanent resolution of legacy bare-identifier fragments normalized in place through a history replacement with no redundant entry, Back immediately after a legacy arrival leaving the snapshot, the explicit unresolved-identifier state for both route forms, Back and Forward restoring visited views and selections, no persistence outside the address, and convergence of the artifact list on that state. Convergence of relationship links is covered by SLI-SNAPSHOT-004, of search results by SLI-SNAPSHOT-005, and of graph projections — with the graph mode in the address — by SLI-SNAPSHOT-006.
   - requirement: FR-SNAPSHOT-005
     coverage: partial
     scope: >-
-      The kind-level aggregate projection only, as the orientation view requires it: artifacts and
-      relationships grouped by artifact kind and relationship type with exact counts, drawing nothing
-      absent from the compiled graph, implying no importance, health, ownership or ordering, and
-      arranged identically for identical model content. The layered model map, the focused
-      neighbourhood and the exactly-three-projections boundary are covered by SLI-SNAPSHOT-006; the
-      non-visual relationship list by SLI-SNAPSHOT-004.
+      The kind-level aggregate projection only, as the orientation view requires it: artifacts and relationships grouped by artifact kind and relationship type with exact counts, drawing nothing absent from the compiled graph, implying no importance, health, ownership or ordering, and arranged identically for identical model content. The layered model map, the focused neighbourhood and the exactly-three-projections boundary are covered by SLI-SNAPSHOT-006; the non-visual relationship list by SLI-SNAPSHOT-004.
   - requirement: CON-NO-WEB-UI
     coverage: partial
     scope: >-
-      The restated boundary as it becomes testable once the explorer exists, for every surface this
-      slice introduces: no server or runtime process required, no network request and no external
-      script, stylesheet, font, image or data at open time or afterwards, nothing persisted outside
-      the address of the current view, no input that becomes product knowledge, and no capability to
-      create, modify, annotate, approve or promote anything. Each later slice re-establishes the same
-      boundary for the surfaces it adds.
+      The restated boundary as it becomes testable once the explorer exists, for every surface this slice introduces: no server or runtime process required, no network request and no external script, stylesheet, font, image or data at open time or afterwards, nothing persisted outside the address of the current view, no input that becomes product knowledge, and no capability to create, modify, annotate, approve or promote anything. Each later slice re-establishes the same boundary for the surfaces it adds.
   - requirement: QR-ACCESSIBILITY-001
     coverage: partial
     scope: >-
-      Every surface this slice introduces — orientation view, artifact list, artifact detail, view
-      navigation. Establishes the page's semantic landmarks and its heading outline with no skipped
-      levels; complete keyboard operation of orientation, filtering, selection and view navigation
-      with no trapped focus and no pointer-only control; visible focus at every stop and deliberate
-      focus placement after each view and selection change; the selected artifact reported as current
-      with aria-current in the list and the active view reported as current in the page navigation;
-      accessible names for this slice's icon-only controls; WCAG 2.1 AA contrast for every
-      text-and-background pair introduced here, including the kind palette applied to text; kind,
-      status and selection each determinable with colour removed; no essential hover-only
-      information; and no non-essential animation under a reduced-motion preference. Verified against
-      both the current-model and larger-model snapshots. Relationship-group state is covered by
-      SLI-SNAPSHOT-004, search by SLI-SNAPSHOT-005, and projection state plus the end-to-end
-      keyboard pass and the completed-palette contrast sweep by SLI-SNAPSHOT-006.
+      Every surface this slice introduces — orientation view, artifact list, artifact detail, view navigation. Establishes the page's semantic landmarks and its heading outline with no skipped levels; complete keyboard operation of orientation, filtering, selection and view navigation with no trapped focus and no pointer-only control; visible focus at every stop and deliberate focus placement after each view and selection change; the selected artifact reported as current with aria-current in the list and the active view reported as current in the page navigation; accessible names for this slice's icon-only controls; WCAG 2.1 AA contrast for every text-and-background pair introduced here, including the kind palette applied to text; kind, status and selection each determinable with colour removed; no essential hover-only information; and no non-essential animation under a reduced-motion preference. Verified against both the current-model and larger-model snapshots. Relationship-group state is covered by SLI-SNAPSHOT-004, search by SLI-SNAPSHOT-005, and projection state plus the end-to-end keyboard pass and the completed-palette contrast sweep by SLI-SNAPSHOT-006.
   - requirement: QR-PRESENTATION-001
     coverage: partial
     scope: >-
-      Establishes the presentation system and realizes it on the surfaces this slice introduces:
-      single light appearance with no dark variant and no theme or appearance control; system
-      sans-serif prose and interface text with monospaced artifact identifiers and revision values;
-      strong contrast, thin borders, deliberate alignment within and across this slice's regions, and
-      square or low-radius controls; one accent colour plus the stable per-artifact-kind palette
-      defined here, unchanged across artifacts and across two regenerations from identical content;
-      kind, status and selection each conveyed by text, shape or position as well as colour; density
-      sufficient that orientation, the artifact list and the selected artifact's identity are legible
-      together on an ordinary desktop viewport; and none of the prohibited gradient, glass,
-      illustration, hero-typography or rounded-card treatments. Recorded as screenshots at desktop
-      and narrow viewports for both representative models. Later slices inherit this system; whether
-      each kind's colour is identical across every view is confirmable only once every view exists,
-      in SLI-SNAPSHOT-006.
+      Establishes the presentation system and realizes it on the surfaces this slice introduces: single light appearance with no dark variant and no theme or appearance control; system sans-serif prose and interface text with monospaced artifact identifiers and revision values; strong contrast, thin borders, deliberate alignment within and across this slice's regions, and square or low-radius controls; one accent colour plus the stable per-artifact-kind palette defined here, unchanged across artifacts and across two regenerations from identical content; kind, status and selection each conveyed by text, shape or position as well as colour; density sufficient that orientation, the artifact list and the selected artifact's identity are legible together on an ordinary desktop viewport; and none of the prohibited gradient, glass, illustration, hero-typography or rounded-card treatments. Recorded as screenshots at desktop and narrow viewports for both representative models. Later slices inherit this system; whether each kind's colour is identical across every view is confirmable only once every view exists, in SLI-SNAPSHOT-006.
   - requirement: QR-SCALABILITY-001
     coverage: partial
     scope: >-
-      Establishes the measurement harness and the named reference environment — hardware, operating
-      system and browser version — that every later slice extends, and applies it to what this slice
-      introduces. Covers the opening document containing no artifact body and no artifact-level graph
-      and not growing in proportion to artifact count across the three representative models;
-      generated file size per authored byte and generation time per artifact not increasing with
-      model size, with the largest representative model generating within five seconds;
-      artifact-selection latency measured, recorded and confirmed not to degrade materially with
-      model size, with its evidence-based budget set from those figures before this slice's
-      implementation is approved; and readability at every measured scale of the longest-titled and
-      longest-bodied artifacts. Search latency and its budget are covered by SLI-SNAPSHOT-005;
-      focused-projection latency and its budget, and high-degree readability inside a projection, by
-      SLI-SNAPSHOT-006; high-degree and isolated readability in the artifact detail by
-      SLI-SNAPSHOT-004.
+      Establishes the measurement harness and the named reference environment — hardware, operating system and browser version — that every later slice extends, and applies it to what this slice introduces. Covers the opening document containing no artifact body and no artifact-level graph and not growing in proportion to artifact count across the three representative models; generated file size per authored byte and generation time per artifact not increasing with model size, with the largest representative model generating within five seconds; artifact-selection latency measured, recorded and confirmed not to degrade materially with model size, with its evidence-based budget set from those figures before this slice's implementation is approved; and readability at every measured scale of the longest-titled and longest-bodied artifacts. Search latency and its budget are covered by SLI-SNAPSHOT-005; focused-projection latency and its budget, and high-degree readability inside a projection, by SLI-SNAPSHOT-006; high-degree and isolated readability in the artifact detail by SLI-SNAPSHOT-004.
 affects:
   - UC-SNAPSHOT-001
   - UC-SNAPSHOT-EXPLORE-001
@@ -114,66 +44,26 @@ affects:
   - TERM-GRAPH-PROJECTION
 depends-on: []
 verification:
-  - Opening the generated file shows the orientation view stating the product identity, the source
-    revision, the total artifact and relationship counts, the count of artifacts of each kind
-    present, an entry point into each kind, a plain statement that the page is a generated read-only
-    projection, and a kind-level aggregate of the relationships whose counts match `prodshape graph`
-    output exactly.
-  - The opening document is inspected and contains no artifact body and no projection in which
-    individual artifacts appear as nodes.
-  - The orientation view reports the artifacts holding no relationships with an exact count and their
-    identities as entry points — three in the current baseline — with no warning presentation, no
-    severity, no score, and no vocabulary suggesting a defect.
-  - Selecting an artifact shows exactly that artifact's title, ID, kind, status, remaining metadata
-    and authored Markdown with the author's heading structure, and inspecting the document confirms
-    no other artifact's body is present.
+  - Opening the generated file shows the orientation view stating the product identity, the source revision, the total artifact and relationship counts, the count of artifacts of each kind present, an entry point into each kind, a plain statement that the page is a generated read-only projection, and a kind-level aggregate of the relationships whose counts match `prodshape graph` output exactly.
+  - The opening document is inspected and contains no artifact body and no projection in which individual artifacts appear as nodes.
+  - The orientation view reports the artifacts holding no relationships with an exact count and their identities as entry points — three in the current baseline — with no warning presentation, no severity, no score, and no vocabulary suggesting a defect.
+  - Selecting an artifact shows exactly that artifact's title, ID, kind, status, remaining metadata and authored Markdown with the author's heading structure, and inspecting the document confirms no other artifact's body is present.
   - Every artifact in the model can be reached and selected from the list, across every kind.
-  - An artifact body containing a script tag, an unclosed tag and an attribute-injection fragment is
-    displayed verbatim as text — on first render and after navigating away and back — with nothing
-    executed and no element created from it; the same holds for metadata values.
-  - Copying the address while reading one artifact and opening it in a new window from local disk
-    with networking disabled lands on the same artifact in the same view; the same address served
-    from ordinary static hosting resolves identically with no server configuration and no request
-    beyond the file itself.
-  - A legacy bare-identifier fragment such as `#FR-SNAPSHOT-002` resolves to that artifact, the
-    address becomes the current route without a second history entry, and pressing Back immediately
-    afterwards leaves the snapshot rather than returning to the un-normalized address.
-  - An address naming an identifier the snapshot does not contain — in either the legacy or the
-    current form — names that identifier, explains it is absent, and offers orientation or the
-    artifact list as a way on.
-  - Back and Forward restore previously visited views and selections, and no state transition occurs
-    other than through the single navigation mechanism.
-  - At a narrow viewport the list and the artifact detail are usable as separate navigable states,
-    with no horizontal page scrolling.
-  - The whole increment is operable end to end using only the keyboard, with visible focus at every
-    stop and deliberate focus placement after each view and selection change; the list reports the
-    selected artifact with aria-current; landmarks and the heading outline are extracted and reviewed
-    with no region unlabelled and no heading level skipped.
-  - Every text-and-background pair this slice introduces passes WCAG 2.1 AA; with colour removed,
-    artifact kind, status and selection remain determinable; no needed information is hover-only; and
-    with a reduced-motion preference set no non-essential animation runs.
-  - Browser inspection and recorded screenshots at desktop and narrow viewports, for both
-    representative models, confirm the light-only appearance with no theme control, system
-    sans-serif prose with monospaced identifiers and revisions, thin borders and deliberate
-    alignment, square or low-radius controls, one accent with the stable per-kind palette, and none
-    of the prohibited treatments.
-  - No server, no runtime process, no network request and no external resource is involved at any
-    point; browser storage and cookies remain empty after exploring; and nothing on the page creates,
-    edits, annotates, approves or promotes anything.
-  - Regenerating from identical model content produces a byte-identical file, and the
-    opening-document, file-size and generation-time figures are recorded against the
-    QR-SCALABILITY-001 targets for all three representative models.
-  - The measurement harness and its named reference environment are established and reusable, and the
-    artifact-selection latency budget is derived from recorded figures and agreed before this slice's
-    implementation is approved.
+  - An artifact body containing a script tag, an unclosed tag and an attribute-injection fragment is displayed verbatim as text — on first render and after navigating away and back — with nothing executed and no element created from it; the same holds for metadata values.
+  - Copying the address while reading one artifact and opening it in a new window from local disk with networking disabled lands on the same artifact in the same view; the same address served from ordinary static hosting resolves identically with no server configuration and no request beyond the file itself.
+  - A legacy bare-identifier fragment such as `#FR-SNAPSHOT-002` resolves to that artifact, the address becomes the current route without a second history entry, and pressing Back immediately afterwards leaves the snapshot rather than returning to the un-normalized address.
+  - An address naming an identifier the snapshot does not contain — in either the legacy or the current form — names that identifier, explains it is absent, and offers orientation or the artifact list as a way on.
+  - Back and Forward restore previously visited views and selections, and no state transition occurs other than through the single navigation mechanism.
+  - At a narrow viewport the list and the artifact detail are usable as separate navigable states, with no horizontal page scrolling.
+  - The whole increment is operable end to end using only the keyboard, with visible focus at every stop and deliberate focus placement after each view and selection change; the list reports the selected artifact with aria-current; landmarks and the heading outline are extracted and reviewed with no region unlabelled and no heading level skipped.
+  - Every text-and-background pair this slice introduces passes WCAG 2.1 AA; with colour removed, artifact kind, status and selection remain determinable; no needed information is hover-only; and with a reduced-motion preference set no non-essential animation runs.
+  - Browser inspection and recorded screenshots at desktop and narrow viewports, for both representative models, confirm the light-only appearance with no theme control, system sans-serif prose with monospaced identifiers and revisions, thin borders and deliberate alignment, square or low-radius controls, one accent with the stable per-kind palette, and none of the prohibited treatments.
+  - No server, no runtime process, no network request and no external resource is involved at any point; browser storage and cookies remain empty after exploring; and nothing on the page creates, edits, annotates, approves or promotes anything.
+  - Regenerating from identical model content produces a byte-identical file, and the opening-document, file-size and generation-time figures are recorded against the QR-SCALABILITY-001 targets for all three representative models.
+  - The measurement harness and its named reference environment are established and reusable, and the artifact-selection latency budget is derived from recorded figures and agreed before this slice's implementation is approved.
 out-of-scope:
-  - Declared-versus-derived relationship groups, related-artifact selection, relationship reachability
-    and isolated-artifact reporting in the detail; SLI-SNAPSHOT-004 delivers them.
-  - Ranked search and a searchable master list; SLI-SNAPSHOT-005 delivers them. The list here is
-    reached by kind and narrowed by filters, not by query.
-  - The layered model map, the focused neighbourhood projection and the graph mode in the address;
-    SLI-SNAPSHOT-006 delivers them.
-  - Search and focused-projection latency budgets; each is set by the slice that first introduces the
-    interaction, using the harness established here.
-  - Any editing, annotation or approval capability, any persistence beyond the address, and any
-    hosting or serving mechanism for the generated file.
+  - Declared-versus-derived relationship groups, related-artifact selection, relationship reachability and isolated-artifact reporting in the detail; SLI-SNAPSHOT-004 delivers them.
+  - Ranked search and a searchable master list; SLI-SNAPSHOT-005 delivers them. The list here is reached by kind and narrowed by filters, not by query.
+  - The layered model map, the focused neighbourhood projection and the graph mode in the address; SLI-SNAPSHOT-006 delivers them.
+  - Search and focused-projection latency budgets; each is set by the slice that first introduces the interaction, using the harness established here.
+  - Any editing, annotation or approval capability, any persistence beyond the address, and any hosting or serving mechanism for the generated file.

@@ -1,13 +1,14 @@
 ---
-"@prodshape/core": major
-"@prodshape/cli": major
-"@prodshape/adapter-openspec": major
-"@prodshape/distribution": major
+'@prodshape/core': major
+'@prodshape/cli': major
+'@prodshape/adapter-openspec': major
+'@prodshape/distribution': major
 ---
 
 Retire the push pipeline (Product Change, Delivery Slice, Product Handoff, overlay validation, promote, bootstrap exception) and implement the citation contract (RFC #4).
 
 **Breaking changes:**
+
 - Removed `prodshape change`, `prodshape handoff`, `prodshape coverage` commands.
 - Removed `--change` and `--sdd` options from `prodshape validate` and `prodshape init`.
 - Removed core modules: `changes.ts`, `slices.ts`, `overlay.ts`, `promote.ts`, `handoff.ts`, `references.ts`, `closure.ts`.
@@ -21,6 +22,7 @@ Retire the push pipeline (Product Change, Delivery Slice, Product Handoff, overl
 - Retired diagnostics PRODUCT020–027, 030–032, 040, 041, 043, 044, 108–110 (codes reserved, never reused).
 
 **New features:**
+
 - `prodshape cite` — emit a citation record (inline, marker-block, or sidecar-ledger form).
 - `prodshape citations verify` — scan consumer documents and report citation statuses.
 - `verification[].id` — optional stable scenario id on FR/QR artifacts (citable via anchor).

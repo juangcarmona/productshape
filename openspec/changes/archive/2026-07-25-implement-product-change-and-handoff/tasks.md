@@ -7,8 +7,7 @@
 - [x] 1.3 Operation validation PRODUCT020-026 and PRODUCT108
 - [x] 1.4 Cross-change overlap detection PRODUCT025
 - [x] 1.5 CLI: change validate / validate --change
-- [x] 1.6 Unit and conformance tests (valid addition, collision, valid/invalid modification,
-      valid/invalid removal, overlapping changes)
+- [x] 1.6 Unit and conformance tests (valid addition, collision, valid/invalid modification, valid/invalid removal, overlapping changes)
 
 ## 2. Delivery slices
 
@@ -23,8 +22,7 @@
 - [x] 3.3 Handoff YAML + product-context.md generation with digests
 - [x] 3.4 handoff status: current / stale / invalid / source-revision-unavailable
 - [x] 3.5 CLI: handoff create / handoff status
-- [x] 3.6 Tests incl. stale-on-relevant-edit and current-on-unrelated-edit, golden handoff and
-      context snapshots
+- [x] 3.6 Tests incl. stale-on-relevant-edit and current-on-unrelated-edit, golden handoff and context snapshots
 
 ## 4. Promotion
 

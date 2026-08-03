@@ -4,9 +4,7 @@
 
 ### Requirement: The product-definition binary exposes the core workflows
 
-The `product-definition` binary SHALL provide `validate`, `graph`, `inspect <ID>` and
-`impact <ID>` with the documented options, resolving the repository root and configuration from
-the working directory.
+The `product-definition` binary SHALL provide `validate`, `graph`, `inspect <ID>` and `impact <ID>` with the documented options, resolving the repository root and configuration from the working directory.
 
 #### Scenario: Running from a subdirectory
 
@@ -15,8 +13,7 @@ the working directory.
 
 ### Requirement: Exit codes are documented and stable
 
-The CLI SHALL exit 0 on success (warnings allowed), 1 on validation or conformance errors, 2 on
-invalid invocation or configuration, and 3 on unexpected internal failure.
+The CLI SHALL exit 0 on success (warnings allowed), 1 on validation or conformance errors, 2 on invalid invocation or configuration, and 3 on unexpected internal failure.
 
 #### Scenario: Invalid invocation
 
@@ -30,8 +27,7 @@ invalid invocation or configuration, and 3 on unexpected internal failure.
 
 ### Requirement: The CLI contains no domain rules
 
-All validation, graph and impact logic SHALL live in the core library; the CLI SHALL only parse
-arguments, orchestrate core operations and format output.
+All validation, graph and impact logic SHALL live in the core library; the CLI SHALL only parse arguments, orchestrate core operations and format output.
 
 #### Scenario: Core reuse
 

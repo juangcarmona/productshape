@@ -150,9 +150,7 @@ export async function planInit(options: InitOptions): Promise<InitPlan> {
   // are invisible to the tooling.
   // --flat still scaffolds the model directory itself: without it there is nothing for
   // `validate` to walk and `doctor` reports missing structure.
-  const scaffoldDirs = [
-    ...(flat ? ['docs/product/model'] : modelScaffoldDirs),
-  ];
+  const scaffoldDirs = [...(flat ? ['docs/product/model'] : modelScaffoldDirs)];
   for (const dir of scaffoldDirs) {
     // An existing marker is never rewritten, even with --force: it is an empty marker, so
     // reporting an overwrite would describe a change that does not happen.

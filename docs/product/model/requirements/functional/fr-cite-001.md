@@ -17,19 +17,11 @@ verification:
 
 ## Requirement
 
-The product MUST emit citation records carrying the target artifact ID, a content digest, and an
-optional scenario anchor. A citation MAY exist as an inline structured reference, a Markdown
-marker block (optionally embedding canonical text delimited by machine-readable markers), or a
-YAML sidecar ledger. The `prodshape cite` command MUST produce a citation in any of the three
-forms on request.
+The product MUST emit citation records carrying the target artifact ID, a content digest, and an optional scenario anchor. A citation MAY exist as an inline structured reference, a Markdown marker block (optionally embedding canonical text delimited by machine-readable markers), or a YAML sidecar ledger. The `prodshape cite` command MUST produce a citation in any of the three forms on request.
 
 ## Rationale
 
-Consumer documents reference product artifacts without re-stating them. A citation records what
-was cited and at what content digest, so that drift between a consumer document and the canonical
-model is machine-detectable rather than silent. Three forms accommodate different consumer
-workflows: inline references for single-line citations, marker blocks for embedded projections,
-and sidecar ledgers for bulk citation management.
+Consumer documents reference product artifacts without re-stating them. A citation records what was cited and at what content digest, so that drift between a consumer document and the canonical model is machine-detectable rather than silent. Three forms accommodate different consumer workflows: inline references for single-line citations, marker blocks for embedded projections, and sidecar ledgers for bulk citation management.
 
 ## Acceptance Scenarios
 

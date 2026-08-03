@@ -2,10 +2,7 @@
 
 ### Requirement: HTML is an output format of the graph command
 
-The system SHALL generate a Product Snapshot when the graph command is invoked with the HTML
-format (`prodshape graph --format html`). Generation SHALL produce exactly one self-contained
-HTML file under the generated-output area and SHALL report the output path. Generation SHALL
-never modify any authored file.
+The system SHALL generate a Product Snapshot when the graph command is invoked with the HTML format (`prodshape graph --format html`). Generation SHALL produce exactly one self-contained HTML file under the generated-output area and SHALL report the output path. Generation SHALL never modify any authored file.
 
 #### Scenario: Engineer generates a snapshot
 
@@ -19,9 +16,7 @@ never modify any authored file.
 
 ### Requirement: The snapshot is one self-contained file
 
-The generated page SHALL function completely when opened from local disk with no server and no
-network access: no external scripts, styles, fonts, images or data are referenced. All CSS and
-any data the page needs SHALL be embedded in the single file.
+The generated page SHALL function completely when opened from local disk with no server and no network access: no external scripts, styles, fonts, images or data are referenced. All CSS and any data the page needs SHALL be embedded in the single file.
 
 #### Scenario: Offline open from local disk
 
@@ -35,10 +30,7 @@ any data the page needs SHALL be embedded in the single file.
 
 ### Requirement: Every artifact is rendered, organized by kind, with a status badge
 
-The page SHALL present all product artifacts organized by kind (actors, journeys, use cases,
-business rules, domain terms, bounded contexts, functional requirements, quality requirements,
-constraints). Each artifact's view SHALL render its Markdown body and its frontmatter metadata,
-and SHALL display the artifact's status visibly (draft, active, deprecated, retired).
+The page SHALL present all product artifacts organized by kind (actors, journeys, use cases, business rules, domain terms, bounded contexts, functional requirements, quality requirements, constraints). Each artifact's view SHALL render its Markdown body and its frontmatter metadata, and SHALL display the artifact's status visibly (draft, active, deprecated, retired).
 
 #### Scenario: Browse by kind
 
@@ -52,8 +44,7 @@ and SHALL display the artifact's status visibly (draft, active, deprecated, reti
 
 ### Requirement: The source revision is stamped on the page
 
-The page SHALL display the source revision of the model it was generated from, placed where a
-reader finds it without searching.
+The page SHALL display the source revision of the model it was generated from, placed where a reader finds it without searching.
 
 #### Scenario: Reader checks currency
 
@@ -62,9 +53,7 @@ reader finds it without searching.
 
 ### Requirement: Generation is deterministic
 
-Identical model content SHALL yield a byte-identical HTML file across runs and platforms. Output
-SHALL NOT embed timestamps, random values, or environment-dependent content; artifact ordering
-SHALL be stable; line endings SHALL be normalized.
+Identical model content SHALL yield a byte-identical HTML file across runs and platforms. Output SHALL NOT embed timestamps, random values, or environment-dependent content; artifact ordering SHALL be stable; line endings SHALL be normalized.
 
 #### Scenario: Double generation is byte-identical
 
@@ -78,8 +67,7 @@ SHALL be stable; line endings SHALL be normalized.
 
 ### Requirement: Generation reports honest diagnostics
 
-When artifacts cannot be parsed, generation SHALL report diagnostics naming each affected file
-and SHALL NOT emit a snapshot that silently omits part of the model.
+When artifacts cannot be parsed, generation SHALL report diagnostics naming each affected file and SHALL NOT emit a snapshot that silently omits part of the model.
 
 #### Scenario: Unparseable artifact blocks silent omission
 
@@ -88,8 +76,7 @@ and SHALL NOT emit a snapshot that silently omits part of the model.
 
 ### Requirement: The page is read-only
 
-The page SHALL offer no capability to create, edit, annotate or approve anything: no forms, no
-editable fields, no controls that mutate state beyond client-side presentation.
+The page SHALL offer no capability to create, edit, annotate or approve anything: no forms, no editable fields, no controls that mutate state beyond client-side presentation.
 
 #### Scenario: No mutating controls
 

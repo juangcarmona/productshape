@@ -92,10 +92,7 @@ function parseAttributes(attrString: string): ParsedAttributes {
 }
 
 /** Extract marker-block citations from a Markdown document. */
-function extractMarkerBlockCitations(
-  content: string,
-  source: string,
-): CitationRecord[] {
+function extractMarkerBlockCitations(content: string, source: string): CitationRecord[] {
   const records: CitationRecord[] = [];
   const lines = content.split('\n');
 
@@ -191,10 +188,7 @@ function extractInlineCitations(content: string, source: string): CitationRecord
  *   anchor: S1
  * ```
  */
-function extractSidecarCitations(
-  content: string,
-  source: string,
-): CitationRecord[] {
+function extractSidecarCitations(content: string, source: string): CitationRecord[] {
   const docs = parseAllDocuments(content);
   const records: CitationRecord[] = [];
   for (const doc of docs) {
@@ -260,10 +254,7 @@ export async function parseCitations(
 }
 
 /** Scan a directory tree for consumer documents and parse all citations. */
-export async function scanCitations(
-  rootDir: string,
-  repoRoot: string,
-): Promise<CitationRecord[]> {
+export async function scanCitations(rootDir: string, repoRoot: string): Promise<CitationRecord[]> {
   const docs = await discoverConsumerDocs(rootDir);
   const allRecords: CitationRecord[] = [];
   for (const doc of docs) {

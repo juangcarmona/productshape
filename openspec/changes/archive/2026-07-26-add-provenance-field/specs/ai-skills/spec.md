@@ -4,13 +4,9 @@
 
 ### Requirement: Recovery records provenance in frontmatter
 
-The `recover-product` skill SHALL instruct that every candidate carries `provenance` frontmatter with
-its source and confidence, and SHALL NOT instruct that provenance be recorded only in the body. It
-SHALL state that frontmatter is a closed contract, that inventing a field is `PRODUCT002`, and that
-the allowed fields can be read deterministically with `schema <kind>` rather than guessed.
+The `recover-product` skill SHALL instruct that every candidate carries `provenance` frontmatter with its source and confidence, and SHALL NOT instruct that provenance be recorded only in the body. It SHALL state that frontmatter is a closed contract, that inventing a field is `PRODUCT002`, and that the allowed fields can be read deterministically with `schema <kind>` rather than guessed.
 
-Reasoning that is not part of the contract — which claims are observed, which inferred, what the
-evidence does not settle — SHALL remain in the artifact body.
+Reasoning that is not part of the contract — which claims are observed, which inferred, what the evidence does not settle — SHALL remain in the artifact body.
 
 #### Scenario: Candidates carry queryable provenance
 

@@ -13,8 +13,7 @@
 ## 2. Graph, inspect, impact, outputs
 
 - [x] 2.1 Graph compilation with derived incoming indexes, deterministic ordering
-- [x] 2.2 Generated outputs: product-graph.json (versioned), product-index.json,
-      traceability.json, product-graph.mmd, diagnostics.json
+- [x] 2.2 Generated outputs: product-graph.json (versioned), product-index.json, traceability.json, product-graph.mmd, diagnostics.json
 - [x] 2.3 Inspect report (metadata, outgoing, derived incoming)
 - [x] 2.4 Impact traversal (direct/transitive, direction, depth)
 - [x] 2.5 Unit and golden tests (graph JSON, mermaid snapshots)
@@ -28,8 +27,7 @@
 
 ## 4. Conformance and self-application
 
-- [x] 4.1 Reference-level fixtures: duplicate ID, missing target, disallowed target,
-      active-to-retired
+- [x] 4.1 Reference-level fixtures: duplicate ID, missing target, disallowed target, active-to-retired
 - [x] 4.2 Self-model validates through the full pipeline in tests
 - [x] 4.3 Run the built CLI against this repository
 - [x] 4.4 lint, typecheck, test, build all green

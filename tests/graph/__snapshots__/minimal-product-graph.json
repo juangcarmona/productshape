@@ -47,7 +47,7 @@
       "title": "Share a long address as a short link",
       "status": "active",
       "path": "model/journeys/jrn-share-001.md",
-      "digest": "sha256:99d779cde4d7d9993594bae7c7db831a7637a5e8acceed5733aeeefce5c285dd"
+      "digest": "sha256:9b0b9885690f5227584842cbf4647f29adaba67b6e9098978f9fce5f3488c2bf"
     },
     {
       "id": "QR-RESOLVE-001",

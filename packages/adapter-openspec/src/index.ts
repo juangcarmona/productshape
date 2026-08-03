@@ -31,4 +31,3 @@ export async function locateOpenSpecChange(
   }
   return { dir };
 }
-

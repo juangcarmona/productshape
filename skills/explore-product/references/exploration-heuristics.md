@@ -2,14 +2,11 @@
 
 ## When to explore vs. when to change
 
-Explore when the idea is still fuzzy and you are not sure what artifacts would be affected.
-Change when you know what you want to modify and need a validated delta.
+Explore when the idea is still fuzzy and you are not sure what artifacts would be affected. Change when you know what you want to modify and need a validated delta.
 
 ## Reading the graph from high altitude
 
-Start from journeys and use cases — they describe what the product does. Then trace down to
-requirements (what the product must satisfy) and business rules (what governs it). Terms and
-bounded contexts define the language; actors define who participates.
+Start from journeys and use cases — they describe what the product does. Then trace down to requirements (what the product must satisfy) and business rules (what governs it). Terms and bounded contexts define the language; actors define who participates.
 
 ## Surfacing gaps
 

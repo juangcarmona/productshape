@@ -4,10 +4,7 @@
 
 ### Requirement: Inspect reports the full local picture of one artifact
 
-`product-definition inspect <ID>` SHALL report the artifact's metadata, canonical path, outgoing
-relationships and derived incoming relationships, SHALL additionally list the active Product
-Changes whose operations affect the artifact, the delivery slices implementing or affecting it and
-the handoffs referencing it, and SHALL fail clearly on an unknown ID.
+`product-definition inspect <ID>` SHALL report the artifact's metadata, canonical path, outgoing relationships and derived incoming relationships, SHALL additionally list the active Product Changes whose operations affect the artifact, the delivery slices implementing or affecting it and the handoffs referencing it, and SHALL fail clearly on an unknown ID.
 
 #### Scenario: Incoming relationships shown
 

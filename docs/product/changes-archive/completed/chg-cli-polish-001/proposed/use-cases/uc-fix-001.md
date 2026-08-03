@@ -15,14 +15,11 @@ uses-terms:
 
 ## Goal
 
-Every artifact file named after its own identifier, in one step, on any filesystem — and a way to
-keep it that way.
+Every artifact file named after its own identifier, in one step, on any filesystem — and a way to keep it that way.
 
 ## Trigger
 
-Validation reports that one or more artifact files are not named after their identifiers, typically
-after a recovery pass, a bulk rename, or an artifact whose file was created before its ID was
-settled.
+Validation reports that one or more artifact files are not named after their identifiers, typically after a recovery pass, a bulk rename, or an artifact whose file was created before its ID was settled.
 
 ## Preconditions
 
@@ -31,30 +28,22 @@ settled.
 ## Main Flow
 
 1. The engineer asks for the misalignment to be repaired, naming the repair explicitly.
-2. Each misaligned file is renamed to the name its identifier requires, including when the only
-   difference is letter case.
+2. Each misaligned file is renamed to the name its identifier requires, including when the only difference is letter case.
 3. The renames performed are reported, so the engineer can review them as a diff.
 4. Re-running validation reports no remaining misalignment.
 
 ## Alternative Flows
 
-- The engineer asks what would change without changing it: the planned renames are reported, nothing
-  is written, and the outcome is distinguishable from "nothing to repair" so it can gate an automated
-  check.
+- The engineer asks what would change without changing it: the planned renames are reported, nothing is written, and the outcome is distinguishable from "nothing to repair" so it can gate an automated check.
 - The model is already aligned: nothing is renamed and the engineer is told so.
-- A previous repair was interrupted part-way: the interrupted rename is completed before anything
-  else, and the completion is reported.
+- A previous repair was interrupted part-way: the interrupted rename is completed before anything else, and the completion is reported.
 
 ## Failure Conditions
 
-- A required name is already taken by a different artifact, or two artifacts require the same name:
-  nothing is renamed at all, and each unresolvable case is reported with its reason. A partially
-  renamed model is worse than an unrepaired one.
-- No repair is named: the request is reported as invalid, listing the repairs available. Modifying
-  canonical files is never implicit.
+- A required name is already taken by a different artifact, or two artifacts require the same name: nothing is renamed at all, and each unresolvable case is reported with its reason. A partially renamed model is worse than an unrepaired one.
+- No repair is named: the request is reported as invalid, listing the repairs available. Modifying canonical files is never implicit.
 
 ## Postconditions
 
-- Every artifact file is named after its identifier, or nothing was renamed and the engineer knows
-  why.
+- Every artifact file is named after its identifier, or nothing was renamed and the engineer knows why.
 - No file is left under a temporary or intermediate name.

@@ -139,10 +139,7 @@ describe('init --dry-run', () => {
   it('reports what it would create and writes nothing', async () => {
     const scratch = await mkdtemp(join(tmpdir(), 'prodshape-dryrun-'));
     try {
-      const result = await run(
-        ['init', '--ai', 'copilot', '--dry-run'],
-        scratch,
-      );
+      const result = await run(['init', '--ai', 'copilot', '--dry-run'], scratch);
       expect(result.code).toBe(0);
       expect(result.out).toContain('Would create');
       expect(result.out).toContain('docs/product/model/actors/.gitkeep');
@@ -177,10 +174,7 @@ describe('init --dry-run', () => {
     const scratch = await mkdtemp(join(tmpdir(), 'prodshape-dryrun-populated-'));
     try {
       await run(['init', '--ai', 'copilot'], scratch);
-      const again = await run(
-        ['init', '--ai', 'copilot', '--dry-run'],
-        scratch,
-      );
+      const again = await run(['init', '--ai', 'copilot', '--dry-run'], scratch);
       expect(again.code).toBe(0);
       expect(again.out).toContain('Would preserve');
       expect(again.out).toContain('Would regenerate');

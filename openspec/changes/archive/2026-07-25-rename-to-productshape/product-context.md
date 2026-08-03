@@ -31,104 +31,53 @@ Out of scope:
 
 ## Constraint
 
-The methodology is named "Product Definition as Code" and retains that name. Its reference
-implementation is publicly branded "ProductShape" — the name under which the toolkit is
-distributed and the public identity it presents. Public identity MUST keep the two distinct:
-"Product Definition as Code" names the ideas, the normative specification and the versioned
-contracts; "ProductShape" names the tool and the namespace under which it ships. No public-facing
-surface may present ProductShape as the methodology or "Product Definition as Code" as a product
-name, and the reference implementation MUST NOT ship publicly without this settled brand. The
-concrete distribution identifiers chosen for ProductShape are recorded in the adopting Product
-Change and realized in implementation; this constraint fixes the policy, not the mechanics.
+The methodology is named "Product Definition as Code" and retains that name. Its reference implementation is publicly branded "ProductShape" — the name under which the toolkit is distributed and the public identity it presents. Public identity MUST keep the two distinct: "Product Definition as Code" names the ideas, the normative specification and the versioned contracts; "ProductShape" names the tool and the namespace under which it ships. No public-facing surface may present ProductShape as the methodology or "Product Definition as Code" as a product name, and the reference implementation MUST NOT ship publicly without this settled brand. The concrete distribution identifiers chosen for ProductShape are recorded in the adopting Product Change and realized in implementation; this constraint fixes the policy, not the mechanics.
 
 ## Rationale
 
-A methodology and an implementation of it are different things with different lifecycles and
-audiences. The methodology is a set of ideas and a specification that could be implemented more
-than once; the reference implementation is one shipped toolkit that must claim a brand, a package
-namespace and a release channel to exist publicly. Fixing the brand as a distinct layer above the
-methodology name lets the tool carry a memorable public identity — which shipping requires —
-without binding the methodology's contracts to it, and keeps either free to evolve without dragging
-the other. It settles, deliberately and on the record, a naming decision that was left open
-precisely so it would not harden into an accidental brand at first publish.
+A methodology and an implementation of it are different things with different lifecycles and audiences. The methodology is a set of ideas and a specification that could be implemented more than once; the reference implementation is one shipped toolkit that must claim a brand, a package namespace and a release channel to exist publicly. Fixing the brand as a distinct layer above the methodology name lets the tool carry a memorable public identity — which shipping requires — without binding the methodology's contracts to it, and keeps either free to evolve without dragging the other. It settles, deliberately and on the record, a naming decision that was left open precisely so it would not harden into an accidental brand at first publish.
 
 ## Consequences
 
-- Impossible: shipping the reference implementation publicly without a settled brand; presenting
-  "Product Definition as Code" as the name of a product; presenting "ProductShape" as the
-  methodology rather than as an implementation of it.
-- Harder: nothing structural — but the two-name discipline must be maintained wherever both names
-  appear, so documentation and public copy carry a small, permanent editorial obligation.
-- Mandatory: the public brand of the reference implementation is ProductShape; the methodology name
-  is used for the ideas, the specification and the contracts; and the distinction is made explicit
-  wherever a reader could otherwise conflate them.
+- Impossible: shipping the reference implementation publicly without a settled brand; presenting "Product Definition as Code" as the name of a product; presenting "ProductShape" as the methodology rather than as an implementation of it.
+- Harder: nothing structural — but the two-name discipline must be maintained wherever both names appear, so documentation and public copy carry a small, permanent editorial obligation.
+- Mandatory: the public brand of the reference implementation is ProductShape; the methodology name is used for the ideas, the specification and the contracts; and the distinction is made explicit wherever a reader could otherwise conflate them.
 
 ### CON-NO-WEB-UI — The product provides no web interface in v0.1
 
 ## Constraint
 
-Version 0.1 of the product ships no web interface of any kind: no browser-based editor, viewer,
-dashboard or portal. All interaction with the product definition happens through the authored
-files, the command-line tool and AI assistants operating on the repository.
+Version 0.1 of the product ships no web interface of any kind: no browser-based editor, viewer, dashboard or portal. All interaction with the product definition happens through the authored files, the command-line tool and AI assistants operating on the repository.
 
 ## Rationale
 
-This boundary is deliberately fixed to keep v0.1 focused on the substance of the methodology: the
-artifact contracts, deterministic validation, the change flow and the handoff contract. A web
-interface would multiply the surface to design, build and support before the model it would
-display has proven itself, and it would tempt the product toward exactly the pattern the
-methodology rejects — a place where product knowledge is viewed and edited outside the files and
-their review flow. Files, CLI and AI assistants together already cover authoring, navigation and
-enforcement for the adopters v0.1 targets.
+This boundary is deliberately fixed to keep v0.1 focused on the substance of the methodology: the artifact contracts, deterministic validation, the change flow and the handoff contract. A web interface would multiply the surface to design, build and support before the model it would display has proven itself, and it would tempt the product toward exactly the pattern the methodology rejects — a place where product knowledge is viewed and edited outside the files and their review flow. Files, CLI and AI assistants together already cover authoring, navigation and enforcement for the adopters v0.1 targets.
 
 ## Consequences
 
-- Impossible: browsing, editing or approving product knowledge through a hosted or local web
-  application; graphical dashboards as a supported product surface in v0.1.
-- Harder: reaching stakeholders who will not read Markdown or run a command-line tool; visual
-  exploration is limited to generated outputs such as diagrams rendered by external viewers.
-- Mandatory: every product capability must be fully usable through files and the command line;
-  documentation and onboarding must assume no graphical surface; any future web interface must
-  arrive as a projection over the same files and commands, never as a new home for product truth.
+- Impossible: browsing, editing or approving product knowledge through a hosted or local web application; graphical dashboards as a supported product surface in v0.1.
+- Harder: reaching stakeholders who will not read Markdown or run a command-line tool; visual exploration is limited to generated outputs such as diagrams rendered by external viewers.
+- Mandatory: every product capability must be fully usable through files and the command line; documentation and onboarding must assume no graphical surface; any future web interface must arrive as a projection over the same files and commands, never as a new home for product truth.
 
 ### CON-PUBLIC-GENERIC — The public framework stays generic and free of private context
 
 ## Constraint
 
-The public framework — specification, toolkit, templates, skills, fixtures and documentation —
-contains no corporate processes, no private product details, no private prompts and no
-organization-specific terminology. Learnings from real adoptions flow back only in generic form:
-as generic issues, synthetic fixtures or sanitized documentation.
+The public framework — specification, toolkit, templates, skills, fixtures and documentation — contains no corporate processes, no private product details, no private prompts and no organization-specific terminology. Learnings from real adoptions flow back only in generic form: as generic issues, synthetic fixtures or sanitized documentation.
 
 ## Rationale
 
-The framework is developed in the open while being exercised on real products inside real
-organizations. Those two facts must never mix: private product knowledge leaking into a public
-repository is a confidentiality breach, and organization-specific vocabulary or process baked into
-the framework would silently narrow it until it fits only its first adopters. Fixing this boundary
-protects the organizations that dogfood the framework and protects the framework's claim to be
-generally adoptable.
+The framework is developed in the open while being exercised on real products inside real organizations. Those two facts must never mix: private product knowledge leaking into a public repository is a confidentiality breach, and organization-specific vocabulary or process baked into the framework would silently narrow it until it fits only its first adopters. Fixing this boundary protects the organizations that dogfood the framework and protects the framework's claim to be generally adoptable.
 
 ## Consequences
 
-- Impossible: committing real product artifacts, internal process descriptions, private prompts,
-  customer names or organization-specific terminology to the public repository; using a real
-  private model as a test fixture or documentation example.
-- Harder: feeding adoption experience back — every lesson must first be translated into a generic
-  issue, a synthetic fixture reproducing the structural situation, or sanitized documentation,
-  which costs effort and loses some specificity.
-- Mandatory: examples and fixtures are synthetic; contributions from private adoptions are
-  reviewed for leaked context before they land; the framework's vocabulary stays the methodology's
-  own, never an adopting organization's.
+- Impossible: committing real product artifacts, internal process descriptions, private prompts, customer names or organization-specific terminology to the public repository; using a real private model as a test fixture or documentation example.
+- Harder: feeding adoption experience back — every lesson must first be translated into a generic issue, a synthetic fixture reproducing the structural situation, or sanitized documentation, which costs effort and loses some specificity.
+- Mandatory: examples and fixtures are synthetic; contributions from private adoptions are reviewed for leaked context before they land; the framework's vocabulary stays the methodology's own, never an adopting organization's.
 
 ## Open questions
 
-None. Two items were considered during the branding review and are settled rather than left open.
-The exact v0.x release at which the `product-definition` binary alias is removed is deferred to a
-follow-up Product Change and is recorded under Out of Scope, not a decision this change makes. The
-two new domain terms are accepted as foundational vocabulary even though no use case references
-them yet — the resulting two advisory `PRODUCT106` warnings are an accepted, non-blocking tradeoff
-that a later change may clear by referencing the terms from a use case.
+None. Two items were considered during the branding review and are settled rather than left open. The exact v0.x release at which the `product-definition` binary alias is removed is deferred to a follow-up Product Change and is recorded under Out of Scope, not a decision this change makes. The two new domain terms are accepted as foundational vocabulary even though no use case references them yet — the resulting two advisory `PRODUCT106` warnings are an accepted, non-blocking tradeoff that a later change may clear by referencing the terms from a use case.
 
 ## Traceability
 

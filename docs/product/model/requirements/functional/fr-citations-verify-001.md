@@ -21,19 +21,11 @@ verification:
 
 ## Requirement
 
-The product MUST compute, deterministically, exactly one status per citation: `current` (target
-resolves and digest matches), `stale` (target resolves but content changed), `tampered` (embedded
-projection differs from canonical content at the recorded digest), or `unresolved` (target ID or
-anchor does not resolve). Staleness is judged exclusively by the digest of the cited target;
-unrelated commits and generated-file churn MUST NOT make a citation stale. PRODUCT061 (stale) is a
-warning; the repository's `warnings-as-errors` configuration may escalate it.
+The product MUST compute, deterministically, exactly one status per citation: `current` (target resolves and digest matches), `stale` (target resolves but content changed), `tampered` (embedded projection differs from canonical content at the recorded digest), or `unresolved` (target ID or anchor does not resolve). Staleness is judged exclusively by the digest of the cited target; unrelated commits and generated-file churn MUST NOT make a citation stale. PRODUCT061 (stale) is a warning; the repository's `warnings-as-errors` configuration may escalate it.
 
 ## Rationale
 
-The citation contract is the delivery boundary: consumers cite canonical product text rather than
-re-stating it, and verification detects drift silently. A deterministic status per citation lets a
-CI pipeline block when a consumer document falls out of sync with the model, without false
-positives from unrelated changes.
+The citation contract is the delivery boundary: consumers cite canonical product text rather than re-stating it, and verification detects drift silently. A deterministic status per citation lets a CI pipeline block when a consumer document falls out of sync with the model, without false positives from unrelated changes.
 
 ## Acceptance Scenarios
 

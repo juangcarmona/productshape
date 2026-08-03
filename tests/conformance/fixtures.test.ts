@@ -1,10 +1,6 @@
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import {
-  listFilesRecursive,
-  repoRoot,
-  validateMarkdownDocument,
-} from '../helpers.js';
+import { listFilesRecursive, repoRoot, validateMarkdownDocument } from '../helpers.js';
 
 const validDir = join(repoRoot, 'tests', 'fixtures', 'valid');
 const invalidDir = join(repoRoot, 'tests', 'fixtures', 'invalid');

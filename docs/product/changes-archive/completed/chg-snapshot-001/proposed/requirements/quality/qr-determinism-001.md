@@ -17,27 +17,12 @@ verification:
 
 ## Requirement
 
-The product MUST produce identical results whenever the product content is identical. Generated
-outputs MUST be byte-identical across runs and across platforms — including the generated Product
-Snapshot — diagnostics MUST appear in a deterministic order (by file, then code, then target), and
-impact analysis and handoff status MUST return the same answers for the same content. Results MUST
-be independent of the checkout's line endings, path separators, file discovery order and any other
-environmental accident.
+The product MUST produce identical results whenever the product content is identical. Generated outputs MUST be byte-identical across runs and across platforms — including the generated Product Snapshot — diagnostics MUST appear in a deterministic order (by file, then code, then target), and impact analysis and handoff status MUST return the same answers for the same content. Results MUST be independent of the checkout's line endings, path separators, file discovery order and any other environmental accident.
 
 ## Measurement
 
-Conformance is measured by repeated-run comparison: each operation is executed multiple times over
-the same content — including once after re-checkout with altered line endings and on a different
-platform — and outputs are compared. The threshold is exact: generated files byte-identical,
-machine-readable diagnostics identical in content and order, impact results and handoff statuses
-identical. Digests are compared as rendered values and must match across line-ending
-configurations, since digest computation normalizes line endings by contract. A single differing
-byte or reordered diagnostic is a failure.
+Conformance is measured by repeated-run comparison: each operation is executed multiple times over the same content — including once after re-checkout with altered line endings and on a different platform — and outputs are compared. The threshold is exact: generated files byte-identical, machine-readable diagnostics identical in content and order, impact results and handoff statuses identical. Digests are compared as rendered values and must match across line-ending configurations, since digest computation normalizes line endings by contract. A single differing byte or reordered diagnostic is a failure.
 
 ## Verification
 
-Automated determinism tests run validation, impact analysis, handoff status and snapshot
-generation twice in one session and once per supported platform over committed fixtures, asserting
-equality of outputs against each other and against committed golden files. A dedicated fixture is
-checked out with CRLF endings to prove digest and output stability. These tests are part of the
-release gate, so no version ships with a nondeterministic operation.
+Automated determinism tests run validation, impact analysis, handoff status and snapshot generation twice in one session and once per supported platform over committed fixtures, asserting equality of outputs against each other and against committed golden files. A dedicated fixture is checked out with CRLF endings to prove digest and output stability. These tests are part of the release gate, so no version ships with a nondeterministic operation.

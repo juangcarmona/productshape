@@ -4,10 +4,7 @@
 
 ### Requirement: Product Changes compile as overlays without touching the baseline
 
-`product-definition change validate <ID>` (and `validate --change <ID>`) SHALL compile an overlay
-— the baseline with the change's additions added, modifications replaced by their proposed
-future-state artifacts and removals deleted — and run full structural validation over that overlay
-graph, while no baseline file is read differently, modified or moved.
+`product-definition change validate <ID>` (and `validate --change <ID>`) SHALL compile an overlay — the baseline with the change's additions added, modifications replaced by their proposed future-state artifacts and removals deleted — and run full structural validation over that overlay graph, while no baseline file is read differently, modified or moved.
 
 #### Scenario: Overlay validates a proposed artifact
 
@@ -21,11 +18,7 @@ graph, while no baseline file is read differently, modified or moved.
 
 ### Requirement: Operation errors are detected
 
-Change validation SHALL report: additions whose IDs already exist in the baseline (PRODUCT020),
-modifications of IDs absent from the baseline (PRODUCT021), removals of IDs absent from the
-baseline (PRODUCT022), overlays producing duplicate IDs (PRODUCT023), removals leaving dangling
-references from active overlay artifacts (PRODUCT024), and mismatches between `operations` and the
-`proposed/` directory in either direction (PRODUCT026).
+Change validation SHALL report: additions whose IDs already exist in the baseline (PRODUCT020), modifications of IDs absent from the baseline (PRODUCT021), removals of IDs absent from the baseline (PRODUCT022), overlays producing duplicate IDs (PRODUCT023), removals leaving dangling references from active overlay artifacts (PRODUCT024), and mismatches between `operations` and the `proposed/` directory in either direction (PRODUCT026).
 
 #### Scenario: Addition collides with the baseline
 
@@ -44,8 +37,7 @@ references from active overlay artifacts (PRODUCT024), and mismatches between `o
 
 ### Requirement: Concurrent changes must not overlap
 
-Validation of any active change SHALL cross-check all other active changes and report overlapping
-`modify` or `remove` operations as PRODUCT025 naming both changes.
+Validation of any active change SHALL cross-check all other active changes and report overlapping `modify` or `remove` operations as PRODUCT025 naming both changes.
 
 #### Scenario: Two changes modify one artifact
 
@@ -54,8 +46,7 @@ Validation of any active change SHALL cross-check all other active changes and r
 
 ### Requirement: Approved changes with open questions warn
 
-Validation SHALL report warning PRODUCT108 for a change whose status is `approved` or later while
-its Open Questions body section still contains unresolved entries.
+Validation SHALL report warning PRODUCT108 for a change whose status is `approved` or later while its Open Questions body section still contains unresolved entries.
 
 #### Scenario: Approval with open questions
 

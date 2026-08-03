@@ -34,406 +34,194 @@ Out of scope:
 
 ## Requirement
 
-The Product Snapshot MUST open in an orientation view — the Product Explorer's Overview — whose
-purpose is to convey the aggregate shape of the product. It MUST NOT render any artifact's authored
-content and MUST NOT render any artifact-level graph: no projection in which individual artifacts
-appear as nodes. The Overview communicates the aggregate shape of the product; it does not draw
-every artifact.
+The Product Snapshot MUST open in an orientation view — the Product Explorer's Overview — whose purpose is to convey the aggregate shape of the product. It MUST NOT render any artifact's authored content and MUST NOT render any artifact-level graph: no projection in which individual artifacts appear as nodes. The Overview communicates the aggregate shape of the product; it does not draw every artifact.
 
 The Overview MUST expose:
 
-- the product's identity as the model records it, and the source revision the snapshot was
-  generated from, presented so a reader finds them without searching;
+- the product's identity as the model records it, and the source revision the snapshot was generated from, presented so a reader finds them without searching;
 - the total number of artifacts and the total number of relationships in the compiled model;
-- the number of artifacts of each kind present in the model, with an entry point from each kind
-  into the artifacts of that canonical family — actors, journeys, use cases, business rules, domain
-  terms, bounded contexts, requirements and the rest;
-- a plain-language statement that the page is a generated, read-only projection of authored files,
-  regenerable at any time and never authoritative;
-- a kind-level aggregate of the relationships, showing which artifact kinds relate to which
-  artifact kinds, by relationship type, with the number of relationships in each combination;
+- the number of artifacts of each kind present in the model, with an entry point from each kind into the artifacts of that canonical family — actors, journeys, use cases, business rules, domain terms, bounded contexts, requirements and the rest;
+- a plain-language statement that the page is a generated, read-only projection of authored files, regenerable at any time and never authoritative;
+- a kind-level aggregate of the relationships, showing which artifact kinds relate to which artifact kinds, by relationship type, with the number of relationships in each combination;
 - permanent access to global search.
 
-The Overview MAY report the artifacts that hold no relationships as a group, stating the exact
-count and the identities of the artifacts in it, with each identity an entry point to that
-artifact. Where it does, the group MUST be presented as derived topology and nothing more: labelled
-by the fact it reports, with no warning or error presentation, no severity, no scoring, no health
-or completeness indication, and no pejorative vocabulary such as "orphaned", "dangling", "unused"
-or "missing". Model-health indicators of any other kind MAY appear only where the canonical data
-already supports them.
+The Overview MAY report the artifacts that hold no relationships as a group, stating the exact count and the identities of the artifacts in it, with each identity an entry point to that artifact. Where it does, the group MUST be presented as derived topology and nothing more: labelled by the fact it reports, with no warning or error presentation, no severity, no scoring, no health or completeness indication, and no pejorative vocabulary such as "orphaned", "dangling", "unused" or "missing". Model-health indicators of any other kind MAY appear only where the canonical data already supports them.
 
-The Overview MUST derive everything it displays from the compiled model. It MUST NOT assert
-importance, centrality, health, completeness, quality, ownership, ranking, ordering or lifecycle
-progression that the model does not record, and MUST NOT present a derived count as a judgement.
+The Overview MUST derive everything it displays from the compiled model. It MUST NOT assert importance, centrality, health, completeness, quality, ownership, ranking, ordering or lifecycle progression that the model does not record, and MUST NOT present a derived count as a judgement.
 
-The Overview MUST describe only the artifact kinds the model actually contains, and MUST remain
-correct for a model that contains few kinds, one kind, or kinds in proportions unlike any other
-product's.
+The Overview MUST describe only the artifact kinds the model actually contains, and MUST remain correct for a model that contains few kinds, one kind, or kinds in proportions unlike any other product's.
 
 ## Rationale
 
-A reader who has never seen the product needs to know what kind of thing it is before they can
-usefully read any part of it. Orientation is a different job from reading, and it is the job the
-first screen should do: how big is this, what is it made of, how do the parts connect in aggregate,
-and how much should I trust what I am looking at.
+A reader who has never seen the product needs to know what kind of thing it is before they can usefully read any part of it. Orientation is a different job from reading, and it is the job the first screen should do: how big is this, what is it made of, how do the parts connect in aggregate, and how much should I trust what I am looking at.
 
-The kind-level aggregate is what makes orientation possible without drawing the graph: the model's
-relationships collapse into a small table of kind-to-kind combinations, which is the level at which
-"how does this product hold together" is actually answerable. Search being permanently reachable
-from the first screen serves the reader who arrived already knowing what they want — orientation
-must never be a toll gate.
+The kind-level aggregate is what makes orientation possible without drawing the graph: the model's relationships collapse into a small table of kind-to-kind combinations, which is the level at which "how does this product hold together" is actually answerable. Search being permanently reachable from the first screen serves the reader who arrived already knowing what they want — orientation must never be a toll gate.
 
-The prohibition on fabricated conclusions matters most here, because a summary is read as
-authoritative. Counts are facts about the compiled graph; everything beyond counts would make the
-snapshot a second, quieter source of product truth. The same reasoning bounds model-health
-indicators to what canonical data already supports: "three artifacts have no relationships" is
-topology, and anything more would be a verdict the snapshot has no standing to deliver.
+The prohibition on fabricated conclusions matters most here, because a summary is read as authoritative. Counts are facts about the compiled graph; everything beyond counts would make the snapshot a second, quieter source of product truth. The same reasoning bounds model-health indicators to what canonical data already supports: "three artifacts have no relationships" is topology, and anything more would be a verdict the snapshot has no standing to deliver.
 
 ## Acceptance Scenarios
 
-- A reader opens a snapshot for the first time. Without scrolling past the first screen they can
-  state which product it is, which revision it reflects, roughly how large the model is, what kinds
-  of artifact it contains, and that the page is generated and read-only. Inspecting the document
-  confirms no artifact body and no artifact-level graph is present.
-- The reader reads the kind-level aggregate and can state, without opening any artifact, which
-  kinds govern which, which derive from which, and how many such relationships exist; the counts
-  match `prodshape graph` output exactly.
-- From the Overview the reader enters each canonical artifact family present in the model, and
-  reaches global search without leaving the first screen.
-- The Overview is examined for any claim beyond identity, revision, counts, entry points, the
-  projection explanation and the aggregate. No artifact is described as important, central,
-  healthy, complete, owned, ranked or ordered by anything other than a stated, derived criterion.
-- A snapshot generated from a model containing only actors and use cases describes those two kinds
-  and does not mention or zero-fill the others; a model with no relationships produces an Overview
-  that reports zero without appearing broken.
-- The no-relationships group, where shown, names its artifacts, each selectable, with no warning
-  styling, severity, score or word suggesting a defect.
+- A reader opens a snapshot for the first time. Without scrolling past the first screen they can state which product it is, which revision it reflects, roughly how large the model is, what kinds of artifact it contains, and that the page is generated and read-only. Inspecting the document confirms no artifact body and no artifact-level graph is present.
+- The reader reads the kind-level aggregate and can state, without opening any artifact, which kinds govern which, which derive from which, and how many such relationships exist; the counts match `prodshape graph` output exactly.
+- From the Overview the reader enters each canonical artifact family present in the model, and reaches global search without leaving the first screen.
+- The Overview is examined for any claim beyond identity, revision, counts, entry points, the projection explanation and the aggregate. No artifact is described as important, central, healthy, complete, owned, ranked or ordered by anything other than a stated, derived criterion.
+- A snapshot generated from a model containing only actors and use cases describes those two kinds and does not mention or zero-fill the others; a model with no relationships produces an Overview that reports zero without appearing broken.
+- The no-relationships group, where shown, names its artifacts, each selectable, with no warning styling, severity, score or word suggesting a defect.
 
 ### FR-SNAPSHOT-006 — Hold one selected artifact and address every view
 
 ## Requirement
 
-The Product Snapshot MUST hold exactly one selected artifact at a time, shared by every part of the
-page. Selecting an artifact from the Catalog, from a search result, from a declared or derived
-relationship link, from the Artifact Reader or from the Focused Topology MUST update that same
-selection, and every surface displaying the artifact MUST reflect that it is selected. The Catalog,
-the Reader and the Focused Topology share one coherent selection state; no surface holds a
-selection of its own.
+The Product Snapshot MUST hold exactly one selected artifact at a time, shared by every part of the page. Selecting an artifact from the Catalog, from a search result, from a declared or derived relationship link, from the Artifact Reader or from the Focused Topology MUST update that same selection, and every surface displaying the artifact MUST reflect that it is selected. The Catalog, the Reader and the Focused Topology share one coherent selection state; no surface holds a selection of its own.
 
-Exactly one navigation mechanism MUST own state transitions. No part of the page may change the
-selected artifact or the active surface without that mechanism, and the page's address MUST always
-reflect the state the page is in.
+Exactly one navigation mechanism MUST own state transitions. No part of the page may change the selected artifact or the active surface without that mechanism, and the page's address MUST always reflect the state the page is in.
 
-The addressable state MUST represent at least: the active surface, the selected artifact's
-identifier, the Catalog's query-and-filter state when one is active, and the Focused Topology's
-explicit disclosure state. Addressing MUST use the URL fragment, so that it works identically when
-the file is opened directly from local disk over `file://` and when it is served from ordinary
-static hosting, with no server-side routing and no request at navigation time.
+The addressable state MUST represent at least: the active surface, the selected artifact's identifier, the Catalog's query-and-filter state when one is active, and the Focused Topology's explicit disclosure state. Addressing MUST use the URL fragment, so that it works identically when the file is opened directly from local disk over `file://` and when it is served from ordinary static hosting, with no server-side routing and no request at navigation time.
 
-Opening the page at an address naming an artifact MUST open on that artifact. Browser Back and
-Forward MUST restore previously visited surfaces, selections and exploration states, so that a
-reader's navigation context — where they came from and what discovery was in progress — survives
-moving focus to a related artifact and returning. An address naming an artifact the snapshot does
-not contain MUST produce an explicit state that names the identifier it could not resolve and
-offers a way to continue exploring — never an empty page, a silent redirect, or an error the reader
-cannot act on.
+Opening the page at an address naming an artifact MUST open on that artifact. Browser Back and Forward MUST restore previously visited surfaces, selections and exploration states, so that a reader's navigation context — where they came from and what discovery was in progress — survives moving focus to a related artifact and returning. An address naming an artifact the snapshot does not contain MUST produce an explicit state that names the identifier it could not resolve and offers a way to continue exploring — never an empty page, a silent redirect, or an error the reader cannot act on.
 
-Legacy fragments in the form earlier snapshots produced — a bare artifact identifier, such as
-`#FR-SNAPSHOT-002` — MUST resolve to that artifact. This inbound compatibility is permanent: it
-MUST NOT be treated as transitional and MUST NOT be withdrawn. On resolving a legacy fragment, the
-page MUST normalize the address to the current route in place — replacing the current history entry
-rather than adding one — so pressing Back immediately after arriving leaves the snapshot.
+Legacy fragments in the form earlier snapshots produced — a bare artifact identifier, such as `#FR-SNAPSHOT-002` — MUST resolve to that artifact. This inbound compatibility is permanent: it MUST NOT be treated as transitional and MUST NOT be withdrawn. On resolving a legacy fragment, the page MUST normalize the address to the current route in place — replacing the current history entry rather than adding one — so pressing Back immediately after arriving leaves the snapshot.
 
-No exploration state MAY be persisted anywhere other than the address of the current view: the page
-MUST NOT write to browser storage, cookies or any other durable store.
+No exploration state MAY be persisted anywhere other than the address of the current view: the page MUST NOT write to browser storage, cookies or any other durable store.
 
 ## Rationale
 
-One selected artifact shared by every surface is what turns four surfaces into one instrument.
-Without it, the Catalog, the Reader and the projection each hold a private idea of "current", and
-nothing the reader does accumulates. With it, moving between finding, reading and traversing is one
-continuous exploration.
+One selected artifact shared by every surface is what turns four surfaces into one instrument. Without it, the Catalog, the Reader and the projection each hold a private idea of "current", and nothing the reader does accumulates. With it, moving between finding, reading and traversing is one continuous exploration.
 
-Requiring one mechanism to own transitions is a correctness requirement rather than an
-architectural preference: when two mechanisms can change what is displayed, the address and the
-display drift apart, and the first symptom is a Back button that returns to the wrong place — a
-failure a reader experiences as the page losing their work. Addressing the Catalog's query state
-and the projection's disclosure state extends the same reasoning to discovery: a result set two
-people cannot share is a result set they cannot discuss.
+Requiring one mechanism to own transitions is a correctness requirement rather than an architectural preference: when two mechanisms can change what is displayed, the address and the display drift apart, and the first symptom is a Back button that returns to the wrong place — a failure a reader experiences as the page losing their work. Addressing the Catalog's query state and the projection's disclosure state extends the same reasoning to discovery: a result set two people cannot share is a result set they cannot discuss.
 
-The fragment is the only addressing mechanism that satisfies the product's constraints: it survives
-`file://`, needs no hosting configuration, and never issues a request. Honouring bare-identifier
-fragments permanently protects links living in places the product cannot see or migrate; artifact
-identifiers are immutable by rule, which is what makes a permanent guarantee cheap. Refusing
-durable storage keeps the snapshot honest about being read-only: all reader state is visible,
-shareable and disposable, in the address and nowhere else.
+The fragment is the only addressing mechanism that satisfies the product's constraints: it survives `file://`, needs no hosting configuration, and never issues a request. Honouring bare-identifier fragments permanently protects links living in places the product cannot see or migrate; artifact identifiers are immutable by rule, which is what makes a permanent guarantee cheap. Refusing durable storage keeps the snapshot honest about being read-only: all reader state is visible, shareable and disposable, in the address and nowhere else.
 
 ## Acceptance Scenarios
 
-- The reader selects an artifact in the Catalog, another through search, follows a relationship in
-  the Reader, and refocuses the Focused Topology. At every step exactly one artifact is selected,
-  every surface agrees, and the address changes to match.
-- The reader copies the address mid-exploration — a query and filters active, an artifact selected
-  — and opens it in a new window from local disk with networking disabled: the same state appears.
-  The same address served from static hosting resolves identically.
-- The reader follows three relationships and presses Back three times, returning through the same
-  artifacts in reverse order with their contexts intact; Forward retraces them.
-- An address naming an unknown identifier produces a state that names it and offers orientation and
-  search as ways forward.
-- A legacy fragment such as `#FR-SNAPSHOT-002` resolves to its artifact and normalizes in place;
-  Back immediately afterwards leaves the snapshot.
+- The reader selects an artifact in the Catalog, another through search, follows a relationship in the Reader, and refocuses the Focused Topology. At every step exactly one artifact is selected, every surface agrees, and the address changes to match.
+- The reader copies the address mid-exploration — a query and filters active, an artifact selected — and opens it in a new window from local disk with networking disabled: the same state appears. The same address served from static hosting resolves identically.
+- The reader follows three relationships and presses Back three times, returning through the same artifacts in reverse order with their contexts intact; Forward retraces them.
+- An address naming an unknown identifier produces a state that names it and offers orientation and search as ways forward.
+- A legacy fragment such as `#FR-SNAPSHOT-002` resolves to its artifact and normalizes in place; Back immediately afterwards leaves the snapshot.
 - After exploring, browser storage and cookies are inspected: the snapshot has written nothing.
 
 ### FR-SNAPSHOT-008 — Discover artifacts at scale through the Catalog
 
 ## Requirement
 
-The Product Explorer MUST provide a Catalog: the primary large-scale discovery mechanism over the
-complete model.
+The Product Explorer MUST provide a Catalog: the primary large-scale discovery mechanism over the complete model.
 
-The Catalog MUST support search by stable identifier, by title and by indexed content — ranked as
-FR-SNAPSHOT-004 defines — and browsing by canonical artifact family. It MUST support narrowing by
-canonical fields: artifact type, status, and bounded context where the model declares one. It MUST
-NOT invent filterable properties the canonical model does not record.
+The Catalog MUST support search by stable identifier, by title and by indexed content — ranked as FR-SNAPSHOT-004 defines — and browsing by canonical artifact family. It MUST support narrowing by canonical fields: artifact type, status, and bounded context where the model declares one. It MUST NOT invent filterable properties the canonical model does not record.
 
-A given query-and-filter state MUST produce a deterministic result set for identical model content,
-and that state MUST be linkable: its address reproduces the same result set, consistent with
-FR-SNAPSHOT-006. Opening an artifact from the Catalog MUST preserve the active query and filters,
-so that returning to the Catalog resumes the discovery in progress rather than restarting it.
+A given query-and-filter state MUST produce a deterministic result set for identical model content, and that state MUST be linkable: its address reproduces the same result set, consistent with FR-SNAPSHOT-006. Opening an artifact from the Catalog MUST preserve the active query and filters, so that returning to the Catalog resumes the discovery in progress rather than restarting it.
 
-Search, filtering and browsing MUST remain responsive at the reference corpus scale that
-QR-SCALABILITY-001 defines.
+Search, filtering and browsing MUST remain responsive at the reference corpus scale that QR-SCALABILITY-001 defines.
 
-This requirement states observable behaviour only. It MUST NOT be read as choosing a UI framework,
-a virtualization library, an index structure or any implementation algorithm.
+This requirement states observable behaviour only. It MUST NOT be read as choosing a UI framework, a virtualization library, an index structure or any implementation algorithm.
 
 ## Rationale
 
-At corpus scale, discovery is the experience: a reader who cannot find an artifact cannot read it,
-and a reader who loses their query every time they open a result will stop opening results. The
-Catalog is where "every artifact is reachable" becomes a practical claim rather than a structural
-one — reachable in a few keystrokes, not reachable in principle.
+At corpus scale, discovery is the experience: a reader who cannot find an artifact cannot read it, and a reader who loses their query every time they open a result will stop opening results. The Catalog is where "every artifact is reachable" becomes a practical claim rather than a structural one — reachable in a few keystrokes, not reachable in principle.
 
-Determinism and linkability extend the snapshot's existing philosophy to result sets: two readers
-who share an address must see the same list, for the same reason they must see the same artifact.
-Preserving the query across an open-and-return is what makes the Catalog a workspace instead of a
-lookup dialog — real discovery is iterative, and each iteration must not restart the last.
+Determinism and linkability extend the snapshot's existing philosophy to result sets: two readers who share an address must see the same list, for the same reason they must see the same artifact. Preserving the query across an open-and-return is what makes the Catalog a workspace instead of a lookup dialog — real discovery is iterative, and each iteration must not restart the last.
 
-Filtering only by canonical fields keeps the Catalog honest: a filter is a claim that the model
-records a distinction, and inventing one would put knowledge in the snapshot that the authored
-files do not carry.
+Filtering only by canonical fields keeps the Catalog honest: a filter is a claim that the model records a distinction, and inventing one would put knowledge in the snapshot that the authored files do not carry.
 
 ## Acceptance Scenarios
 
-- A reader types a stable identifier, a title fragment and a body phrase; each finds its artifact,
-  ranked as the search requirement defines. A reader browses into one artifact family and reaches
-  every artifact of that family.
-- A reader filters by type and status, then by bounded context on a model that declares them. The
-  result set narrows exactly; no filter is offered for a property the model does not record.
-- The address of a query-and-filter state is copied and opened in a fresh window from local disk:
-  the same result set appears in the same order.
-- A reader opens a result, reads it, and returns: the query, the filters and the result set are as
-  they were left.
-- The same interactions are exercised on the reference corpus and remain responsive, measured as
-  QR-SCALABILITY-001 requires.
+- A reader types a stable identifier, a title fragment and a body phrase; each finds its artifact, ranked as the search requirement defines. A reader browses into one artifact family and reaches every artifact of that family.
+- A reader filters by type and status, then by bounded context on a model that declares them. The result set narrows exactly; no filter is offered for a property the model does not record.
+- The address of a query-and-filter state is copied and opened in a fresh window from local disk: the same result set appears in the same order.
+- A reader opens a result, reads it, and returns: the query, the filters and the result set are as they were left.
+- The same interactions are exercised on the reference corpus and remain responsive, measured as QR-SCALABILITY-001 requires.
 
 ### QR-ACCESSIBILITY-001 — Make the generated snapshot fully operable without a pointer or colour vision
 
 ## Requirement
 
-The generated Product Snapshot MUST be fully operable and fully understandable without a pointing
-device and without colour discrimination.
+The generated Product Snapshot MUST be fully operable and fully understandable without a pointing device and without colour discrimination.
 
-Every capability of the page — orientation, browsing, filtering, search, artifact selection,
-relationship traversal, group expansion, and every Graph Projection including node selection — MUST
-be reachable and operable using the keyboard alone, in an order that follows the page's visible
-structure, with no focus trap and no control that only a pointer can activate. Whenever the active
-view or the selected artifact changes, focus MUST land on an element that makes sense as the next
-place to be, rather than being lost or returned to the top of the document.
+Every capability of the page — orientation, browsing, filtering, search, artifact selection, relationship traversal, group expansion, and every Graph Projection including node selection — MUST be reachable and operable using the keyboard alone, in an order that follows the page's visible structure, with no focus trap and no control that only a pointer can activate. Whenever the active view or the selected artifact changes, focus MUST land on an element that makes sense as the next place to be, rather than being lost or returned to the top of the document.
 
-The element with focus MUST be visibly identifiable at all times. The page MUST expose semantic
-landmarks for its regions and a heading hierarchy that describes its structure without skipping
-levels. Selected state and expanded state MUST be exposed to assistive technology as state, not only
-as appearance, and the currently selected artifact MUST be marked with `aria-current` wherever it
-appears within a set of navigable items. Every control whose visible label is an icon or a symbol
-MUST carry an accessible name stating what it does.
+The element with focus MUST be visibly identifiable at all times. The page MUST expose semantic landmarks for its regions and a heading hierarchy that describes its structure without skipping levels. Selected state and expanded state MUST be exposed to assistive technology as state, not only as appearance, and the currently selected artifact MUST be marked with `aria-current` wherever it appears within a set of navigable items. Every control whose visible label is an icon or a symbol MUST carry an accessible name stating what it does.
 
-All text MUST meet WCAG 2.1 AA contrast against its background. No information — including artifact
-kind, relationship direction, status, and selected state — MAY be conveyed by colour alone; each
-MUST also be carried by text, shape, position or another non-colour signal. No information a reader
-needs MAY require hovering or pointer proximity to reveal. Where the reader's environment expresses
-a reduced-motion preference, the page MUST NOT run non-essential animation or transition.
+All text MUST meet WCAG 2.1 AA contrast against its background. No information — including artifact kind, relationship direction, status, and selected state — MAY be conveyed by colour alone; each MUST also be carried by text, shape, position or another non-colour signal. No information a reader needs MAY require hovering or pointer proximity to reveal. Where the reader's environment expresses a reduced-motion preference, the page MUST NOT run non-essential animation or transition.
 
 ## Measurement
 
-- **Keyboard completeness.** Enumerate every capability the snapshot offers, then operate each one
-  using only the keyboard. The measure is the count of capabilities that cannot be reached or
-  activated; the target is zero.
-- **Focus visibility and placement.** Traverse the entire page by keyboard and, at every stop,
-  record whether the focused element is visually identifiable. After each view change and each
-  artifact selection, record where focus landed. The measure is the count of stops with no visible
-  focus indicator and the count of transitions after which focus was lost or reset to the document
-  start; the target is zero for both.
-- **Structure.** Extract the landmark regions and the heading outline from the generated document.
-  The measure is the count of missing landmarks for the page's regions and the count of skipped
-  heading levels; the target is zero for both.
-- **State exposure.** Inspect the accessible representation of the artifact list, the relationship
-  groups, the collapsible neighbour groups, and the navigation between views. The measure is the
-  count of selected, expanded or current states expressed only visually; the target is zero.
-- **Accessible names.** Enumerate controls whose visible content is an icon or symbol. The measure
-  is the count without an accessible name; the target is zero.
-- **Contrast.** Compute the contrast ratio of every text-and-background pair the generated
-  stylesheet can produce, including kind colours, status indicators, selected rows and snippet
-  highlighting. The measure is the count of pairs below WCAG 2.1 AA for their text size; the target
-  is zero.
-- **Colour independence.** Render the page with colour removed and identify each piece of
-  information the requirement names — artifact kind, relationship direction, status, selected state.
-  The measure is the count no longer determinable; the target is zero.
-- **Hover independence.** Enumerate information revealed on hover or pointer proximity. The measure
-  is the count of such items that are not also available without a pointer; the target is zero.
-- **Reduced motion.** Open the page with a reduced-motion preference expressed and record any
-  animation or transition that still runs. The measure is the count of non-essential ones; the
-  target is zero.
+- **Keyboard completeness.** Enumerate every capability the snapshot offers, then operate each one using only the keyboard. The measure is the count of capabilities that cannot be reached or activated; the target is zero.
+- **Focus visibility and placement.** Traverse the entire page by keyboard and, at every stop, record whether the focused element is visually identifiable. After each view change and each artifact selection, record where focus landed. The measure is the count of stops with no visible focus indicator and the count of transitions after which focus was lost or reset to the document start; the target is zero for both.
+- **Structure.** Extract the landmark regions and the heading outline from the generated document. The measure is the count of missing landmarks for the page's regions and the count of skipped heading levels; the target is zero for both.
+- **State exposure.** Inspect the accessible representation of the artifact list, the relationship groups, the collapsible neighbour groups, and the navigation between views. The measure is the count of selected, expanded or current states expressed only visually; the target is zero.
+- **Accessible names.** Enumerate controls whose visible content is an icon or symbol. The measure is the count without an accessible name; the target is zero.
+- **Contrast.** Compute the contrast ratio of every text-and-background pair the generated stylesheet can produce, including kind colours, status indicators, selected rows and snippet highlighting. The measure is the count of pairs below WCAG 2.1 AA for their text size; the target is zero.
+- **Colour independence.** Render the page with colour removed and identify each piece of information the requirement names — artifact kind, relationship direction, status, selected state. The measure is the count no longer determinable; the target is zero.
+- **Hover independence.** Enumerate information revealed on hover or pointer proximity. The measure is the count of such items that are not also available without a pointer; the target is zero.
+- **Reduced motion.** Open the page with a reduced-motion preference expressed and record any animation or transition that still runs. The measure is the count of non-essential ones; the target is zero.
 
-Each measurement is taken against the snapshot generated from the current ProductShape model and
-against a snapshot generated from a materially larger model containing dense relationships,
-high-degree artifacts, isolated artifacts, and long titles and bodies, so that states reachable only
-at scale — collapsed groups, truncated labels, long lists — are included.
+Each measurement is taken against the snapshot generated from the current ProductShape model and against a snapshot generated from a materially larger model containing dense relationships, high-degree artifacts, isolated artifacts, and long titles and bodies, so that states reachable only at scale — collapsed groups, truncated labels, long lists — are included.
 
 ## Verification
 
-- An operator completes the whole exploration progression — orient, search, select an artifact, read
-  it, read its relationships in both directions, expand a collapsed neighbour group, open a
-  projection, select a neighbouring node, return by Back — without touching a pointing device.
-- Keyboard traversal of the full page records a visible focus indicator at every stop, and focus
-  placement after every view change and artifact selection is deliberate rather than lost.
-- The generated document's landmarks and heading outline are extracted and reviewed: every region
-  has a landmark and no heading level is skipped.
-- The artifact list reports the selected artifact as current to assistive technology; collapsible
-  neighbour groups report their expanded state; the active view is identifiable as current within
-  the page's navigation.
-- Every icon-only control is queried for its accessible name and each name states the control's
-  action.
-- Every text-and-background pair the stylesheet can produce is computed against WCAG 2.1 AA and
-  passes, including the kind colours applied to text.
-- With colour removed, a reader can still determine each artifact's kind, each relationship's
-  direction, each artifact's status and which artifact is selected.
-- With a reduced-motion preference set, opening the page, changing selection, expanding a group and
-  opening a projection run without non-essential animation.
+- An operator completes the whole exploration progression — orient, search, select an artifact, read it, read its relationships in both directions, expand a collapsed neighbour group, open a projection, select a neighbouring node, return by Back — without touching a pointing device.
+- Keyboard traversal of the full page records a visible focus indicator at every stop, and focus placement after every view change and artifact selection is deliberate rather than lost.
+- The generated document's landmarks and heading outline are extracted and reviewed: every region has a landmark and no heading level is skipped.
+- The artifact list reports the selected artifact as current to assistive technology; collapsible neighbour groups report their expanded state; the active view is identifiable as current within the page's navigation.
+- Every icon-only control is queried for its accessible name and each name states the control's action.
+- Every text-and-background pair the stylesheet can produce is computed against WCAG 2.1 AA and passes, including the kind colours applied to text.
+- With colour removed, a reader can still determine each artifact's kind, each relationship's direction, each artifact's status and which artifact is selected.
+- With a reduced-motion preference set, opening the page, changing selection, expanding a group and opening a projection run without non-essential animation.
 - Both the current-model snapshot and the larger-model snapshot pass every check above.
 
 ### QR-PRESENTATION-001 — Present the snapshot as a calm, compact, text-first engineering instrument
 
 ## Requirement
 
-The generated Product Snapshot MUST present itself as a precise, calm engineering instrument rather
-than a decorated document or a dashboard.
+The generated Product Snapshot MUST present itself as a precise, calm engineering instrument rather than a decorated document or a dashboard.
 
-**Appearance.** The interface MUST render in a single light appearance. It MUST NOT provide a dark
-variant, a theme control or any appearance preference.
+**Appearance.** The interface MUST render in a single light appearance. It MUST NOT provide a dark variant, a theme control or any appearance preference.
 
-**Typography.** Body and interface text MUST use the reader's system sans-serif stack. Artifact
-identifiers and revision values MUST render in a monospaced face wherever they appear, so an
-identifier is recognizable as an identifier and comparable character by character. No font may be
-fetched; the requirement is satisfied with faces the reader's system already provides.
+**Typography.** Body and interface text MUST use the reader's system sans-serif stack. Artifact identifiers and revision values MUST render in a monospaced face wherever they appear, so an identifier is recognizable as an identifier and comparable character by character. No font may be fetched; the requirement is satisfied with faces the reader's system already provides.
 
-**Contrast and structure.** Text contrast MUST be strong throughout. Structure MUST be carried by
-thin borders, deliberate alignment and consistent spacing rather than by elevation, shadow or
-enclosure. Controls MUST be square or low-radius.
+**Contrast and structure.** Text contrast MUST be strong throughout. Structure MUST be carried by thin borders, deliberate alignment and consistent spacing rather than by elevation, shadow or enclosure. Controls MUST be square or low-radius.
 
-**Colour.** Colour use MUST be restrained: one accent for interactive and selected state, plus a
-stable palette identifying artifact kinds. A kind's colour MUST be the same in every view, for every
-artifact of that kind, and across regenerations. Colour MUST NOT be the sole carrier of any meaning:
-artifact kind, relationship direction, artifact status and selection MUST each also be conveyed by
-text, shape or position.
+**Colour.** Colour use MUST be restrained: one accent for interactive and selected state, plus a stable palette identifying artifact kinds. A kind's colour MUST be the same in every view, for every artifact of that kind, and across regenerations. Colour MUST NOT be the sole carrier of any meaning: artifact kind, relationship direction, artifact status and selection MUST each also be conveyed by text, shape or position.
 
-**Density.** The interface MUST be compact. Orientation, the artifact list, and the selected
-artifact's identity and relationships MUST be legible together on an ordinary desktop viewport
-without decorative whitespace displacing content that the reader needs.
+**Density.** The interface MUST be compact. Orientation, the artifact list, and the selected artifact's identity and relationships MUST be legible together on an ordinary desktop viewport without decorative whitespace displacing content that the reader needs.
 
-**Prohibited treatments.** The page MUST NOT use gradients, glass or blur effects, decorative
-illustration, oversized hero typography, or a generic rounded-card dashboard treatment of its
-content.
+**Prohibited treatments.** The page MUST NOT use gradients, glass or blur effects, decorative illustration, oversized hero typography, or a generic rounded-card dashboard treatment of its content.
 
-These properties are product obligations about the reading experience, not a stylesheet. How they are
-realized — the specific values, the layout technique, the implementation — is a technical-design
-decision, and the requirement is verified against the rendered page rather than against source.
+These properties are product obligations about the reading experience, not a stylesheet. How they are realized — the specific values, the layout technique, the implementation — is a technical-design decision, and the requirement is verified against the rendered page rather than against source.
 
 ## Measurement
 
-Measured by inspecting the rendered page in a browser, at a desktop viewport and at a narrow
-viewport, for a snapshot generated from the current ProductShape model and for one generated from a
-materially larger model containing high-degree artifacts, isolated artifacts and long titles and
-bodies. Each measure below is a count with a target of zero, and the inspection is recorded as
-screenshots so a later regression is comparable against the same evidence.
+Measured by inspecting the rendered page in a browser, at a desktop viewport and at a narrow viewport, for a snapshot generated from the current ProductShape model and for one generated from a materially larger model containing high-degree artifacts, isolated artifacts and long titles and bodies. Each measure below is a count with a target of zero, and the inspection is recorded as screenshots so a later regression is comparable against the same evidence.
 
-- **Appearance.** Open the page with the reader's environment expressing a light preference and again
-  expressing a dark preference. Measure: the number of appearances rendered other than the single
-  light one, and the number of controls offering a theme or appearance choice.
-- **Typography.** Inspect the computed font of body text, interface text, artifact identifiers and
-  revision values. Measure: the count of text runs not using the system sans-serif stack where prose
-  is expected, plus the count of identifier and revision occurrences not rendered monospaced.
-- **Contrast.** Covered quantitatively by QR-ACCESSIBILITY-001 against WCAG 2.1 AA. Measure here:
-  the count of text-and-background pairs that pass AA but read as low-contrast in the rendered page —
-  reported as a finding for design review rather than a failure.
-- **Structure.** Inspect the rendered borders, alignment and control shapes. Measure: the count of
-  regions delimited by shadow or elevation instead of a border, the count of misaligned column or row
-  edges within one region, and the count of controls whose corner radius reads as pill or capsule
-  rather than square or low-radius.
-- **Colour restraint and stability.** Enumerate the distinct accent colours the rendered page uses,
-  and the colour applied to each artifact kind in every view. Measure: the count of accent colours
-  beyond one, plus the count of kinds rendered in more than one colour across views, artifacts or two
-  regenerations from identical content.
-- **Colour independence.** Render with colour removed. Measure: the count of the four meanings —
-  kind, relationship direction, status, selection — no longer determinable. Shares its procedure with
-  QR-ACCESSIBILITY-001.
-- **Density.** At an ordinary desktop viewport, record whether orientation, the artifact list, and
-  the selected artifact's identity and relationships are legible together without scrolling past
-  decorative space. Measure: the count of those three that are not.
-- **Prohibited treatments.** Inspect the rendered page for gradients, glass or blur effects,
-  decorative illustration, hero-scale typography, and content enclosed in rounded cards in a
-  dashboard arrangement. Measure: the count of occurrences.
+- **Appearance.** Open the page with the reader's environment expressing a light preference and again expressing a dark preference. Measure: the number of appearances rendered other than the single light one, and the number of controls offering a theme or appearance choice.
+- **Typography.** Inspect the computed font of body text, interface text, artifact identifiers and revision values. Measure: the count of text runs not using the system sans-serif stack where prose is expected, plus the count of identifier and revision occurrences not rendered monospaced.
+- **Contrast.** Covered quantitatively by QR-ACCESSIBILITY-001 against WCAG 2.1 AA. Measure here: the count of text-and-background pairs that pass AA but read as low-contrast in the rendered page — reported as a finding for design review rather than a failure.
+- **Structure.** Inspect the rendered borders, alignment and control shapes. Measure: the count of regions delimited by shadow or elevation instead of a border, the count of misaligned column or row edges within one region, and the count of controls whose corner radius reads as pill or capsule rather than square or low-radius.
+- **Colour restraint and stability.** Enumerate the distinct accent colours the rendered page uses, and the colour applied to each artifact kind in every view. Measure: the count of accent colours beyond one, plus the count of kinds rendered in more than one colour across views, artifacts or two regenerations from identical content.
+- **Colour independence.** Render with colour removed. Measure: the count of the four meanings — kind, relationship direction, status, selection — no longer determinable. Shares its procedure with QR-ACCESSIBILITY-001.
+- **Density.** At an ordinary desktop viewport, record whether orientation, the artifact list, and the selected artifact's identity and relationships are legible together without scrolling past decorative space. Measure: the count of those three that are not.
+- **Prohibited treatments.** Inspect the rendered page for gradients, glass or blur effects, decorative illustration, hero-scale typography, and content enclosed in rounded cards in a dashboard arrangement. Measure: the count of occurrences.
 
 ## Verification
 
-- The page is opened with a light and then a dark environment preference. It renders identically, in
-  its single light appearance, and no theme or appearance control exists anywhere on it.
-- Computed styles confirm system sans-serif prose and interface text, and monospaced rendering of
-  every artifact identifier and every revision value — in the orientation view, the artifact list,
-  the artifact detail, the relationship groups, the search results and the projections.
-- The rendered page is reviewed against the structure measures: regions are delimited by thin
-  borders, columns and rows align within each region, and controls are square or low-radius.
-- The rendered page uses one accent colour. Each artifact kind's colour is recorded from every view
-  and is identical in all of them, and identical again in a second snapshot generated from the same
-  model content.
-- With colour removed, a reader can still determine each artifact's kind, each relationship's
-  direction, each artifact's status and which artifact is selected.
-- At a desktop viewport, orientation, the artifact list and the selected artifact's identity and
-  relationships are all legible without decorative space displacing them; at a narrow viewport the
-  layout adapts as FR-SNAPSHOT-002 requires and remains compact rather than sparse.
-- The rendered page is searched for gradients, glass or blur effects, decorative illustration,
-  hero-scale typography and rounded-card dashboard treatment. None is present.
-- Screenshots at both viewports, for both representative models, are recorded alongside the measures,
-  so the presentation this requirement describes is evidenced rather than asserted.
+- The page is opened with a light and then a dark environment preference. It renders identically, in its single light appearance, and no theme or appearance control exists anywhere on it.
+- Computed styles confirm system sans-serif prose and interface text, and monospaced rendering of every artifact identifier and every revision value — in the orientation view, the artifact list, the artifact detail, the relationship groups, the search results and the projections.
+- The rendered page is reviewed against the structure measures: regions are delimited by thin borders, columns and rows align within each region, and controls are square or low-radius.
+- The rendered page uses one accent colour. Each artifact kind's colour is recorded from every view and is identical in all of them, and identical again in a second snapshot generated from the same model content.
+- With colour removed, a reader can still determine each artifact's kind, each relationship's direction, each artifact's status and which artifact is selected.
+- At a desktop viewport, orientation, the artifact list and the selected artifact's identity and relationships are all legible without decorative space displacing them; at a narrow viewport the layout adapts as FR-SNAPSHOT-002 requires and remains compact rather than sparse.
+- The rendered page is searched for gradients, glass or blur effects, decorative illustration, hero-scale typography and rounded-card dashboard treatment. None is present.
+- Screenshots at both viewports, for both representative models, are recorded alongside the measures, so the presentation this requirement describes is evidenced rather than asserted.
 
 ### QR-SCALABILITY-001 — Stay usable as the product model grows
 
 ## Requirement
 
-The Product Snapshot MUST remain usable as the product model it projects grows well beyond the
-model the product defines for itself. Scalability is defined over the operations a reader actually
-performs, on a representative corpus of roughly 730 artifacts — never over rendering the corpus
-simultaneously, which no surface does.
+The Product Snapshot MUST remain usable as the product model it projects grows well beyond the model the product defines for itself. Scalability is defined over the operations a reader actually performs, on a representative corpus of roughly 730 artifacts — never over rendering the corpus simultaneously, which no surface does.
 
-The document the page renders when it opens MUST NOT grow in proportion to the number of artifacts
-in the model. Because the opening state renders no artifact content and no artifact-level graph,
-its size MUST be bounded by the number of artifact kinds present and the kind-level aggregate over
-them, not by the artifact count. Artifact content and relationship structure MUST be carried in the
-file as data that the page renders on demand.
+The document the page renders when it opens MUST NOT grow in proportion to the number of artifacts in the model. Because the opening state renders no artifact content and no artifact-level graph, its size MUST be bounded by the number of artifact kinds present and the kind-level aggregate over them, not by the artifact count. Artifact content and relationship structure MUST be carried in the file as data that the page renders on demand.
 
-Generated file size MUST grow no worse than linearly with the volume of authored content, and
-generation time MUST grow no worse than linearly with the number of artifacts. Neither may degrade
-superlinearly through relationship density.
+Generated file size MUST grow no worse than linearly with the volume of authored content, and generation time MUST grow no worse than linearly with the number of artifacts. Neither may degrade superlinearly through relationship density.
 
 The measured interactions are the reader's operations:
 
@@ -445,78 +233,46 @@ The measured interactions are the reader's operations:
 6. expanding a bounded relationship group in the Focused Topology;
 7. back/forward navigation.
 
-Each MUST complete without delay the reader perceives as waiting, and MUST NOT degrade materially
-as the model grows across the representative models. Each MUST be measured on an identified
-representative environment — named hardware, operating system and browser version, with the file
-opened over `file://` — and the figures recorded. Concrete numeric budgets MUST be established from
-those measurements during technical design and agreed before implementation is approved. Budgets
-already agreed from recorded measurements continue to bind; no new number may be asserted in
-advance of a measurement.
+Each MUST complete without delay the reader perceives as waiting, and MUST NOT degrade materially as the model grows across the representative models. Each MUST be measured on an identified representative environment — named hardware, operating system and browser version, with the file opened over `file://` — and the figures recorded. Concrete numeric budgets MUST be established from those measurements during technical design and agreed before implementation is approved. Budgets already agreed from recorded measurements continue to bind; no new number may be asserted in advance of a measurement.
 
-Artifacts that are hardest at scale — the most connected artifact, an artifact with no
-relationships, and an artifact with a long title and a long body — MUST remain readable at every
-measured scale.
+Artifacts that are hardest at scale — the most connected artifact, an artifact with no relationships, and an artifact with a long title and a long body — MUST remain readable at every measured scale.
 
 ## Measurement
 
 **Representative models.** All measurements are taken against a fixed set:
 
-1. The current ProductShape model — recorded at 73 artifacts and 196 relationships when the
-   baseline below was measured.
-2. A materially larger synthetic model of roughly five times that size — 365 artifacts and 1,645
-   relationships.
-3. A materially larger synthetic model of roughly ten times that size — 730 artifacts and 3,290
-   relationships, with a maximum artifact degree of 171 and 30 artifacts holding no relationships.
+1. The current ProductShape model — recorded at 73 artifacts and 196 relationships when the baseline below was measured.
+2. A materially larger synthetic model of roughly five times that size — 365 artifacts and 1,645 relationships.
+3. A materially larger synthetic model of roughly ten times that size — 730 artifacts and 3,290 relationships, with a maximum artifact degree of 171 and 30 artifacts holding no relationships.
 
-The synthetic models MUST contain dense relationships, high-degree artifacts, isolated artifacts,
-and long titles and bodies, so that the hard cases are present rather than assumed away.
+The synthetic models MUST contain dense relationships, high-degree artifacts, isolated artifacts, and long titles and bodies, so that the hard cases are present rather than assumed away.
 
 **Baseline recorded against the pre-change snapshot**, establishing what is being improved:
 
-| Model     | Artifacts | Relationships | File size   | Markup rendered at open | Inert data  | Generation  |
-| --------- | --------- | ------------- | ----------- | ----------------------- | ----------- | ----------- |
-| Current   | 73        | 196           | 459,704 B   | 299,059 B (65%)         | 151,764 B   | 0.34–0.38 s |
-| Synthetic | 365       | 1,645         | 2,371,535 B | 1,617,762 B (68%)       | 739,276 B   | 0.38–0.43 s |
-| Synthetic | 730       | 3,290         | 4,736,837 B | 3,236,237 B (68%)       | 1,478,793 B | 0.60–0.94 s |
+| Model | Artifacts | Relationships | File size | Markup rendered at open | Inert data | Generation |
+| --- | --- | --- | --- | --- | --- | --- |
+| Current | 73 | 196 | 459,704 B | 299,059 B (65%) | 151,764 B | 0.34–0.38 s |
+| Synthetic | 365 | 1,645 | 2,371,535 B | 1,617,762 B (68%) | 739,276 B | 0.38–0.43 s |
+| Synthetic | 730 | 3,290 | 4,736,837 B | 3,236,237 B (68%) | 1,478,793 B | 0.60–0.94 s |
 
 **Measures and targets:**
 
-- **Opening document size.** Measure the bytes of markup present in the document when the page
-  opens, for each representative model. Target: from the smallest to the largest representative
-  model — a tenfold increase in artifacts — it grows by less than a factor of two.
-- **Rendered graph elements at open.** Count the artifact-level nodes and edges present in the
-  document when the page opens. Target: zero, at every scale.
-- **Generated file size.** Record the generated bytes per representative model and divide by the
-  total authored artifact bytes. Target: the ratio does not increase with model size.
-- **Generation time.** Time three consecutive generations per representative model and record the
-  range. Target: the largest representative model completes within 5 s, and time per artifact does
-  not increase with model size.
-- **Reader-operation latency.** For each representative model, measure each of the seven operations
-  above on its hardest cases — the query matching everything, the artifact with the longest body,
-  the most connected artifact's neighbourhood, the largest bounded group. Report distributions, not
-  single figures. Budgets come from these measurements during technical design; budgets already
-  agreed from recorded measurements continue to bind.
-- **Latency growth.** Compare each operation across the representative models. Target: the same
-  operation on a tenfold larger model does not become a qualitatively different experience.
-- **Hard-case readability.** At each scale, the highest-degree artifact, an isolated artifact and
-  an artifact with a long title and long body are readable: relationships grouped and counted
-  rather than spilled, absent relationships reported rather than blank, long text wrapping without
-  horizontal page scrolling.
+- **Opening document size.** Measure the bytes of markup present in the document when the page opens, for each representative model. Target: from the smallest to the largest representative model — a tenfold increase in artifacts — it grows by less than a factor of two.
+- **Rendered graph elements at open.** Count the artifact-level nodes and edges present in the document when the page opens. Target: zero, at every scale.
+- **Generated file size.** Record the generated bytes per representative model and divide by the total authored artifact bytes. Target: the ratio does not increase with model size.
+- **Generation time.** Time three consecutive generations per representative model and record the range. Target: the largest representative model completes within 5 s, and time per artifact does not increase with model size.
+- **Reader-operation latency.** For each representative model, measure each of the seven operations above on its hardest cases — the query matching everything, the artifact with the longest body, the most connected artifact's neighbourhood, the largest bounded group. Report distributions, not single figures. Budgets come from these measurements during technical design; budgets already agreed from recorded measurements continue to bind.
+- **Latency growth.** Compare each operation across the representative models. Target: the same operation on a tenfold larger model does not become a qualitatively different experience.
+- **Hard-case readability.** At each scale, the highest-degree artifact, an isolated artifact and an artifact with a long title and long body are readable: relationships grouped and counted rather than spilled, absent relationships reported rather than blank, long text wrapping without horizontal page scrolling.
 
 ## Verification
 
-- The opening document is measured for all three representative models: artifact-level markup,
-  nodes and edges are absent from every one, and its size across a tenfold growth in artifacts
-  grows by less than a factor of two.
-- Generated size per authored byte and generation time per artifact are recorded for all three
-  models; neither ratio increases with model size, and the largest model generates within 5 s.
-- The seven reader operations are timed on all three models on an identified environment, reported
-  in full including the slowest cases; budgets are derived from those figures during technical
-  design, and no budget is asserted in advance of measurement.
+- The opening document is measured for all three representative models: artifact-level markup, nodes and edges are absent from every one, and its size across a tenfold growth in artifacts grows by less than a factor of two.
+- Generated size per authored byte and generation time per artifact are recorded for all three models; neither ratio increases with model size, and the largest model generates within 5 s.
+- The seven reader operations are timed on all three models on an identified environment, reported in full including the slowest cases; budgets are derived from those figures during technical design, and no budget is asserted in advance of measurement.
 - Each operation is compared across the three models and confirmed not to degrade materially.
 - The hard-case artifacts are opened at every scale and remain readable as defined above.
-- All measurements are recorded — model, measure, figure, hardware and browser — so any later
-  regression is detectable against the same procedure.
+- All measurements are recorded — model, measure, figure, hardware and browser — so any later regression is detectable against the same procedure.
 
 ## Affected behaviour
 
@@ -524,72 +280,36 @@ and long titles and bodies, so that the hard cases are present rather than assum
 
 ## Intended Outcome
 
-A person with no access to the repository — and no intention of ever getting any — understands the
-product deeply: its actors, journeys, use cases, rules, language and requirements, and how they
-connect. The understanding comes from a Product Snapshot: a read-only projection of the canonical
-model, generated as a single self-contained file and shared as one. They reach that understanding
-through the Product Explorer, one artifact and one neighbourhood at a time, never by being handed
-the whole corpus at once.
+A person with no access to the repository — and no intention of ever getting any — understands the product deeply: its actors, journeys, use cases, rules, language and requirements, and how they connect. The understanding comes from a Product Snapshot: a read-only projection of the canonical model, generated as a single self-contained file and shared as one. They reach that understanding through the Product Explorer, one artifact and one neighbourhood at a time, never by being handed the whole corpus at once.
 
 ## Entry Conditions
 
 - A validated product model exists in a repository.
-- Someone outside the repository workflow wants to understand the product — a stakeholder preparing
-  a decision, a product owner reviewing scope, a new teammate, or anyone else curious about what
-  the product actually is.
+- Someone outside the repository workflow wants to understand the product — a stakeholder preparing a decision, a product owner reviewing scope, a new teammate, or anyone else curious about what the product actually is.
 
 ## Journey Narrative
 
-Someone on the repository side — typically the Product Engineer — generates a Product Snapshot with
-a single CLI command: one self-contained HTML file containing the complete current product model
-and stamped with the revision it was generated from. They share it however the team shares files: a
-message, an email, an intranet page.
+Someone on the repository side — typically the Product Engineer — generates a Product Snapshot with a single CLI command: one self-contained HTML file containing the complete current product model and stamped with the revision it was generated from. They share it however the team shares files: a message, an email, an intranet page.
 
-The Product Explorer opens it in a browser and is oriented before being asked to read anything. The
-Overview tells them which product this is, which revision it reflects, how many artifacts and
-relationships the model holds, how those artifacts divide by kind, and that what they are looking
-at is a generated read-only projection. A kind-level view of the relationships shows them how the
-families of artifacts connect — which kinds govern which, which derive from which — without showing
-a single artifact yet. Search is right there when they already know what they came for.
+The Product Explorer opens it in a browser and is oriented before being asked to read anything. The Overview tells them which product this is, which revision it reflects, how many artifacts and relationships the model holds, how those artifacts divide by kind, and that what they are looking at is a generated read-only projection. A kind-level view of the relationships shows them how the families of artifacts connect — which kinds govern which, which derive from which — without showing a single artifact yet. Search is right there when they already know what they came for.
 
-From there they work the Catalog: searching for something they have in mind, or browsing a family
-and narrowing it by type, status or context until they recognize what they want. They open an
-artifact and read it on its own: its title, identifier, kind and status, and its authored content
-with the structure the author gave it. Beside it, the artifact's relationships are laid out by what
-they actually mean and kept apart by direction — what this artifact declares, and what refers to it
-through the derived reverse views the authored files never state. Where an artifact is heavily
-connected, its neighbours are grouped and counted rather than spilled, and the explorer opens the
-group they care about.
+From there they work the Catalog: searching for something they have in mind, or browsing a family and narrowing it by type, status or context until they recognize what they want. They open an artifact and read it on its own: its title, identifier, kind and status, and its authored content with the structure the author gave it. Beside it, the artifact's relationships are laid out by what they actually mean and kept apart by direction — what this artifact declares, and what refers to it through the derived reverse views the authored files never state. Where an artifact is heavily connected, its neighbours are grouped and counted rather than spilled, and the explorer opens the group they care about.
 
-When they want to see a neighbourhood rather than read it, they ask for the Focused Topology: the
-artifact they are reading becomes the centre of a small, legible picture of its immediate
-relationships, grouped and counted, expanding only where they choose. Following a connection makes
-the next artifact the focus — the picture refocuses rather than piling up — and the browser's Back
-button walks them back through where they have been, queries and all, because every step they took
-was addressable. However they move — list, search result, relationship link or projection — the
-selection follows them everywhere, and every surface agrees on where they are.
+When they want to see a neighbourhood rather than read it, they ask for the Focused Topology: the artifact they are reading becomes the centre of a small, legible picture of its immediate relationships, grouped and counted, expanding only where they choose. Following a connection makes the next artifact the focus — the picture refocuses rather than piling up — and the browser's Back button walks them back through where they have been, queries and all, because every step they took was addressable. However they move — list, search result, relationship link or projection — the selection follows them everywhere, and every surface agrees on where they are.
 
-When the model evolves, anyone on the repository side regenerates the snapshot and shares it again;
-the stamped revision makes it obvious which state of the product a given page reflects.
+When the model evolves, anyone on the repository side regenerates the snapshot and shares it again; the stamped revision makes it obvious which state of the product a given page reflects.
 
 ## Variants and Branches
 
-- Self-service generation: a developer who has the repository anyway generates the snapshot for
-  their own reading — the explorer and the generator are the same person wearing two hats.
-- Published snapshot: a team hosts the generated file at a stable address so explorers always find
-  the latest snapshot in the same place. Hosting is the adopter's concern; the product only
-  generates the file.
-- Direct arrival: the explorer is sent a link to one specific artifact rather than to the page as a
-  whole, and starts from that artifact instead of from the Overview.
-- Small phone or narrow window: the explorer reads on a device where a side-by-side layout does not
-  fit, and the page adapts rather than shrinking a desktop arrangement.
+- Self-service generation: a developer who has the repository anyway generates the snapshot for their own reading — the explorer and the generator are the same person wearing two hats.
+- Published snapshot: a team hosts the generated file at a stable address so explorers always find the latest snapshot in the same place. Hosting is the adopter's concern; the product only generates the file.
+- Direct arrival: the explorer is sent a link to one specific artifact rather than to the page as a whole, and starts from that artifact instead of from the Overview.
+- Small phone or narrow window: the explorer reads on a device where a side-by-side layout does not fit, and the page adapts rather than shrinking a desktop arrangement.
 
 ## Completion Conditions
 
-- The Product Explorer can answer, from the snapshot alone, what the product does, for whom, under
-  which rules, and in which language — at the depth the canonical model records.
-- Every artifact and every canonical relationship in the model was reachable to them, without any
-  of it having been displayed all at once.
+- The Product Explorer can answer, from the snapshot alone, what the product does, for whom, under which rules, and in which language — at the depth the canonical model records.
+- Every artifact and every canonical relationship in the model was reachable to them, without any of it having been displayed all at once.
 - The snapshot they used declares the model revision it reflects.
 - The canonical model was never touched: exploration is entirely read-only.
 
@@ -597,17 +317,11 @@ the stamped revision makes it obvious which state of the product a given page re
 
 ## Goal
 
-The current product model becomes one static, self-contained HTML file — a Product Snapshot —
-that anyone can explore in a browser without the repository, the CLI or any server, stamped with
-the model revision it was generated from and reproducible byte-for-byte from the same content.
-The file contains the model completely; the page it opens as displays only what the reader has
-asked for.
+The current product model becomes one static, self-contained HTML file — a Product Snapshot — that anyone can explore in a browser without the repository, the CLI or any server, stamped with the model revision it was generated from and reproducible byte-for-byte from the same content. The file contains the model completely; the page it opens as displays only what the reader has asked for.
 
 ## Trigger
 
-The Product Engineer runs `prodshape graph --format html`, typically when someone outside the
-repository workflow needs to understand the product, or after a promotion so a shared snapshot
-reflects the new baseline.
+The Product Engineer runs `prodshape graph --format html`, typically when someone outside the repository workflow needs to understand the product, or after a promotion so a shared snapshot reflects the new baseline.
 
 ## Preconditions
 
@@ -616,61 +330,39 @@ reflects the new baseline.
 ## Main Flow
 
 1. The engineer runs `prodshape graph --format html`.
-2. The product graph is compiled from the authored artifacts, including all derived reverse
-   relationships.
-3. Every artifact — its frontmatter, its authored content and its status — and every relationship
-   in the compiled graph is embedded into the file completely, so nothing the reader can reach is
-   missing and nothing needs to be fetched later.
-4. The exploration capabilities are embedded into the same file: the search index, the
-   relationship structure the projections are built from, and the presentation logic that renders
-   embedded content on demand.
+2. The product graph is compiled from the authored artifacts, including all derived reverse relationships.
+3. Every artifact — its frontmatter, its authored content and its status — and every relationship in the compiled graph is embedded into the file completely, so nothing the reader can reach is missing and nothing needs to be fetched later.
+4. The exploration capabilities are embedded into the same file: the search index, the relationship structure the projections are built from, and the presentation logic that renders embedded content on demand.
 5. The source revision of the model is recorded visibly in the page.
-6. The snapshot is written as a single self-contained HTML file under the generated-output area,
-   and the command reports where.
+6. The snapshot is written as a single self-contained HTML file under the generated-output area, and the command reports where.
 7. The engineer shares the file however the team shares files; no serving or hosting is involved.
 
 ## Alternative Flows
 
-- Regeneration: the model has evolved since the last snapshot; running the command again
-  produces a fresh snapshot with the new revision stamp, replacing nothing canonical — the
-  previous file was only ever a projection.
-- Chosen destination: the engineer directs the output to a specific path, for example a
-  directory their team publishes as static content.
+- Regeneration: the model has evolved since the last snapshot; running the command again produces a fresh snapshot with the new revision stamp, replacing nothing canonical — the previous file was only ever a projection.
+- Chosen destination: the engineer directs the output to a specific path, for example a directory their team publishes as static content.
 
 ## Failure Conditions
 
-- No product model: the command reports that there is nothing to project rather than producing
-  an empty page.
-- Malformed artifacts: files that cannot be parsed are reported with diagnostics; the command
-  does not emit a snapshot that silently omits part of the model.
+- No product model: the command reports that there is nothing to project rather than producing an empty page.
+- Malformed artifacts: files that cannot be parsed are reported with diagnostics; the command does not emit a snapshot that silently omits part of the model.
 
 ## Postconditions
 
-- One self-contained HTML file exists, opening correctly from local disk with no network access
-  and no server.
-- The file contains every artifact and every relationship of the compiled model; the page opens
-  in an orientation state that renders none of the artifact content and no artifact-level graph,
-  and completeness of the file is therefore independent of what is displayed at any moment.
+- One self-contained HTML file exists, opening correctly from local disk with no network access and no server.
+- The file contains every artifact and every relationship of the compiled model; the page opens in an orientation state that renders none of the artifact content and no artifact-level graph, and completeness of the file is therefore independent of what is displayed at any moment.
 - The page records the model revision it was generated from.
-- The canonical model is untouched; the snapshot is a derived, regenerable projection and never
-  authoritative.
+- The canonical model is untouched; the snapshot is a derived, regenerable projection and never authoritative.
 
 ### UC-SNAPSHOT-EXPLORE-001 — Explore the product through a snapshot page
 
 ## Goal
 
-A person with only a browser understands the product deeply from a Product Snapshot: what it does,
-for whom, under which rules and in which language — including the connections between artifacts
-that make the definition a graph rather than a pile of documents. They reach that understanding
-through the Product Explorer's four surfaces: orienting on the Overview, locating artifacts through
-the Catalog, reading them in the Artifact Reader, and traversing relationships through the Focused
-Topology — with every artifact and canonical relationship reachable, and nothing ever rendered all
-at once.
+A person with only a browser understands the product deeply from a Product Snapshot: what it does, for whom, under which rules and in which language — including the connections between artifacts that make the definition a graph rather than a pile of documents. They reach that understanding through the Product Explorer's four surfaces: orienting on the Overview, locating artifacts through the Catalog, reading them in the Artifact Reader, and traversing relationships through the Focused Topology — with every artifact and canonical relationship reachable, and nothing ever rendered all at once.
 
 ## Trigger
 
-The Product Explorer receives or opens a Product Snapshot — a file someone shared, or a page their
-team publishes at a stable address.
+The Product Explorer receives or opens a Product Snapshot — a file someone shared, or a page their team publishes at a stable address.
 
 ## Preconditions
 
@@ -679,68 +371,37 @@ team publishes at a stable address.
 ## Main Flow
 
 1. The explorer opens the snapshot in a browser; no installation, account or server is involved.
-2. They are oriented on the **Overview**: which product and which model revision this reflects, how
-   many artifacts and relationships the model holds, how the artifacts divide by kind with an entry
-   point into each family, that the page is a generated read-only projection, and how the kinds
-   relate to one another in aggregate. Global search is one gesture away. No artifact content and
-   no artifact-level graph is displayed.
-3. They locate an artifact through the **Catalog**: searching by identifier, title or content, or
-   browsing an artifact family and narrowing it by canonical fields. The result set is
-   deterministic and its address shareable.
-4. They open an artifact in the **Reader**. Its identity, type, status, metadata and authored
-   content dominate the surface; the Catalog's query and filters survive for their return.
-5. They read the artifact's canonical relationships in the Reader, grouped by their actual meaning,
-   incoming distinguished from outgoing where direction matters, every group carrying its complete
-   count, every related artifact's name and identifier a step away.
-6. When they want to see rather than read a neighbourhood, they open the **Focused Topology**: the
-   selected artifact as focus, its immediate relationships grouped and counted, collapsed groups
-   showing complete counts, expansion only on their deliberate action.
-7. They follow a relationship — from the Reader or from the projection — and the related artifact
-   becomes the new focus everywhere: the Reader shows it, the projection refocuses on it rather
-   than accumulating, and Back returns to where they were with their context intact.
-8. They repeat from any surface as far as their question requires; at every step the address
-   reflects where they are, so any state can be shared and reopened.
-9. They note the model revision the snapshot reflects, and can hand anyone a link that reopens the
-   page on the artifact they were reading.
+2. They are oriented on the **Overview**: which product and which model revision this reflects, how many artifacts and relationships the model holds, how the artifacts divide by kind with an entry point into each family, that the page is a generated read-only projection, and how the kinds relate to one another in aggregate. Global search is one gesture away. No artifact content and no artifact-level graph is displayed.
+3. They locate an artifact through the **Catalog**: searching by identifier, title or content, or browsing an artifact family and narrowing it by canonical fields. The result set is deterministic and its address shareable.
+4. They open an artifact in the **Reader**. Its identity, type, status, metadata and authored content dominate the surface; the Catalog's query and filters survive for their return.
+5. They read the artifact's canonical relationships in the Reader, grouped by their actual meaning, incoming distinguished from outgoing where direction matters, every group carrying its complete count, every related artifact's name and identifier a step away.
+6. When they want to see rather than read a neighbourhood, they open the **Focused Topology**: the selected artifact as focus, its immediate relationships grouped and counted, collapsed groups showing complete counts, expansion only on their deliberate action.
+7. They follow a relationship — from the Reader or from the projection — and the related artifact becomes the new focus everywhere: the Reader shows it, the projection refocuses on it rather than accumulating, and Back returns to where they were with their context intact.
+8. They repeat from any surface as far as their question requires; at every step the address reflects where they are, so any state can be shared and reopened.
+9. They note the model revision the snapshot reflects, and can hand anyone a link that reopens the page on the artifact they were reading.
 
 ## Alternative Flows
 
-- Deep link arrival: the explorer opens a link addressing one artifact and starts in the Reader,
-  with the Overview one step away.
-- Retracing: Back and Forward move through the surfaces, selections and discovery states they have
-  already visited.
-- Unknown identifier: the link names an artifact this snapshot does not contain. The page says so
-  plainly, names the identifier, and offers orientation and search as ways forward.
-- Older link: a bare-identifier fragment from an earlier snapshot resolves to its artifact, and the
-  address quietly becomes the current one without an extra history entry.
-- Unconnected artifact: the explorer notices the Overview's group of artifacts holding no
-  relationships, reads it as the fact it is, and opens one directly.
-- Heavily connected artifact: the focus has far more relationships than can be read at once. Every
-  group shows its complete count, and the explorer expands only what they care about; where a set
-  is too dense to draw legibly, it is presented as a structured list.
-- Isolated artifact: both directions report that there are no relationships, and the artifact reads
-  normally.
-- Narrow viewport: the Catalog and the Reader become distinct navigable states rather than a
-  compressed desktop layout.
-- Search finds nothing: the page says so and names the query; clearing it returns to browsing
-  without losing the selected artifact.
+- Deep link arrival: the explorer opens a link addressing one artifact and starts in the Reader, with the Overview one step away.
+- Retracing: Back and Forward move through the surfaces, selections and discovery states they have already visited.
+- Unknown identifier: the link names an artifact this snapshot does not contain. The page says so plainly, names the identifier, and offers orientation and search as ways forward.
+- Older link: a bare-identifier fragment from an earlier snapshot resolves to its artifact, and the address quietly becomes the current one without an extra history entry.
+- Unconnected artifact: the explorer notices the Overview's group of artifacts holding no relationships, reads it as the fact it is, and opens one directly.
+- Heavily connected artifact: the focus has far more relationships than can be read at once. Every group shows its complete count, and the explorer expands only what they care about; where a set is too dense to draw legibly, it is presented as a structured list.
+- Isolated artifact: both directions report that there are no relationships, and the artifact reads normally.
+- Narrow viewport: the Catalog and the Reader become distinct navigable states rather than a compressed desktop layout.
+- Search finds nothing: the page says so and names the query; clearing it returns to browsing without losing the selected artifact.
 
 ## Failure Conditions
 
-- None significant within the page: exploration is read-only. Anything the explorer cannot learn
-  from the snapshot — history, active changes, open discussion — belongs to the repository side and
-  its actors.
+- None significant within the page: exploration is read-only. Anything the explorer cannot learn from the snapshot — history, active changes, open discussion — belongs to the repository side and its actors.
 
 ## Postconditions
 
-- The explorer has understood the product at the depth the canonical model records, without
-  cloning, installing or reading raw Markdown, and without ever having been shown the whole corpus
-  or the whole graph at once.
-- Every artifact and every canonical relationship in the model was reachable to them, through more
-  than one surface.
+- The explorer has understood the product at the depth the canonical model records, without cloning, installing or reading raw Markdown, and without ever having been shown the whole corpus or the whole graph at once.
+- Every artifact and every canonical relationship in the model was reachable to them, through more than one surface.
 - The state they were exploring is addressable, so the same view can be reopened or shared.
-- No product knowledge was created, modified or approved: the snapshot offered no such capability,
-  and nothing the explorer did was persisted anywhere.
+- No product knowledge was created, modified or approved: the snapshot offered no such capability, and nothing the explorer did was persisted anywhere.
 
 ## Governing rules
 
@@ -748,30 +409,17 @@ team publishes at a stable address.
 
 ## Rule
 
-The authored files under the product root — Markdown product artifacts and authored delivery-slice
-YAML — are the single source of truth for product knowledge; every product graph, index, diagram,
-handoff and context document is derived from them and MUST be reproducible from them at any time.
+The authored files under the product root — Markdown product artifacts and authored delivery-slice YAML — are the single source of truth for product knowledge; every product graph, index, diagram, handoff and context document is derived from them and MUST be reproducible from them at any time.
 
 ## Rationale
 
-A product definition only stays trustworthy if there is exactly one place where knowledge lives.
-The moment a generated index, diagram or handoff can hold knowledge that the authored artifacts do
-not, the two drift apart and nobody can say which one is right. Keeping authored artifacts
-canonical means reviews, diffs and Git history always operate on the real product definition, and
-derived outputs can be deleted, regenerated or reformatted freely without any loss of meaning. It
-also keeps AI assistance safe: an assistant may draft canonical files for a human to review, but
-nothing an assistant or a tool generates downstream can silently become authoritative.
+A product definition only stays trustworthy if there is exactly one place where knowledge lives. The moment a generated index, diagram or handoff can hold knowledge that the authored artifacts do not, the two drift apart and nobody can say which one is right. Keeping authored artifacts canonical means reviews, diffs and Git history always operate on the real product definition, and derived outputs can be deleted, regenerated or reformatted freely without any loss of meaning. It also keeps AI assistance safe: an assistant may draft canonical files for a human to review, but nothing an assistant or a tool generates downstream can silently become authoritative.
 
 ## Examples
 
-- A team member edits a generated managed file to "fix" a description. `prodshape doctor`
-  detects the manual modification and reports it; the fix belongs in the authored artifact, after
-  which regeneration reproduces the corrected output.
-- All generated output — the compiled product graph, reverse indexes, diagrams, product-context
-  documents — is deleted from a working copy. Nothing is lost: a single rebuild from the authored
-  artifacts restores every derived file identically.
-- A Product Handoff becomes stale because an authored artifact changed. The handoff is regenerated
-  from the canonical files; the handoff itself is never hand-patched to match.
+- A team member edits a generated managed file to "fix" a description. `prodshape doctor` detects the manual modification and reports it; the fix belongs in the authored artifact, after which regeneration reproduces the corrected output.
+- All generated output — the compiled product graph, reverse indexes, diagrams, product-context documents — is deleted from a working copy. Nothing is lost: a single rebuild from the authored artifacts restores every derived file identically.
+- A Product Handoff becomes stale because an authored artifact changed. The handoff is regenerated from the canonical files; the handoff itself is never hand-patched to match.
 
 ## Exceptions
 
@@ -781,29 +429,18 @@ None.
 
 ## Rule
 
-Every product artifact is identified and referenced exclusively through its stable, immutable
-artifact ID; file paths, file names, titles and generated locations do not define identity, and an
-ID once assigned MUST never be reused for a different artifact.
+Every product artifact is identified and referenced exclusively through its stable, immutable artifact ID; file paths, file names, titles and generated locations do not define identity, and an ID once assigned MUST never be reused for a different artifact.
 
 ## Rationale
 
-Product knowledge outlives any particular file layout. Teams reorganise folders, rename files and
-retitle artifacts as understanding improves; none of that should break traceability. Anchoring
-identity in the ID lets every relationship — governed-by, defined-in, derived-from, handoff
-references — survive reorganisation untouched, and lets Product Changes and Product Handoffs refer
-to artifacts across time without ambiguity. Forbidding ID reuse protects history: a retired ID
-still means what it always meant, so old changes, slices and handoffs remain readable years later.
+Product knowledge outlives any particular file layout. Teams reorganise folders, rename files and retitle artifacts as understanding improves; none of that should break traceability. Anchoring identity in the ID lets every relationship — governed-by, defined-in, derived-from, handoff references — survive reorganisation untouched, and lets Product Changes and Product Handoffs refer to artifacts across time without ambiguity. Forbidding ID reuse protects history: a retired ID still means what it always meant, so old changes, slices and handoffs remain readable years later.
 
 ## Examples
 
-- A domain-term file is moved and renamed during a folder cleanup. Every reference to its ID keeps
-  resolving; validation reports no broken relationships, because nothing about identity changed.
-- A file whose name no longer matches its artifact ID is at most a warning from validation — a
-  housekeeping nudge, never an identity error.
-- An author retires `TERM-PRODUCT-SNAPSHOT` and later wants to introduce a new, unrelated concept
-  under the same ID. Validation rejects the reuse; the new concept receives a fresh ID.
-- A use case references a business rule as `governed-by: BR-CANONICAL-001`, never by the rule's
-  title or file path.
+- A domain-term file is moved and renamed during a folder cleanup. Every reference to its ID keeps resolving; validation reports no broken relationships, because nothing about identity changed.
+- A file whose name no longer matches its artifact ID is at most a warning from validation — a housekeeping nudge, never an identity error.
+- An author retires `TERM-PRODUCT-SNAPSHOT` and later wants to introduce a new, unrelated concept under the same ID. Validation rejects the reuse; the new concept receives a fresh ID.
+- A use case references a business rule as `governed-by: BR-CANONICAL-001`, never by the rule's title or file path.
 
 ## Exceptions
 
@@ -815,288 +452,149 @@ None.
 
 ## Responsibility
 
-The language of describing and evolving a product as code: what a product artifact is, how
-identity works, how artifacts relate to form the product graph, what the current product model
-contains, how Product Changes propose evolution as overlays, and how deterministic validation
-keeps all of it structurally sound. Everything that decides what the product definition means —
-and how that meaning changes over time — belongs here.
+The language of describing and evolving a product as code: what a product artifact is, how identity works, how artifacts relate to form the product graph, what the current product model contains, how Product Changes propose evolution as overlays, and how deterministic validation keeps all of it structurally sound. Everything that decides what the product definition means — and how that meaning changes over time — belongs here.
 
 ## Language
 
-Speech in this context is about knowledge and its evolution, not about delivery. Its core words
-are artifact, identity, canonical, derived, graph, baseline, overlay, change, promotion,
-diagnostic and validation. "Change" here always means a Product Change — a versioned semantic
-delta with future-state artifacts — never a Git commit or a work item. "Valid" always means
-deterministically checked against the published contracts, never a matter of judgment.
+Speech in this context is about knowledge and its evolution, not about delivery. Its core words are artifact, identity, canonical, derived, graph, baseline, overlay, change, promotion, diagnostic and validation. "Change" here always means a Product Change — a versioned semantic delta with future-state artifacts — never a Git commit or a work item. "Valid" always means deterministically checked against the published contracts, never a matter of judgment.
 
 ## Boundaries
 
-Outside this context lie: the projection of product knowledge into delivery (slices, handoffs,
-context documents, coverage and staleness), which belongs to Delivery Integration; SDD
-frameworks' own specification and task workflows; backlog tools and their items; and source-code
-structure — bounded contexts here are product-language boundaries, never implementation modules.
-This context defines what changes mean; it does not schedule, assign or implement them.
+Outside this context lie: the projection of product knowledge into delivery (slices, handoffs, context documents, coverage and staleness), which belongs to Delivery Integration; SDD frameworks' own specification and task workflows; backlog tools and their items; and source-code structure — bounded contexts here are product-language boundaries, never implementation modules. This context defines what changes mean; it does not schedule, assign or implement them.
 
 ## External Relationships
 
-Delivery Integration is the sole downstream consumer of this context's output: approved Product
-Changes and the current product model cross the boundary to be carved into slices and packaged
-into handoffs. Feedback flows back across the same boundary — questions and contradictions
-discovered during delivery return as open questions on the originating Product Change, where they
-are resolved in this context's terms. Version control underlies the context as the provenance and
-history mechanism, but carries no product semantics of its own.
+Delivery Integration is the sole downstream consumer of this context's output: approved Product Changes and the current product model cross the boundary to be carved into slices and packaged into handoffs. Feedback flows back across the same boundary — questions and contradictions discovered during delivery return as open questions on the originating Product Change, where they are resolved in this context's terms. Version control underlies the context as the provenance and history mechanism, but carries no product semantics of its own.
 
 ### TERM-CURRENT-PRODUCT-MODEL — Current Product Model
 
 ## Definition
 
-The set of product artifacts under the model area of the product root, describing the product as
-currently defined — behaviour that is implemented and accepted. It is called the baseline when a
-Product Change is validated against it: the fixed reference state that overlay validation applies
-a change's operations to without modifying it.
+The set of product artifacts under the model area of the product root, describing the product as currently defined — behaviour that is implemented and accepted. It is called the baseline when a Product Change is validated against it: the fixed reference state that overlay validation applies a change's operations to without modifying it.
 
 ## Distinguish From
 
-- **Proposed future-state artifacts inside a Product Change.** Those describe what an artifact
-  would become if the change were promoted. Until promotion, they are proposals; the current
-  product model contains only accepted knowledge.
-- **The product graph.** The graph is a derived view compiled from the current product model (or
-  from an overlay). The model is the authored files; the graph can always be rebuilt from them.
-- **The repository.** The repository also holds changes, slices, handoffs, templates and
-  generated output. The current product model is only the accepted artifact set, not everything
-  under version control.
+- **Proposed future-state artifacts inside a Product Change.** Those describe what an artifact would become if the change were promoted. Until promotion, they are proposals; the current product model contains only accepted knowledge.
+- **The product graph.** The graph is a derived view compiled from the current product model (or from an overlay). The model is the authored files; the graph can always be rebuilt from them.
+- **The repository.** The repository also holds changes, slices, handoffs, templates and generated output. The current product model is only the accepted artifact set, not everything under version control.
 
 ## Usage
 
-The current product model is what `prodshape validate` checks when no change is in
-scope, the baseline that every overlay is applied to, the source from which Product Handoffs
-package subgraphs, and the reference against which handoff staleness is judged. Promotion is
-defined as the only operation, after the initial bootstrap, that modifies it.
+The current product model is what `prodshape validate` checks when no change is in scope, the baseline that every overlay is applied to, the source from which Product Handoffs package subgraphs, and the reference against which handoff staleness is judged. Promotion is defined as the only operation, after the initial bootstrap, that modifies it.
 
 ### TERM-FOCUSED-TOPOLOGY — Focused Topology
 
 ## Definition
 
-The Product Explorer's visual relationship projection: local, bounded and progressive. The selected
-artifact is the focus; its immediate canonical relationships appear grouped by relationship meaning
-and, where useful, by artifact type; collapsed groups always expose their complete count; and the
-reader deliberately expands a group or follows a path. Selecting another artifact produces a newly
-focused projection rather than accumulating the whole traversal indefinitely.
+The Product Explorer's visual relationship projection: local, bounded and progressive. The selected artifact is the focus; its immediate canonical relationships appear grouped by relationship meaning and, where useful, by artifact type; collapsed groups always expose their complete count; and the reader deliberately expands a group or follows a path. Selecting another artifact produces a newly focused projection rather than accumulating the whole traversal indefinitely.
 
-Three properties bound it. It is **local**: it projects the neighbourhood of one focus, never the
-whole product. It is **bounded**: what it shows at any moment is limited, and everything it holds
-back is counted rather than silently omitted. It is **progressive**: detail appears because the
-reader asked, and dense relationship sets fall back to structured lists or another legible
-representation rather than to a denser drawing.
+Three properties bound it. It is **local**: it projects the neighbourhood of one focus, never the whole product. It is **bounded**: what it shows at any moment is limited, and everything it holds back is counted rather than silently omitted. It is **progressive**: detail appears because the reader asked, and dense relationship sets fall back to structured lists or another legible representation rather than to a denser drawing.
 
 ## Distinguish From
 
-- **A whole-graph drawing.** The Focused Topology never renders every artifact and every
-  relationship, at any scale, through any control. Breadth belongs to the Overview's aggregate and
-  the Catalog, not to a bigger picture.
-- **The relationship groups on the Artifact Reader.** The Reader presents the same canonical
-  relationships as text — grouped, counted, directed and navigable. The Focused Topology is the
-  visual form of that same information; neither adds an edge the other lacks, and the model can be
-  navigated as a graph entirely through the Reader without interpreting a node-link diagram.
-- **Structural impact analysis.** `prodshape impact` answers exhaustive reachability to a depth for
-  someone with the repository. The Focused Topology serves comprehension of one neighbourhood at a
-  time for someone without it.
+- **A whole-graph drawing.** The Focused Topology never renders every artifact and every relationship, at any scale, through any control. Breadth belongs to the Overview's aggregate and the Catalog, not to a bigger picture.
+- **The relationship groups on the Artifact Reader.** The Reader presents the same canonical relationships as text — grouped, counted, directed and navigable. The Focused Topology is the visual form of that same information; neither adds an edge the other lacks, and the model can be navigated as a graph entirely through the Reader without interpreting a node-link diagram.
+- **Structural impact analysis.** `prodshape impact` answers exhaustive reachability to a depth for someone with the repository. The Focused Topology serves comprehension of one neighbourhood at a time for someone without it.
 
 ## Usage
 
-The projection is deterministic for the same model, the same focus and the same explicit reader
-state. It draws only nodes, relationships and directions the compiled graph contains, and no visual
-device of it may invent lifecycle, maturity, importance, sequence, causality or dependency that is
-absent from the canonical relationships. Every related artifact it shows or counts remains
-reachable through expansion, the Reader, the Catalog, search and deep links.
+The projection is deterministic for the same model, the same focus and the same explicit reader state. It draws only nodes, relationships and directions the compiled graph contains, and no visual device of it may invent lifecycle, maturity, importance, sequence, causality or dependency that is absent from the canonical relationships. Every related artifact it shows or counts remains reachable through expansion, the Reader, the Catalog, search and deep links.
 
 ### TERM-GRAPH-PROJECTION — Graph Projection
 
 ## Definition
 
-One purpose-built rendering of the product graph — a subset of it, an aggregation of it, or a
-neighbourhood within it — chosen because it answers a specific reading question. A projection is
-defined by what it selects, what it aggregates, how it arranges what remains, and which question
-that arrangement serves. It never claims to be the graph.
+One purpose-built rendering of the product graph — a subset of it, an aggregation of it, or a neighbourhood within it — chosen because it answers a specific reading question. A projection is defined by what it selects, what it aggregates, how it arranges what remains, and which question that arrangement serves. It never claims to be the graph.
 
-Two projections serve distinct questions. The **kind-level aggregate** groups artifacts and
-relationships by kind, answering how the families of artifacts compose and trace to one another.
-The **Focused Topology** projects one selected artifact's immediate canonical relationships —
-locally, boundedly and progressively — answering what this artifact connects to and through what.
+Two projections serve distinct questions. The **kind-level aggregate** groups artifacts and relationships by kind, answering how the families of artifacts compose and trace to one another. The **Focused Topology** projects one selected artifact's immediate canonical relationships — locally, boundedly and progressively — answering what this artifact connects to and through what.
 
-There is deliberately no projection that draws the whole graph. Composition is answered better by
-aggregation, discovery by the Catalog, and an artifact's connections by focusing on it; a
-whole-graph drawing answers no question those leave open, and at any real scale it reproduces the
-illegibility that motivated projections in the first place.
+There is deliberately no projection that draws the whole graph. Composition is answered better by aggregation, discovery by the Catalog, and an artifact's connections by focusing on it; a whole-graph drawing answers no question those leave open, and at any real scale it reproduces the illegibility that motivated projections in the first place.
 
 ## Distinguish From
 
-- **The Product Graph.** The graph is the single derived structure compiled from the authored
-  artifacts: complete, typed and directed. A projection is a rendering decision made over that
-  structure. The graph has one definition; projections are plural by design, because no single
-  arrangement answers every question.
-- **A Product Snapshot.** The snapshot is the generated file that carries the projections along
-  with the artifact content and the search index. The projections are what the snapshot shows; the
-  snapshot is what a reader is given.
-- **A diagram of the model.** A diagram is one drawing, usually of everything, and is judged by how
-  faithfully it reproduces the structure. A projection is judged by whether it answers its
-  question, which routinely means deliberately omitting or aggregating structure that a faithful
-  drawing would include.
-- **A filter or a query.** Filtering narrows what a reader sees within a projection. The projection
-  is the prior decision about what to select, aggregate and arrange at all.
+- **The Product Graph.** The graph is the single derived structure compiled from the authored artifacts: complete, typed and directed. A projection is a rendering decision made over that structure. The graph has one definition; projections are plural by design, because no single arrangement answers every question.
+- **A Product Snapshot.** The snapshot is the generated file that carries the projections along with the artifact content and the search index. The projections are what the snapshot shows; the snapshot is what a reader is given.
+- **A diagram of the model.** A diagram is one drawing, usually of everything, and is judged by how faithfully it reproduces the structure. A projection is judged by whether it answers its question, which routinely means deliberately omitting or aggregating structure that a faithful drawing would include.
+- **A filter or a query.** Filtering narrows what a reader sees within a projection. The projection is the prior decision about what to select, aggregate and arrange at all.
 
 ## Usage
 
-A projection never invents structure: every node, every relationship and every direction it shows
-comes from the compiled graph, and no projection may imply importance, health, ownership, ordering,
-lifecycle, sequence, causality or dependency the model does not record. Aggregation is allowed and
-is the point of the kind-level aggregate; fabrication is not. Because the same product content must
-always produce the same reading, a projection is deterministic for the same model and the same
-explicit reader state.
+A projection never invents structure: every node, every relationship and every direction it shows comes from the compiled graph, and no projection may imply importance, health, ownership, ordering, lifecycle, sequence, causality or dependency the model does not record. Aggregation is allowed and is the point of the kind-level aggregate; fabrication is not. Because the same product content must always produce the same reading, a projection is deterministic for the same model and the same explicit reader state.
 
-Every projection has an equivalent that needs no visual: the relationships the Focused Topology
-draws are always also readable as grouped, counted, directed text on the Artifact Reader, so
-nothing a projection communicates depends on seeing it.
+Every projection has an equivalent that needs no visual: the relationships the Focused Topology draws are always also readable as grouped, counted, directed text on the Artifact Reader, so nothing a projection communicates depends on seeing it.
 
 ### TERM-PRODUCT-ARTIFACT — Product Artifact
 
 ## Definition
 
-An independently addressable unit of product knowledge carrying a stable immutable ID: an Actor,
-Journey, Use Case, Business Rule, Domain Term, Bounded Context, Functional Requirement, Quality
-Requirement or Constraint. Each product artifact is an authored Markdown file with typed YAML
-frontmatter and required body sections, lives in the current product model, and participates in
-the product graph through canonical relationships declared in its frontmatter.
+An independently addressable unit of product knowledge carrying a stable immutable ID: an Actor, Journey, Use Case, Business Rule, Domain Term, Bounded Context, Functional Requirement, Quality Requirement or Constraint. Each product artifact is an authored Markdown file with typed YAML frontmatter and required body sections, lives in the current product model, and participates in the product graph through canonical relationships declared in its frontmatter.
 
 ## Distinguish From
 
-- **Product Change and Delivery Slice.** Both carry stable IDs and are validated by the same
-  toolchain, but neither is a product artifact: they describe evolution and delivery of the model
-  rather than the model itself, and they follow their own lifecycles, not the artifact lifecycle.
-- **Generated outputs.** Compiled graphs, reverse indexes, diagrams, handoffs and context
-  documents may render artifact content, but they are derived and reproducible; only the authored
-  file is the artifact.
-- **A file.** The artifact is the identified unit of knowledge; the file is merely its current
-  storage location. Moving or renaming the file does not create or destroy an artifact.
+- **Product Change and Delivery Slice.** Both carry stable IDs and are validated by the same toolchain, but neither is a product artifact: they describe evolution and delivery of the model rather than the model itself, and they follow their own lifecycles, not the artifact lifecycle.
+- **Generated outputs.** Compiled graphs, reverse indexes, diagrams, handoffs and context documents may render artifact content, but they are derived and reproducible; only the authored file is the artifact.
+- **A file.** The artifact is the identified unit of knowledge; the file is merely its current storage location. Moving or renaming the file does not create or destroy an artifact.
 
 ## Usage
 
-Product artifacts are what `prodshape validate` checks, what the graph compiler turns
-into nodes, what Product Changes add, modify or remove, and what Product Handoffs reference by ID
-and digest. When the methodology says "artifact" without qualification, it means a product
-artifact in the current product model.
+Product artifacts are what `prodshape validate` checks, what the graph compiler turns into nodes, what Product Changes add, modify or remove, and what Product Handoffs reference by ID and digest. When the methodology says "artifact" without qualification, it means a product artifact in the current product model.
 
 ### TERM-PRODUCT-EXPLORER — Product Explorer
 
 ## Definition
 
-The Product Snapshot's exploration experience: four coordinated surfaces through which a reader
-understands the complete product model — an **Overview** that communicates the aggregate shape, a
-**Catalog** for large-scale discovery through search, filters and browsing, an **Artifact Reader**
-in which the selected artifact and its canonical relationships dominate, and a **Focused Topology**
-that projects one artifact's relationship neighbourhood visually, locally and progressively.
+The Product Snapshot's exploration experience: four coordinated surfaces through which a reader understands the complete product model — an **Overview** that communicates the aggregate shape, a **Catalog** for large-scale discovery through search, filters and browsing, an **Artifact Reader** in which the selected artifact and its canonical relationships dominate, and a **Focused Topology** that projects one artifact's relationship neighbourhood visually, locally and progressively.
 
-The Explorer exposes the complete product model through overview, search, catalogues, artifact
-reading and progressively disclosed relationship projections. **Completeness means that every
-artifact and canonical relationship is reachable — not that every node is simultaneously
-rendered.** No surface draws the whole product at once, and no surface needs to.
+The Explorer exposes the complete product model through overview, search, catalogues, artifact reading and progressively disclosed relationship projections. **Completeness means that every artifact and canonical relationship is reachable — not that every node is simultaneously rendered.** No surface draws the whole product at once, and no surface needs to.
 
-The four surfaces are one instrument: they share one selection state, one navigation mechanism and
-one addressable exploration state, so moving between them never loses the reader's place.
+The four surfaces are one instrument: they share one selection state, one navigation mechanism and one addressable exploration state, so moving between them never loses the reader's place.
 
 ## Distinguish From
 
-- **A whole-product canvas.** The Explorer has no surface whose job is to render every artifact
-  simultaneously, no globally stable node positions to memorize, and no navigation that depends on
-  interpreting a dense node-link diagram. Reachability, not simultaneous visibility, is its
-  completeness claim.
-- **A Graph Projection.** A projection is one purpose-built rendering of part of the graph. The
-  Explorer is the whole experience; two of its parts — the kind-level aggregate and the Focused
-  Topology — are projections.
-- **The Product Snapshot.** The snapshot is the generated file; the Explorer is what opening it is
-  like. The file carries the model completely; the Explorer discloses it progressively.
-- **An editor or platform.** The Explorer is read-only. Product knowledge evolves through the
-  Product Change workflow, never through the snapshot.
+- **A whole-product canvas.** The Explorer has no surface whose job is to render every artifact simultaneously, no globally stable node positions to memorize, and no navigation that depends on interpreting a dense node-link diagram. Reachability, not simultaneous visibility, is its completeness claim.
+- **A Graph Projection.** A projection is one purpose-built rendering of part of the graph. The Explorer is the whole experience; two of its parts — the kind-level aggregate and the Focused Topology — are projections.
+- **The Product Snapshot.** The snapshot is the generated file; the Explorer is what opening it is like. The file carries the model completely; the Explorer discloses it progressively.
+- **An editor or platform.** The Explorer is read-only. Product knowledge evolves through the Product Change workflow, never through the snapshot.
 
 ## Usage
 
-The Explorer opens on the Overview. A reader locates artifacts through the Catalog, reads them in
-the Reader, and traverses relationships either as text in the Reader or visually through the
-Focused Topology — whichever serves the question. Every artifact and every canonical relationship
-is reachable through more than one of these routes, so nothing the model records depends on any
-single surface being usable.
+The Explorer opens on the Overview. A reader locates artifacts through the Catalog, reads them in the Reader, and traverses relationships either as text in the Reader or visually through the Focused Topology — whichever serves the question. Every artifact and every canonical relationship is reachable through more than one of these routes, so nothing the model records depends on any single surface being usable.
 
 ### TERM-PRODUCT-GRAPH — Product Graph
 
 ## Definition
 
-The derived directed graph whose nodes are product artifacts and whose typed edges are the
-canonical relationships declared in artifact frontmatter, together with the reverse indexes
-computed from them. The graph is compiled from the authored files on demand and is the structure
-over which reachability, structural impact and reference validation are computed.
+The derived directed graph whose nodes are product artifacts and whose typed edges are the canonical relationships declared in artifact frontmatter, together with the reverse indexes computed from them. The graph is compiled from the authored files on demand and is the structure over which reachability, structural impact and reference validation are computed.
 
 ## Distinguish From
 
-- **A graph database.** The product graph is explicitly not a database or a stored system of
-  record. It is a compilation result: rebuild it whenever needed, discard it freely, and expect
-  the same graph from the same files every time.
-- **The artifact files themselves.** The files are canonical; the graph is derived from them.
-  Nothing may be authored "in the graph" — an edge exists only because some artifact's
-  frontmatter declares the canonical direction of that relationship.
-- **A diagram.** Diagrams are one rendering of the graph for humans. The graph itself is the
-  typed structure that tooling traverses, whether or not anything is drawn.
+- **A graph database.** The product graph is explicitly not a database or a stored system of record. It is a compilation result: rebuild it whenever needed, discard it freely, and expect the same graph from the same files every time.
+- **The artifact files themselves.** The files are canonical; the graph is derived from them. Nothing may be authored "in the graph" — an edge exists only because some artifact's frontmatter declares the canonical direction of that relationship.
+- **A diagram.** Diagrams are one rendering of the graph for humans. The graph itself is the typed structure that tooling traverses, whether or not anything is drawn.
 
 ## Usage
 
-The graph compiler builds the product graph during validation, inspection and handoff generation.
-Structural impact queries ("what is reachable from this artifact, in this direction, to this
-depth") and reachability diagnostics ("is this requirement connected to any actor") are answered
-by traversing it. Derived views such as a bounded context's owned terms are read from the graph,
-never from authored files.
+The graph compiler builds the product graph during validation, inspection and handoff generation. Structural impact queries ("what is reachable from this artifact, in this direction, to this depth") and reachability diagnostics ("is this requirement connected to any actor") are answered by traversing it. Derived views such as a bounded context's owned terms are read from the graph, never from authored files.
 
 ### TERM-PRODUCT-SNAPSHOT — Product Snapshot
 
 ## Definition
 
-A generated, read-only, self-contained projection of the product graph at a recorded source
-revision — one HTML file containing every artifact, its relationships in both directions, a search
-index and the graph projections, explorable in a browser with no repository, tooling or server.
+A generated, read-only, self-contained projection of the product graph at a recorded source revision — one HTML file containing every artifact, its relationships in both directions, a search index and the graph projections, explorable in a browser with no repository, tooling or server.
 
-Completeness is a property of the file, not of the display: the snapshot holds the whole model and
-makes all of it reachable, while presenting it progressively through the Product Explorer — an
-orientation view first, discovery through the Catalog, one selected artifact at a time in the
-Reader, and relationship neighbourhoods only when the reader asks. A snapshot is derived and
-regenerable at any time; it is read-only by nature — there is nothing on it to edit and it retains
-nothing the reader does — and it is never authoritative.
+Completeness is a property of the file, not of the display: the snapshot holds the whole model and makes all of it reachable, while presenting it progressively through the Product Explorer — an orientation view first, discovery through the Catalog, one selected artifact at a time in the Reader, and relationship neighbourhoods only when the reader asks. A snapshot is derived and regenerable at any time; it is read-only by nature — there is nothing on it to edit and it retains nothing the reader does — and it is never authoritative.
 
 ## Distinguish From
 
-- **The Product Graph.** The graph is the derived structure the toolkit computes and reasons over;
-  the snapshot is a set of renderings of that structure for human exploration. The graph exists for
-  tools and validation, the snapshot for people without the repository.
-- **A Graph Projection.** A projection is one purpose-built rendering of part or an aggregation of
-  the graph. The snapshot is the file that carries the projections — the kind-level aggregate and
-  the Focused Topology — and never treats either as the universal view.
-- **A Product Handoff.** Both record the source revision they were generated from, so staleness is
-  deterministically answerable. But a handoff packages the subgraph one delivery increment needs,
-  for consumption by an SDD framework; a snapshot projects the whole model, for consumption by a
-  person.
-- **The Product Context document.** Also a generated readable projection — but scoped to one
-  handoff and rendered as prose for a delivery reader. The snapshot covers the entire model and is
-  navigational rather than linear.
-- **A web application.** A snapshot involves no server, no database, no session, no stored state
-  and no editing; it is a file. Its interactivity only chooses which of its own embedded content is
-  displayed. The product's constraints continue to forbid interactive web applications.
+- **The Product Graph.** The graph is the derived structure the toolkit computes and reasons over; the snapshot is a set of renderings of that structure for human exploration. The graph exists for tools and validation, the snapshot for people without the repository.
+- **A Graph Projection.** A projection is one purpose-built rendering of part or an aggregation of the graph. The snapshot is the file that carries the projections — the kind-level aggregate and the Focused Topology — and never treats either as the universal view.
+- **A Product Handoff.** Both record the source revision they were generated from, so staleness is deterministically answerable. But a handoff packages the subgraph one delivery increment needs, for consumption by an SDD framework; a snapshot projects the whole model, for consumption by a person.
+- **The Product Context document.** Also a generated readable projection — but scoped to one handoff and rendered as prose for a delivery reader. The snapshot covers the entire model and is navigational rather than linear.
+- **A web application.** A snapshot involves no server, no database, no session, no stored state and no editing; it is a file. Its interactivity only chooses which of its own embedded content is displayed. The product's constraints continue to forbid interactive web applications.
 
 ## Usage
 
-The graph command's HTML format (`prodshape graph --format html`) generates a Product Snapshot from
-the current model, stamping the source revision into the page. The Product Explorer's journey is
-built on it: it is the artifact that crosses the boundary between the repository and the people who
-will never open one. Its recorded revision is how anyone judges whether a shared snapshot still
-reflects the current model — the same currency question Product Handoffs answer with the same
-mechanism. Because the artifact a reader has selected is addressable within the file, a snapshot is
-also how one person points another at one specific part of the product definition.
+The graph command's HTML format (`prodshape graph --format html`) generates a Product Snapshot from the current model, stamping the source revision into the page. The Product Explorer's journey is built on it: it is the artifact that crosses the boundary between the repository and the people who will never open one. Its recorded revision is how anyone judges whether a shared snapshot still reflects the current model — the same currency question Product Handoffs answer with the same mechanism. Because the artifact a reader has selected is addressable within the file, a snapshot is also how one person points another at one specific part of the product definition.
 
 ## Constraints
 
@@ -1104,190 +602,91 @@ also how one person points another at one specific part of the product definitio
 
 ## Constraint
 
-The methodology is named "Product Definition as Code" and retains that name. Its reference
-implementation is publicly branded "ProductShape" — the name under which the toolkit is
-distributed and the public identity it presents. Public identity MUST keep the two distinct:
-"Product Definition as Code" names the ideas, the normative specification and the versioned
-contracts; "ProductShape" names the tool and the namespace under which it ships. No public-facing
-surface may present ProductShape as the methodology or "Product Definition as Code" as a product
-name, and the reference implementation MUST NOT ship publicly without this settled brand. The
-concrete distribution identifiers chosen for ProductShape are recorded in the adopting Product
-Change and realized in implementation; this constraint fixes the policy, not the mechanics.
+The methodology is named "Product Definition as Code" and retains that name. Its reference implementation is publicly branded "ProductShape" — the name under which the toolkit is distributed and the public identity it presents. Public identity MUST keep the two distinct: "Product Definition as Code" names the ideas, the normative specification and the versioned contracts; "ProductShape" names the tool and the namespace under which it ships. No public-facing surface may present ProductShape as the methodology or "Product Definition as Code" as a product name, and the reference implementation MUST NOT ship publicly without this settled brand. The concrete distribution identifiers chosen for ProductShape are recorded in the adopting Product Change and realized in implementation; this constraint fixes the policy, not the mechanics.
 
 ## Rationale
 
-A methodology and an implementation of it are different things with different lifecycles and
-audiences. The methodology is a set of ideas and a specification that could be implemented more
-than once; the reference implementation is one shipped toolkit that must claim a brand, a package
-namespace and a release channel to exist publicly. Fixing the brand as a distinct layer above the
-methodology name lets the tool carry a memorable public identity — which shipping requires —
-without binding the methodology's contracts to it, and keeps either free to evolve without dragging
-the other. It settles, deliberately and on the record, a naming decision that was left open
-precisely so it would not harden into an accidental brand at first publish.
+A methodology and an implementation of it are different things with different lifecycles and audiences. The methodology is a set of ideas and a specification that could be implemented more than once; the reference implementation is one shipped toolkit that must claim a brand, a package namespace and a release channel to exist publicly. Fixing the brand as a distinct layer above the methodology name lets the tool carry a memorable public identity — which shipping requires — without binding the methodology's contracts to it, and keeps either free to evolve without dragging the other. It settles, deliberately and on the record, a naming decision that was left open precisely so it would not harden into an accidental brand at first publish.
 
 ## Consequences
 
-- Impossible: shipping the reference implementation publicly without a settled brand; presenting
-  "Product Definition as Code" as the name of a product; presenting "ProductShape" as the
-  methodology rather than as an implementation of it.
-- Harder: nothing structural — but the two-name discipline must be maintained wherever both names
-  appear, so documentation and public copy carry a small, permanent editorial obligation.
-- Mandatory: the public brand of the reference implementation is ProductShape; the methodology name
-  is used for the ideas, the specification and the contracts; and the distinction is made explicit
-  wherever a reader could otherwise conflate them.
+- Impossible: shipping the reference implementation publicly without a settled brand; presenting "Product Definition as Code" as the name of a product; presenting "ProductShape" as the methodology rather than as an implementation of it.
+- Harder: nothing structural — but the two-name discipline must be maintained wherever both names appear, so documentation and public copy carry a small, permanent editorial obligation.
+- Mandatory: the public brand of the reference implementation is ProductShape; the methodology name is used for the ideas, the specification and the contracts; and the distinction is made explicit wherever a reader could otherwise conflate them.
 
 ### CON-MARKDOWN-001 — Canonical product knowledge lives in authored files under version control
 
 ## Constraint
 
-All canonical product knowledge is expressed in authored Markdown and YAML files inside the
-repository, versioned by the repository's own version control. No database, service, wiki, tracker
-or any other external store holds product truth; anything outside the authored files is at most a
-derived, regenerable projection.
+All canonical product knowledge is expressed in authored Markdown and YAML files inside the repository, versioned by the repository's own version control. No database, service, wiki, tracker or any other external store holds product truth; anything outside the authored files is at most a derived, regenerable projection.
 
 ## Rationale
 
-This boundary is deliberately fixed by the methodology itself: "as code" is the founding premise.
-Product knowledge kept in files gains everything source code already has — diffs, reviews,
-branches, history, blame and offline access — and stays equally readable to humans and AI
-assistants without any intermediary system. The moment truth moves into an external store, the
-repository becomes a copy, copies drift, and the review-based change flow the methodology is built
-on loses its subject.
+This boundary is deliberately fixed by the methodology itself: "as code" is the founding premise. Product knowledge kept in files gains everything source code already has — diffs, reviews, branches, history, blame and offline access — and stays equally readable to humans and AI assistants without any intermediary system. The moment truth moves into an external store, the repository becomes a copy, copies drift, and the review-based change flow the methodology is built on loses its subject.
 
 ## Consequences
 
-- Impossible: querying or editing product truth through any system of record other than the
-  repository; a "live" product definition that differs from the committed files.
-- Harder: concurrent editing at scale and rich text or embedded media, which are limited to what
-  Markdown in a repository can express; large models must be navigated with tooling rather than a
-  database.
-- Mandatory: every knowledge change is a file change that travels through version control review;
-  all tooling reads and writes authored files; derived stores, caches and indexes must be
-  reproducible from the files at any time and can never be authoritative.
+- Impossible: querying or editing product truth through any system of record other than the repository; a "live" product definition that differs from the committed files.
+- Harder: concurrent editing at scale and rich text or embedded media, which are limited to what Markdown in a repository can express; large models must be navigated with tooling rather than a database.
+- Mandatory: every knowledge change is a file change that travels through version control review; all tooling reads and writes authored files; derived stores, caches and indexes must be reproducible from the files at any time and can never be authoritative.
 
 ### CON-NO-GRAPH-DATABASE — The product graph must not require a graph database
 
 ## Constraint
 
-The product graph is always derivable from the authored files by the toolkit alone. Neither
-authoring, validating, inspecting nor handing off product knowledge may require a graph database
-or any other running server; the graph exists as a regenerable artifact, never as a system that
-must be installed, operated or kept in sync.
+The product graph is always derivable from the authored files by the toolkit alone. Neither authoring, validating, inspecting nor handing off product knowledge may require a graph database or any other running server; the graph exists as a regenerable artifact, never as a system that must be installed, operated or kept in sync.
 
 ## Rationale
 
-The methodology must be adoptable by cloning a repository and running a command-line tool. Every
-piece of required infrastructure is an adoption tax and an operational liability: a graph database
-would need installation, upgrades, backups and synchronization with the files — and the instant it
-held anything the files did not, it would compete with them for truth. Keeping the graph a derived
-file preserves the canonical-source rule and keeps the whole toolkit runnable on a laptop, in CI
-and in an air-gapped environment alike.
+The methodology must be adoptable by cloning a repository and running a command-line tool. Every piece of required infrastructure is an adoption tax and an operational liability: a graph database would need installation, upgrades, backups and synchronization with the files — and the instant it held anything the files did not, it would compete with them for truth. Keeping the graph a derived file preserves the canonical-source rule and keeps the whole toolkit runnable on a laptop, in CI and in an air-gapped environment alike.
 
 ## Consequences
 
-- Impossible: any workflow that depends on a persistent graph service, live graph subscriptions,
-  or graph state that cannot be rebuilt from the repository.
-- Harder: ad-hoc graph queries are limited to what the tooling computes — inspection, impact
-  analysis and the generated graph output — rather than an open query language; very large graphs
-  are recompiled rather than incrementally served.
-- Mandatory: the toolkit must be able to rebuild the complete graph from the authored files at any
-  time, and adopters carry no server dependency of any kind for working with the product graph.
+- Impossible: any workflow that depends on a persistent graph service, live graph subscriptions, or graph state that cannot be rebuilt from the repository.
+- Harder: ad-hoc graph queries are limited to what the tooling computes — inspection, impact analysis and the generated graph output — rather than an open query language; very large graphs are recompiled rather than incrementally served.
+- Mandatory: the toolkit must be able to rebuild the complete graph from the authored files at any time, and adopters carry no server dependency of any kind for working with the product graph.
 
 ### CON-NO-WEB-UI — The product provides no interactive web application; static snapshot projections are permitted
 
 ## Constraint
 
-The product ships no interactive web application of any kind: no browser-based editor, no
-dashboard, no portal, no hosted or served surface through which product knowledge is created,
-modified or approved. The one permitted web-facing form is the Product Snapshot: a generated,
-self-contained, read-only projection of the product model, regenerable at any time from the authored
-files and never authoritative.
+The product ships no interactive web application of any kind: no browser-based editor, no dashboard, no portal, no hosted or served surface through which product knowledge is created, modified or approved. The one permitted web-facing form is the Product Snapshot: a generated, self-contained, read-only projection of the product model, regenerable at any time from the authored files and never authoritative.
 
-A Product Snapshot MAY behave as an application within the file it is. Client-side behaviour is
-permitted exactly to the extent that it only chooses which of the file's own already-embedded content
-is displayed — navigating, selecting, searching, filtering, expanding, arranging and rendering
-content the file already contains. Such a snapshot remains static in the sense this constraint means:
-it is a fixed artifact whose every possible state is determined by its own bytes.
+A Product Snapshot MAY behave as an application within the file it is. Client-side behaviour is permitted exactly to the extent that it only chooses which of the file's own already-embedded content is displayed — navigating, selecting, searching, filtering, expanding, arranging and rendering content the file already contains. Such a snapshot remains static in the sense this constraint means: it is a fixed artifact whose every possible state is determined by its own bytes.
 
-A Product Snapshot MUST NOT require a server or any runtime process; MUST NOT issue any network
-request or load any external script, stylesheet, font, image or data at open time or afterwards; MUST
-NOT persist anything outside the address of the current view — no browser storage, no cookies, no
-session, no database; MUST NOT accept input that becomes product knowledge; and MUST NOT offer any
-capability to create, modify, annotate, approve or promote anything. Accepting a search query or a
-selection is not accepting input in this sense: neither changes anything the file contains, and
-neither survives the reader closing it.
+A Product Snapshot MUST NOT require a server or any runtime process; MUST NOT issue any network request or load any external script, stylesheet, font, image or data at open time or afterwards; MUST NOT persist anything outside the address of the current view — no browser storage, no cookies, no session, no database; MUST NOT accept input that becomes product knowledge; and MUST NOT offer any capability to create, modify, annotate, approve or promote anything. Accepting a search query or a selection is not accepting input in this sense: neither changes anything the file contains, and neither survives the reader closing it.
 
-All authoring and evolution of the product definition happens through the authored files, the
-command-line tool and AI assistants operating on the repository.
+All authoring and evolution of the product definition happens through the authored files, the command-line tool and AI assistants operating on the repository.
 
 ## Rationale
 
-The original boundary deferred every web surface from v0.1 to keep the focus on the substance of
-the methodology, while stating the condition under which a web surface could ever arrive: as a
-projection over the same files and commands, never as a new home for product truth. The Product
-Snapshot satisfies that condition exactly — it is read-only by nature, involves no server, and
-holds nothing the authored files do not. The rule that matters is therefore not "no web" but "no
-interactive web application": a surface where product knowledge could be viewed and edited
-outside the files and their review flow remains exactly the pattern the methodology rejects,
-while a static projection extends the product's reach to people who will never clone a
-repository, without moving truth anywhere.
+The original boundary deferred every web surface from v0.1 to keep the focus on the substance of the methodology, while stating the condition under which a web surface could ever arrive: as a projection over the same files and commands, never as a new home for product truth. The Product Snapshot satisfies that condition exactly — it is read-only by nature, involves no server, and holds nothing the authored files do not. The rule that matters is therefore not "no web" but "no interactive web application": a surface where product knowledge could be viewed and edited outside the files and their review flow remains exactly the pattern the methodology rejects, while a static projection extends the product's reach to people who will never clone a repository, without moving truth anywhere.
 
-The boundary is stated in terms of what a snapshot may do rather than how interactive it may appear,
-because "static" is ambiguous once a page discloses its content progressively, and an ambiguous
-constraint is unenforceable. A snapshot that renders one artifact at a time from data it already
-carries is doing nothing a printed table of contents does not do; a snapshot that fetched an artifact,
-remembered a reader, or accepted an edit would be a different kind of thing entirely, whether or not
-it looked more or less interactive. The distinction that carries the methodology's intent is where
-knowledge lives and whether the file is self-sufficient — not how much script runs.
+The boundary is stated in terms of what a snapshot may do rather than how interactive it may appear, because "static" is ambiguous once a page discloses its content progressively, and an ambiguous constraint is unenforceable. A snapshot that renders one artifact at a time from data it already carries is doing nothing a printed table of contents does not do; a snapshot that fetched an artifact, remembered a reader, or accepted an edit would be a different kind of thing entirely, whether or not it looked more or less interactive. The distinction that carries the methodology's intent is where knowledge lives and whether the file is self-sufficient — not how much script runs.
 
-Refusing persistence is part of the same line. State the reader can see, copy and discard — held in
-the address of the current view — keeps the snapshot disposable and shareable. State the snapshot
-remembered on their behalf would be state the authored files do not have, which is where the drift
-this constraint exists to prevent begins.
+Refusing persistence is part of the same line. State the reader can see, copy and discard — held in the address of the current view — keeps the snapshot disposable and shareable. State the snapshot remembered on their behalf would be state the authored files do not have, which is where the drift this constraint exists to prevent begins.
 
 ## Consequences
 
-- Impossible: browsing, editing or approving product knowledge through a hosted or local web
-  application; any web surface that holds product state the authored files do not; a snapshot
-  that accepts input that becomes product knowledge, requires a server or a build step to open,
-  fetches remote resources to function, or stores anything durably on the reader's machine.
-- Harder: real-time or collaborative consumption — a snapshot reflects the model at its recorded
-  revision and is only as current as its last regeneration. Anything a reader would want remembered
-  between visits must either live in the address they keep, or not exist.
-- Mandatory: every product capability remains fully usable through files and the command line;
-  the snapshot is generated output, reproducible from the authored files at any time; the snapshot
-  contains everything it can ever display; and any richer web surface in the future must still
-  arrive as a projection over the same files and commands, never as a new home for product truth.
+- Impossible: browsing, editing or approving product knowledge through a hosted or local web application; any web surface that holds product state the authored files do not; a snapshot that accepts input that becomes product knowledge, requires a server or a build step to open, fetches remote resources to function, or stores anything durably on the reader's machine.
+- Harder: real-time or collaborative consumption — a snapshot reflects the model at its recorded revision and is only as current as its last regeneration. Anything a reader would want remembered between visits must either live in the address they keep, or not exist.
+- Mandatory: every product capability remains fully usable through files and the command line; the snapshot is generated output, reproducible from the authored files at any time; the snapshot contains everything it can ever display; and any richer web surface in the future must still arrive as a projection over the same files and commands, never as a new home for product truth.
 
 ### CON-PUBLIC-GENERIC — The public framework stays generic and free of private context
 
 ## Constraint
 
-The public framework — specification, toolkit, templates, skills, fixtures and documentation —
-contains no corporate processes, no private product details, no private prompts and no
-organization-specific terminology. Learnings from real adoptions flow back only in generic form:
-as generic issues, synthetic fixtures or sanitized documentation.
+The public framework — specification, toolkit, templates, skills, fixtures and documentation — contains no corporate processes, no private product details, no private prompts and no organization-specific terminology. Learnings from real adoptions flow back only in generic form: as generic issues, synthetic fixtures or sanitized documentation.
 
 ## Rationale
 
-The framework is developed in the open while being exercised on real products inside real
-organizations. Those two facts must never mix: private product knowledge leaking into a public
-repository is a confidentiality breach, and organization-specific vocabulary or process baked into
-the framework would silently narrow it until it fits only its first adopters. Fixing this boundary
-protects the organizations that self-apply the framework and protects the framework's claim to be
-generally adoptable.
+The framework is developed in the open while being exercised on real products inside real organizations. Those two facts must never mix: private product knowledge leaking into a public repository is a confidentiality breach, and organization-specific vocabulary or process baked into the framework would silently narrow it until it fits only its first adopters. Fixing this boundary protects the organizations that self-apply the framework and protects the framework's claim to be generally adoptable.
 
 ## Consequences
 
-- Impossible: committing real product artifacts, internal process descriptions, private prompts,
-  customer names or organization-specific terminology to the public repository; using a real
-  private model as a test fixture or documentation example.
-- Harder: feeding adoption experience back — every lesson must first be translated into a generic
-  issue, a synthetic fixture reproducing the structural situation, or sanitized documentation,
-  which costs effort and loses some specificity.
-- Mandatory: examples and fixtures are synthetic; contributions from private adoptions are
-  reviewed for leaked context before they land; the framework's vocabulary stays the methodology's
-  own, never an adopting organization's.
+- Impossible: committing real product artifacts, internal process descriptions, private prompts, customer names or organization-specific terminology to the public repository; using a real private model as a test fixture or documentation example.
+- Harder: feeding adoption experience back — every lesson must first be translated into a generic issue, a synthetic fixture reproducing the structural situation, or sanitized documentation, which costs effort and loses some specificity.
+- Mandatory: examples and fixtures are synthetic; contributions from private adoptions are reviewed for leaked context before they land; the framework's vocabulary stays the methodology's own, never an adopting organization's.
 
 ## Actors
 
@@ -1295,24 +694,18 @@ generally adoptable.
 
 ## Purpose
 
-The Product Engineer defines and evolves what the product is. They turn intent, discussion and
-discovery into explicit product artifacts, and they carry every semantic modification through the
-change flow so the product definition stays the single trustworthy account of the product.
+The Product Engineer defines and evolves what the product is. They turn intent, discussion and discovery into explicit product artifacts, and they carry every semantic modification through the change flow so the product definition stays the single trustworthy account of the product.
 
 ## Goals
 
-- Keep a coherent, traceable product definition in which every requirement can be followed back
-  to the actors, journeys, use cases and rules it serves.
-- Express every intended modification as an explicit, reviewable Product Change rather than as an
-  unrecorded edit.
-- Hand delivery teams and SDD workflows precise, self-contained product context — exactly the
-  knowledge one increment needs, nothing more.
+- Keep a coherent, traceable product definition in which every requirement can be followed back to the actors, journeys, use cases and rules it serves.
+- Express every intended modification as an explicit, reviewable Product Change rather than as an unrecorded edit.
+- Hand delivery teams and SDD workflows precise, self-contained product context — exactly the knowledge one increment needs, nothing more.
 - Keep open questions visible until a human answers them.
 
 ## Responsibilities
 
-- Author and refine product artifacts: actors, journeys, use cases, rules, terms, contexts and
-  requirements.
+- Author and refine product artifacts: actors, journeys, use cases, rules, terms, contexts and requirements.
 - Inspect artifacts and analyze structural impact before proposing modifications.
 - Create Product Changes with complete proposed artifacts, rationale and open questions.
 - Slice approved changes into delivery increments and generate Product Handoffs for them.
@@ -1320,84 +713,61 @@ change flow so the product definition stays the single trustworthy account of th
 
 ## Boundaries
 
-- Does not unilaterally approve their own changes into the baseline when a Repository Maintainer
-  role exists; approval and promotion are review acts.
-- Does not own or edit the native artifacts of the configured SDD framework; the handoff boundary
-  separates product definition from delivery specification.
+- Does not unilaterally approve their own changes into the baseline when a Repository Maintainer role exists; approval and promotion are review acts.
+- Does not own or edit the native artifacts of the configured SDD framework; the handoff boundary separates product definition from delivery specification.
 - Does not maintain reverse relationships by hand; derived views come from tooling.
 
 ### ACT-PRODUCT-EXPLORER — Product Explorer
 
 ## Purpose
 
-The Product Explorer wants to understand the product deeply without touching the machinery that
-defines it. They may be a stakeholder, a product owner, a developer from another team, or anyone
-else with a legitimate interest in what the product is — what defines them is not their role but
-their relationship to the repository: they never clone it, never run a command-line tool, and
-never read raw Markdown.
+The Product Explorer wants to understand the product deeply without touching the machinery that defines it. They may be a stakeholder, a product owner, a developer from another team, or anyone else with a legitimate interest in what the product is — what defines them is not their role but their relationship to the repository: they never clone it, never run a command-line tool, and never read raw Markdown.
 
 ## Goals
 
-- Understand what the product is — its actors, journeys, use cases, rules, language and
-  requirements — from a single shareable page, using nothing but a browser.
-- Follow the product's internal connections: who a use case serves, which rules govern it, which
-  requirements derive from it.
-- Trust that what they are reading is an honest projection of the canonical definition, and know
-  which revision of the model it reflects.
+- Understand what the product is — its actors, journeys, use cases, rules, language and requirements — from a single shareable page, using nothing but a browser.
+- Follow the product's internal connections: who a use case serves, which rules govern it, which requirements derive from it.
+- Trust that what they are reading is an honest projection of the canonical definition, and know which revision of the model it reflects.
 
 ## Responsibilities
 
 - Explore the Product Snapshot they are given: browse, read, follow relationships, search.
-- Direct questions, corrections and ideas to the people who carry them into the definition —
-  typically a Product Engineer — rather than assuming the snapshot itself is a channel.
+- Direct questions, corrections and ideas to the people who carry them into the definition — typically a Product Engineer — rather than assuming the snapshot itself is a channel.
 
 ## Boundaries
 
 - Reads projections only; never authors, edits or approves product artifacts.
-- Holds no responsibility for the currency of the snapshot they were given; generating and
-  regenerating it belongs to the repository side.
-- Participates in the product's evolution only through conversation with the actors who work in
-  the repository, never through the snapshot.
+- Holds no responsibility for the currency of the snapshot they were given; generating and regenerating it belongs to the repository side.
+- Participates in the product's evolution only through conversation with the actors who work in the repository, never through the snapshot.
 
 ### ACT-REPOSITORY-MAINTAINER — Repository Maintainer
 
 ## Purpose
 
-The Repository Maintainer is accountable for the repository that hosts a product definition. They
-make the toolkit available, keep its configuration and integrations healthy, and act as the human
-gate through which changes enter the accepted product baseline.
+The Repository Maintainer is accountable for the repository that hosts a product definition. They make the toolkit available, keep its configuration and integrations healthy, and act as the human gate through which changes enter the accepted product baseline.
 
 ## Goals
 
-- A repository where the product definition structure, configuration and integrations work
-  reliably for everyone who contributes.
-- A baseline that only ever moves through validated, human-approved, explicitly promoted Product
-  Changes.
+- A repository where the product definition structure, configuration and integrations work reliably for everyone who contributes.
+- A baseline that only ever moves through validated, human-approved, explicitly promoted Product Changes.
 - Confidence that nothing in the definition was overwritten, promoted or altered silently.
 
 ## Responsibilities
 
-- Initialize Product Definition as Code in the repository and install the chosen AI and SDD
-  integrations.
+- Initialize Product Definition as Code in the repository and install the chosen AI and SDD integrations.
 - Keep configuration current as the repository, team and integrations evolve.
 - Review and approve Product Changes and Delivery Slices.
 - Perform promotion: apply an implemented, verified change to the baseline as a deliberate act.
 
 ## Boundaries
 
-- Does not author most product semantics day to day; drafting and evolving artifacts is primarily
-  the Product Engineer's work.
-- Does not bypass validation: a change or promotion that fails structural checks is not approved
-  or executed regardless of urgency.
+- Does not author most product semantics day to day; drafting and evolving artifacts is primarily the Product Engineer's work.
+- Does not bypass validation: a change or promotion that fails structural checks is not approved or executed regardless of urgency.
 - Does not delegate approval or promotion decisions to automation or to an AI assistant.
 
 ## Open questions
 
-None outstanding. The product owner set this direction explicitly — the four surfaces, the central
-completeness statement, the rejected premises and the scalability redefinition — after rejecting
-two predecessors; this change records that direction as requirements without adding decisions of
-its own. Technical-design questions (layout, indexing, rendering) are deliberately left to
-delivery.
+None outstanding. The product owner set this direction explicitly — the four surfaces, the central completeness statement, the rejected premises and the scalability redefinition — after rejecting two predecessors; this change records that direction as requirements without adding decisions of its own. Technical-design questions (layout, indexing, rendering) are deliberately left to delivery.
 
 ## Traceability
 

@@ -18,14 +18,11 @@ uses-terms:
 
 ## Goal
 
-Produce a machine-verifiable reference from a consumer document (an SDD spec, a task, an agent
-prompt file, a design doc) to canonical product text, carrying the target artifact ID, a content
-digest, and an optional scenario anchor.
+Produce a machine-verifiable reference from a consumer document (an SDD spec, a task, an agent prompt file, a design doc) to canonical product text, carrying the target artifact ID, a content digest, and an optional scenario anchor.
 
 ## Trigger
 
-The Product Engineer or AI Assistant needs to reference a product artifact from a consumer
-document without re-stating its content.
+The Product Engineer or AI Assistant needs to reference a product artifact from a consumer document without re-stating its content.
 
 ## Preconditions
 
@@ -36,15 +33,12 @@ document without re-stating its content.
 
 1. The actor identifies the target artifact by its stable ID.
 2. The actor computes the artifact's content digest (or uses `prodshape cite` to compute it).
-3. The actor emits a citation record in one of three forms: an inline structured reference, a
-   Markdown marker block (optionally embedding the canonical text), or a YAML sidecar ledger.
-4. If the citation targets a specific verification scenario, the actor includes the scenario's
-   stable `id` as the anchor.
+3. The actor emits a citation record in one of three forms: an inline structured reference, a Markdown marker block (optionally embedding the canonical text), or a YAML sidecar ledger.
+4. If the citation targets a specific verification scenario, the actor includes the scenario's stable `id` as the anchor.
 
 ## Alternative Flows
 
-- The AI Assistant drafts consumer documents and emits citations automatically, preserving the
-  recorded digest so drift is detectable later.
+- The AI Assistant drafts consumer documents and emits citations automatically, preserving the recorded digest so drift is detectable later.
 
 ## Failure Conditions
 

@@ -4,11 +4,7 @@
 
 ### Requirement: Catalog discovery state is addressable and preserved
 
-The catalog's active query and filters SHALL be part of the page address, serialized in a fixed
-order so identical states produce identical addresses. Filter and query changes SHALL re-address
-the page in place without adding history entries. Opening an artifact from the catalog SHALL
-preserve the active state, and returning SHALL resume it. Filters SHALL exist only for canonical
-fields — artifact type, status, and bounded context where the model declares one.
+The catalog's active query and filters SHALL be part of the page address, serialized in a fixed order so identical states produce identical addresses. Filter and query changes SHALL re-address the page in place without adding history entries. Opening an artifact from the catalog SHALL preserve the active state, and returning SHALL resume it. Filters SHALL exist only for canonical fields — artifact type, status, and bounded context where the model declares one.
 
 #### Scenario: A discovery is shareable
 
@@ -27,9 +23,7 @@ fields — artifact type, status, and bounded context where the model declares o
 
 ### Requirement: The orientation view offers family entry points and global search
 
-Each artifact kind on the orientation view SHALL be an entry point into the catalog narrowed to
-that family, and a global search control SHALL be available on the first screen, landing in the
-catalog with the query live.
+Each artifact kind on the orientation view SHALL be an entry point into the catalog narrowed to that family, and a global search control SHALL be available on the first screen, landing in the catalog with the query live.
 
 #### Scenario: Family entry
 

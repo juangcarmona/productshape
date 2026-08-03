@@ -66,8 +66,7 @@ jobs:
   publish-stable:
     name: publish stable
     if: >-
-      github.event_name == 'push' &&
-      contains(github.event.head_commit.message, 'Version Packages')
+      github.event_name == 'push' && contains(github.event.head_commit.message, 'Version Packages')
     runs-on: ubuntu-latest
     environment: npm-publish
     permissions:

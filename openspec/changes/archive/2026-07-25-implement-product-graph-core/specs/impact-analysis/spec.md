@@ -4,9 +4,7 @@
 
 ### Requirement: Structural impact is deterministic and clearly labeled
 
-`product-definition impact <ID>` SHALL traverse the compiled graph distinguishing direct from
-transitive reachability and incoming from outgoing edges, honour `--depth` and `--direction`, and
-present results as structural impact with no semantic claim.
+`product-definition impact <ID>` SHALL traverse the compiled graph distinguishing direct from transitive reachability and incoming from outgoing edges, honour `--depth` and `--direction`, and present results as structural impact with no semantic claim.
 
 #### Scenario: Direct versus transitive
 
@@ -20,8 +18,7 @@ present results as structural impact with no semantic claim.
 
 ### Requirement: Inspect reports the full local picture of one artifact
 
-`product-definition inspect <ID>` SHALL report the artifact's metadata, canonical path, outgoing
-relationships and derived incoming relationships, and SHALL fail clearly on an unknown ID.
+`product-definition inspect <ID>` SHALL report the artifact's metadata, canonical path, outgoing relationships and derived incoming relationships, and SHALL fail clearly on an unknown ID.
 
 #### Scenario: Incoming relationships shown
 

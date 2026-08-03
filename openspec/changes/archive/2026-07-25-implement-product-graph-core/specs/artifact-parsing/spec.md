@@ -4,9 +4,7 @@
 
 ### Requirement: Model discovery is complete and deterministic
 
-The core SHALL discover every Markdown artifact under the configured model root (excluding
-`index.md`), in deterministic order with POSIX-normalized repository-relative paths, and load each
-through the established parsing and schema-validation contract.
+The core SHALL discover every Markdown artifact under the configured model root (excluding `index.md`), in deterministic order with POSIX-normalized repository-relative paths, and load each through the established parsing and schema-validation contract.
 
 #### Scenario: Deterministic discovery order
 

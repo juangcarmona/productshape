@@ -71,9 +71,7 @@ describe('describeKind', () => {
     const derivedFrom = field('functional-requirement', 'derived-from');
     expect(derivedFrom.kind).toBe('array');
     expect(derivedFrom.items?.kind).toBe('string');
-    expect(derivedFrom.items?.pattern).toBe(
-      '^(UC|BR|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$',
-    );
+    expect(derivedFrom.items?.pattern).toBe('^(UC|BR|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$');
   });
 
   it('reports every kind as closed and carries markdown-only metadata', () => {

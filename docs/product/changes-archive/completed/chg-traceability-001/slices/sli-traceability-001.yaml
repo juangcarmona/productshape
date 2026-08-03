@@ -4,9 +4,7 @@ title: Validate requirement coverage before OpenSpec archive
 status: completed
 product-change: CHG-TRACEABILITY-001
 outcome: >-
-  A product engineer can run one deterministic command against an OpenSpec change and learn
-  whether every requirement its handoff implements has resolvable specification and verification
-  evidence, before the change is archived.
+  A product engineer can run one deterministic command against an OpenSpec change and learn whether every requirement its handoff implements has resolvable specification and verification evidence, before the change is archived.
 implements:
   - requirement: FR-COVERAGE-001
     coverage: full

@@ -1,62 +1,37 @@
 # Methodology overview
 
-Product Definition as Code keeps a canonical, versioned, machine-validatable definition of your
-product in your repository — plain Markdown with YAML frontmatter — and evolves it through
-native pull requests. It sits _before_ your backlog and before Spec-Driven Development (SDD): the
-definition says what the product is; backlog items and SDD specs cite it rather than re-stating
-it.
+Product Definition as Code keeps a canonical, versioned, machine-validatable definition of your product in your repository — plain Markdown with YAML frontmatter — and evolves it through native pull requests. It sits _before_ your backlog and before Spec-Driven Development (SDD): the definition says what the product is; backlog items and SDD specs cite it rather than re-stating it.
 
-Five minutes here gives you the artifact families, the product graph, the operations, and the
-citation contract. The normative contracts live in the
-[specification repository](https://github.com/product-definition-as-code/spec); these pages
-explain, the specification decides.
+Five minutes here gives you the artifact families, the product graph, the operations, and the citation contract. The normative contracts live in the [specification repository](https://github.com/product-definition-as-code/spec); these pages explain, the specification decides.
 
 ## The artifact families
 
-A product definition is a set of small, individually addressable Markdown artifacts, each with a
-stable immutable ID (like `ACT-PRODUCT-ENGINEER` or `FR-VALIDATE-001`):
+A product definition is a set of small, individually addressable Markdown artifacts, each with a stable immutable ID (like `ACT-PRODUCT-ENGINEER` or `FR-VALIDATE-001`):
 
 - **Actors** — who or what interacts with the product to achieve an outcome.
 - **Journeys** — end-to-end outcomes an actor pursues, spanning multiple use cases.
 - **Use Cases** — concrete interactions through which an actor obtains an outcome.
-- **Business Rules and Domain Knowledge** — rules that govern behaviour, plus **Domain Terms**
-  and the **Bounded Contexts** in which each term carries its meaning.
-- **Requirements** — **Functional Requirements**, **Quality Requirements** and **Constraints**,
-  each traceable to the use cases, rules or constraints it derives from.
+- **Business Rules and Domain Knowledge** — rules that govern behaviour, plus **Domain Terms** and the **Bounded Contexts** in which each term carries its meaning.
+- **Requirements** — **Functional Requirements**, **Quality Requirements** and **Constraints**, each traceable to the use cases, rules or constraints it derives from.
 
-The families build on each other conceptually — actors ground journeys, journeys decompose into
-use cases, use cases surface rules and terms, requirements derive from all of it — but this is a
-dependency of meaning, not a mandatory authoring order. You can start anywhere and iterate.
+The families build on each other conceptually — actors ground journeys, journeys decompose into use cases, use cases surface rules and terms, requirements derive from all of it — but this is a dependency of meaning, not a mandatory authoring order. You can start anywhere and iterate.
 
 ## The product graph
 
-Each artifact declares its relationships in frontmatter: a use case names its `primary-actor`,
-its governing rules, the terms it uses. Those typed references make the definition a directed
-graph, compiled by tooling from the Markdown — never authored as a graph, always rebuildable,
-never a database. Each relationship is authored in exactly one direction; every reverse view is
-derived. The graph is what powers validation, impact analysis and citation resolution.
-Details in [The product graph](product-graph.md).
+Each artifact declares its relationships in frontmatter: a use case names its `primary-actor`, its governing rules, the terms it uses. Those typed references make the definition a directed graph, compiled by tooling from the Markdown — never authored as a graph, always rebuildable, never a database. Each relationship is authored in exactly one direction; every reverse view is derived. The graph is what powers validation, impact analysis and citation resolution. Details in [The product graph](product-graph.md).
 
 ## Operations
 
-- **[Define](define.md)** — greenfield. Establish a product definition from intent: actors first,
-  then journeys, use cases, rules, terms, requirements, with open questions kept visible.
-- **[Recover](recover.md)** — brownfield. Reconstruct candidate product knowledge from an
-  existing system, with provenance and confidence, for a human to validate.
-- **Explore** — pre-change. A product-graph-aware thinking partner (`ps:explore`) that helps
-  clarify a fuzzy idea against the existing model before committing to a change.
-- **Validate** — the structural gate. `prodshape validate` checks the full tree; a proposal that
-  fails validation MUST NOT be merged (CI gate).
-- **Cite** — emit a citation record from a consumer document to a product artifact, carrying the
-  artifact ID, a content digest, and an optional scenario anchor.
-- **Verify citations** — `prodshape citations verify` recomputes digests and reports one status
-  per citation: `current`, `stale`, `tampered` or `unresolved`.
+- **[Define](define.md)** — greenfield. Establish a product definition from intent: actors first, then journeys, use cases, rules, terms, requirements, with open questions kept visible.
+- **[Recover](recover.md)** — brownfield. Reconstruct candidate product knowledge from an existing system, with provenance and confidence, for a human to validate.
+- **Explore** — pre-change. A product-graph-aware thinking partner (`ps:explore`) that helps clarify a fuzzy idea against the existing model before committing to a change.
+- **Validate** — the structural gate. `prodshape validate` checks the full tree; a proposal that fails validation MUST NOT be merged (CI gate).
+- **Cite** — emit a citation record from a consumer document to a product artifact, carrying the artifact ID, a content digest, and an optional scenario anchor.
+- **Verify citations** — `prodshape citations verify` recomputes digests and reports one status per citation: `current`, `stale`, `tampered` or `unresolved`.
 
 ## Change as pull request
 
-The baseline is the canonical product model on the repository's canonical branch. A change is
-the repository's native branch-review-merge mechanism: a pull request. There is no bespoke
-change artifact, no overlay, no promotion step.
+The baseline is the canonical product model on the repository's canonical branch. A change is the repository's native branch-review-merge mechanism: a pull request. There is no bespoke change artifact, no overlay, no promotion step.
 
 ```text
 Fuzzy idea
@@ -79,26 +54,18 @@ SDD workflow ────── e.g. OpenSpec: proposal, specs, design, tasks
                     (native SDD ownership, unchanged)
 ```
 
-Merging is a human decision. Tools MUST NOT merge, auto-approve or self-merge model changes.
-Consumers of the model MUST NOT write to it; they cite it.
+Merging is a human decision. Tools MUST NOT merge, auto-approve or self-merge model changes. Consumers of the model MUST NOT write to it; they cite it.
 
 ## The citation contract
 
-A citation is a machine-verifiable reference from a consumer document (an SDD spec, a task, an
-agent prompt file, a design doc) to canonical product text. It records the target artifact `id`,
-a content `digest`, and an optional `anchor` (a verification scenario id). When the canonical
-content changes, the citation reports `stale` — drift is machine-detectable rather than silent.
+A citation is a machine-verifiable reference from a consumer document (an SDD spec, a task, an agent prompt file, a design doc) to canonical product text. It records the target artifact `id`, a content `digest`, and an optional `anchor` (a verification scenario id). When the canonical content changes, the citation reports `stale` — drift is machine-detectable rather than silent.
 
-See the
-[citation contract](https://github.com/product-definition-as-code/spec/blob/main/spec/citation-contract.md)
-in the specification repository for the normative details.
+See the [citation contract](https://github.com/product-definition-as-code/spec/blob/main/spec/citation-contract.md) in the specification repository for the normative details.
 
 ## Division of responsibility
 
-- **Deterministic tooling** (the `prodshape` CLI) enforces structure: schemas, IDs,
-  relationships, digests, citation verification. Same input, same result, every platform.
-- **AI skills** do semantic reasoning: drafting, impact interpretation, exploration. AI preserves
-  unanswered questions and never invents product decisions.
+- **Deterministic tooling** (the `prodshape` CLI) enforces structure: schemas, IDs, relationships, digests, citation verification. Same input, same result, every platform.
+- **AI skills** do semantic reasoning: drafting, impact interpretation, exploration. AI preserves unanswered questions and never invents product decisions.
 - **Humans** make the calls that define the product: PR review and merge.
 
 ## Where to go next

@@ -4,9 +4,7 @@
 
 ### Requirement: Sidecars integrate without touching native OpenSpec artifacts
 
-The adapter SHALL place `product-handoff.yaml` and `product-context.md` inside a named native
-OpenSpec change directory (`openspec/changes/<name>/`), regenerate them without modifying
-`proposal.md`, `design.md`, `tasks.md` or `specs/`, and preserve product artifact IDs throughout.
+The adapter SHALL place `product-handoff.yaml` and `product-context.md` inside a named native OpenSpec change directory (`openspec/changes/<name>/`), regenerate them without modifying `proposal.md`, `design.md`, `tasks.md` or `specs/`, and preserve product artifact IDs throughout.
 
 #### Scenario: Sidecar placement
 
@@ -15,10 +13,7 @@ OpenSpec change directory (`openspec/changes/<name>/`), regenerate them without 
 
 ### Requirement: Requirement coverage is validated deterministically
 
-`product-definition coverage check <sdd-change-dir>` SHALL validate `product-coverage.yaml`
-against its schema, verify it references the sidecar handoff, report every requirement the handoff
-implements that lacks a `covered` mapping (PRODUCT043), and verify that referenced specification
-and verification paths exist — never inferring evidence from file names.
+`product-definition coverage check <sdd-change-dir>` SHALL validate `product-coverage.yaml` against its schema, verify it references the sidecar handoff, report every requirement the handoff implements that lacks a `covered` mapping (PRODUCT043), and verify that referenced specification and verification paths exist — never inferring evidence from file names.
 
 #### Scenario: Uncovered requirement blocks closure
 
@@ -32,8 +27,7 @@ and verification paths exist — never inferring evidence from file names.
 
 ### Requirement: Missing evidence paths are errors
 
-The adapter SHALL report an error naming the missing path for every coverage entry whose
-`specification` or `verification` path does not exist in the repository.
+The adapter SHALL report an error naming the missing path for every coverage entry whose `specification` or `verification` path does not exist in the repository.
 
 #### Scenario: Dangling evidence path
 
