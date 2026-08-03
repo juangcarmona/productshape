@@ -25,6 +25,11 @@ export const codes = {
   disallowedTargetType: 'PRODUCT007',
   activeReferencesRetired: 'PRODUCT008',
   missingBodySection: 'PRODUCT009',
+  invalidCitationDigest: 'PRODUCT042',
+  unresolvedCitation: 'PRODUCT060',
+  staleCitation: 'PRODUCT061',
+  tamperedCitation: 'PRODUCT062',
+  citationAnchorNotFound: 'PRODUCT063',
   lowConfidenceDraft: 'PRODUCT111',
 } as const;
 

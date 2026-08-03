@@ -50,10 +50,13 @@ describe('diagnostic codes', () => {
     const warnings = documentedCodes(doc, 'Warning codes');
 
     for (const code of [...(await emittedCodes())].sort()) {
-      // Errors occupy PRODUCT0xx and warnings PRODUCT1xx; a code in the wrong table means the
-      // severity in the source and the severity in the specification disagree.
-      const expected = code.startsWith('PRODUCT1') ? warnings : errors;
-      const table = code.startsWith('PRODUCT1') ? 'Warning codes' : 'Error codes';
+      // Errors occupy PRODUCT0xx and warnings PRODUCT1xx, with one exception: PRODUCT061
+      // (stale citation) is a warning despite its 0xx numbering, per the citation contract.
+      // A code in the wrong table means the severity in the source and the severity in the
+      // specification disagree.
+      const isWarning = code.startsWith('PRODUCT1') || code === 'PRODUCT061';
+      const expected = isWarning ? warnings : errors;
+      const table = isWarning ? 'Warning codes' : 'Error codes';
       expect.soft([...expected], `${code} should be under '## ${table}'`).toContain(code);
     }
   });
@@ -73,11 +76,16 @@ describe('diagnostic codes', () => {
 
   it('numbers codes consistently with their severity range', async () => {
     const doc = await readFile(join(repoRoot, 'docs', 'specification', 'validation.md'), 'utf8');
+    // Error codes are all PRODUCT0xx.
     expect([...documentedCodes(doc, 'Error codes')].filter((c) => !/^PRODUCT0/.test(c))).toEqual(
       [],
     );
-    expect([...documentedCodes(doc, 'Warning codes')].filter((c) => !/^PRODUCT1/.test(c))).toEqual(
-      [],
-    );
+    // Warning codes are PRODUCT1xx, except PRODUCT061 (stale citation), which the citation
+    // contract fixes as a warning despite its 0xx numbering.
+    expect(
+      [...documentedCodes(doc, 'Warning codes')].filter(
+        (c) => !/^PRODUCT1/.test(c) && c !== 'PRODUCT061',
+      ),
+    ).toEqual([]);
   });
 });

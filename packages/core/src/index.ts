@@ -14,6 +14,21 @@ export { configSchemaId, defaultConfig, loadConfig, parseConfig } from './config
 export type { ConfigResult, ProductConfig } from './config.js';
 export { codes, escalateWarnings, sortDiagnostics } from './diagnostics.js';
 export type { Diagnostic, DiagnosticSeverity } from './diagnostics.js';
+export {
+  buildArtifactIndex,
+  discoverConsumerDocs,
+  emitCitation,
+  parseCitations,
+  scanCitations,
+  verifyCitation,
+  verifyCitations,
+} from './citations.js';
+export type {
+  CitationRecord,
+  CitationStatus,
+  CitationVerification,
+  CiteOptions,
+} from './citations.js';
 export { contentDigest, normalizeToLf } from './digest.js';
 export { computeClosureFromSeeds } from './closure.js';
 export {

@@ -1,5 +1,7 @@
 import { Command, CommanderError } from 'commander';
 import { runChangePromote, runChangeValidate } from './commands/change.js';
+import { runCite } from './commands/cite.js';
+import { runCitationsVerify } from './commands/citations.js';
 import { runCoverageCheck } from './commands/coverage.js';
 import { runDoctorCommand } from './commands/doctor.js';
 import { runFix } from './commands/fix.js';
@@ -155,6 +157,38 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .option('--format <format>', 'output format: summary, json, mermaid or html', 'summary')
     .action(async (options: { format: 'summary' | 'json' | 'mermaid' | 'html' }) => {
       capture.code = await runGraph(io, options);
+    });
+
+  program
+    .command('cite')
+    .description('Emit a citation record for a product artifact')
+    .requiredOption('--id <id>', 'target artifact ID')
+    .option('--digest <digest>', 'content digest (sha256:<hex>); required unless --file is given')
+    .option('--file <path>', 'compute the digest from this file')
+    .option('--anchor <anchor>', 'verification scenario id within the target artifact')
+    .option('--form <form>', 'citation form: inline, marker-block, or sidecar-ledger', 'inline')
+    .action(
+      async (options: {
+        id: string;
+        digest?: string;
+        file?: string;
+        anchor?: string;
+        form: 'inline' | 'marker-block' | 'sidecar-ledger';
+      }) => {
+        capture.code = await runCite(io, options);
+      },
+    );
+
+  const citations = program
+    .command('citations')
+    .description('Verify citations in consumer documents against the product model');
+  citations
+    .command('verify')
+    .description('Scan consumer documents and report citation statuses')
+    .argument('[target]', 'consumer documents root (default: openspec)')
+    .option('--format <format>', 'output format: text or json', 'text')
+    .action(async (target: string | undefined, options: { format: 'text' | 'json' }) => {
+      capture.code = await runCitationsVerify(io, target, options);
     });
 
   program

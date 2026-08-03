@@ -50,12 +50,15 @@ them for a repository; tools MUST NOT escalate unilaterally.
 | `PRODUCT032` | Delivery slice dependency cycle                                                        |
 | `PRODUCT040` | Handoff generated from (or referencing) a non-approved slice                           |
 | `PRODUCT041` | Handoff missing required artifacts                                                     |
-| `PRODUCT042` | Invalid or unverifiable content digest                                                 |
+| `PRODUCT042` | Invalid or unverifiable citation digest                                                       |
 | `PRODUCT043` | Implemented requirement without a coverage mapping                                     |
 | `PRODUCT044` | Coverage evidence for a completed delivery slice missing or unverifiable at promotion  |
 | `PRODUCT050` | Invalid configuration or unknown top-level configuration key                           |
 | `PRODUCT051` | Managed integration file modified by hand                                              |
 | `PRODUCT052` | Expected managed or generated file missing                                             |
+| `PRODUCT060` | Unresolved citation: target id or anchor does not resolve                              |
+| `PRODUCT062` | Tampered embedded projection: the embedded block differs from canonical content at the recorded digest |
+| `PRODUCT063` | Anchor not found: the target resolves but the named anchor does not exist within it    |
 
 `PRODUCT050`–`PRODUCT052` are reported by `doctor` and integration commands; product-model
 validation does not inspect managed files.
@@ -75,6 +78,8 @@ validation does not inspect managed files.
 | `PRODUCT109` | Delivery slice affecting artifacts outside its requirements' closure                                                                                               |
 | `PRODUCT110` | Handoff context containing artifacts outside the recomputed closure                                                                                                |
 | `PRODUCT111` | Draft artifact whose `provenance.confidence` is `low`                                                                                                              |
+
+`PRODUCT061` is a warning despite its `0xx` numbering: the citation contract (spec/citation-contract.md) fixes it as a warning so a stale citation does not block a consumer pipeline unless the repository escalates it via `warnings-as-errors`. Tools MUST NOT apply per-artifact-type severity defaults.
 
 `PRODUCT101` is resolved mechanically by `prodshape fix --filenames`, which renames each file to
 `<id.toLowerCase()>.md`. It renames through a temporary name so it also works on case-insensitive
