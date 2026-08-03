@@ -129,6 +129,35 @@ export class SchemaRegistry {
         });
       }
     }
+
+    // PRODUCT005: duplicate verification scenario ids within a single FR/QR artifact.
+    // JSON Schema cannot express "unique by property", so this is a structural check.
+    // Scenario ids are optional, but when present they must be unique within the artifact
+    // so a citation anchor resolves to exactly one scenario.
+    if (kind === 'functional-requirement' || kind === 'quality-requirement') {
+      const verification = (record as { verification?: unknown }).verification;
+      if (Array.isArray(verification)) {
+        const seenScenarioIds = new Map<string, number>();
+        for (const entry of verification) {
+          if (typeof entry !== 'object' || entry === null) continue;
+          const scenarioId = (entry as Record<string, unknown>).id;
+          if (typeof scenarioId !== 'string' || scenarioId.length === 0) continue;
+          seenScenarioIds.set(scenarioId, (seenScenarioIds.get(scenarioId) ?? 0) + 1);
+        }
+        for (const [scenarioId, count] of seenScenarioIds) {
+          if (count > 1) {
+            diagnostics.push({
+              severity: 'error',
+              code: codes.duplicateId,
+              message: `Duplicate verification scenario id '${scenarioId}' (${count} occurrences)`,
+              file,
+              artifact,
+              field: 'verification[].id',
+            });
+          }
+        }
+      }
+    }
     return diagnostics;
   }
 }

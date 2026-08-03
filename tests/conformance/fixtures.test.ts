@@ -44,6 +44,7 @@ describe('invalid fixtures', () => {
     ['missing-section.md', 'PRODUCT009'],
     ['provenance-unknown-subfield.md', 'PRODUCT002'],
     ['provenance-missing-confidence.md', 'PRODUCT002'],
+    ['duplicate-verification-scenario-id.md', 'PRODUCT005'],
   ])('%s produces %s', async (fileName, expectedCode) => {
     const result = await validateMarkdownDocument(join(invalidDir, fileName));
     const codes = result.diagnostics.map((d) => d.code);

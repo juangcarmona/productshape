@@ -1,0 +1,6 @@
+{
+  "repo": "product-definition-as-code/spec",
+  "path": "schemas/v1alpha1",
+  "ref": "8fac583c1a6d69f09ecd42f230de18446f2fdce6",
+  "note": "The normative JSON Schemas live in the spec repository. This pin records the exact tree they were vendored from. Run `pnpm schemas:sync` to re-copy after bumping `ref`. Until the push-pipeline retirement (issue #52, Phase 3) the local schemas/ directory also holds four retired schemas (product-change, delivery-slice, product-handoff, product-coverage) that are absent from the spec repo and are not overwritten by the sync script."
+}
