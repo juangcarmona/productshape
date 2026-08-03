@@ -1,24 +1,12 @@
 import { access, mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import { modelSubdirByType } from './artifact.js';
 import type { LoadedChange, LoadedSlice } from './changes.js';
 import { contentDigest } from './digest.js';
 import { escalateWarnings, type Diagnostic } from './diagnostics.js';
 import { gitShow } from './git.js';
 import type { LoadedArtifact } from './model.js';
 import { sliceImplements } from './slices.js';
-
-/** Where each artifact type lives inside the model directory. */
-export const modelSubdirByType: Record<string, string> = {
-  actor: 'actors',
-  journey: 'journeys',
-  'use-case': 'use-cases',
-  'business-rule': 'business-rules',
-  'domain-term': 'domain/terms',
-  'bounded-context': 'domain/bounded-contexts',
-  'functional-requirement': 'requirements/functional',
-  'quality-requirement': 'requirements/quality',
-  constraint: 'requirements/constraints',
-};
 
 export interface PromotionAction {
   kind: 'write' | 'delete' | 'move-change';

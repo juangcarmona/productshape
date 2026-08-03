@@ -2,6 +2,7 @@ export {
   productArtifactTypes,
   markdownDocumentTypes,
   idPrefixByType,
+  modelSubdirByType,
   requiredBodySections,
   expectedFileName,
   isMarkdownDocumentType,
@@ -104,7 +105,7 @@ export {
 export type { ChangeValidation } from './overlay.js';
 export { parseArtifactDocument } from './parse.js';
 export type { ParseResult } from './parse.js';
-export { applyPromotion, modelSubdirByType, planPromotion } from './promote.js';
+export { applyPromotion, planPromotion } from './promote.js';
 export type {
   CoverageEvidenceProvider,
   PlanPromotionOptions,

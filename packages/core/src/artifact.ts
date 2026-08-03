@@ -69,6 +69,19 @@ export function isMarkdownDocumentType(value: unknown): value is MarkdownDocumen
   return typeof value === 'string' && (markdownDocumentTypes as readonly string[]).includes(value);
 }
 
+/** Where each artifact type lives inside the model directory. */
+export const modelSubdirByType: Record<string, string> = {
+  actor: 'actors',
+  journey: 'journeys',
+  'use-case': 'use-cases',
+  'business-rule': 'business-rules',
+  'domain-term': 'domain/terms',
+  'bounded-context': 'domain/bounded-contexts',
+  'functional-requirement': 'requirements/functional',
+  'quality-requirement': 'requirements/quality',
+  constraint: 'requirements/constraints',
+};
+
 /**
  * The file name an artifact with this ID must have. Single source of truth for the
  * PRODUCT101 warning and for `prodshape fix --filenames`, so the check and the fix
