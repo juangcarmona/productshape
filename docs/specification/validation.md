@@ -37,22 +37,7 @@ them for a repository; tools MUST NOT escalate unilaterally.
 | `PRODUCT007` | Relationship targets a disallowed artifact type                                        |
 | `PRODUCT008` | Active artifact references a retired artifact                                          |
 | `PRODUCT009` | Required body section missing or out of order                                          |
-| `PRODUCT020` | Product Change addition whose ID already exists in the baseline                        |
-| `PRODUCT021` | Product Change modification of an ID that does not exist in the baseline               |
-| `PRODUCT022` | Product Change removal of an ID that does not exist in the baseline                    |
-| `PRODUCT023` | Overlay produces duplicate IDs                                                         |
-| `PRODUCT024` | Removal leaves a dangling reference from an active artifact in the overlay             |
-| `PRODUCT025` | Concurrent active Product Changes with overlapping modify/remove operations            |
-| `PRODUCT026` | Proposed artifact not listed in operations, or operation without its proposed artifact |
-| `PRODUCT027` | Baseline revision incompatible at promotion without explicit resolution                |
-| `PRODUCT030` | Delivery slice references a different Product Change than the one containing it        |
-| `PRODUCT031` | Partial requirement coverage without a `scope` field                                   |
-| `PRODUCT032` | Delivery slice dependency cycle                                                        |
-| `PRODUCT040` | Handoff generated from (or referencing) a non-approved slice                           |
-| `PRODUCT041` | Handoff missing required artifacts                                                     |
 | `PRODUCT042` | Invalid or unverifiable citation digest                                                       |
-| `PRODUCT043` | Implemented requirement without a coverage mapping                                     |
-| `PRODUCT044` | Coverage evidence for a completed delivery slice missing or unverifiable at promotion  |
 | `PRODUCT050` | Invalid configuration or unknown top-level configuration key                           |
 | `PRODUCT051` | Managed integration file modified by hand                                              |
 | `PRODUCT052` | Expected managed or generated file missing                                             |
@@ -74,9 +59,6 @@ validation does not inspect managed files.
 | `PRODUCT105` | Business rule with no consumers                                                                                                                                    |
 | `PRODUCT106` | Domain term with no usage                                                                                                                                          |
 | `PRODUCT107` | Bounded context with no owned domain language                                                                                                                      |
-| `PRODUCT108` | Product Change approved with unresolved open questions                                                                                                             |
-| `PRODUCT109` | Delivery slice affecting artifacts outside its requirements' closure                                                                                               |
-| `PRODUCT110` | Handoff context containing artifacts outside the recomputed closure                                                                                                |
 | `PRODUCT111` | Draft artifact whose `provenance.confidence` is `low`                                                                                                              |
 
 `PRODUCT061` is a warning despite its `0xx` numbering: the citation contract (spec/citation-contract.md) fixes it as a warning so a stale citation does not block a consumer pipeline unless the repository escalates it via `warnings-as-errors`. Tools MUST NOT apply per-artifact-type severity defaults.

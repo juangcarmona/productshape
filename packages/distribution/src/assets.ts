@@ -87,11 +87,19 @@ export async function loadBundledAssets(): Promise<CanonicalAssets> {
     });
   }
 
+  // Hooks are optional: the push-pipeline hooks were retired by RFC #4.
+  let hooks: CanonicalAsset[] = [];
+  try {
+    hooks = await loadDir('hooks', '.json');
+  } catch {
+    // No hooks directory — nothing to load.
+  }
+
   return {
     version,
     skills,
     commands: await loadDir('commands', '.md'),
-    hooks: await loadDir('hooks', '.json'),
+    hooks,
     templates,
   };
 }

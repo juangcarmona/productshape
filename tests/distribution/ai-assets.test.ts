@@ -7,9 +7,7 @@ import { repoRoot } from '../helpers.js';
 const skillNames = [
   'define-product',
   'recover-product',
-  'analyze-product-change',
-  'slice-product-change',
-  'prepare-sdd-handoff',
+  'explore-product',
   'audit-product-model',
 ];
 
@@ -27,13 +25,8 @@ const mandatorySections = [
   'Completion checks',
 ];
 
-const commandNames = ['define', 'recover', 'change', 'slice', 'impact', 'handoff', 'audit'];
-const hookNames = [
-  'validate-product-change',
-  'validate-before-handoff',
-  'check-handoff-staleness',
-  'verify-traceability',
-];
+const commandNames = ['define', 'recover', 'explore', 'impact', 'audit'];
+const hookNames: string[] = [];
 
 const vendorPattern = /\b(claude|copilot|anthropic|openai|cursor|gemini)\b/i;
 
@@ -78,27 +71,7 @@ describe('canonical commands', () => {
 });
 
 describe('canonical hooks', () => {
-  it.each(hookNames)('%s declares deterministic commands only', async (name) => {
-    const content = await readFile(join(repoRoot, 'hooks', `${name}.json`), 'utf8');
-    const hook = JSON.parse(content) as {
-      schema: string;
-      name: string;
-      triggers: { event: string; run: string[] }[];
-      blocking: boolean;
-    };
-    expect(hook.schema).toBe('product-definition-as-code/hook/v1alpha1');
-    expect(hook.name).toBe(name);
-    expect(hook.triggers.length).toBeGreaterThanOrEqual(1);
-    for (const trigger of hook.triggers) {
-      for (const command of trigger.run) {
-        // Hooks invoke the canonical binary. `product-definition` remains a working v0.x alias,
-        // but generated assets are what users read, so they name the brand.
-        expect(command, `${name}: only prodshape commands`).toMatch(/^prodshape /);
-      }
-    }
-    const promoteCommands = hook.triggers
-      .flatMap((t) => t.run)
-      .filter((c) => c.includes('promote'));
-    for (const command of promoteCommands) expect(command).toContain('--dry-run');
+  it('no hooks are shipped (push-pipeline hooks retired by RFC #4)', () => {
+    expect(hookNames).toEqual([]);
   });
 });

@@ -10,7 +10,6 @@ export { runDoctor } from './doctor.js';
 export type { DoctorCheck, DoctorOptions, DoctorReport } from './doctor.js';
 export {
   applyInitPlan,
-  changeScaffoldDirs,
   configContent,
   initRepository,
   modelScaffoldDirs,

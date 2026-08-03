@@ -22,15 +22,11 @@ export async function runDoctorCommand(io: CliIo): Promise<number> {
         ? '.product/config.yaml valid (or defaults in effect)'
         : `${configErrors.length} configuration error(s)`,
     modelPath: repo.config.product.model,
-    changesPath: repo.config.product.changes,
     validation: {
       errors: diagnostics.filter((d) => d.severity === 'error').length,
       warnings: diagnostics.filter((d) => d.severity === 'warning').length,
       artifacts: baseline.graph.nodes.length,
     },
-    ...(repo.config.integrations.sdd.provider
-      ? { sddProvider: repo.config.integrations.sdd.provider }
-      : {}),
   });
 
   let failed = 0;

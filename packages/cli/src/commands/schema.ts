@@ -23,14 +23,11 @@ export interface SchemaOptions {
  * specification does not own.
  */
 function aliasesFor(kinds: string[]): Map<string, string> {
-  const yamlPrefixes: Record<string, string> = {
-    'delivery-slice': 'SLI',
-    'product-handoff': 'HOF',
-  };
   const aliases = new Map<string, string>();
   for (const kind of kinds) {
-    const prefix = isMarkdownDocumentType(kind) ? idPrefixByType[kind] : yamlPrefixes[kind];
-    if (prefix) aliases.set(prefix.toLowerCase(), kind);
+    if (isMarkdownDocumentType(kind)) {
+      aliases.set(idPrefixByType[kind].toLowerCase(), kind);
+    }
   }
   return aliases;
 }

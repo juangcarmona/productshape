@@ -7,7 +7,6 @@ export interface ProductConfig {
   product: {
     root: string;
     model: string;
-    changes: string;
   };
   generated: {
     root: string;
@@ -15,7 +14,6 @@ export interface ProductConfig {
   };
   integrations: {
     ai: string[];
-    sdd: { provider?: string };
     /**
      * Emit `/ps:<name>` shorthand aliases alongside the canonical `/product:<name>` commands.
      * Off by default: for a single-assistant repository the aliases double the prompt namespace
@@ -41,7 +39,6 @@ export function defaultConfig(): ProductConfig {
     product: {
       root: 'docs/product',
       model: 'docs/product/model',
-      changes: 'docs/product/changes',
     },
     generated: {
       root: '.product/generated',
@@ -49,7 +46,6 @@ export function defaultConfig(): ProductConfig {
     },
     integrations: {
       ai: [],
-      sdd: {},
       'shorthand-commands': false,
     },
     validation: {
@@ -141,7 +137,6 @@ export function parseConfig(content: string, file: string): ConfigResult {
   if (product) {
     readString(product, 'product', 'root', (v) => (config.product.root = v));
     readString(product, 'product', 'model', (v) => (config.product.model = v));
-    readString(product, 'product', 'changes', (v) => (config.product.changes = v));
   }
 
   const generated = section('generated');
@@ -166,21 +161,6 @@ export function parseConfig(content: string, file: string): ConfigResult {
       'shorthand-commands',
       (v) => (config.integrations['shorthand-commands'] = v),
     );
-    const sdd = integrations.sdd;
-    if (sdd !== undefined) {
-      if (typeof sdd !== 'object' || sdd === null || Array.isArray(sdd)) {
-        error(`'integrations.sdd' must be a mapping`, 'integrations.sdd');
-      } else {
-        const provider = (sdd as Record<string, unknown>).provider;
-        if (provider !== undefined) {
-          if (typeof provider !== 'string') {
-            error(`'integrations.sdd.provider' must be a string`, 'integrations.sdd.provider');
-          } else {
-            config.integrations.sdd.provider = provider;
-          }
-        }
-      }
-    }
   }
 
   const validation = section('validation');

@@ -7,7 +7,6 @@ import { lockPath, lockRelativePath } from './lock.js';
 export interface InitOptions {
   root: string;
   ai: string[];
-  sdd?: string;
   force?: boolean;
   /** Scaffold the model directory without the per-kind subdirectories. */
   flat?: boolean;
@@ -47,16 +46,6 @@ export const modelScaffoldDirs = [
   'docs/product/model/requirements/constraints',
 ];
 
-/**
- * Change lifecycle states. Unlike the model subdirectories these are not taxonomy: they are read
- * by change discovery and written by promotion, so `--flat` does not collapse them.
- */
-export const changeScaffoldDirs = [
-  'docs/product/changes/active',
-  'docs/product/changes/completed',
-  'docs/product/changes/rejected',
-];
-
 export type InitActionKind = 'create' | 'preserve' | 'overwrite' | 'regenerate' | 'conflict';
 
 export interface InitAction {
@@ -79,19 +68,17 @@ export interface InitPlan {
   nextSteps: string[];
 }
 
-export function configContent(ai: string[], sdd?: string, shorthand = false): string {
+export function configContent(ai: string[], shorthand = false): string {
   return [
     'schema: product-definition-as-code/config/v1alpha1',
     'product:',
     '  root: docs/product',
     '  model: docs/product/model',
-    '  changes: docs/product/changes',
     'generated:',
     '  root: .product/generated',
     '  commit: false',
     'integrations:',
     ai.length > 0 ? `  ai:\n${ai.map((p) => `    - ${p}`).join('\n')}` : '  ai: []',
-    ...(sdd ? ['  sdd:', `    provider: ${sdd}`] : []),
     `  shorthand-commands: ${shorthand}`,
     'validation:',
     '  warnings-as-errors: false',
@@ -106,11 +93,9 @@ const productReadme = `# Product definition
 This directory is the canonical product definition of this repository, managed with
 Product Definition as Code.
 
-- \`model/\` holds the current product model (the baseline). The initial baseline may be
-  authored directly (the initial-baseline bootstrap exception); after it is accepted, every
-  semantic evolution goes through a Product Change under \`changes/\` and reaches the baseline
-  only by explicit promotion.
-- \`changes/active|completed|rejected/\` hold Product Changes.
+- \`model/\` holds the current product model (the baseline). The baseline changes through
+  exactly one operation: a human merging a validated proposed revision (a pull request).
+  Everything else is a proposal.
 
 Validate with \`prodshape validate\`. Authoring templates are under
 \`.product/templates/\`. The allowed frontmatter of every artifact kind is printed by
@@ -134,7 +119,7 @@ async function exists(path: string): Promise<boolean> {
  * could compute something different.
  */
 export async function planInit(options: InitOptions): Promise<InitPlan> {
-  const { root, ai, sdd, force = false, flat = false } = options;
+  const { root, ai, force = false, flat = false } = options;
   const actions: InitAction[] = [];
 
   // Existing configuration wins over the flag unless --force. Otherwise `init --shorthand` in an
@@ -167,7 +152,6 @@ export async function planInit(options: InitOptions): Promise<InitPlan> {
   // `validate` to walk and `doctor` reports missing structure.
   const scaffoldDirs = [
     ...(flat ? ['docs/product/model'] : modelScaffoldDirs),
-    ...changeScaffoldDirs,
   ];
   for (const dir of scaffoldDirs) {
     // An existing marker is never rewritten, even with --force: it is an empty marker, so
@@ -175,7 +159,7 @@ export async function planInit(options: InitOptions): Promise<InitPlan> {
     await add(`${dir}/.gitkeep`, 'scaffold', '', { preserveAlways: true });
   }
 
-  await add('.product/config.yaml', 'config', configContent(ai, sdd, shorthand));
+  await add('.product/config.yaml', 'config', configContent(ai, shorthand));
   await add('docs/product/README.md', 'readme', productReadme);
 
   const assets: CanonicalAssets = await loadBundledAssets();
@@ -228,10 +212,9 @@ export async function planInit(options: InitOptions): Promise<InitPlan> {
     'Discover the allowed frontmatter for a kind with: prodshape schema <kind>',
     'Validate with: prodshape validate',
     'Ignore regenerable outputs: add .product/generated/ and .product/cache/ to your .gitignore.',
-    'After the baseline is accepted, evolve it through Product Changes: /product:change or the analyze-product-change skill.',
-    ...(sdd === 'openspec'
-      ? ['Hand increments to OpenSpec with: prodshape handoff create --adapter openspec']
-      : []),
+    'Evolve the model through pull requests: every change is a reviewed merge into the baseline.',
+    'Cite product artifacts from consumer docs with: prodshape cite',
+    'Verify citations with: prodshape citations verify',
   ];
 
   return {

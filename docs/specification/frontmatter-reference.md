@@ -299,24 +299,6 @@ in [Product Changes](product-changes.md).
 Note that `provenance` is **not** accepted here. A recovery change carries provenance on its
 proposed artifacts, which are ordinary artifact documents, not on the change itself.
 
-<!-- BEGIN GENERATED: product-change -->
-
-| Field                 | Required | Type            | Allowed values                                                                          | Notes                                                      |
-| --------------------- | -------- | --------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `id`                  | yes      | string          | `^CHG-[A-Z0-9]+(-[A-Z0-9]+)*$`                                                          |                                                            |
-| `type`                | yes      | const           | `product-change`                                                                        |                                                            |
-| `title`               | yes      | string          |                                                                                         | Must not be empty.                                         |
-| `status`              | yes      | enum            | `draft`, `proposed`, `approved`, `in-progress`, `implemented`, `rejected`, `superseded` | Lifecycle of a product change.                             |
-| `base-revision`       | yes      | string          | `^[0-9a-f]{7,40}$`                                                                      | The baseline Git revision this change was created against. |
-| `operations`          | yes      | object          |                                                                                         |                                                            |
-| `operations.add`      | yes      | array of string |                                                                                         |                                                            |
-| `operations.add[]`    | yes      | string          | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$`                    | Any artifact of the current product model.                 |
-| `operations.modify`   | yes      | array of string |                                                                                         |                                                            |
-| `operations.modify[]` | yes      | string          | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$`                    | Any artifact of the current product model.                 |
-| `operations.remove`   | yes      | array of string |                                                                                         |                                                            |
-| `operations.remove[]` | yes      | string          | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$`                    | Any artifact of the current product model.                 |
-
-<!-- END GENERATED: product-change -->
 
 ---
 
@@ -332,30 +314,6 @@ below are the field index.
 `implements` declares coverage per requirement; `scope` becomes required when `coverage` is
 `partial`. See [Delivery Slices](delivery-slices.md).
 
-<!-- BEGIN GENERATED: delivery-slice -->
-
-| Field                      | Required | Type            | Allowed values                                                           | Notes                                                                                                        |
-| -------------------------- | -------- | --------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| `schema`                   | yes      | const           | `product-definition-as-code/delivery-slice/v1alpha1`                     |                                                                                                              |
-| `id`                       | yes      | string          | `^SLI-[A-Z0-9]+(-[A-Z0-9]+)*$`                                           |                                                                                                              |
-| `title`                    | yes      | string          |                                                                          | Must not be empty.                                                                                           |
-| `status`                   | yes      | enum            | `draft`, `proposed`, `approved`, `in-progress`, `completed`, `cancelled` | Lifecycle of a delivery slice.                                                                               |
-| `product-change`           | yes      | string          | `^CHG-[A-Z0-9]+(-[A-Z0-9]+)*$`                                           |                                                                                                              |
-| `outcome`                  | yes      | string          |                                                                          | Must not be empty.                                                                                           |
-| `implements`               | yes      | array of object |                                                                          | At least one entry.                                                                                          |
-| `implements[].requirement` | yes      | string          | `^(FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$`                                 | A functional requirement, quality requirement or constraint.                                                 |
-| `implements[].coverage`    | yes      | enum            | `full`, `partial`                                                        |                                                                                                              |
-| `implements[].scope`       | no       | string          |                                                                          | Required when coverage is partial: the precise part of the requirement this slice covers. Must not be empty. |
-| `affects`                  | no       | array of string |                                                                          |                                                                                                              |
-| `affects[]`                | yes      | string          | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$`     | Any artifact of the current product model.                                                                   |
-| `depends-on`               | no       | array of string |                                                                          |                                                                                                              |
-| `depends-on[]`             | yes      | string          | `^SLI-[A-Z0-9]+(-[A-Z0-9]+)*$`                                           |                                                                                                              |
-| `verification`             | yes      | array of string |                                                                          | At least one entry.                                                                                          |
-| `verification[]`           | yes      | string          |                                                                          | Must not be empty.                                                                                           |
-| `out-of-scope`             | no       | array of string |                                                                          |                                                                                                              |
-| `out-of-scope[]`           | yes      | string          |                                                                          | Must not be empty.                                                                                           |
-
-<!-- END GENERATED: delivery-slice -->
 
 ### Product Handoff
 
@@ -363,37 +321,6 @@ below are the field index.
 `prodshape handoff status` reports its staleness. Documented here so the contract is inspectable.
 See [Handoff Contract](handoff-contract.md).
 
-<!-- BEGIN GENERATED: product-handoff -->
-
-| Field                   | Required | Type            | Allowed values                                                                                                                                   | Notes                                                          |
-| ----------------------- | -------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
-| `schema`                | yes      | const           | `product-definition-as-code/handoff/v1alpha1`                                                                                                    |                                                                |
-| `id`                    | yes      | string          | `^HOF-[A-Z0-9]+(-[A-Z0-9]+)*$`                                                                                                                   |                                                                |
-| `generated-at`          | yes      | string          |                                                                                                                                                  |                                                                |
-| `work-item`             | yes      | object          |                                                                                                                                                  |                                                                |
-| `work-item.provider`    | yes      | string          |                                                                                                                                                  | Must not be empty.                                             |
-| `work-item.repository`  | yes      | string          |                                                                                                                                                  | Must not be empty.                                             |
-| `work-item.id`          | yes      | string          |                                                                                                                                                  | Must not be empty.                                             |
-| `work-item.title`       | yes      | string          |                                                                                                                                                  | Must not be empty.                                             |
-| `source`                | yes      | object          |                                                                                                                                                  |                                                                |
-| `source.repository`     | yes      | string          |                                                                                                                                                  | Must not be empty.                                             |
-| `source.revision`       | yes      | string          | `^[0-9a-f]{7,40}$`                                                                                                                               |                                                                |
-| `source.product-change` | yes      | string          | `^CHG-[A-Z0-9]+(-[A-Z0-9]+)*$`                                                                                                                   |                                                                |
-| `source.delivery-slice` | yes      | string          | `^SLI-[A-Z0-9]+(-[A-Z0-9]+)*$`                                                                                                                   |                                                                |
-| `implements`            | yes      | array of string |                                                                                                                                                  | At least one entry.                                            |
-| `implements[]`          | yes      | string          | `^(FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$`                                                                                                         | A functional requirement, quality requirement or constraint.   |
-| `affects`               | yes      | array of string |                                                                                                                                                  |                                                                |
-| `affects[]`             | yes      | string          | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$`                                                                             | Any artifact of the current product model.                     |
-| `artifacts`             | yes      | array of object |                                                                                                                                                  | At least one entry.                                            |
-| `artifacts[].id`        | yes      | string          | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$`                                                                             | Any artifact of the current product model.                     |
-| `artifacts[].type`      | yes      | enum            | `actor`, `journey`, `use-case`, `business-rule`, `domain-term`, `bounded-context`, `functional-requirement`, `quality-requirement`, `constraint` |                                                                |
-| `artifacts[].path`      | yes      | string          |                                                                                                                                                  | Must not be empty.                                             |
-| `artifacts[].digest`    | yes      | string          | `^sha256:[0-9a-f]{64}$`                                                                                                                          | SHA-256 over UTF-8 content with line endings normalized to LF. |
-| `context`               | yes      | object          |                                                                                                                                                  |                                                                |
-| `context.path`          | yes      | string          |                                                                                                                                                  | Must not be empty.                                             |
-| `context.digest`        | yes      | string          | `^sha256:[0-9a-f]{64}$`                                                                                                                          | SHA-256 over UTF-8 content with line endings normalized to LF. |
-
-<!-- END GENERATED: product-handoff -->
 
 ### Product Coverage
 
@@ -401,18 +328,3 @@ See [Handoff Contract](handoff-contract.md).
 implemented, and checked before archive. See
 [Adopting in an existing OpenSpec repository](../adoption/existing-openspec-repository.md).
 
-<!-- BEGIN GENERATED: product-coverage -->
-
-| Field                                | Required | Type            | Allowed values                                 | Notes                                                                  |
-| ------------------------------------ | -------- | --------------- | ---------------------------------------------- | ---------------------------------------------------------------------- |
-| `schema`                             | yes      | const           | `product-definition-as-code/coverage/v1alpha1` |                                                                        |
-| `handoff`                            | yes      | string          | `^HOF-[A-Z0-9]+(-[A-Z0-9]+)*$`                 |                                                                        |
-| `requirements`                       | yes      | object          |                                                | Keys match `^(FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$`. At least one key. |
-| `requirements.<key>`                 | no       | object          |                                                |                                                                        |
-| `requirements.<key>.status`          | yes      | enum            | `covered`, `partial`, `uncovered`              |                                                                        |
-| `requirements.<key>.specification`   | no       | array of string |                                                | Required when status is covered or partial. At least one entry.        |
-| `requirements.<key>.specification[]` | yes      | string          |                                                | Must not be empty.                                                     |
-| `requirements.<key>.verification`    | no       | array of string |                                                | Required when status is covered or partial. At least one entry.        |
-| `requirements.<key>.verification[]`  | yes      | string          |                                                | Must not be empty.                                                     |
-
-<!-- END GENERATED: product-coverage -->

@@ -41,7 +41,6 @@ export interface ProductRepository {
   configDiagnostics: Diagnostic[];
   registry: SchemaRegistry;
   modelDir: string;
-  changesDir: string;
   generatedDir: string;
 }
 
@@ -56,7 +55,6 @@ export async function openRepository(root: string): Promise<ProductRepository> {
     configDiagnostics: diagnostics,
     registry,
     modelDir: join(root, ...config.product.model.split('/')),
-    changesDir: join(root, ...config.product.changes.split('/')),
     generatedDir: join(root, ...config.generated.root.split('/')),
   };
 }

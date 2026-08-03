@@ -1,10 +1,7 @@
-import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
 import {
   listFilesRecursive,
-  loadRegistry,
   repoRoot,
   validateMarkdownDocument,
 } from '../helpers.js';
@@ -20,16 +17,6 @@ describe('valid fixtures', () => {
       const result = await validateMarkdownDocument(file);
       expect.soft(result.diagnostics, result.file).toEqual([]);
     }
-  });
-
-  it.each([
-    ['delivery-slice.yaml', 'delivery-slice'],
-    ['product-handoff.yaml', 'product-handoff'],
-    ['product-coverage.yaml', 'product-coverage'],
-  ])('%s validates against the %s schema', async (fileName, kind) => {
-    const registry = await loadRegistry();
-    const data = parse(await readFile(join(validDir, fileName), 'utf8')) as unknown;
-    expect(registry.validate(kind, data, fileName)).toEqual([]);
   });
 });
 
@@ -50,14 +37,5 @@ describe('invalid fixtures', () => {
     const codes = result.diagnostics.map((d) => d.code);
     expect(codes).toContain(expectedCode);
     expect(result.diagnostics.every((d) => d.severity === 'error')).toBe(true);
-  });
-
-  it('partial coverage without scope fails the delivery-slice schema', async () => {
-    const registry = await loadRegistry();
-    const data = parse(
-      await readFile(join(invalidDir, 'partial-without-scope.yaml'), 'utf8'),
-    ) as unknown;
-    const diagnostics = registry.validate('delivery-slice', data, 'partial-without-scope.yaml');
-    expect(diagnostics.map((d) => d.code)).toContain('PRODUCT002');
   });
 });

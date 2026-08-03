@@ -7,9 +7,6 @@ import { idPrefixByType, isMarkdownDocumentType } from './artifact.js';
 import type { Diagnostic } from './diagnostics.js';
 import { codes } from './diagnostics.js';
 
-/** Document kinds validated by schema but keyed by file kind rather than frontmatter type. */
-export type YamlDocumentKind = 'delivery-slice' | 'product-handoff' | 'product-coverage';
-
 /** A loaded JSON Schema document, keyed by kind. Retained so the schemas can be described. */
 export type RawSchema = Record<string, unknown>;
 

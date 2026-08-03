@@ -1,18 +1,26 @@
 ---
-id: CHG-WRONG-STATUS-001
-type: product-change
-title: Product change using an artifact lifecycle state
-status: active
-base-revision: 0123456789abcdef0123456789abcdef01234567
-operations:
-  add: []
-  modify: []
-  remove: []
+id: ACT-WRONG-STATUS-001
+type: actor
+title: Actor using an invalid lifecycle state
+status: published
+actor-kind: human
 ---
 
-## Problem
+## Purpose
 
-The status 'active' belongs to the artifact lifecycle, not the product change lifecycle.
+The status 'published' is not a valid artifact lifecycle state.
+
+## Goals
+
+Trigger PRODUCT002.
+
+## Responsibilities
+
+None.
+
+## Boundaries
+
+None.
 
 ## Intended Product Outcome
 

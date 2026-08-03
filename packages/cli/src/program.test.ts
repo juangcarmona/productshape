@@ -323,7 +323,7 @@ describe('prodshape schema', () => {
     expect(result.code).toBe(0);
     const text = result.out.join('\n');
     expect(text).toMatch(/^actor\s+ACT-\s+Actor frontmatter$/m);
-    expect(text).toMatch(/^delivery-slice\s+SLI-/m);
+    expect(text).toMatch(/^functional-requirement\s+FR-/m);
     expect(text).toContain("Run 'prodshape schema <kind>' for the full field reference.");
   });
 
@@ -384,7 +384,7 @@ describe('self-application', () => {
   it('validates this repository with exit 0', async () => {
     const result = await run(['validate'], repoRoot);
     expect(result.code).toBe(0);
-    // 85 artifacts, zero diagnostics, after CHG-SNAPSHOT-004 was promoted.
-    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across 85 artifact\(s\)/);
+    // 72 artifacts, zero diagnostics, after RFC #4 delivery-model reset.
+    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across 72 artifact\(s\)/);
   });
 });

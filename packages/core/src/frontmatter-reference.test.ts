@@ -60,44 +60,19 @@ describe('describeKind', () => {
   });
 
   it('descends into nested objects and tracks their own required set', () => {
-    const operations = field('product-change', 'operations');
-    expect(operations.kind).toBe('object');
-    expect(operations.properties?.map((p) => p.name)).toEqual([
-      'operations.add',
-      'operations.modify',
-      'operations.remove',
-    ]);
-    expect(operations.properties?.every((p) => p.required)).toBe(true);
-  });
-
-  it('descends into pattern-keyed maps, recording the pattern on the map itself', () => {
-    // product-coverage.requirements is keyed by requirement ID. Before this was handled the
-    // reference rendered a bare `object` row, silently describing an opaque value where the
-    // schema actually enforces a closed entry contract.
-    const requirements = field('product-coverage', 'requirements');
-    expect(requirements.kind).toBe('object');
-    expect(requirements.keyPatterns).toEqual(['^(FR|QR|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$']);
-    expect(requirements.minProperties).toBe(1);
-    expect(requirements.properties?.map((p) => p.name)).toEqual(['requirements.<key>']);
-
-    const entry = requirements.properties?.[0];
-    expect(entry?.properties?.map((p) => p.name)).toEqual([
-      'requirements.<key>.status',
-      'requirements.<key>.specification',
-      'requirements.<key>.verification',
-    ]);
-    expect(entry?.properties?.[0]).toMatchObject({
-      required: true,
-      values: ['covered', 'partial', 'uncovered'],
-    });
+    const steps = field('journey', 'steps');
+    expect(steps.kind).toBe('array');
+    expect(steps.items?.kind).toBe('object');
+    expect(steps.items?.properties?.map((p) => p.name)).toEqual(['steps[].use-case']);
+    expect(steps.items?.properties?.every((p) => p.required)).toBe(true);
   });
 
   it('handles arrays whose items are a $ref rather than an inline object', () => {
-    const affects = field('delivery-slice', 'affects');
-    expect(affects.kind).toBe('array');
-    expect(affects.items?.kind).toBe('string');
-    expect(affects.items?.pattern).toBe(
-      '^(ACT|JRN|UC|BR|TERM|BC|FR|QR|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$',
+    const derivedFrom = field('functional-requirement', 'derived-from');
+    expect(derivedFrom.kind).toBe('array');
+    expect(derivedFrom.items?.kind).toBe('string');
+    expect(derivedFrom.items?.pattern).toBe(
+      '^(UC|BR|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$',
     );
   });
 
@@ -106,11 +81,6 @@ describe('describeKind', () => {
     expect(actor.closed).toBe(true);
     expect(actor.idPrefix).toBe('ACT');
     expect(actor.bodySections).toEqual(['Purpose', 'Goals', 'Responsibilities', 'Boundaries']);
-
-    // YAML kinds are not markdown-authored: no ID prefix, no body sections.
-    const slice = describeKind('delivery-slice', schemas);
-    expect(slice.idPrefix).toBeUndefined();
-    expect(slice.bodySections).toBeUndefined();
   });
 
   it('preserves schema property order rather than sorting or grouping by required', () => {
@@ -136,7 +106,7 @@ describe('describeAllKinds', () => {
     expect(kinds).not.toContain('common');
     expect(kinds).toEqual([...kinds].sort());
     expect(kinds).toContain('actor');
-    expect(kinds).toContain('product-coverage');
+    expect(kinds).toContain('functional-requirement');
   });
 });
 
