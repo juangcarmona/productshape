@@ -8,22 +8,6 @@
       "description": "Lifecycle of a product artifact.",
       "enum": ["draft", "active", "deprecated", "retired"]
     },
-    "productChangeStatus": {
-      "description": "Lifecycle of a product change.",
-      "enum": [
-        "draft",
-        "proposed",
-        "approved",
-        "in-progress",
-        "implemented",
-        "rejected",
-        "superseded"
-      ]
-    },
-    "deliverySliceStatus": {
-      "description": "Lifecycle of a delivery slice.",
-      "enum": ["draft", "proposed", "approved", "in-progress", "completed", "cancelled"]
-    },
     "title": {
       "type": "string",
       "minLength": 1
@@ -67,14 +51,6 @@
     "productChangeId": {
       "type": "string",
       "pattern": "^CHG-[A-Z0-9]+(-[A-Z0-9]+)*$"
-    },
-    "deliverySliceId": {
-      "type": "string",
-      "pattern": "^SLI-[A-Z0-9]+(-[A-Z0-9]+)*$"
-    },
-    "productHandoffId": {
-      "type": "string",
-      "pattern": "^HOF-[A-Z0-9]+(-[A-Z0-9]+)*$"
     },
     "requirementId": {
       "description": "A functional requirement, quality requirement or constraint.",
