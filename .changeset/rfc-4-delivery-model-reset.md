@@ -5,16 +5,16 @@
 '@prodshape/distribution': major
 ---
 
-Retire the push pipeline (Product Change, Delivery Slice, Product Handoff, overlay validation, promote, bootstrap exception) and implement the citation contract (RFC #4).
+Retire the push pipeline (Delivery Slice, Product Handoff, overlay validation, promotion, bootstrap exception) and implement the citation contract (RFC #4). The change drafting capability is recovered as a lightweight working-tree assistant where the pull request is the delivery mechanism.
 
 **Breaking changes:**
 
-- Removed `prodshape change`, `prodshape handoff`, `prodshape coverage` commands.
+- Removed `prodshape handoff` and `prodshape coverage` commands. `prodshape change` is recovered as a drafting assistant (`change validate`, `change list`, `change archive`).
 - Removed `--change` and `--sdd` options from `prodshape validate` and `prodshape init`.
-- Removed core modules: `changes.ts`, `slices.ts`, `overlay.ts`, `promote.ts`, `handoff.ts`, `references.ts`, `closure.ts`.
-- Removed schemas: `product-change`, `delivery-slice`, `product-handoff`, `product-coverage`.
-- Removed templates: `product-change.md`, `delivery-slice.yaml`, `product-context.md`, `product-handoff.yaml`.
-- Removed skills: `analyze-product-change`, `slice-product-change`, `prepare-sdd-handoff`.
+- Removed core modules: `overlay.ts`, `slices.ts`, `promote.ts`, `handoff.ts`, `references.ts`, `closure.ts`.
+- Removed schemas: `delivery-slice`, `product-handoff`, `product-coverage`. The `product-change` schema is recovered as a non-normative change-draft document.
+- Removed templates: `delivery-slice.yaml`, `product-context.md`, `product-handoff.yaml`. The `product-change.md` template is recovered.
+- Removed skills: `slice-product-change`, `prepare-sdd-handoff`. The `analyze-product-change` skill is recovered (adapted to change-as-PR).
 - Removed hooks: `validate-product-change`, `validate-before-handoff`, `verify-traceability`, `check-handoff-staleness`.
 - Removed config keys: `product.changes`, `integrations.sdd`.
 - Removed `changeScaffoldDirs` from distribution exports.
@@ -25,6 +25,9 @@ Retire the push pipeline (Product Change, Delivery Slice, Product Handoff, overl
 
 - `prodshape cite` — emit a citation record (inline, marker-block, or sidecar-ledger form).
 - `prodshape citations verify` — scan consumer documents and report citation statuses.
+- `prodshape change validate` — validate the working tree as a proposed change.
+- `prodshape change list` — list change drafts under `docs/product/changes/`.
+- `prodshape change archive` — archive a change draft after its PR is merged.
 - `verification[].id` — optional stable scenario id on FR/QR artifacts (citable via anchor).
 - New diagnostics: PRODUCT060 (unresolved citation), PRODUCT061 (stale citation, warning), PRODUCT062 (tampered projection), PRODUCT063 (anchor not found). PRODUCT042 generalized to citation digests.
 - Schema vendoring: `pnpm schemas:sync` copies normative schemas from the spec repo.
