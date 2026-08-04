@@ -1,6 +1,5 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { dirname, join, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 const repoRoot = join(import.meta.dirname, '..', '..');
