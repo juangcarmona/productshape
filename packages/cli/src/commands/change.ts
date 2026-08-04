@@ -1,6 +1,7 @@
 import { mkdir, readdir, readFile, rename, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
+  codes,
   parseArtifactDocument,
   stableJson,
   validateBaseline,
@@ -42,14 +43,28 @@ export async function runChangeValidate(
       diagnostics.push(...parsed.diagnostics);
       if (parsed.artifact) {
         const fm = parsed.artifact.frontmatter;
+
+        // Apply the change-draft schema. Without this, `additionalProperties: false` in
+        // product-change.schema.json would never execute and the closed frontmatter contract
+        // documented in the reference would be a claim no command checks. The kind is fixed
+        // rather than read from `type`, so a draft declaring the wrong type is reported as the
+        // schema violation it is.
+        diagnostics.push(...repo.registry.validate('product-change', fm, relativePath));
+
         // Check affected-artifacts references resolve in the model.
+        //
+        // PRODUCT112, not PRODUCT006: `affected-artifacts` is an intent list, so an ID the model
+        // does not contain yet is the expected state of a draft that proposes adding it, not a
+        // defect. PRODUCT006 is an error about a broken relationship inside the model, and every
+        // PRODUCT0xx code is an error (PRODUCT061 excepted), so emitting one as a warning
+        // contradicted the severity contract in docs/specification/validation.md.
         const affected = fm['affected-artifacts'];
         if (Array.isArray(affected)) {
           for (const id of affected) {
             if (typeof id === 'string' && !graph.nodeById.has(id)) {
               diagnostics.push({
                 severity: 'warning',
-                code: 'PRODUCT006',
+                code: codes.unknownAffectedArtifact,
                 message: `Change draft '${entry}' lists affected artifact '${id}' which does not exist in the model`,
                 file: relativePath,
                 artifact: id,

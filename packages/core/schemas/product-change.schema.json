@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:product-definition-as-code:schema:product-change:v1alpha1",
   "title": "Product change draft frontmatter",
-  "description": "A lightweight drafting aid for a proposed product change. Not a normative model artifact — lives under docs/product/changes/ while work is in flight, deleted or archived when the PR merges. No overlay, no promotion, no lifecycle states beyond draft/done.",
+  "description": "A lightweight drafting aid for a proposed product change. Not a normative model artifact: it lives under docs/product/changes/ while work is in flight, deleted or archived when the PR merges. No overlay, no promotion, no lifecycle states beyond draft/done.",
   "type": "object",
   "additionalProperties": false,
   "required": ["type", "title", "status"],
@@ -14,7 +14,7 @@
       "enum": ["draft", "done"]
     },
     "affected-artifacts": {
-      "description": "Artifact IDs this change intends to add, modify or remove. Informational — not validated as an overlay.",
+      "description": "Artifact IDs this change intends to add, modify or remove. Informational: not validated as an overlay.",
       "type": "array",
       "items": {
         "type": "string",

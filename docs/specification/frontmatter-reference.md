@@ -262,7 +262,7 @@ The nine artifact types of the current product model.
 
 ### Product Change
 
-`CHG-`. A lightweight drafting aid for a proposed product change. Lives under `docs/product/changes/` while work is in flight; deleted or archived when the PR merges. Not a normative model artifact — no overlay, no promotion, no lifecycle states beyond draft/done.
+No ID: the directory name under `docs/product/changes/` identifies the draft. A lightweight drafting aid for a proposed product change, living at `docs/product/changes/<slug>/change.md` while work is in flight, deleted or archived when the PR merges. Not a normative model artifact: no overlay, no promotion, no lifecycle states beyond draft/done.
 
 <!-- BEGIN GENERATED: product-change -->
 
@@ -271,10 +271,12 @@ The nine artifact types of the current product model.
 | `type` | yes | const | `product-change` |  |
 | `title` | yes | string |  | Must not be empty. |
 | `status` | yes | enum | `draft`, `done` | draft while the change is in flight; done when the PR is ready to merge. |
-| `affected-artifacts` | no | array of string |  | Artifact IDs this change intends to add, modify or remove. Informational — not validated as an overlay. |
+| `affected-artifacts` | no | array of string |  | Artifact IDs this change intends to add, modify or remove. Informational: not validated as an overlay. |
 | `affected-artifacts[]` | yes | string | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$` |  |
 
 <!-- END GENERATED: product-change -->
+
+`prodshape change validate` applies this schema to every draft it finds, so the closed contract holds here as it does for artifacts: a field the table does not list is a `PRODUCT002` error. An `affected-artifacts` entry the model does not contain is reported as `PRODUCT112`, a warning, because a draft proposing to add that artifact is the expected case.
 
 Note that `provenance` is **not** accepted here. A recovery change carries provenance on its proposed artifacts, which are ordinary artifact documents, not on the change itself.
 

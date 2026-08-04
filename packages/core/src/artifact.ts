@@ -17,7 +17,15 @@ export const markdownDocumentTypes = [...productArtifactTypes, 'product-change']
 
 export type MarkdownDocumentType = (typeof markdownDocumentTypes)[number];
 
-export const idPrefixByType: Record<MarkdownDocumentType, string> = {
+/**
+ * The ID prefix of each product artifact type, without the trailing hyphen.
+ *
+ * Keyed by `ProductArtifactType`, not `MarkdownDocumentType`: a change draft carries no `id` at
+ * all (the directory name under `docs/product/changes/` identifies it), so it has no prefix. The
+ * narrower key type is what makes that absence a fact the compiler knows, rather than an empty
+ * string every caller has to remember to test for.
+ */
+export const idPrefixByType: Record<ProductArtifactType, string> = {
   actor: 'ACT',
   journey: 'JRN',
   'use-case': 'UC',
@@ -27,7 +35,6 @@ export const idPrefixByType: Record<MarkdownDocumentType, string> = {
   'functional-requirement': 'FR',
   'quality-requirement': 'QR',
   constraint: 'CON',
-  'product-change': '',
 };
 
 export const requiredBodySections: Record<MarkdownDocumentType, string[]> = {
@@ -57,8 +64,22 @@ export const requiredBodySections: Record<MarkdownDocumentType, string[]> = {
   'product-change': ['Intent', 'Affected Artifacts', 'Open Questions', 'Out of Scope'],
 };
 
+export function isProductArtifactType(value: unknown): value is ProductArtifactType {
+  return typeof value === 'string' && (productArtifactTypes as readonly string[]).includes(value);
+}
+
 export function isMarkdownDocumentType(value: unknown): value is MarkdownDocumentType {
   return typeof value === 'string' && (markdownDocumentTypes as readonly string[]).includes(value);
+}
+
+/**
+ * The ID prefix for a document kind, or `undefined` when the kind carries no ID.
+ *
+ * The lookup for callers that hold a wider type than `ProductArtifactType`: they neither cast nor
+ * fall back to an empty string.
+ */
+export function idPrefixFor(kind: string): string | undefined {
+  return isProductArtifactType(kind) ? idPrefixByType[kind] : undefined;
 }
 
 /** Where each artifact type lives inside the model directory. */

@@ -31,6 +31,7 @@ export const codes = {
   tamperedCitation: 'PRODUCT062',
   citationAnchorNotFound: 'PRODUCT063',
   lowConfidenceDraft: 'PRODUCT111',
+  unknownAffectedArtifact: 'PRODUCT112',
 } as const;
 
 /**

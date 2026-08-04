@@ -327,6 +327,16 @@ describe('prodshape schema', () => {
     expect(text).toContain("Run 'prodshape schema <kind>' for the full field reference.");
   });
 
+  it('leaves the prefix column empty for a kind that has no ID', async () => {
+    // A change draft is identified by its directory, not an ID. The prefix map used to carry an
+    // empty string for it, which the listing rendered as a bare '-'.
+    const result = await run(['schema'], workDir);
+    expect(result.code).toBe(0);
+    const text = result.out.join('\n');
+    expect(text).toMatch(/^product-change\s+Product change draft frontmatter$/m);
+    expect(text).not.toMatch(/^product-change\s+-\s/m);
+  });
+
   it('prints the field reference for a kind', async () => {
     const result = await run(['schema', 'use-case'], workDir);
     expect(result.code).toBe(0);
@@ -377,6 +387,71 @@ describe('prodshape schema', () => {
     } finally {
       await rm(empty, { recursive: true, force: true });
     }
+  });
+});
+
+describe('prodshape change validate', () => {
+  async function withDraft<T>(frontmatter: string[], body: () => Promise<T>): Promise<T> {
+    const dir = join(workDir, 'docs', 'product', 'changes', 'chg-probe');
+    await mkdir(dir, { recursive: true });
+    await writeFile(
+      join(dir, 'change.md'),
+      ['---', ...frontmatter, '---', '', '## Intent', '', 'Probe.', ''].join('\n'),
+      'utf8',
+    );
+    try {
+      return await body();
+    } finally {
+      await rm(join(workDir, 'docs', 'product', 'changes'), { recursive: true, force: true });
+    }
+  }
+
+  it('accepts a well-formed draft', async () => {
+    await withDraft(
+      [
+        'type: product-change',
+        'title: Probe',
+        'status: draft',
+        'affected-artifacts:',
+        '  - UC-SHORTEN-001',
+      ],
+      async () => {
+        const result = await run(['change', 'validate'], workDir);
+        expect(result.code).toBe(0);
+        expect(result.out.at(-2)).toMatch(/0 error\(s\), 0 warning\(s\).*1 change draft\(s\)/);
+      },
+    );
+  });
+
+  it('applies the change-draft schema, so a field it forbids is a PRODUCT002 error', async () => {
+    // The draft carries no ID: the directory name identifies it, and the schema is closed. This
+    // is only enforceable because `change validate` runs the schema over each draft.
+    await withDraft(
+      ['id: CHG-PROBE-001', 'type: product-change', 'title: Probe', 'status: draft'],
+      async () => {
+        const result = await run(['change', 'validate'], workDir);
+        expect(result.code).toBe(1);
+        expect(result.out.join('\n')).toContain('PRODUCT002');
+      },
+    );
+  });
+
+  it('warns (PRODUCT112) on an affected artifact the model does not contain', async () => {
+    await withDraft(
+      [
+        'type: product-change',
+        'title: Probe',
+        'status: draft',
+        'affected-artifacts:',
+        '  - UC-ABSENT-001',
+      ],
+      async () => {
+        const result = await run(['change', 'validate'], workDir);
+        // A draft proposing to add an artifact is the expected case, so this must not fail.
+        expect(result.code).toBe(0);
+        expect(result.out.join('\n')).toContain('PRODUCT112');
+      },
+    );
   });
 });
 

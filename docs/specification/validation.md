@@ -55,12 +55,15 @@ Warnings are not errors. `validation.warnings-as-errors` in `.product/config.yam
 | `PRODUCT106` | Domain term with no usage |
 | `PRODUCT107` | Bounded context with no owned domain language |
 | `PRODUCT111` | Draft artifact whose `provenance.confidence` is `low` |
+| `PRODUCT112` | Change draft lists an `affected-artifacts` ID the model does not contain |
 
 `PRODUCT061` is a warning despite its `0xx` numbering: the citation contract (spec/citation-contract.md) fixes it as a warning so a stale citation does not block a consumer pipeline unless the repository escalates it via `warnings-as-errors`. Tools MUST NOT apply per-artifact-type severity defaults.
 
 `PRODUCT101` is resolved mechanically by `prodshape fix --filenames`, which renames each file to `<id.toLowerCase()>.md`. It renames through a temporary name so it also works on case-insensitive filesystems, where a casing-only rename is otherwise a silent no-op. `--dry-run` reports the plan and exits non-zero when anything would change, which makes it usable as a CI gate: `PRODUCT101` is a warning, so it is not otherwise caught unless `warnings-as-errors` is set.
 
 `PRODUCT111` marks recovered knowledge that needs human validation rather than a defect to repair; see [Frontmatter reference → Provenance](frontmatter-reference.md#provenance).
+
+`PRODUCT112` is reported by `change validate` over the change drafts under `docs/product/changes/`. It is a warning rather than an unknown-reference error because `affected-artifacts` states intent: an ID the model does not contain yet is the expected state of a draft proposing to add it. The error code for an unknown reference stays reserved for a relationship that is broken inside the model itself.
 
 ## Exit codes
 

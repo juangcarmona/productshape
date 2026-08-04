@@ -25,11 +25,11 @@ Retire the push pipeline (Delivery Slice, Product Handoff, overlay validation, p
 
 - `prodshape cite` — emit a citation record (inline, marker-block, or sidecar-ledger form).
 - `prodshape citations verify` — scan consumer documents and report citation statuses.
-- `prodshape change validate` — validate the working tree as a proposed change.
+- `prodshape change validate` — validate the working tree as a proposed change, including each change draft against the change-draft schema.
 - `prodshape change list` — list change drafts under `docs/product/changes/`.
 - `prodshape change archive` — archive a change draft after its PR is merged.
 - `verification[].id` — optional stable scenario id on FR/QR artifacts (citable via anchor).
-- New diagnostics: PRODUCT060 (unresolved citation), PRODUCT061 (stale citation, warning), PRODUCT062 (tampered projection), PRODUCT063 (anchor not found). PRODUCT042 generalized to citation digests.
+- New diagnostics: PRODUCT060 (unresolved citation), PRODUCT061 (stale citation, warning), PRODUCT062 (tampered projection), PRODUCT063 (anchor not found), PRODUCT112 (change draft lists an `affected-artifacts` ID the model does not contain, warning). PRODUCT042 generalized to citation digests.
 - Schema vendoring: `pnpm schemas:sync` copies normative schemas from the spec repo.
 - Product-model changes now happen via native pull requests (change-as-PR).
 

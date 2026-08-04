@@ -18,19 +18,19 @@ The command is `prodshape`. Requires Node.js >= 22.
 
 ## What it does
 
-A product definition is a set of Markdown artifacts with stable IDs — actors, journeys, use cases, business rules, domain terms, bounded contexts and requirements — whose typed frontmatter relationships compile into a product graph. Changes to the definition are validated deltas (overlays) that reach the baseline only through explicit promotion, and each delivery increment is handed to an SDD framework through a stable, framework-independent contract.
+A product definition is a set of Markdown artifacts with stable IDs — actors, journeys, use cases, business rules, domain terms, bounded contexts and requirements — whose typed frontmatter relationships compile into a product graph. The definition evolves through pull requests: the proposed artifacts are edited in the working tree, validated in full, reviewed and merged, so the Git merge is the promotion and the history is the record.
 
 ```bash
 prodshape init --ai claude --sdd openspec   # scaffold a product definition in a repository
 prodshape validate                          # deterministic structural validation
 prodshape graph --format mermaid            # compile the product graph
+prodshape schema <kind>                     # the allowed frontmatter for a document kind
 prodshape inspect <ID>                      # metadata + relationships of one artifact
 prodshape impact <ID> --direction incoming  # structural impact analysis
-prodshape change validate <CHG-ID>          # validate a Product Change overlay
-prodshape handoff create --change <CHG> --slice <SLI> --adapter openspec --sdd-change <name>
-prodshape coverage check <sdd-change>        # requirement coverage before SDD closure
-prodshape change promote <CHG-ID> --dry-run  # explicit promotion into the baseline
-prodshape doctor                             # repository health
+prodshape change validate                   # validate the working tree as a proposed change
+prodshape change list                       # the change drafts currently in flight
+prodshape citations verify                  # check citations in consumer documents
+prodshape doctor                            # repository health
 ```
 
 Exit codes: `0` success (warnings allowed), `1` validation errors, `2` invalid invocation or configuration, `3` unexpected failure.

@@ -40,7 +40,7 @@ Provide a structured, AI-assisted drafting workflow that reads the product graph
 prodshape validate              # Validate the current model (before drafting)
 prodshape change validate       # Validate the working tree as a proposed change
 prodshape change list           # List change drafts
-prodshape change archive <ID>   # Archive a change draft after its PR is merged
+prodshape change archive <slug> # Archive a change draft after its PR is merged
 prodshape impact <ID>           # Check structural reach of an affected artifact
 prodshape inspect <ID>          # Inspect an artifact that will be modified
 prodshape schema <kind>         # Check the frontmatter contract for a kind
@@ -51,10 +51,11 @@ prodshape schema <kind>         # Check the frontmatter contract for a kind
 1. **Validate the current model** — run `prodshape validate` to ensure the baseline is structurally sound before drafting changes against it.
 2. **Read the full model** — read all artifact files under `docs/product/model/**`. Understand the current graph: actors, journeys, use cases, rules, terms, requirements.
 3. **Analyze the change request** — identify which artifacts need to be added, modified, or removed. Use `prodshape impact <ID>` to check structural reach when relevant.
-4. **Create a change draft** — create `docs/product/changes/chg-<slug>/change.md` with:
-   - `id`: a `CHG-` ID
+4. **Create a change draft** — create `docs/product/changes/<slug>/change.md`, starting from `templates/product-change.md`. The directory slug identifies the draft; it carries no ID, and the frontmatter is closed, so any field the schema does not list is a `PRODUCT002` error. Run `prodshape schema product-change` if in doubt. Fill in:
+   - `type`: `product-change`
+   - `title`: what the change is, in one line
    - `status`: `draft`
-   - `affected-artifacts`: the IDs that will be touched
+   - `affected-artifacts`: the artifact IDs the change will add, modify or remove
    - Body sections: Intent, Affected Artifacts, Open Questions, Out of Scope
 5. **Draft the artifacts** — create or modify the actual artifact files under `docs/product/model/` directly. These are the proposed changes that will be in the PR.
 6. **Validate the proposed change** — run `prodshape change validate` to check the working tree (the model with your changes applied). Fix any diagnostics.

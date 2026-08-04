@@ -15,7 +15,7 @@ verification:
 
 ## Requirement
 
-The product MUST validate the working tree as a proposed change using `prodshape change validate`, which performs full-tree structural validation (the same checks as `prodshape validate`). The command MUST report zero errors when the proposed change is structurally sound, and MUST report specific diagnostics (with stable codes, source files, and artifact IDs) when it is not. The command MUST NOT merge, promote, or modify the canonical branch.
+The product MUST validate the working tree as a proposed change using `prodshape change validate`, which performs full-tree structural validation (the same checks as `prodshape validate`) and additionally validates every change draft under `docs/product/changes/` against the change-draft schema. The command MUST report zero errors when the proposed change is structurally sound, and MUST report specific diagnostics (with stable codes, source files, and artifact IDs) when it is not. An affected artifact the model does not contain MUST be a warning, not an error: a draft that proposes adding an artifact is the expected case. The command MUST NOT merge, promote, or modify the canonical branch.
 
 ## Rationale
 

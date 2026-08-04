@@ -2,10 +2,12 @@ export {
   productArtifactTypes,
   markdownDocumentTypes,
   idPrefixByType,
+  idPrefixFor,
   modelSubdirByType,
   requiredBodySections,
   expectedFileName,
   isMarkdownDocumentType,
+  isProductArtifactType,
 } from './artifact.js';
 export type { ProductArtifactType, MarkdownDocumentType, ParsedArtifact } from './artifact.js';
 export { checkRequiredBodySections } from './body-sections.js';

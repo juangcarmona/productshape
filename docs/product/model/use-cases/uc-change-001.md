@@ -28,14 +28,14 @@ The Product Engineer or AI Assistant receives a modification request and wants A
 
 ## Main Flow
 
-1. The actor creates a change draft (`change.md`) with a `CHG-` ID, intent, and affected-artifacts list.
+1. The actor creates a change draft at `docs/product/changes/<slug>/change.md` with `status: draft`, its intent, and an affected-artifacts list. The directory slug identifies the draft; it carries no ID.
 2. The AI Assistant reads the product graph and identifies which artifacts need to be added, modified, or removed.
 3. The AI Assistant drafts the proposed artifacts directly into `docs/product/model/`.
 4. The actor runs `prodshape change validate` to validate the working tree as a proposed change.
 5. The actor resolves open questions and adjusts the drafted artifacts.
 6. The actor opens a pull request with the proposed changes.
 7. The pull request is reviewed and merged (Git merge is the promotion).
-8. The actor marks the change draft `status: done` and runs `prodshape change archive <CHG-ID>` to move it to `changes/archive/`.
+8. The actor sets the change draft to `status: done` and runs `prodshape change archive <slug>` to move it to `changes/archive/`. The command refuses any draft not yet marked done.
 
 ## Alternative Flows
 

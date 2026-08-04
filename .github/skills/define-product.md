@@ -15,7 +15,7 @@ Establish or extend a product definition from stated intent. Produce a coherent 
 ## When to use
 
 - A repository has adopted Product Definition as Code and no product model exists yet (`docs/product/model` is empty or absent): the initial-baseline bootstrap.
-- New product intent must be expressed as artifacts after a baseline already exists: author the drafts inside a Product Change, never directly in the model.
+- New product intent must be expressed as artifacts after a baseline already exists: author the drafts on a branch, recorded by a change draft, never directly on the baseline.
 - An existing draft definition is incomplete and needs additional artifact families derived from intent already captured.
 
 Do not use this skill to reconstruct knowledge from an existing system (use `recover-product`) or to review an existing model (use `audit-product-model`).
@@ -24,7 +24,7 @@ Do not use this skill to reconstruct knowledge from an existing system (use `rec
 
 - A statement of product intent from the user: the outcome the product should create, for whom, and why. If intent cannot be stated in one sentence a stakeholder would sign, ask before drafting anything.
 - Whether a baseline exists: check for artifacts under `docs/product/model`. This determines the authoring location (see Allowed modifications).
-- If extending after the baseline: the Product Change ID (`CHG-...`) to work inside, or the user's request to create one.
+- If extending after the baseline: the branch to author on, and the change draft under `docs/product/changes/<slug>/` that records the intent, or the user's request to create one.
 
 ## Files to read
 
@@ -34,7 +34,7 @@ Do not use this skill to reconstruct knowledge from an existing system (use `rec
 - The spec repo's [identifiers chapter](https://github.com/product-definition-as-code/spec/blob/main/spec/identifiers.md) — ID prefixes and naming rules.
 - `docs/product/model/business-rules/br-change-001.md` — the change-as-PR rule: every model evolution is a validated pull request.
 - Artifact templates: the framework's `templates/` directory (installed copies may live under `.product/templates/`). Always start new artifacts from the matching template.
-- Existing artifacts under `docs/product/model` (and any active change's `proposed/`) before creating anything, to reuse IDs, terms and actors instead of duplicating them.
+- Existing artifacts under `docs/product/model`, including anything already drafted on this branch, before creating anything, to reuse IDs, terms and actors instead of duplicating them.
 
 ## Deterministic commands
 

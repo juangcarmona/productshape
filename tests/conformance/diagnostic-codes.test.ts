@@ -5,13 +5,30 @@
  *
  * Codes are emitted as string literals across many modules rather than from one registry, so
  * the check is a scan of the sources rather than an import.
+ *
+ * Two invariants are checked: every code appears in the table its number belongs to, and every
+ * emission uses the severity its number promises. The second exists because the first is blind to
+ * runtime severity, which is how `change validate` shipped a PRODUCT0xx code as a warning.
  */
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { codes } from '@prodshape/core';
 import { describe, expect, it } from 'vitest';
 import { listFilesRecursive, repoRoot } from '../helpers.js';
 
 const CODE = /PRODUCT\d{3}/g;
+
+/**
+ * A diagnostic literal: `severity` immediately followed by `code`, which is how every emission in
+ * the sources is written. The severity test below asserts this pattern accounts for every
+ * `severity:` field found, so an emission written in a different shape fails the scan rather than
+ * escaping it silently.
+ */
+const EMISSION = /severity: '(error|warning)',\s*code: (?:codes\.(\w+)|'(PRODUCT\d{3})')/g;
+const SEVERITY_FIELD = /severity: '(?:error|warning)',/g;
+
+/** `codes` values keyed by member name, to resolve `code: codes.foo` in the scanned sources. */
+const codeByName = new Map<string, string>(Object.entries(codes));
 
 /**
  * Codes specified but not yet emitted anywhere. Each entry needs a reason; an empty list means
@@ -20,17 +37,47 @@ const CODE = /PRODUCT\d{3}/g;
  */
 const specifiedButNotEmitted: string[] = [];
 
-async function emittedCodes(): Promise<Set<string>> {
+async function sourceFiles(): Promise<string[]> {
   const files: string[] = [];
   for (const pkg of ['core', 'cli', 'distribution', 'adapter-openspec']) {
     files.push(...(await listFilesRecursive(join(repoRoot, 'packages', pkg, 'src'), '.ts')));
   }
-  const codes = new Set<string>();
-  for (const file of files) {
-    if (file.endsWith('.test.ts') || file.endsWith('test-support.ts')) continue;
-    for (const match of (await readFile(file, 'utf8')).matchAll(CODE)) codes.add(match[0]);
+  return files.filter((file) => !file.endsWith('.test.ts') && !file.endsWith('test-support.ts'));
+}
+
+async function emittedCodes(): Promise<Set<string>> {
+  const found = new Set<string>();
+  for (const file of await sourceFiles()) {
+    for (const match of (await readFile(file, 'utf8')).matchAll(CODE)) found.add(match[0]);
   }
-  return codes;
+  return found;
+}
+
+interface Emission {
+  file: string;
+  code: string;
+  severity: 'error' | 'warning';
+}
+
+/** Every diagnostic literal in the sources, with the severity it is emitted at. */
+async function emissions(): Promise<{ emissions: Emission[]; severityFields: number }> {
+  const found: Emission[] = [];
+  let severityFields = 0;
+  for (const file of await sourceFiles()) {
+    const source = await readFile(file, 'utf8');
+    severityFields += [...source.matchAll(SEVERITY_FIELD)].length;
+    for (const match of source.matchAll(EMISSION)) {
+      const [, severity, member, literal] = match;
+      const code = literal ?? codeByName.get(member as string);
+      if (code === undefined) throw new Error(`${file}: 'codes.${member}' is not a known code`);
+      found.push({
+        file: file.slice(repoRoot.length),
+        code,
+        severity: severity as Emission['severity'],
+      });
+    }
+  }
+  return { emissions: found, severityFields };
 }
 
 /** Codes listed in one `## <heading>` section's table. */
@@ -72,6 +119,29 @@ describe('diagnostic codes', () => {
       (code) => !emitted.has(code) && !specifiedButNotEmitted.includes(code),
     );
     expect(missing).toEqual([]);
+  });
+
+  it('emits every code at the severity its number promises', async () => {
+    const { emissions: found, severityFields } = await emissions();
+
+    // The scan must see every emission, or the invariant below is vacuous for the ones it missed.
+    // This is what let `change validate` ship PRODUCT006 as a warning: the tests above check the
+    // tables in validation.md, and nothing checked what severity the code is emitted at.
+    expect(found).not.toHaveLength(0);
+    expect(found.length, 'every `severity:` field must be part of a scanned emission').toBe(
+      severityFields,
+    );
+
+    for (const emission of found) {
+      const isWarning = emission.code.startsWith('PRODUCT1') || emission.code === 'PRODUCT061';
+      const expected = isWarning ? 'warning' : 'error';
+      expect
+        .soft(
+          emission.severity,
+          `${emission.code} in ${emission.file} must be emitted as '${expected}'`,
+        )
+        .toBe(expected);
+    }
   });
 
   it('numbers codes consistently with their severity range', async () => {
