@@ -1,8 +1,8 @@
 ---
-'@prodshape/core': major
-'@prodshape/cli': major
-'@prodshape/adapter-openspec': major
-'@prodshape/distribution': major
+'@prodshape/core': minor
+'@prodshape/cli': minor
+'@prodshape/adapter-openspec': minor
+'@prodshape/distribution': minor
 ---
 
 Retire the push pipeline (Delivery Slice, Product Handoff, overlay validation, promotion, bootstrap exception) and implement the citation contract (RFC #4). The change drafting capability is recovered as a lightweight working-tree assistant where the pull request is the delivery mechanism.

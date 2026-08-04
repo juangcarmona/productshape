@@ -4,7 +4,7 @@
 
 ProductShape is to Product Definition as Code what OpenSpec is to Spec-Driven Development: the methodology is the long-lived concept; ProductShape is one implementation of it.
 
-> **Alpha.** This is `0.1.0-alpha.1`. The command surface and outputs are settling; the schema and diagnostic contracts (`product-definition-as-code/…`, `PRODUCT###`) are intended to be stable.
+> **Early.** The command surface and outputs are still settling; see [npm](https://www.npmjs.com/package/@prodshape/cli) for the current version. The schema and diagnostic contracts (`product-definition-as-code/…`, `PRODUCT###`) are intended to be stable.
 
 ## Install
 
@@ -37,7 +37,7 @@ Exit codes: `0` success (warnings allowed), `1` validation errors, `2` invalid i
 
 ## Status
 
-This alpha publishes the CLI only. The underlying packages (`core`, `distribution`, `adapter-openspec` and the provider integrations) are bundled into it and are not yet published individually. See the [repository](https://github.com/juangcarmona/productshape) for the methodology, the normative specification and the self-hosted product model.
+The CLI bundles `@prodshape/core`, `@prodshape/distribution`, `@prodshape/adapter-openspec` and the provider integrations at build time, so installing it is all you need. Each of those is also published separately, for programmatic use. See the [repository](https://github.com/juangcarmona/productshape) for the methodology, the normative specification and the self-hosted product model.
 
 ## License
 
