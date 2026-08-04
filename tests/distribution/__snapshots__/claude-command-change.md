@@ -22,7 +22,7 @@ Use the `analyze-product-change` skill.
 3. **Open PR** — the proposed model edits are on a branch
 4. **Merge** — the PR is reviewed and merged (Git merge is the promotion)
 5. **Mark done** — set `status: done` in the `change.md`
-6. **Archive** — `prodshape change archive <CHG-ID>` moves the draft to `changes/archive/`
+6. **Archive** — `prodshape change archive <slug>` moves the draft to `changes/archive/`
 
 ## Stop conditions
 

@@ -23,7 +23,7 @@ Provide a structured, AI-assisted drafting workflow that reads the product graph
 
 - The product model under `docs/product/model/` (must exist and be valid).
 - The change request (natural language intent from the user).
-- A `CHG-` ID for the change draft (e.g. `CHG-ADD-CITE-001`).
+- A directory slug for the change draft (e.g. `chg-add-cite`).
 
 ## Files to read
 
@@ -67,8 +67,7 @@ prodshape schema <kind>         # Check the frontmatter contract for a kind
 
 ## Forbidden actions
 
-- Do NOT merge, promote, or push to the canonical branch.
-- Do NOT create delivery slices or handoffs (retired by RFC #4).
+- Do NOT merge, push, or touch the canonical branch.
 - Do NOT invent product decisions — surface them as open questions for the human.
 - Do NOT delete artifacts without explicit confirmation from the engineer.
 

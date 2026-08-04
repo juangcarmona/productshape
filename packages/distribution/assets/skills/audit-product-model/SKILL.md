@@ -38,7 +38,7 @@ Run these FIRST and treat their output as the authoritative structural baseline:
 - `prodshape graph --format json` — the compiled graph for connectivity questions.
 - `prodshape impact <ID> [--depth n] [--direction incoming|outgoing|both]` — incoming and outgoing reach of a suspect artifact.
 - `prodshape inspect <ID>` — the resolved view of a single artifact.
-- `prodshape change validate <CHG-ID>` — when the audit scope includes an active change.
+- `prodshape change validate` — when the audit scope includes a proposed change (takes no argument).
 
 ## Reasoning procedure
 
@@ -71,7 +71,7 @@ Run these FIRST and treat their output as the authoritative structural baseline:
 - Re-deriving structural facts by reading files when `validate` already reports them, or contradicting the CLI's structural output with your own reading (BR-AI-001).
 - Presenting an interpretation as a fact: every semantic finding is labeled as interpretation.
 - Deciding QUESTION findings yourself — contradictions and orphan-intent calls are product decisions.
-- Marking artifacts `active`, approving changes or slices, or promoting anything.
+- Marking artifacts `active`, or merging/pushing changes.
 
 ## Human approval points
 

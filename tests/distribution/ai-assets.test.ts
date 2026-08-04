@@ -72,7 +72,7 @@ describe('canonical commands', () => {
 });
 
 describe('canonical hooks', () => {
-  it('no hooks are shipped (push-pipeline hooks retired by RFC #4)', () => {
+  it('no hooks are shipped', () => {
     expect(hookNames).toEqual([]);
   });
 });
