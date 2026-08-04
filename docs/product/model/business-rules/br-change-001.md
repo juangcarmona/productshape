@@ -9,7 +9,7 @@ applies-to:
 
 ## Rule
 
-The baseline changes through exactly one operation: a human merging a validated proposed revision (a pull request). Every semantic evolution of the product definition MUST be a pull request that passes `prodshape validate` (CI gate) before merge. Tools MUST NOT merge, auto-approve or self-merge model changes. A change draft (`CHG-` artifact) MAY be used to structure the intent, affected artifacts and open questions during drafting, but the draft is not a delivery mechanism — the PR is.
+The baseline changes through exactly one operation: a human merging a validated proposed revision (a pull request). Every semantic evolution of the product definition MUST be a pull request that passes `prodshape validate` (CI gate) before merge. Tools MUST NOT merge, auto-approve or self-merge model changes. A change draft MAY be used to structure the intent, affected artifacts and open questions during drafting, but the draft is not a delivery mechanism — the PR is.
 
 ## Rationale
 

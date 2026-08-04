@@ -1,6 +1,11 @@
 import { mkdir, readdir, readFile, rename, stat } from 'node:fs/promises';
 import { join } from 'node:path';
-import { parseArtifactDocument, stableJson, validateBaseline } from '@prodshape/core';
+import {
+  parseArtifactDocument,
+  stableJson,
+  validateBaseline,
+  type Diagnostic,
+} from '@prodshape/core';
 import { exitCodes, formatDiagnosticLine, resolveRepository, type CliIo } from '../context.js';
 
 export interface ChangeValidateOptions {
@@ -12,8 +17,52 @@ export async function runChangeValidate(
   options: ChangeValidateOptions,
 ): Promise<number> {
   const repo = await resolveRepository(io);
-  const { graph, diagnostics: reported } = await validateBaseline(repo);
-  const diagnostics = reported;
+  const { graph, diagnostics: modelDiagnostics } = await validateBaseline(repo);
+  const diagnostics: Diagnostic[] = [...modelDiagnostics];
+
+  // Also validate any change drafts found under docs/product/changes/.
+  const changesDir = join(repo.root, 'docs', 'product', 'changes');
+  let draftCount = 0;
+  try {
+    const entries = (await readdir(changesDir, { withFileTypes: true }))
+      .filter((e) => e.isDirectory() && e.name !== 'archive')
+      .map((e) => e.name)
+      .sort();
+    for (const entry of entries) {
+      const changeFile = join(changesDir, entry, 'change.md');
+      try {
+        await stat(changeFile);
+      } catch {
+        continue;
+      }
+      draftCount += 1;
+      const content = await readFile(changeFile, 'utf8');
+      const relativePath = `docs/product/changes/${entry}/change.md`;
+      const parsed = parseArtifactDocument(content, relativePath);
+      diagnostics.push(...parsed.diagnostics);
+      if (parsed.artifact) {
+        const fm = parsed.artifact.frontmatter;
+        // Check affected-artifacts references resolve in the model.
+        const affected = fm['affected-artifacts'];
+        if (Array.isArray(affected)) {
+          for (const id of affected) {
+            if (typeof id === 'string' && !graph.nodeById.has(id)) {
+              diagnostics.push({
+                severity: 'warning',
+                code: 'PRODUCT006',
+                message: `Change draft '${entry}' lists affected artifact '${id}' which does not exist in the model`,
+                file: relativePath,
+                artifact: id,
+                field: 'affected-artifacts',
+              });
+            }
+          }
+        }
+      }
+    }
+  } catch {
+    // No changes directory — no drafts to validate.
+  }
 
   const errors = diagnostics.filter((d) => d.severity === 'error');
   const warnings = diagnostics.filter((d) => d.severity === 'warning');
@@ -23,13 +72,13 @@ export async function runChangeValidate(
       stableJson({
         schema: 'product-definition-as-code/diagnostics/v1alpha1',
         diagnostics,
-        summary: { errors: errors.length, warnings: warnings.length },
+        summary: { errors: errors.length, warnings: warnings.length, drafts: draftCount },
       }).trimEnd(),
     );
   } else {
     for (const diagnostic of diagnostics) io.out(formatDiagnosticLine(diagnostic));
     io.out(
-      `${errors.length} error(s), ${warnings.length} warning(s) across ${graph.nodes.length} artifact(s)`,
+      `${errors.length} error(s), ${warnings.length} warning(s) across ${graph.nodes.length} artifact(s)${draftCount > 0 ? ` and ${draftCount} change draft(s)` : ''}`,
     );
     if (errors.length === 0) {
       io.out('Proposed change validates: the working tree is structurally sound.');
