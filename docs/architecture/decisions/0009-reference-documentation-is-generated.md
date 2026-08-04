@@ -22,7 +22,7 @@ Three properties make the guarantee real rather than intended:
 
 This extends rather than replaces the existing derivation decisions: the graph is derived from artifacts (0002), vendor assets are derived from canonical assets (0008), and reference documentation is derived from contracts (this decision). The same test applies in each case — if a thing can be computed from a canonical source, it is computed, and the computation is verified.
 
-The decision does not apply to documentation that carries meaning the contract cannot express. `docs/specification/artifacts.md` remains hand-written: a schema can state that `actor-kind` accepts four values, but not that actors are not personas.
+The decision does not apply to documentation that carries meaning the contract cannot express. The spec repo's [artifacts chapter](https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md) remains hand-written: a schema can state that `actor-kind` accepts four values, but not that actors are not personas.
 
 ## Consequences
 

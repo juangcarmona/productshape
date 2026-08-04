@@ -60,7 +60,7 @@ Frontmatter is a **closed** contract — an unrecognised property is an error, n
 
 ## The product graph
 
-Each relationship is authored exactly once, in one direction, on one artifact (`derived-from`, `governed-by`, `defined-in`, ...). The graph compiler builds the full product graph from those declarations and derives all reverse views — a bounded context's owned terms, a rule's consumers, a use case's derived requirements — so nobody maintains reciprocal references. Validation over the graph is deterministic: unresolved references, disallowed target types, duplicate IDs and lifecycle violations are errors with stable codes; unused rules, unreachable requirements and draft artifacts resting on low-confidence evidence are warnings. Structural impact analysis (`impact <ID>`) answers "what is connected to this, how far, in which direction" — deterministically, with no semantic claims. See [the product graph](docs/methodology/product-graph.md) and [relationships](docs/specification/relationships.md).
+Each relationship is authored exactly once, in one direction, on one artifact (`derived-from`, `governed-by`, `defined-in`, ...). The graph compiler builds the full product graph from those declarations and derives all reverse views — a bounded context's owned terms, a rule's consumers, a use case's derived requirements — so nobody maintains reciprocal references. Validation over the graph is deterministic: unresolved references, disallowed target types, duplicate IDs and lifecycle violations are errors with stable codes; unused rules, unreachable requirements and draft artifacts resting on low-confidence evidence are warnings. Structural impact analysis (`impact <ID>`) answers "what is connected to this, how far, in which direction" — deterministically, with no semantic claims. See [the product graph](docs/methodology/product-graph.md) and [relationships](https://github.com/product-definition-as-code/spec/blob/main/spec/relationships.md).
 
 ## From idea to SDD increment
 
@@ -134,7 +134,7 @@ What you can read alongside:
 
 - [The manifesto](docs/manifesto.md) and [the methodology overview](docs/methodology/overview.md) — the overview is a five-minute read.
 - The self-hosted model under `docs/product/model`: this repository defines itself with its own methodology, so every artifact kind has a real example.
-- [The specification](docs/specification/index.md) — normative, ten chapters. Start with [Artifacts](docs/specification/artifacts.md) for what each kind means and the [frontmatter reference](docs/specification/frontmatter-reference.md) for what you may write in one.
+- [The specification](https://github.com/product-definition-as-code/spec) — normative. Start with [Artifacts](https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md) for what each kind means and the [frontmatter reference](docs/specification/frontmatter-reference.md) for what you may write in one.
 - `schemas/` and `templates/` — the machine contracts the CLI validates against, and a conformant starting point for each artifact kind.
 
 Adoption guides for the four entry paths: [greenfield](docs/adoption/greenfield.md), [brownfield](docs/adoption/brownfield.md), [existing repository](docs/adoption/existing-repository.md) and [existing OpenSpec repository](docs/adoption/existing-openspec-repository.md).

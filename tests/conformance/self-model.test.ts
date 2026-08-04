@@ -115,7 +115,7 @@ const expectedIds: Record<string, string[]> = {
   ],
 };
 
-/** Canonical relationship fields and their allowed target types (docs/specification/relationships.md). */
+/** Canonical relationship fields and their allowed target types (https://github.com/product-definition-as-code/spec/blob/main/spec/relationships.md). */
 const referenceFields: Record<string, { types: string[]; onlyOn?: string[] }> = {
   'primary-actor': { types: ['actor'] },
   'supporting-actors': { types: ['actor'] },

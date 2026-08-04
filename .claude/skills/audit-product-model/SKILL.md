@@ -27,9 +27,9 @@ Do not use this skill to author artifacts (use `define-product`) or to reconstru
 
 ## Files to read
 
-- `docs/specification/artifacts.md` — the contracts semantic findings are judged against.
+- The spec repo's [artifacts chapter](https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md) — the contracts semantic findings are judged against.
 - `docs/specification/validation.md` — diagnostic codes, so structural findings cite them.
-- `docs/specification/product-changes.md` — when auditing within or around an active change.
+- `docs/product/model/business-rules/br-change-001.md` — the change-as-PR rule, when auditing within or around an in-flight change.
 - `references/finding-classification.md` in this skill — ERROR vs OBSERVATION vs QUESTION.
 - The artifact files in scope under `docs/product/model` — for semantic review only, after the structural baseline is established by the CLI.
 
@@ -41,7 +41,7 @@ Run these FIRST and treat their output as the authoritative structural baseline:
 - `prodshape graph --format json` — the compiled graph for connectivity questions.
 - `prodshape impact <ID> [--depth n] [--direction incoming|outgoing|both]` — incoming and outgoing reach of a suspect artifact.
 - `prodshape inspect <ID>` — the resolved view of a single artifact.
-- `prodshape change validate <CHG-ID>` — when the audit scope includes an active change.
+- `prodshape change validate` — when the audit scope includes a proposed change (takes no argument).
 
 ## Reasoning procedure
 
@@ -74,7 +74,7 @@ Run these FIRST and treat their output as the authoritative structural baseline:
 - Re-deriving structural facts by reading files when `validate` already reports them, or contradicting the CLI's structural output with your own reading (BR-AI-001).
 - Presenting an interpretation as a fact: every semantic finding is labeled as interpretation.
 - Deciding QUESTION findings yourself — contradictions and orphan-intent calls are product decisions.
-- Marking artifacts `active`, approving changes or slices, or promoting anything.
+- Marking artifacts `active`, or merging/pushing changes.
 
 ## Human approval points
 

@@ -19,7 +19,7 @@ provenance:
   recovered-from: observation | inference | interview | documentation  # optional
 A draft whose confidence is low is reported as PRODUCT111, so candidates needing human
 validation are derivable from validation output.
-Contract: docs/specification/artifacts.md
+Contract: https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md
 Schema reference: docs/specification/frontmatter-reference.md#actor
 -->
 

@@ -6,7 +6,7 @@ const headingPattern = /^##\s+(.+?)\s*$/gm;
 
 /**
  * Check that a Markdown body contains the required `##` sections for its type,
- * in the specified order (docs/specification/artifacts.md).
+ * in the specified order (https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md).
  */
 export function checkRequiredBodySections(
   kind: string,

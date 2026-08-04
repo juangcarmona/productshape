@@ -28,9 +28,9 @@ Do not use this skill for greenfield intent (use `define-product`) or to review 
 ## Files to read
 
 - `docs/methodology/recover.md` — the recovery contract this skill implements.
-- `docs/specification/artifacts.md` — target artifact contracts and required body sections.
+- The spec repo's [artifacts chapter](https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md) — target artifact contracts and required body sections.
 - `docs/specification/frontmatter-reference.md` — the exact allowed frontmatter per artifact kind, including the `provenance` object and its permitted values.
-- `docs/specification/product-changes.md` — recovery-change structure and operations.
+- `docs/product/model/business-rules/br-change-001.md` — the change-as-PR rule.
 - Artifact templates in the framework's `templates/` (installed copies may be under `.product/templates/`).
 - `references/evidence-sources.md` in this skill — what each evidence source is good for and its typical confidence.
 - Existing artifacts under `docs/product/model`, so candidates extend rather than duplicate.
@@ -38,7 +38,7 @@ Do not use this skill for greenfield intent (use `define-product`) or to review 
 ## Deterministic commands
 
 - `prodshape validate --format json` — structural validation of draft candidates.
-- `prodshape change validate <CHG-ID>` — overlay validation of a recovery change.
+- `prodshape change validate` — full-tree validation of the working tree as a proposed change (takes no argument).
 - `prodshape graph --format json` — the existing graph, to attach candidates correctly.
 - `prodshape inspect <ID>` — existing artifact detail before referencing or modifying.
 - `prodshape schema <kind>` — the allowed frontmatter for a kind, read from the schemas.
@@ -63,14 +63,14 @@ Structural facts come from these commands, never from your own judgement (BR-AI-
    `source` and `confidence` are required whenever provenance is present; `recovered-from` is `observation`, `inference`, `interview` or `documentation`, and may be omitted when the evidence is genuinely more than one of these. Keep the reasoning — which claim is observed, which is inferred, and what the evidence does not settle — in the artifact body. A draft whose confidence is `low` is reported as `PRODUCT111`, so the queue of candidates needing human validation is derivable from validation output rather than tracked by hand.
 
 6. Surface contradictions as open questions. When code disagrees with documentation, tests contradict stakeholders, or one term carries two meanings, record the conflict and both sources as an open question. Never pick a winner silently.
-7. Write the candidates: draft artifacts from templates (`status: draft`), named by lowercase ID. Without a baseline, write them under `docs/product/model` as bootstrap candidates; with a baseline, create a recovery Product Change and write them under its `proposed/`, listed in `operations`.
+7. Write the candidates: draft artifacts from templates (`status: draft`), named by lowercase ID. Without a baseline, write them under `docs/product/model` as bootstrap candidates; with a baseline, author them in the working tree (a branch) and structure the intent in a change draft at `docs/product/changes/chg-<slug>/change.md`, listing every touched artifact in its `affected-artifacts`.
 8. Run deterministic validation and fix every structural error.
 9. Hand over to a human with the candidate list, per-candidate confidence, all contradictions and open questions, and the evidence gaps. The human validates semantics, resolves or defers contradictions, and approves what enters the model.
 
 ## Allowed modifications
 
 - Creating and editing draft candidate artifacts under `docs/product/model` only when no accepted baseline exists yet (bootstrap recovery).
-- Creating a recovery Product Change under `docs/product/changes/active/<chg-id>/` and its `change.md` and `proposed/` artifacts when a baseline exists.
+- Creating a recovery change draft at `docs/product/changes/chg-<slug>/change.md` and authoring the proposed artifacts in the working tree when a baseline exists.
 - Editing candidates you created in this session.
 
 ## Forbidden actions
@@ -80,7 +80,7 @@ Structural facts come from these commands, never from your own judgement (BR-AI-
 - Presenting inferred intent as observed behaviour, or emitting a candidate without provenance — candidates without provenance are opinions.
 - Resolving contradictions between evidence sources yourself; they remain open questions.
 - Inventing frontmatter fields. Each kind accepts exactly the properties its schema defines — `provenance` is the one recovery adds, and it accepts only its own defined sub-fields. Anything outside that is rejected as `PRODUCT002`. Check with `schema <kind>` rather than guessing.
-- Marking artifacts `active`, approving changes or slices, or promoting.
+- Marking artifacts `active`, or merging/pushing changes.
 - Replacing deterministic validation with your own reading of files (BR-AI-001).
 
 ## Human approval points
@@ -93,13 +93,13 @@ Structural facts come from these commands, never from your own judgement (BR-AI-
 
 - Draft candidate artifacts (or a recovery Product Change containing them), each carrying `provenance` frontmatter with its source, its confidence, and where classifiable the recovery method, and labelling each body claim observed or inferred.
 - Every contradiction between evidence sources recorded as an explicit open question.
-- A clean structural validation run (`validate` or `change validate <CHG-ID>`).
+- A clean structural validation run (`validate` or `change validate`).
 - A recovery summary for the human: candidates by confidence level, unresolved contradictions, and evidence sources that were unavailable or unexamined.
 
 ## Completion checks
 
 - Every candidate carries `provenance` frontmatter with a source and a confidence, and labels each body claim observed or inferred; no unlabeled mixtures.
 - No contradiction was silently resolved; all appear as open questions.
-- All candidates are `status: draft`; nothing was marked active, approved or promoted.
-- `prodshape validate` (or `change validate <CHG-ID>`) was run after the last edit and reports no errors.
+- All candidates are `status: draft`; nothing was marked active or merged.
+- `prodshape validate` (or `change validate`) was run after the last edit and reports no errors.
 - The human validation handover was issued, including confidence breakdown and evidence gaps.

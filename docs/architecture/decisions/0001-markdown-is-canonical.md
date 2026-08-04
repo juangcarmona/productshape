@@ -10,7 +10,7 @@ Product knowledge needs a source of truth that survives tool churn, diffs cleanl
 
 Authored Markdown files (artifact documents with YAML frontmatter) and authored delivery-slice YAML files under `docs/product` are the source of truth. Git history is the historical record; no separate audit log exists.
 
-"Markdown is canonical" is shorthand, not a literal file-extension rule: the canonical-authority table in [`docs/specification/index.md`](../../specification/index.md) is normative, and it includes the authored `slices/*.yaml` files of a Product Change as authoritative alongside the Markdown artifacts. What makes a file canonical is that a human (possibly AI-assisted) authored it and reviews it, not its extension.
+"Markdown is canonical" is shorthand, not a literal file-extension rule: the canonical-authority table in the [specification](https://github.com/product-definition-as-code/spec/blob/main/spec/conformance.md) is normative. What makes a file canonical is that a human (possibly AI-assisted) authored it and reviews it, not its extension.
 
 Everything else — the product graph JSON, generated indexes, Mermaid diagrams, Product Handoffs, Product Context documents, traceability reports — is derived, non-canonical and rebuildable from the canonical files at any time. Tools must never require a generated file to exist in order to rebuild it, and generated files must never be edited by hand.
 

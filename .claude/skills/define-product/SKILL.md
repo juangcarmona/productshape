@@ -29,17 +29,17 @@ Do not use this skill to reconstruct knowledge from an existing system (use `rec
 ## Files to read
 
 - `docs/methodology/define.md` — the Define flow this skill implements.
-- `docs/specification/artifacts.md` — what each artifact type means, its required body sections and lifecycle.
+- The spec repo's [artifacts chapter](https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md) — what each artifact type means, its required body sections and lifecycle.
 - `docs/specification/frontmatter-reference.md` — the exhaustive per-kind field tables: which properties are allowed, which are required, and what values they accept.
-- `docs/specification/identifiers.md` — ID prefixes and naming rules.
-- `docs/specification/product-changes.md` — change structure, bootstrap exception.
+- The spec repo's [identifiers chapter](https://github.com/product-definition-as-code/spec/blob/main/spec/identifiers.md) — ID prefixes and naming rules.
+- `docs/product/model/business-rules/br-change-001.md` — the change-as-PR rule: every model evolution is a validated pull request.
 - Artifact templates: the framework's `templates/` directory (installed copies may live under `.product/templates/`). Always start new artifacts from the matching template.
 - Existing artifacts under `docs/product/model` (and any active change's `proposed/`) before creating anything, to reuse IDs, terms and actors instead of duplicating them.
 
 ## Deterministic commands
 
 - `prodshape validate --format json` — structural validation of the model.
-- `prodshape change validate <CHG-ID>` — overlay validation of a Product Change.
+- `prodshape change validate` — full-tree validation of the working tree as a proposed change (takes no argument).
 - `prodshape graph --format json` — the compiled product graph, for reuse checks.
 - `prodshape inspect <ID>` — details of an existing artifact before referencing it.
 - `prodshape impact <ID>` — what an existing artifact touches, before extending near it.
@@ -66,7 +66,7 @@ The order above is the natural order of discovery, not a gate sequence: loop bac
 ## Allowed modifications
 
 - Initial-baseline bootstrap only (no accepted baseline exists yet): create and edit draft artifacts directly under `docs/product/model`.
-- After the first baseline is accepted, the direct path is closed. Create and edit draft artifacts only inside a Product Change at `docs/product/changes/active/<chg-id>/proposed/`, listing every artifact in the change's `operations.add` or `operations.modify`, and edit that change's `change.md`.
+- After the first baseline is accepted, the direct path is closed. Author the proposed artifacts in the working tree (a branch) and structure the intent in a change draft at `docs/product/changes/chg-<slug>/change.md`, listing every touched artifact in its `affected-artifacts`. The change is delivered by a pull request, not by the draft.
 - Editing existing draft artifacts you created in this session, in either location.
 
 ## Forbidden actions
@@ -77,7 +77,7 @@ The order above is the natural order of discovery, not a gate sequence: loop bac
 - Adding frontmatter fields the artifact's schema does not define: frontmatter is a closed contract and an unrecognised property is rejected as PRODUCT002. Check with `schema <kind>`.
 - Writing implementation design into artifact bodies (class names, frameworks, storage choices).
 - Replacing deterministic validation with your own reading of the files (BR-AI-001).
-- Running promotion, or creating Git commits, unless the user explicitly asks.
+- Merging, pushing, or creating Git commits, unless the user explicitly asks.
 
 ## Human approval points
 
@@ -88,8 +88,8 @@ The order above is the natural order of discovery, not a gate sequence: loop bac
 ## Expected outputs
 
 - Draft artifact files, one per artifact, created from templates, valid against their schemas, in the correct location for the mode.
-- For post-baseline work: a Product Change directory with `change.md` (operations listing every proposed artifact) and the drafts under `proposed/`.
-- A clean run of `prodshape validate` (or `change validate <CHG-ID>`) — zero errors; remaining warnings explained to the human.
+- For post-baseline work: a change draft at `docs/product/changes/chg-<slug>/change.md` with `affected-artifacts` listing every proposed artifact.
+- A clean run of `prodshape validate` (or `change validate`) — zero errors; remaining warnings explained to the human.
 - A summary for the human: what was drafted, the traceability chain, and every open question.
 
 ## Completion checks
@@ -97,5 +97,5 @@ The order above is the natural order of discovery, not a gate sequence: loop bac
 - Every requirement has a non-empty `derived-from` tracing to use cases, rules or constraints.
 - Every use case names an existing `primary-actor`; every journey's steps reference existing use cases.
 - Every unresolved question appears explicitly as an open question; none were silently answered.
-- `prodshape validate` (or `change validate <CHG-ID>`) was run after the last edit and reports no errors.
-- No artifact was marked `active`; no change was approved; the human review request was issued.
+- `prodshape validate` (or `change validate`) was run after the last edit and reports no errors.
+- No artifact was marked `active`; the human review request was issued.

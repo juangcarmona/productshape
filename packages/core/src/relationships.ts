@@ -1,7 +1,7 @@
 import type { ProductArtifactType } from './artifact.js';
 
 /**
- * The canonical relationship vocabulary (docs/specification/relationships.md).
+ * The canonical relationship vocabulary (https://github.com/product-definition-as-code/spec/blob/main/spec/relationships.md).
  * One authored direction per relationship; every reverse view is derived.
  */
 export interface RelationshipSpec {
