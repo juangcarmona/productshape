@@ -54,12 +54,7 @@ export const requiredBodySections: Record<MarkdownDocumentType, string[]> = {
   'functional-requirement': ['Requirement', 'Rationale', 'Acceptance Scenarios'],
   'quality-requirement': ['Requirement', 'Measurement', 'Verification'],
   constraint: ['Constraint', 'Rationale', 'Consequences'],
-  'product-change': [
-    'Intent',
-    'Affected Artifacts',
-    'Open Questions',
-    'Out of Scope',
-  ],
+  'product-change': ['Intent', 'Affected Artifacts', 'Open Questions', 'Out of Scope'],
 };
 
 export function isMarkdownDocumentType(value: unknown): value is MarkdownDocumentType {

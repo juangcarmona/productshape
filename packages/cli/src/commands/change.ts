@@ -50,10 +50,7 @@ interface ChangeDraft {
   path: string;
 }
 
-export async function runChangeList(
-  io: CliIo,
-  options: ChangeListOptions,
-): Promise<number> {
+export async function runChangeList(io: CliIo, options: ChangeListOptions): Promise<number> {
   const repo = await resolveRepository(io);
   const changesDir = join(repo.root, 'docs', 'product', 'changes');
 
@@ -188,7 +185,11 @@ export async function runChangeArchive(
   await rename(sourceDir, destDir);
 
   if (options.format === 'json') {
-    io.out(stableJson({ archived: { id: foundId, path: `docs/product/changes/archive/${foundDir}/change.md` } }).trimEnd());
+    io.out(
+      stableJson({
+        archived: { id: foundId, path: `docs/product/changes/archive/${foundDir}/change.md` },
+      }).trimEnd(),
+    );
   } else {
     io.out(`Archived ${foundId} → docs/product/changes/archive/${foundDir}/`);
   }

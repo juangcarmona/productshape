@@ -4,7 +4,13 @@ import { describe, expect, it } from 'vitest';
 import { parseArtifactDocument } from '@prodshape/core';
 import { repoRoot } from '../helpers.js';
 
-const skillNames = ['define-product', 'recover-product', 'explore-product', 'analyze-product-change', 'audit-product-model'];
+const skillNames = [
+  'define-product',
+  'recover-product',
+  'explore-product',
+  'analyze-product-change',
+  'audit-product-model',
+];
 
 const mandatorySections = [
   'Purpose',

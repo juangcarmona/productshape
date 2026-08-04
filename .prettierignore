@@ -1,5 +1,7 @@
 # Golden snapshots are byte-exact tool output; formatting them breaks the tests.
 **/__snapshots__/
+# Citation corpus fixtures carry recorded digests; formatting changes the content and breaks digest tests.
+tests/conformance/corpus/
 # Derived outputs are never formatted by hand.
 .product/generated/
 pnpm-lock.yaml
