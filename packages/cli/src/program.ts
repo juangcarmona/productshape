@@ -1,5 +1,5 @@
 import { Command, CommanderError } from 'commander';
-import { runChangeList, runChangeValidate } from './commands/change.js';
+import { runChangeArchive, runChangeList, runChangeValidate } from './commands/change.js';
 import { runCite } from './commands/cite.js';
 import { runCitationsVerify } from './commands/citations.js';
 import { runDoctorCommand } from './commands/doctor.js';
@@ -92,6 +92,14 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .option('--format <format>', 'output format: text or json', 'text')
     .action(async (options: { format: 'text' | 'json' }) => {
       capture.code = await runChangeList(io, options);
+    });
+  change
+    .command('archive')
+    .description('Archive a change draft after its PR is merged (moves to changes/archive/)')
+    .argument('<id>', 'change draft ID (CHG-...)')
+    .option('--format <format>', 'output format: text or json', 'text')
+    .action(async (id: string, options: { format: 'text' | 'json' }) => {
+      capture.code = await runChangeArchive(io, id, options);
     });
 
   program

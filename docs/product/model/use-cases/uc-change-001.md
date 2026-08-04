@@ -34,6 +34,8 @@ The Product Engineer or AI Assistant receives a modification request and wants A
 4. The actor runs `prodshape change validate` to validate the working tree as a proposed change.
 5. The actor resolves open questions and adjusts the drafted artifacts.
 6. The actor opens a pull request with the proposed changes.
+7. The pull request is reviewed and merged (Git merge is the promotion).
+8. The actor marks the change draft `status: done` and runs `prodshape change archive <CHG-ID>` to move it to `changes/archive/`.
 
 ## Alternative Flows
 

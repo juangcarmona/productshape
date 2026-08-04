@@ -36,6 +36,8 @@ Provide a structured, AI-assisted drafting workflow that reads the product graph
 ```bash
 prodshape validate              # Validate the current model (before drafting)
 prodshape change validate       # Validate the working tree as a proposed change
+prodshape change list           # List change drafts
+prodshape change archive <ID>   # Archive a change draft after its PR is merged
 prodshape impact <ID>           # Check structural reach of an affected artifact
 prodshape inspect <ID>          # Inspect an artifact that will be modified
 prodshape schema <kind>         # Check the frontmatter contract for a kind

@@ -4,24 +4,22 @@ allowed-tools:
   - prodshape validate
   - prodshape change validate
   - prodshape change list
+  - prodshape change archive
   - prodshape impact
   - prodshape inspect
   - prodshape schema
-  - prodshape graph
 ---
 
 Use the `analyze-product-change` skill.
 
-## Quick reference
+## Lifecycle
 
-```bash
-prodshape change validate          # Validate the working tree as a proposed change
-prodshape change list              # List change drafts under docs/product/changes/
-prodshape validate                 # Validate the current model (baseline)
-prodshape impact <ID>              # Check structural reach of an artifact
-prodshape inspect <ID>             # Inspect an artifact
-prodshape schema <kind>            # Check the frontmatter contract for a kind
-```
+1. **Draft** — create `docs/product/changes/chg-<slug>/change.md` (`status: draft`)
+2. **Validate** — `prodshape change validate` checks the working tree
+3. **Open PR** — the proposed model edits are on a branch
+4. **Merge** — the PR is reviewed and merged (Git merge is the promotion)
+5. **Mark done** — set `status: done` in the `change.md`
+6. **Archive** — `prodshape change archive <CHG-ID>` moves the draft to `changes/archive/`
 
 ## Stop conditions
 
