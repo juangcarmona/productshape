@@ -76,3 +76,34 @@ describe('canonical hooks', () => {
     expect(hookNames).toEqual([]);
   });
 });
+
+describe('root and distribution copies are byte-identical', () => {
+  it.each([
+    ['skills', 'skills'],
+    ['commands', 'commands'],
+    ['templates', 'templates'],
+  ])('%s root matches distribution assets', async (kind, distKind) => {
+    const rootDir = join(repoRoot, kind);
+    const distDir = join(repoRoot, 'packages', 'distribution', 'assets', distKind);
+    const rootFiles = await listFiles(rootDir);
+    const distFiles = await listFiles(distDir);
+    const rootRel = rootFiles.map((f) => f.slice(rootDir.length + 1)).sort();
+    const distRel = distFiles.map((f) => f.slice(distDir.length + 1)).sort();
+    expect(distRel, `${kind}: distribution has the same files as root`).toEqual(rootRel);
+    for (let i = 0; i < rootFiles.length; i++) {
+      const rootContent = await readFile(rootFiles[i], 'utf8');
+      const distContent = await readFile(distFiles[i], 'utf8');
+      expect(distContent, `${kind}/${rootRel[i]}: byte-identical`).toBe(rootContent);
+    }
+  });
+});
+
+async function listFiles(dir: string): Promise<string[]> {
+  const { readdir } = await import('node:fs/promises');
+  const results: string[] = [];
+  const entries = await readdir(dir, { withFileTypes: true, recursive: true });
+  for (const entry of entries) {
+    if (entry.isFile()) results.push(join(entry.parentPath, entry.name));
+  }
+  return results.sort();
+}
