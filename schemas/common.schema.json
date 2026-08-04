@@ -48,10 +48,6 @@
       "type": "string",
       "pattern": "^CON-[A-Z0-9]+(-[A-Z0-9]+)*$"
     },
-    "productChangeId": {
-      "type": "string",
-      "pattern": "^CHG-[A-Z0-9]+(-[A-Z0-9]+)*$"
-    },
     "requirementId": {
       "description": "A functional requirement, quality requirement or constraint.",
       "type": "string",

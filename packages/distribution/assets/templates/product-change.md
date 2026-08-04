@@ -1,5 +1,4 @@
 ---
-id: CHG-EXAMPLE-001
 type: product-change
 title: Example product change draft
 status: draft

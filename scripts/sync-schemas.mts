@@ -33,20 +33,13 @@ const schemaFiles = [
   'actor.schema.json',
   'bounded-context.schema.json',
   'business-rule.schema.json',
+  'common.schema.json',
   'constraint.schema.json',
   'domain-term.schema.json',
   'functional-requirement.schema.json',
   'journey.schema.json',
   'quality-requirement.schema.json',
   'use-case.schema.json',
-  // NOTE: `common.schema.json` is intentionally NOT synced here while the push-pipeline
-  // retirement (issue #52) is in progress. The spec repo's `common.schema.json` removed
-  // the retired $defs (productChangeId, deliverySliceId, productHandoffId,
-  // productChangeStatus, deliverySliceStatus), but the 4 retired schemas still present in
-  // this repo reference them and cannot compile without them. The local `common.schema.json`
-  // is therefore maintained by hand (it adds `verification[].id` from the spec repo plus
-  // retains the retired $defs) until Phase 3 deletes the retired schemas, at which point
-  // `common.schema.json` is added back to this list and fully vendored.
 ];
 
 const base = `https://raw.githubusercontent.com/${source.repo}/${source.ref}/${source.path}`;

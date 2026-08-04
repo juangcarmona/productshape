@@ -98,13 +98,13 @@ export class SchemaRegistry {
     // reject it, so matching id-pattern violations are folded into PRODUCT004.
     let prefixMismatch = false;
     if (isMarkdownDocumentType(kind) && artifact !== undefined) {
-      const expected = `${idPrefixByType[kind]}-`;
-      if (!artifact.startsWith(expected)) {
+      const prefix = idPrefixByType[kind];
+      if (prefix && !artifact.startsWith(`${prefix}-`)) {
         prefixMismatch = true;
         diagnostics.push({
           severity: 'error',
           code: codes.idPrefixMismatch,
-          message: `ID '${artifact}' does not use the '${expected}' prefix required for type '${kind}'`,
+          message: `ID '${artifact}' does not use the '${prefix}-' prefix required for type '${kind}'`,
           file,
           artifact,
           field: 'id',

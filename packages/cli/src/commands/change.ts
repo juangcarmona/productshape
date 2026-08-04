@@ -77,7 +77,7 @@ export async function runChangeList(io: CliIo, options: ChangeListOptions): Prom
     if (!parsed.artifact) continue;
     const fm = parsed.artifact.frontmatter;
     drafts.push({
-      id: typeof fm.id === 'string' ? fm.id : entry,
+      id: entry,
       title: typeof fm.title === 'string' ? fm.title : '(untitled)',
       status: typeof fm.status === 'string' ? fm.status : 'unknown',
       path: `docs/product/changes/${entry}/change.md`,
@@ -115,13 +115,13 @@ export interface ChangeArchiveOptions {
  */
 export async function runChangeArchive(
   io: CliIo,
-  id: string,
+  slug: string,
   options: ChangeArchiveOptions,
 ): Promise<number> {
   const repo = await resolveRepository(io);
   const changesDir = join(repo.root, 'docs', 'product', 'changes');
 
-  // Find the change draft directory by ID.
+  // Find the change draft directory by slug.
   let entries: string[] = [];
   try {
     entries = (await readdir(changesDir, { withFileTypes: true }))
@@ -133,9 +133,9 @@ export async function runChangeArchive(
   }
 
   let foundDir: string | undefined;
-  let foundId: string | undefined;
   let foundStatus: string | undefined;
   for (const entry of entries) {
+    if (entry !== slug) continue;
     const changeFile = join(changesDir, entry, 'change.md');
     try {
       await stat(changeFile);
@@ -146,23 +146,19 @@ export async function runChangeArchive(
     const parsed = parseArtifactDocument(content, `docs/product/changes/${entry}/change.md`);
     if (!parsed.artifact) continue;
     const fm = parsed.artifact.frontmatter;
-    const changeId = typeof fm.id === 'string' ? fm.id : '';
-    if (changeId === id) {
-      foundDir = entry;
-      foundId = changeId;
-      foundStatus = typeof fm.status === 'string' ? fm.status : 'unknown';
-      break;
-    }
+    foundDir = entry;
+    foundStatus = typeof fm.status === 'string' ? fm.status : 'unknown';
+    break;
   }
 
-  if (!foundDir || !foundId) {
-    io.err(`error: change draft '${id}' not found under docs/product/changes/`);
+  if (!foundDir) {
+    io.err(`error: change draft '${slug}' not found under docs/product/changes/`);
     return exitCodes.invalidInvocation;
   }
 
   if (foundStatus !== 'done') {
     io.err(
-      `error: change draft '${id}' has status '${foundStatus}', not 'done'. Mark it done (set status: done in the change.md) after the PR is merged, then archive.`,
+      `error: change draft '${slug}' has status '${foundStatus}', not 'done'. Mark it done (set status: done in the change.md) after the PR is merged, then archive.`,
     );
     return exitCodes.invalidInvocation;
   }
@@ -187,11 +183,11 @@ export async function runChangeArchive(
   if (options.format === 'json') {
     io.out(
       stableJson({
-        archived: { id: foundId, path: `docs/product/changes/archive/${foundDir}/change.md` },
+        archived: { slug: foundDir, path: `docs/product/changes/archive/${foundDir}/change.md` },
       }).trimEnd(),
     );
   } else {
-    io.out(`Archived ${foundId} → docs/product/changes/archive/${foundDir}/`);
+    io.out(`Archived ${foundDir} → docs/product/changes/archive/${foundDir}/`);
   }
 
   return exitCodes.success;

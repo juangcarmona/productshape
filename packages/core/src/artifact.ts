@@ -27,7 +27,7 @@ export const idPrefixByType: Record<MarkdownDocumentType, string> = {
   'functional-requirement': 'FR',
   'quality-requirement': 'QR',
   constraint: 'CON',
-  'product-change': 'CHG',
+  'product-change': '',
 };
 
 export const requiredBodySections: Record<MarkdownDocumentType, string[]> = {

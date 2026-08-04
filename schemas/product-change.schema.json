@@ -5,11 +5,8 @@
   "description": "A lightweight drafting aid for a proposed product change. Not a normative model artifact — lives under docs/product/changes/ while work is in flight, deleted or archived when the PR merges. No overlay, no promotion, no lifecycle states beyond draft/done.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id", "type", "title", "status"],
+  "required": ["type", "title", "status"],
   "properties": {
-    "id": {
-      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/productChangeId"
-    },
     "type": { "const": "product-change" },
     "title": { "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/title" },
     "status": {

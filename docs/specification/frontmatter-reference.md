@@ -268,7 +268,6 @@ The nine artifact types of the current product model.
 
 | Field | Required | Type | Allowed values | Notes |
 | --- | --- | --- | --- | --- |
-| `id` | yes | string | `^CHG-[A-Z0-9]+(-[A-Z0-9]+)*$` |  |
 | `type` | yes | const | `product-change` |  |
 | `title` | yes | string |  | Must not be empty. |
 | `status` | yes | enum | `draft`, `done` | draft while the change is in flight; done when the PR is ready to merge. |

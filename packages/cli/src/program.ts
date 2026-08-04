@@ -96,7 +96,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
   change
     .command('archive')
     .description('Archive a change draft after its PR is merged (moves to changes/archive/)')
-    .argument('<id>', 'change draft ID (CHG-...)')
+    .argument('<slug>', 'change draft directory slug (e.g. chg-add-cite)')
     .option('--format <format>', 'output format: text or json', 'text')
     .action(async (id: string, options: { format: 'text' | 'json' }) => {
       capture.code = await runChangeArchive(io, id, options);
