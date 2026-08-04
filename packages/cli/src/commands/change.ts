@@ -1,6 +1,7 @@
 import { mkdir, readdir, readFile, rename, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
+  checkRequiredBodySections,
   codes,
   parseArtifactDocument,
   stableJson,
@@ -50,6 +51,15 @@ export async function runChangeValidate(
         // rather than read from `type`, so a draft declaring the wrong type is reported as the
         // schema violation it is.
         diagnostics.push(...repo.registry.validate('product-change', fm, relativePath));
+
+        // Apply the required body sections for the same reason: requiredBodySections declares
+        // Intent, Affected Artifacts, Open Questions and Out of Scope for a draft, but
+        // checkRequiredBodySections is otherwise only reached from the model loader, so
+        // PRODUCT009 never fired on a draft and the declaration was documentation. A draft has no
+        // id, so none is passed; the file path locates it.
+        diagnostics.push(
+          ...checkRequiredBodySections('product-change', parsed.artifact.body, relativePath),
+        );
 
         // Check affected-artifacts references resolve in the model.
         //

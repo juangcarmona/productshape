@@ -391,12 +391,21 @@ describe('prodshape schema', () => {
 });
 
 describe('prodshape change validate', () => {
-  async function withDraft<T>(frontmatter: string[], body: () => Promise<T>): Promise<T> {
+  /** The sections a draft must carry, matching templates/product-change.md. */
+  const wellFormedBody = ['Intent', 'Affected Artifacts', 'Open Questions', 'Out of Scope'];
+
+  async function withDraft<T>(
+    frontmatter: string[],
+    body: () => Promise<T>,
+    sections: string[] = wellFormedBody,
+  ): Promise<T> {
     const dir = join(workDir, 'docs', 'product', 'changes', 'chg-probe');
     await mkdir(dir, { recursive: true });
     await writeFile(
       join(dir, 'change.md'),
-      ['---', ...frontmatter, '---', '', '## Intent', '', 'Probe.', ''].join('\n'),
+      ['---', ...frontmatter, '---', '', ...sections.flatMap((s) => [`## ${s}`, '', 'Probe.', ''])]
+        .join('\n')
+        .concat('\n'),
       'utf8',
     );
     try {
@@ -433,6 +442,22 @@ describe('prodshape change validate', () => {
         expect(result.code).toBe(1);
         expect(result.out.join('\n')).toContain('PRODUCT002');
       },
+    );
+  });
+
+  it('applies the required body sections, so a missing one is a PRODUCT009 error', async () => {
+    // requiredBodySections declares four sections for a draft. Until change validate ran the
+    // check, only the model loader did, so the declaration held for no file that actually exists.
+    await withDraft(
+      ['type: product-change', 'title: Probe', 'status: draft'],
+      async () => {
+        const result = await run(['change', 'validate'], workDir);
+        expect(result.code).toBe(1);
+        const out = result.out.join('\n');
+        expect(out).toContain('PRODUCT009');
+        expect(out).toContain('Out of Scope');
+      },
+      ['Intent'],
     );
   });
 
