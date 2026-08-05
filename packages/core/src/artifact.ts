@@ -12,11 +12,12 @@ export const productArtifactTypes = [
 
 export type ProductArtifactType = (typeof productArtifactTypes)[number];
 
-/** Markdown-authored document types (product artifacts plus the product change definition). */
+/** Markdown-authored document types (product artifacts plus the Product Change definition). */
 export const markdownDocumentTypes = [...productArtifactTypes, 'product-change'] as const;
 
 export type MarkdownDocumentType = (typeof markdownDocumentTypes)[number];
 
+/** The ID prefix of each Markdown document type, without the trailing hyphen. */
 export const idPrefixByType: Record<MarkdownDocumentType, string> = {
   actor: 'ACT',
   journey: 'JRN',
@@ -65,9 +66,36 @@ export const requiredBodySections: Record<MarkdownDocumentType, string[]> = {
   ],
 };
 
+export function isProductArtifactType(value: unknown): value is ProductArtifactType {
+  return typeof value === 'string' && (productArtifactTypes as readonly string[]).includes(value);
+}
+
 export function isMarkdownDocumentType(value: unknown): value is MarkdownDocumentType {
   return typeof value === 'string' && (markdownDocumentTypes as readonly string[]).includes(value);
 }
+
+/**
+ * The ID prefix for a document kind, or `undefined` when the kind is not a Markdown document.
+ *
+ * The lookup for callers that hold a wider type than `MarkdownDocumentType`: they neither cast nor
+ * fall back to an empty string.
+ */
+export function idPrefixFor(kind: string): string | undefined {
+  return isMarkdownDocumentType(kind) ? idPrefixByType[kind] : undefined;
+}
+
+/** Where each artifact type lives inside the model directory. */
+export const modelSubdirByType: Record<string, string> = {
+  actor: 'actors',
+  journey: 'journeys',
+  'use-case': 'use-cases',
+  'business-rule': 'business-rules',
+  'domain-term': 'domain/terms',
+  'bounded-context': 'domain/bounded-contexts',
+  'functional-requirement': 'requirements/functional',
+  'quality-requirement': 'requirements/quality',
+  constraint: 'requirements/constraints',
+};
 
 /**
  * The file name an artifact with this ID must have. Single source of truth for the

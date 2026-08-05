@@ -7,9 +7,6 @@ import { idPrefixByType, isMarkdownDocumentType } from './artifact.js';
 import type { Diagnostic } from './diagnostics.js';
 import { codes } from './diagnostics.js';
 
-/** Document kinds validated by schema but keyed by file kind rather than frontmatter type. */
-export type YamlDocumentKind = 'delivery-slice' | 'product-handoff' | 'product-coverage';
-
 /** A loaded JSON Schema document, keyed by kind. Retained so the schemas can be described. */
 export type RawSchema = Record<string, unknown>;
 
@@ -75,9 +72,8 @@ export class SchemaRegistry {
   }
 
   /**
-   * Validate a document's structured data against the schema for its kind.
-   * For Markdown artifacts the kind is the frontmatter `type`; for YAML documents
-   * it is the document kind (delivery-slice, product-handoff, product-coverage).
+   * Validate a document's structured data against the schema for its kind, which for a
+   * Markdown document is its frontmatter `type`.
    */
   validate(kind: string, data: unknown, file: string): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
@@ -101,13 +97,13 @@ export class SchemaRegistry {
     // reject it, so matching id-pattern violations are folded into PRODUCT004.
     let prefixMismatch = false;
     if (isMarkdownDocumentType(kind) && artifact !== undefined) {
-      const expected = `${idPrefixByType[kind]}-`;
-      if (!artifact.startsWith(expected)) {
+      const prefix = idPrefixByType[kind];
+      if (!artifact.startsWith(`${prefix}-`)) {
         prefixMismatch = true;
         diagnostics.push({
           severity: 'error',
           code: codes.idPrefixMismatch,
-          message: `ID '${artifact}' does not use the '${expected}' prefix required for type '${kind}'`,
+          message: `ID '${artifact}' does not use the '${prefix}-' prefix required for type '${kind}'`,
           file,
           artifact,
           field: 'id',
@@ -127,6 +123,35 @@ export class SchemaRegistry {
           artifact,
           field,
         });
+      }
+    }
+
+    // PRODUCT005: duplicate verification scenario ids within a single FR/QR artifact.
+    // JSON Schema cannot express "unique by property", so this is a structural check.
+    // Scenario ids are optional, but when present they must be unique within the artifact
+    // so a citation anchor resolves to exactly one scenario.
+    if (kind === 'functional-requirement' || kind === 'quality-requirement') {
+      const verification = (record as { verification?: unknown }).verification;
+      if (Array.isArray(verification)) {
+        const seenScenarioIds = new Map<string, number>();
+        for (const entry of verification) {
+          if (typeof entry !== 'object' || entry === null) continue;
+          const scenarioId = (entry as Record<string, unknown>).id;
+          if (typeof scenarioId !== 'string' || scenarioId.length === 0) continue;
+          seenScenarioIds.set(scenarioId, (seenScenarioIds.get(scenarioId) ?? 0) + 1);
+        }
+        for (const [scenarioId, count] of seenScenarioIds) {
+          if (count > 1) {
+            diagnostics.push({
+              severity: 'error',
+              code: codes.duplicateId,
+              message: `Duplicate verification scenario id '${scenarioId}' (${count} occurrences)`,
+              file,
+              artifact,
+              field: 'verification[].id',
+            });
+          }
+        }
       }
     }
     return diagnostics;

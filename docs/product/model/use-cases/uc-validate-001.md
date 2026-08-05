@@ -19,14 +19,11 @@ uses-terms:
 
 ## Goal
 
-A deterministic verdict on the structural coherence of the product model: either the model
-satisfies every structural contract, or a precise list of diagnostics says exactly what does not.
+A deterministic verdict on the structural coherence of the product model: either the model satisfies every structural contract, or a precise list of diagnostics says exactly what does not.
 
 ## Trigger
 
-The Product Engineer runs `prodshape validate` — directly, from a repository hook, or in
-a continuous integration pipeline. The AI Assistant runs it after drafting to check its own
-output.
+The Product Engineer runs `prodshape validate` — directly, from a repository hook, or in a continuous integration pipeline. The AI Assistant runs it after drafting to check its own output.
 
 ## Preconditions
 
@@ -36,27 +33,20 @@ output.
 
 1. The actor runs `prodshape validate`.
 2. All product artifacts are discovered from their canonical locations.
-3. Each artifact is checked for structural conformance: frontmatter contract, required body
-   sections, identity rules.
-4. Every declared relationship is checked: the referenced ID must exist and its type must be
-   allowed for that relationship.
-5. Lifecycle rules are checked, including references from active artifacts to retired or
-   deprecated ones.
+3. Each artifact is checked for structural conformance: frontmatter contract, required body sections, identity rules.
+4. Every declared relationship is checked: the referenced ID must exist and its type must be allowed for that relationship.
+5. Lifecycle rules are checked, including references from active artifacts to retired or deprecated ones.
 6. Diagnostics are reported with stable codes, each naming the file and artifact concerned.
-7. The command exits with a code reflecting the outcome: success when no errors exist, failure
-   otherwise.
+7. The command exits with a code reflecting the outcome: success when no errors exist, failure otherwise.
 
 ## Alternative Flows
 
-- Change overlay: with `--change <ID>`, validation checks the model as it would look with that
-  Product Change applied, without touching the baseline.
-- Machine-readable output: with `--format json`, the same diagnostics are emitted in a form other
-  tools can consume.
+- Change overlay: with `--change <ID>`, validation checks the model as it would look with that Product Change applied, without touching the baseline.
+- Machine-readable output: with `--format json`, the same diagnostics are emitted in a form other tools can consume.
 
 ## Failure Conditions
 
-- Structural errors exist: the command exits non-zero and lists every diagnostic with its stable
-  code, file and artifact, so nothing must be fixed blind.
+- Structural errors exist: the command exits non-zero and lists every diagnostic with its stable code, file and artifact, so nothing must be fixed blind.
 
 ## Postconditions
 

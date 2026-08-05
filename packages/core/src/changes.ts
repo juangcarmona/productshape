@@ -1,6 +1,5 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { parse } from 'yaml';
 import { checkRequiredBodySections } from './body-sections.js';
 import { contentDigest } from './digest.js';
 import type { Diagnostic } from './diagnostics.js';
@@ -15,15 +14,6 @@ export interface ChangeOperations {
   remove: string[];
 }
 
-export interface LoadedSlice {
-  file: string;
-  absolutePath: string;
-  digest: string;
-  data: Record<string, unknown>;
-  id?: string;
-  status?: string;
-}
-
 export interface LoadedChange {
   dir: string;
   file: string;
@@ -36,8 +26,7 @@ export interface LoadedChange {
   baseRevision?: string;
   operations: ChangeOperations;
   proposed: LoadedArtifact[];
-  slices: LoadedSlice[];
-  /** Per-document diagnostics for change.md, proposed artifacts and slices. */
+  /** Per-document diagnostics for change.md and its proposed artifacts. */
   diagnostics: Diagnostic[];
 }
 
@@ -68,7 +57,7 @@ async function listFiles(dir: string, suffix: string): Promise<string[]> {
   }
 }
 
-/** Discover active change directories: subdirectories of changes/active containing change.md. */
+/** Discover live change directories: subdirectories of changes/active containing change.md. */
 export async function discoverChanges(activeDir: string): Promise<string[]> {
   try {
     const entries = await readdir(activeDir, { withFileTypes: true });
@@ -88,7 +77,7 @@ export async function discoverChanges(activeDir: string): Promise<string[]> {
   }
 }
 
-/** Load one Product Change: change.md, proposed future-state artifacts and slices. */
+/** Load one Product Change: change.md and its complete proposed future-state artifacts. */
 export async function loadChange(
   changeDir: string,
   repoRoot: string,
@@ -118,33 +107,6 @@ export async function loadChange(
     if (result.artifact) proposed.push(result.artifact);
   }
 
-  const slices: LoadedSlice[] = [];
-  for (const sliceFile of await listFiles(join(changeDir, 'slices'), '.yaml')) {
-    const sliceRel = toPosixRelative(repoRoot, sliceFile);
-    const sliceContent = await readFile(sliceFile, 'utf8');
-    let data: Record<string, unknown> = {};
-    try {
-      data = (parse(sliceContent) ?? {}) as Record<string, unknown>;
-    } catch (error) {
-      diagnostics.push({
-        severity: 'error',
-        code: 'PRODUCT001',
-        message: `Invalid YAML: ${error instanceof Error ? error.message : String(error)}`,
-        file: sliceRel,
-      });
-      continue;
-    }
-    diagnostics.push(...registry.validate('delivery-slice', data, sliceRel));
-    slices.push({
-      file: sliceRel,
-      absolutePath: sliceFile,
-      digest: contentDigest(sliceContent),
-      data,
-      id: typeof data.id === 'string' ? data.id : undefined,
-      status: typeof data.status === 'string' ? data.status : undefined,
-    });
-  }
-
   return {
     dir: changeDir,
     file,
@@ -158,7 +120,6 @@ export async function loadChange(
       typeof frontmatter['base-revision'] === 'string' ? frontmatter['base-revision'] : undefined,
     operations: parsed.artifact ? readOperations(frontmatter) : emptyOperations(),
     proposed,
-    slices,
     diagnostics,
   };
 }

@@ -1,54 +1,36 @@
-# 0006 — The Product Handoff is the integration contract
+# 0006 — The citation contract is the integration contract
 
-Status: Accepted
-Date: 2026-07-25
+Status: Accepted Date: 2026-07-25
 
 ## Context
 
-ADR 0005 keeps Product Definition and SDD frameworks separate, so something must carry product
-knowledge across the seam. Pointing an SDD framework at the whole product repository drowns it in
-irrelevant context and gives no way to detect that the relevant knowledge changed mid-flight.
-Copying prose by hand is unverifiable. The integration needs a precise, checkable payload.
+ADR 0005 keeps the Product Definition and SDD frameworks separate, so something must carry product knowledge across the seam. Pointing an SDD framework at the whole product repository drowns it in irrelevant context and gives no way to detect that the relevant knowledge changed mid-flight. Copying prose by hand is unverifiable: the copy and the definition drift apart, and nothing says so.
+
+Generating a bounded snapshot for each increment fixes the volume problem but not the ownership one. A snapshot is still a copy, it still needs regenerating whenever anything it quotes moves, and readers mistake it for a source of truth however plainly it is marked as generated.
 
 ## Decision
 
-The integration contract is the **Product Handoff**: a versioned
-(`product-definition-as-code/handoff/v1alpha1`), generated, framework-independent document defined
-in the [handoff contract specification](../../specification/handoff-contract.md). It carries the
-product subgraph selected for one delivery increment — the implemented requirements, the affected
-artifacts, and their upstream context — together with per-artifact SHA-256 content digests, the
-source Git revision, and the work-item reference.
+The integration contract is the **citation**: a machine-verifiable reference from a consumer document to canonical product text, recording the target artifact `id`, a content `digest`, and an optional `anchor` naming a verification scenario within the target. Consumers cite the Product Definition directly. Nothing is handed to them, and nothing is copied for them.
 
-The subgraph is computed by a deterministic **closure rule** (expand requirements via
-`derived-from`/`applies-to`, use cases via their actor/context/rule/term edges, one incoming
-journey hop, applicable constraints; stop). Two runs over the same content select the same set.
+`prodshape cite` emits a citation record in one of three forms (inline, marker block, or a YAML sidecar ledger), and `prodshape citations verify` recomputes digests and reports exactly one status per citation: `current`, `stale`, `tampered` or `unresolved`. Digests are SHA-256 over UTF-8 bytes with line endings normalized to LF, so a citation resolves identically on every platform.
 
-Staleness is judged per referenced artifact: a handoff is stale exactly when a referenced
-artifact's recomputed digest no longer matches, never because of unrelated repository activity.
+Staleness is judged per cited artifact. A citation goes stale because the text it cited effectively changed, and never because of unrelated repository activity. Applying a Product Change computes the product diff between the baseline and the applied result, and the affected citation set is derived from that diff rather than from the change's declared operations: an artifact a change said it would modify but left byte-identical sends nothing stale.
 
-A handoff contains product context and traceability only — no technical design, tasks, class
-names, database or framework decisions. Those belong to the SDD and implementation layers.
+A citation carries product context and traceability only. Technical design, tasks, class names, database and framework decisions belong to the SDD and implementation layers.
 
-Because the contract is framework- and provider-independent, future adapters (for example a
-Spec Kit adapter) consume the same document; nothing in it is OpenSpec-specific.
+Because a citation is just an identifier and a digest, the contract is framework- and provider-independent. Any SDD framework, prompt file or design document can carry one.
 
 ## Consequences
 
 Positive:
 
-- SDD work starts from a bounded, relevant, reproducible slice of product knowledge instead of a
-  repository dump or hand-copied prose.
-- Per-artifact digests make "the product definition changed under this work" a mechanical check
-  (`handoff status`), not a discovery during review.
-- One contract serves every SDD framework; adding an adapter never changes the payload format.
-- The explicit schema version allows the contract to evolve without silently breaking consumers.
+- SDD work reads the definition itself, so there is one copy of product knowledge and it is the canonical one.
+- Per-citation digests make "the product definition changed under this work" a mechanical check, not a discovery during review.
+- One contract serves every SDD framework, and adding an adapter changes nothing about how consumers bind to the product.
+- Nothing needs regenerating when the definition moves; verification simply reports which citations the move affected.
 
 Negative:
 
-- Handoffs go stale by design. Any edit to a referenced artifact invalidates the digest, and the
-  handoff must be regenerated — recurring friction that a "just read the repo" approach would not
-  have (it would have silent drift instead).
-- The closure rule is deliberately generous and can include somewhat more context than a human
-  would hand-pick for a given task; consumers may read artifacts that turn out to be peripheral.
-- Generated context documents duplicate canonical content at a point in time, which readers can
-  mistake for a source of truth despite the generated marker.
+- A citation is a pointer, so a consumer reading it out of context gets less surrounding product knowledge than a curated bundle would have provided. Following the pointer is the reader's job.
+- Citations go stale by design. Any effective change to a cited artifact reports staleness that a human must resolve, which is recurring friction a "just read the repo" approach would not have, though that approach would have silent drift instead.
+- Citation resolution is within one repository in v0.1, so a consumer in a different repository cannot yet bind this way.

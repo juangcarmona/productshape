@@ -1,7 +1,7 @@
 {
   "name": "@prodshape/cli",
   "version": "0.5.0",
-  "description": "ProductShape CLI — the reference implementation of the Product Definition as Code methodology: a versioned graph of product artifacts with deterministic validation, change overlays, delivery slices and SDD handoffs.",
+  "description": "ProductShape CLI — the reference implementation of the Product Definition as Code methodology: a versioned graph of product artifacts with deterministic validation, change drafting, citation verification and SDD integration.",
   "license": "Apache-2.0",
   "type": "module",
   "publishConfig": {

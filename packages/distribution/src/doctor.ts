@@ -30,8 +30,6 @@ export interface DoctorOptions {
   configValid: boolean;
   configDetail: string;
   modelPath: string;
-  changesPath: string;
-  sddProvider?: string;
   /**
    * Model-validation verdict supplied by the caller. Injected rather than computed here because
    * this package must not depend on core; omit it and the check is simply not reported, so a
@@ -102,19 +100,6 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
 
   // The changes home must exist. Its active/completed/rejected subdirectories are created on
   // demand and are legitimately absent when empty — Git does not track empty directories, so a
-  // repository with no changes in a given state simply has no such subdirectory. Reporting that
-  // as broken structure is a false positive (it would fail on any repository whose last active
-  // change was just promoted), so the check verifies the changes home, not each subdirectory.
-  const changesExists = await exists(root, options.changesPath);
-  const activePresent = await exists(root, `${options.changesPath}/active`);
-  checks.push({
-    name: 'changes structure',
-    ok: changesExists,
-    detail: changesExists
-      ? `${options.changesPath} present (active/ ${activePresent ? 'present' : 'empty — no active changes'})`
-      : `${options.changesPath} missing; run: prodshape init`,
-  });
-
   const lock = await readLock(root);
   const version = await frameworkVersion();
   if (lock) {
@@ -145,17 +130,6 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
           : 'nothing to check'
         : `${diagnostics.length} managed file problem(s)`,
   });
-
-  if (options.sddProvider === 'openspec') {
-    const openspecExists = await exists(root, 'openspec');
-    checks.push({
-      name: 'sdd workspace',
-      ok: openspecExists,
-      detail: openspecExists
-        ? 'openspec/ present'
-        : 'configured SDD provider is openspec but openspec/ is missing (run: openspec init)',
-    });
-  }
 
   const generatedExists = await exists(root, '.product/generated');
   checks.push({

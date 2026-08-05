@@ -1,31 +1,33 @@
 ---
-id: CHG-FIXTURE-001
+id: CHG-CITATIONS-001
 type: product-change
-title: Fixture Product Change
-status: draft
-base-revision: 0123456789abcdef0123456789abcdef01234567
+title: Cite canonical product text instead of restating it
+status: proposed
+base-revision: '3f2a91c'
 operations:
   add:
-    - FR-FIXTURE-002
-  modify: []
+    - BR-CITE-CANONICAL
+    - FR-CITATIONS-001
+  modify:
+    - UC-VALIDATE-001
   remove: []
 ---
 
 ## Problem
 
-A minimal valid product change fixture is needed.
+Consumer documents restate product text instead of pointing at it, so the restatement drifts from the definition without anything detecting the drift.
 
 ## Intended Product Outcome
 
-The change contract has a conformant example.
+Consumer documents cite canonical artifacts by identifier and digest, and a citation whose target changed is reported rather than silently tolerated.
 
 ## Rationale
 
-Fixtures document the smallest valid shape.
+A restatement is a copy, and copies go stale. A citation binds to the text it depends on, so the definition stays the single place the meaning lives.
 
 ## Affected Product Areas
 
-None beyond the fixture requirement.
+Validation of consumer documents, and the use case through which a validator checks a product model.
 
 ## Open Questions
 
@@ -33,8 +35,8 @@ None.
 
 ## Product Acceptance
 
-Validation of this file reports no errors.
+A consumer document citing a changed artifact reports as stale, and the same document citing an unchanged artifact reports as current.
 
 ## Out of Scope
 
-Everything else.
+Citation resolution across repositories, and any delivery decomposition of the work described here.

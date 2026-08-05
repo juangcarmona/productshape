@@ -1,12 +1,17 @@
 import { Command, CommanderError } from 'commander';
-import { runChangePromote, runChangeValidate } from './commands/change.js';
-import { runCoverageCheck } from './commands/coverage.js';
+import {
+  runChangeApply,
+  runChangeArchive,
+  runChangeList,
+  runChangeValidate,
+} from './commands/change.js';
+import { runCite } from './commands/cite.js';
+import { runCitationsVerify } from './commands/citations.js';
 import { runDoctorCommand } from './commands/doctor.js';
 import { runFix } from './commands/fix.js';
 import { runGraph } from './commands/graph.js';
 import { runInit } from './commands/init.js';
 import { runIntegrationAdd, runIntegrationUpdate } from './commands/integration.js';
-import { runHandoffCreate, runHandoffStatus } from './commands/handoff.js';
 import { runImpact } from './commands/impact.js';
 import { runInspect } from './commands/inspect.js';
 import { runSchema } from './commands/schema.js';
@@ -25,20 +30,16 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
 
   program
     .command('validate')
-    .description('Validate the current product model (or a Product Change overlay)')
-    .option('--change <id>', 'validate this Product Change overlay instead of the baseline')
+    .description('Validate the current product model')
     .option('--format <format>', 'output format: text or json', 'text')
-    .action(async (options: { change?: string; format: 'text' | 'json' }) => {
-      capture.code = options.change
-        ? await runChangeValidate(io, options.change, options)
-        : await runValidate(io, options);
+    .action(async (options: { format: 'text' | 'json' }) => {
+      capture.code = await runValidate(io, options);
     });
 
   program
     .command('init')
     .description('Initialize Product Definition as Code in this repository')
     .option('--ai <providers>', 'comma-separated AI integrations: claude, copilot')
-    .option('--sdd <provider>', 'SDD framework: openspec')
     .option('--force', 'overwrite existing files')
     .option('--flat', 'scaffold the model directory without per-kind subdirectories')
     .option('--shorthand', 'also generate the /ps:<name> aliases for /product:<name>')
@@ -46,7 +47,6 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .action(
       async (options: {
         ai?: string;
-        sdd?: string;
         force?: boolean;
         flat?: boolean;
         shorthand?: boolean;
@@ -83,70 +83,41 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
       capture.code = await runDoctorCommand(io);
     });
 
-  const coverage = program
-    .command('coverage')
-    .description('Requirement-coverage evidence for SDD changes');
-  coverage
-    .command('check')
-    .description('Verify every implemented requirement has coverage evidence')
-    .argument('<target>', 'OpenSpec change name or SDD change directory')
-    .action(async (target: string) => {
-      capture.code = await runCoverageCheck(io, target);
-    });
-
-  const change = program.command('change').description('Work with Product Changes');
+  const change = program
+    .command('change')
+    .description('Elaborate, validate and apply Product Changes');
   change
     .command('validate')
-    .description('Compile and validate a Product Change overlay')
-    .argument('<id>', 'Product Change ID')
+    .description('Validate live Product Changes as overlays on the baseline')
+    .argument('[id]', 'change ID (e.g. CHG-ADD-CITE-001); omit to validate every live change')
     .option('--format <format>', 'output format: text or json', 'text')
-    .action(async (id: string, options: { format: 'text' | 'json' }) => {
+    .action(async (id: string | undefined, options: { format: 'text' | 'json' }) => {
       capture.code = await runChangeValidate(io, id, options);
     });
   change
-    .command('promote')
-    .description('Apply an implemented Product Change to the baseline (explicit, never implicit)')
-    .argument('<id>', 'Product Change ID')
-    .option('--dry-run', 'report the plan without changing anything')
-    .option(
-      '--accept-external-evidence',
-      'without an SDD adapter, assert that coverage evidence exists outside the repository tooling',
-    )
-    .action(async (id: string, options: { dryRun?: boolean; acceptExternalEvidence?: boolean }) => {
-      capture.code = await runChangePromote(io, id, options);
-    });
-
-  const handoff = program.command('handoff').description('Generate and check Product Handoffs');
-  handoff
-    .command('create')
-    .description('Generate a Product Handoff for an approved delivery slice')
-    .requiredOption('--change <id>', 'Product Change ID')
-    .requiredOption('--slice <id>', 'Delivery Slice ID')
-    .requiredOption('--work-item <ref>', 'work-item reference: provider:owner/repository#id')
-    .option('--title <title>', 'work-item title')
-    .option('--out <dir>', 'output directory for the sidecar files')
-    .option('--adapter <name>', 'SDD adapter (openspec)')
-    .option('--sdd-change <name>', 'target SDD change (with --adapter openspec)')
-    .action(
-      async (options: {
-        change: string;
-        slice: string;
-        workItem: string;
-        title?: string;
-        out?: string;
-        adapter?: string;
-        sddChange?: string;
-      }) => {
-        capture.code = await runHandoffCreate(io, options);
-      },
-    );
-  handoff
-    .command('status')
-    .description('Report whether a Product Handoff is current, stale or invalid')
-    .argument('<path>', 'path to product-handoff.yaml')
+    .command('list')
+    .description('List live Product Changes')
+    .option('--all', 'include the completed and rejected change history')
     .option('--format <format>', 'output format: text or json', 'text')
-    .action(async (path: string, options: { format: 'text' | 'json' }) => {
-      capture.code = await runHandoffStatus(io, path, options);
+    .action(async (options: { all?: boolean; format: 'text' | 'json' }) => {
+      capture.code = await runChangeList(io, options);
+    });
+  change
+    .command('apply')
+    .description('Apply an approved Product Change to the model (never commits, never merges)')
+    .argument('<id>', 'change ID (e.g. CHG-ADD-CITE-001)')
+    .option('--dry-run', 'print the plan and the product diff without writing anything')
+    .option('--format <format>', 'output format: text or json', 'text')
+    .action(async (id: string, options: { dryRun?: boolean; format: 'text' | 'json' }) => {
+      capture.code = await runChangeApply(io, id, options);
+    });
+  change
+    .command('archive')
+    .description('File a rejected or superseded change into the change history')
+    .argument('<id>', 'change ID (e.g. CHG-ADD-CITE-001)')
+    .option('--format <format>', 'output format: text or json', 'text')
+    .action(async (id: string, options: { format: 'text' | 'json' }) => {
+      capture.code = await runChangeArchive(io, id, options);
     });
 
   program
@@ -155,6 +126,38 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .option('--format <format>', 'output format: summary, json, mermaid or html', 'summary')
     .action(async (options: { format: 'summary' | 'json' | 'mermaid' | 'html' }) => {
       capture.code = await runGraph(io, options);
+    });
+
+  program
+    .command('cite')
+    .description('Emit a citation record for a product artifact')
+    .requiredOption('--id <id>', 'target artifact ID')
+    .option('--digest <digest>', 'content digest (sha256:<hex>); required unless --file is given')
+    .option('--file <path>', 'compute the digest from this file')
+    .option('--anchor <anchor>', 'verification scenario id within the target artifact')
+    .option('--form <form>', 'citation form: inline, marker-block, or sidecar-ledger', 'inline')
+    .action(
+      async (options: {
+        id: string;
+        digest?: string;
+        file?: string;
+        anchor?: string;
+        form: 'inline' | 'marker-block' | 'sidecar-ledger';
+      }) => {
+        capture.code = await runCite(io, options);
+      },
+    );
+
+  const citations = program
+    .command('citations')
+    .description('Verify citations in consumer documents against the product model');
+  citations
+    .command('verify')
+    .description('Scan consumer documents and report citation statuses')
+    .argument('[target]', 'consumer documents root (default: openspec)')
+    .option('--format <format>', 'output format: text or json', 'text')
+    .action(async (target: string | undefined, options: { format: 'text' | 'json' }) => {
+      capture.code = await runCitationsVerify(io, target, options);
     });
 
   program

@@ -5,9 +5,7 @@
 
 Explain the impact of changing a product artifact.
 
-Run deterministic structural impact analysis first:
-`prodshape impact <ID>` (add `--direction`/`--depth` as needed) and
-`prodshape inspect <ID>`.
+Run deterministic structural impact analysis first: `prodshape impact <ID>` (add `--direction`/`--depth` as needed) and `prodshape inspect <ID>`.
 
 Then use the `audit-product-model` skill's reasoning to interpret likely semantic impact.
 

@@ -7,9 +7,8 @@ import { repoRoot } from '../helpers.js';
 const skillNames = [
   'define-product',
   'recover-product',
+  'explore-product',
   'analyze-product-change',
-  'slice-product-change',
-  'prepare-sdd-handoff',
   'audit-product-model',
 ];
 
@@ -27,13 +26,8 @@ const mandatorySections = [
   'Completion checks',
 ];
 
-const commandNames = ['define', 'recover', 'change', 'slice', 'impact', 'handoff', 'audit'];
-const hookNames = [
-  'validate-product-change',
-  'validate-before-handoff',
-  'check-handoff-staleness',
-  'verify-traceability',
-];
+const commandNames = ['define', 'recover', 'explore', 'change', 'impact', 'audit'];
+const hookNames: string[] = [];
 
 const vendorPattern = /\b(claude|copilot|anthropic|openai|cursor|gemini)\b/i;
 
@@ -78,27 +72,38 @@ describe('canonical commands', () => {
 });
 
 describe('canonical hooks', () => {
-  it.each(hookNames)('%s declares deterministic commands only', async (name) => {
-    const content = await readFile(join(repoRoot, 'hooks', `${name}.json`), 'utf8');
-    const hook = JSON.parse(content) as {
-      schema: string;
-      name: string;
-      triggers: { event: string; run: string[] }[];
-      blocking: boolean;
-    };
-    expect(hook.schema).toBe('product-definition-as-code/hook/v1alpha1');
-    expect(hook.name).toBe(name);
-    expect(hook.triggers.length).toBeGreaterThanOrEqual(1);
-    for (const trigger of hook.triggers) {
-      for (const command of trigger.run) {
-        // Hooks invoke the canonical binary. `product-definition` remains a working v0.x alias,
-        // but generated assets are what users read, so they name the brand.
-        expect(command, `${name}: only prodshape commands`).toMatch(/^prodshape /);
-      }
-    }
-    const promoteCommands = hook.triggers
-      .flatMap((t) => t.run)
-      .filter((c) => c.includes('promote'));
-    for (const command of promoteCommands) expect(command).toContain('--dry-run');
+  it('no hooks are shipped', () => {
+    expect(hookNames).toEqual([]);
   });
 });
+
+describe('root and distribution copies are byte-identical', () => {
+  it.each([
+    ['skills', 'skills'],
+    ['commands', 'commands'],
+    ['templates', 'templates'],
+  ])('%s root matches distribution assets', async (kind, distKind) => {
+    const rootDir = join(repoRoot, kind);
+    const distDir = join(repoRoot, 'packages', 'distribution', 'assets', distKind);
+    const rootFiles = await listFiles(rootDir);
+    const distFiles = await listFiles(distDir);
+    const rootRel = rootFiles.map((f) => f.slice(rootDir.length + 1)).sort();
+    const distRel = distFiles.map((f) => f.slice(distDir.length + 1)).sort();
+    expect(distRel, `${kind}: distribution has the same files as root`).toEqual(rootRel);
+    for (let i = 0; i < rootFiles.length; i++) {
+      const rootContent = await readFile(rootFiles[i], 'utf8');
+      const distContent = await readFile(distFiles[i], 'utf8');
+      expect(distContent, `${kind}/${rootRel[i]}: byte-identical`).toBe(rootContent);
+    }
+  });
+});
+
+async function listFiles(dir: string): Promise<string[]> {
+  const { readdir } = await import('node:fs/promises');
+  const results: string[] = [];
+  const entries = await readdir(dir, { withFileTypes: true, recursive: true });
+  for (const entry of entries) {
+    if (entry.isFile()) results.push(join(entry.parentPath, entry.name));
+  }
+  return results.sort();
+}

@@ -8,10 +8,7 @@ Compilation of the typed product graph from Markdown artifacts, with derived rev
 
 ### Requirement: The graph is compiled deterministically from canonical files
 
-The graph compiler SHALL build nodes (id, type, title, status, path, content digest) and typed
-directed edges from artifact frontmatter alone, derive incoming indexes for every canonical
-relationship (including a bounded context's owned terms from `defined-in`), sort nodes and edges
-deterministically, and rebuild from scratch on every run.
+The graph compiler SHALL build nodes (id, type, title, status, path, content digest) and typed directed edges from artifact frontmatter alone, derive incoming indexes for every canonical relationship (including a bounded context's owned terms from `defined-in`), sort nodes and edges deterministically, and rebuild from scratch on every run.
 
 #### Scenario: Determinism across runs
 
@@ -25,9 +22,7 @@ deterministically, and rebuild from scratch on every run.
 
 ### Requirement: Generated outputs are versioned and non-canonical
 
-`product-definition graph` SHALL write `product-graph.json` (carrying a versioned schema
-identifier), `product-index.json`, `traceability.json` and `product-graph.mmd` under the
-configured generated root, and these files SHALL be reproducible and never required as input.
+`product-definition graph` SHALL write `product-graph.json` (carrying a versioned schema identifier), `product-index.json`, `traceability.json` and `product-graph.mmd` under the configured generated root, and these files SHALL be reproducible and never required as input.
 
 #### Scenario: Rebuild after deletion
 
@@ -36,8 +31,7 @@ configured generated root, and these files SHALL be reproducible and never requi
 
 ### Requirement: Mermaid output is a convenience view
 
-`product-definition graph --format mermaid` SHALL emit a Mermaid diagram of nodes and typed
-edges. It is a convenience view only.
+`product-definition graph --format mermaid` SHALL emit a Mermaid diagram of nodes and typed edges. It is a convenience view only.
 
 #### Scenario: Mermaid emission
 

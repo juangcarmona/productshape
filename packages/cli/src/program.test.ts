@@ -323,8 +323,21 @@ describe('prodshape schema', () => {
     expect(result.code).toBe(0);
     const text = result.out.join('\n');
     expect(text).toMatch(/^actor\s+ACT-\s+Actor frontmatter$/m);
-    expect(text).toMatch(/^delivery-slice\s+SLI-/m);
+    expect(text).toMatch(/^functional-requirement\s+FR-/m);
     expect(text).toContain("Run 'prodshape schema <kind>' for the full field reference.");
+  });
+
+  it('lists a Product Change under its own prefix', async () => {
+    const result = await run(['schema'], workDir);
+    expect(result.code).toBe(0);
+    const text = result.out.join('\n');
+    expect(text).toMatch(/^product-change\s+CHG-\s+Product change frontmatter$/m);
+  });
+
+  it('resolves a kind by its ID prefix alias', async () => {
+    const result = await run(['schema', 'chg'], workDir);
+    expect(result.code).toBe(0);
+    expect(result.out.join('\n')).toContain('product-change');
   });
 
   it('prints the field reference for a kind', async () => {
@@ -384,7 +397,7 @@ describe('self-application', () => {
   it('validates this repository with exit 0', async () => {
     const result = await run(['validate'], repoRoot);
     expect(result.code).toBe(0);
-    // 85 artifacts, zero diagnostics, after CHG-SNAPSHOT-004 was promoted.
-    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across 85 artifact\(s\)/);
+    // The whole Product Definition, zero diagnostics. The count is the one CHG-INITIAL added.
+    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across 75 artifact\(s\)/);
   });
 });

@@ -18,9 +18,7 @@ verification:
 
 ## Requirement
 
-The Product Snapshot MUST provide search that works entirely offline, over the data embedded in the
-file, with no network access. Search MUST match against artifact identifiers — both exact and
-partial — artifact titles, artifact kinds, and artifact body content.
+The Product Snapshot MUST provide search that works entirely offline, over the data embedded in the file, with no network access. Search MUST match against artifact identifiers — both exact and partial — artifact titles, artifact kinds, and artifact body content.
 
 Results MUST be ranked, in this order of precedence:
 
@@ -30,68 +28,32 @@ Results MUST be ranked, in this order of precedence:
 4. title substring match;
 5. body content match.
 
-A query equal to an artifact's identifier MUST place that artifact first. Each result MUST identify
-its artifact by identifier, title and kind. Where a result was produced by a body match, it MUST
-show a snippet of the matching content, escaped so authored content cannot become markup or
-executable.
+A query equal to an artifact's identifier MUST place that artifact first. Each result MUST identify its artifact by identifier, title and kind. Where a result was produced by a body match, it MUST show a snippet of the matching content, escaped so authored content cannot become markup or executable.
 
-If the page limits how many results it displays, it MUST state how many matches exist in total, and
-MUST NOT display a lower-ranked match in place of a higher-ranked one. Truncation MUST never be
-silent.
+If the page limits how many results it displays, it MUST state how many matches exist in total, and MUST NOT display a lower-ranked match in place of a higher-ranked one. Truncation MUST never be silent.
 
-Search MUST be fully operable from the keyboard: reaching the field, moving through results,
-selecting a result, and clearing the query. Selecting a result MUST make its artifact the single
-selected artifact as defined by FR-SNAPSHOT-006. Clearing the query MUST return the reader to
-browsing without discarding the artifact they had selected. A query matching no artifact MUST
-produce an explicit no-results state that names the query rather than an empty list.
+Search MUST be fully operable from the keyboard: reaching the field, moving through results, selecting a result, and clearing the query. Selecting a result MUST make its artifact the single selected artifact as defined by FR-SNAPSHOT-006. Clearing the query MUST return the reader to browsing without discarding the artifact they had selected. A query matching no artifact MUST produce an explicit no-results state that names the query rather than an empty list.
 
 For identical model content, identical queries MUST produce identical result ordering.
 
 ## Rationale
 
-Search is how a reader who already knows what they are looking for avoids the rest of the model
-entirely, which makes it the most important single control on a page built around progressive
-disclosure. The current implementation cannot serve that role: it matches substrings without
-ranking, walks the index in document order, and stops at twenty hits. Searching `product` against
-the current baseline matches 73 artifacts, shows 20, hides 53 without saying so, and returns none
-of the eight artifacts whose titles begin with "Product" — including the term "Product Snapshot"
-itself — because body-only matches on artifacts that happen to sort earlier consume the entire
-budget. A reader searching for a concept they heard in a meeting is systematically shown the wrong
-artifacts and told nothing about it.
+Search is how a reader who already knows what they are looking for avoids the rest of the model entirely, which makes it the most important single control on a page built around progressive disclosure. The current implementation cannot serve that role: it matches substrings without ranking, walks the index in document order, and stops at twenty hits. Searching `product` against the current baseline matches 73 artifacts, shows 20, hides 53 without saying so, and returns none of the eight artifacts whose titles begin with "Product" — including the term "Product Snapshot" itself — because body-only matches on artifacts that happen to sort earlier consume the entire budget. A reader searching for a concept they heard in a meeting is systematically shown the wrong artifacts and told nothing about it.
 
-The ranking order encodes how identifiers are actually used in this methodology. Artifact IDs are
-stable, quoted in conversations, pasted into tickets and printed in handoffs, so a query that looks
-like an ID is almost always an attempt to reach exactly that artifact — which is why an exact ID
-match outranks everything, and a prefix match (`FR-SNAPSHOT`) outranks title text. Titles are the
-next most deliberate signal, and body matches are the broadest and least precise, so they come
-last rather than first.
+The ranking order encodes how identifiers are actually used in this methodology. Artifact IDs are stable, quoted in conversations, pasted into tickets and printed in handoffs, so a query that looks like an ID is almost always an attempt to reach exactly that artifact — which is why an exact ID match outranks everything, and a prefix match (`FR-SNAPSHOT`) outranks title text. Titles are the next most deliberate signal, and body matches are the broadest and least precise, so they come last rather than first.
 
-Requiring truncation to be visible is a correctness requirement, not a courtesy. A reader who sees
-five results and does not know there are fifty-three will conclude the model does not contain what
-they are looking for, and the snapshot's whole claim is that it contains the model completely.
+Requiring truncation to be visible is a correctness requirement, not a courtesy. A reader who sees five results and does not know there are fifty-three will conclude the model does not contain what they are looking for, and the snapshot's whole claim is that it contains the model completely.
 
-Deterministic result ordering follows the same reasoning that makes the file byte-identical: two
-people looking at the same snapshot and typing the same query must be able to talk about "the third
-result" and mean the same artifact.
+Deterministic result ordering follows the same reasoning that makes the file byte-identical: two people looking at the same snapshot and typing the same query must be able to talk about "the third result" and mean the same artifact.
 
 ## Acceptance Scenarios
 
-- With networking disabled, the reader types an artifact identifier exactly. That artifact is the
-  first result.
-- The reader types a partial identifier such as `FR-SNAPSHOT`. Every artifact whose identifier
-  begins with it appears above artifacts matched only by title or body.
-- The reader types `product` against the current baseline. Artifacts whose titles begin with
-  "Product" — including the "Product Snapshot" term — appear above artifacts matched only in their
-  bodies, and the page states that 73 artifacts match.
-- The reader types a phrase that appears only inside one artifact's body. That artifact is found,
-  and the result shows a snippet containing the phrase.
-- An artifact body containing `<script>` and quote characters produces a snippet in which they are
-  displayed as text; nothing executes and no element is created from the snippet.
-- The reader reaches the search field, moves down the results and selects one entirely by keyboard.
-  The selected artifact becomes the page's single selection.
-- The reader clears the query. Browsing resumes and the artifact they had selected is still
-  selected.
-- The reader types a string matching nothing. The page states that nothing matches and repeats the
-  query it searched for.
-- The same query is run against two snapshots generated from identical model content on different
-  platforms. The result order is identical.
+- With networking disabled, the reader types an artifact identifier exactly. That artifact is the first result.
+- The reader types a partial identifier such as `FR-SNAPSHOT`. Every artifact whose identifier begins with it appears above artifacts matched only by title or body.
+- The reader types `product` against the current baseline. Artifacts whose titles begin with "Product" — including the "Product Snapshot" term — appear above artifacts matched only in their bodies, and the page states that 73 artifacts match.
+- The reader types a phrase that appears only inside one artifact's body. That artifact is found, and the result shows a snippet containing the phrase.
+- An artifact body containing `<script>` and quote characters produces a snippet in which they are displayed as text; nothing executes and no element is created from the snippet.
+- The reader reaches the search field, moves down the results and selects one entirely by keyboard. The selected artifact becomes the page's single selection.
+- The reader clears the query. Browsing resumes and the artifact they had selected is still selected.
+- The reader types a string matching nothing. The page states that nothing matches and repeats the query it searched for.
+- The same query is run against two snapshots generated from identical model content on different platforms. The result order is identical.

@@ -67,7 +67,13 @@ export interface BaselineValidation {
   diagnostics: Diagnostic[];
 }
 
-/** Load the baseline model, compile its graph and run full validation. */
+/**
+ * Load the baseline model, compile its graph and run full validation.
+ *
+ * The baseline is the accepted Product Definition alone: `loadModel` reads the model directory,
+ * so live changes and the inert archives under `changes/` take no part in the graph, in duplicate
+ * detection or in reference resolution.
+ */
 export async function validateBaseline(repo: ProductRepository): Promise<BaselineValidation> {
   const model = await loadModel(repo.modelDir, repo.root, repo.registry);
   const graph = compileGraph(model.artifacts);

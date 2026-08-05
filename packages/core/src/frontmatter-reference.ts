@@ -8,7 +8,7 @@
  */
 
 import {
-  idPrefixByType,
+  idPrefixFor,
   isMarkdownDocumentType,
   requiredBodySections,
   type MarkdownDocumentType,
@@ -185,7 +185,9 @@ export function describeKind(
   if (typeof schema.description === 'string') descriptor.description = schema.description;
   if (isMarkdownDocumentType(kind)) {
     const markdownKind: MarkdownDocumentType = kind;
-    descriptor.idPrefix = idPrefixByType[markdownKind];
+    // Left unset for a change draft, which has body sections but no ID and so no prefix.
+    const idPrefix = idPrefixFor(markdownKind);
+    if (idPrefix !== undefined) descriptor.idPrefix = idPrefix;
     descriptor.bodySections = requiredBodySections[markdownKind];
   }
   return descriptor;

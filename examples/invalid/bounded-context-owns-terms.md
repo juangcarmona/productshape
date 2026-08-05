@@ -9,8 +9,7 @@ owns-terms:
 
 ## Responsibility
 
-Demonstrates PRODUCT002: `owns-terms` is derived from each Domain Term's `defined-in` and is
-rejected as an unknown authored property.
+Demonstrates PRODUCT002: `owns-terms` is derived from each Domain Term's `defined-in` and is rejected as an unknown authored property.
 
 ## Language
 

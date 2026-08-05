@@ -5,7 +5,6 @@ import { sortDiagnostics } from './diagnostics.js';
 import type { ProductGraph } from './graph.js';
 import { compileGraph } from './graph.js';
 import type { LoadedArtifact } from './model.js';
-import { validateSlices } from './slices.js';
 import { validateModel } from './validate.js';
 
 /**
@@ -98,7 +97,7 @@ export function validateOperations(change: LoadedChange, baseline: LoadedArtifac
   return diagnostics;
 }
 
-/** PRODUCT025: overlapping modify/remove operations across concurrent active changes. */
+/** PRODUCT025: overlapping modify/remove operations across concurrent live changes. */
 export function validateConcurrency(
   change: LoadedChange,
   otherChanges: LoadedChange[],
@@ -124,10 +123,14 @@ export function validateConcurrency(
   return diagnostics;
 }
 
-/** PRODUCT108: approved (or later) change with unresolved open questions. */
+/**
+ * PRODUCT108: an approved change with unresolved open questions.
+ *
+ * Approval is the human product decision that authorizes apply, so it is the point at which an
+ * unanswered question stops being elaboration and starts being a decision nobody made.
+ */
 export function validateOpenQuestions(change: LoadedChange): Diagnostic[] {
-  const statusesRequiringResolution = new Set(['approved', 'in-progress', 'implemented']);
-  if (!change.status || !statusesRequiringResolution.has(change.status)) return [];
+  if (change.status !== 'approved') return [];
   const section = /##\s+Open Questions\s*\n([\s\S]*?)(?=\n##\s|$)/.exec(change.body);
   const sectionBody = section?.[1] ?? '';
   const hasListEntries = /^\s*[-*]\s+\S/m.test(sectionBody);
@@ -136,7 +139,7 @@ export function validateOpenQuestions(change: LoadedChange): Diagnostic[] {
     {
       severity: 'warning',
       code: 'PRODUCT108',
-      message: `Change is '${change.status}' but its Open Questions section still lists unresolved questions`,
+      message: `Change is 'approved' but its Open Questions section still lists unresolved questions`,
       file: change.file,
       artifact: change.id,
     },
@@ -150,10 +153,9 @@ export interface ChangeValidation {
 }
 
 /**
- * Full Product Change validation: per-document diagnostics, operation errors,
- * concurrency, the overlay graph revalidated end to end, and slice validation.
- * Overlay-context recodes: duplicates become PRODUCT023, dangling references
- * caused by removals become PRODUCT024.
+ * Full Product Change validation: per-document diagnostics, operation errors, concurrency and the
+ * overlay graph revalidated end to end. Overlay-context recodes: duplicates become PRODUCT023,
+ * dangling references caused by removals become PRODUCT024.
  */
 export function validateChange(
   change: LoadedChange,
@@ -191,7 +193,6 @@ export function validateChange(
     ...validateConcurrency(change, otherChanges),
     ...validateOpenQuestions(change),
     ...overlayDiagnostics,
-    ...validateSlices(change, overlayGraph),
   ]);
 
   return { overlayArtifacts, overlayGraph, diagnostics };

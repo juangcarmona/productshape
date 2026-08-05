@@ -2,7 +2,7 @@
   "name": "productshape",
   "version": "0.1.0",
   "private": true,
-  "description": "Define products as a versioned graph of Markdown artifacts. Project product knowledge into backlog and Spec-Driven Development through stable handoff contracts.",
+  "description": "Define products as a versioned graph of Markdown artifacts. Evolve the model through validated pull requests and cite product artifacts from consumer documents via the citation contract.",
   "license": "Apache-2.0",
   "type": "module",
   "engines": {
@@ -14,6 +14,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "docs:frontmatter": "tsx scripts/generate-frontmatter-reference.mts && prettier --write docs/specification/frontmatter-reference.md",
+    "schemas:sync": "tsx scripts/sync-schemas.mts",
     "typecheck": "pnpm -r run typecheck",
     "test": "vitest run",
     "build": "pnpm -r run build",

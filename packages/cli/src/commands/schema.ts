@@ -2,8 +2,7 @@ import {
   SchemaRegistry,
   describeAllKinds,
   describeKind,
-  idPrefixByType,
-  isMarkdownDocumentType,
+  idPrefixFor,
   renderKindText,
   stableJson,
   type KindDescriptor,
@@ -17,20 +16,16 @@ export interface SchemaOptions {
 }
 
 /**
- * ID prefixes accepted as aliases for a kind, lowercased. Derived, never invented: the Markdown
- * prefixes come from idPrefixByType and the three YAML prefixes from common.schema.json. Plurals
- * and abbreviations are deliberately not accepted — they would create vocabulary the
+ * ID prefixes accepted as aliases for a kind, lowercased. Derived, never invented: the prefixes
+ * come from idPrefixByType, so `chg` reaches `product-change` exactly as `act` reaches `actor`.
+ * Plurals and abbreviations are deliberately not accepted: they would create vocabulary the
  * specification does not own.
  */
 function aliasesFor(kinds: string[]): Map<string, string> {
-  const yamlPrefixes: Record<string, string> = {
-    'delivery-slice': 'SLI',
-    'product-handoff': 'HOF',
-  };
   const aliases = new Map<string, string>();
   for (const kind of kinds) {
-    const prefix = isMarkdownDocumentType(kind) ? idPrefixByType[kind] : yamlPrefixes[kind];
-    if (prefix) aliases.set(prefix.toLowerCase(), kind);
+    const prefix = idPrefixFor(kind);
+    if (prefix !== undefined) aliases.set(prefix.toLowerCase(), kind);
   }
   return aliases;
 }

@@ -7,7 +7,8 @@ quality-attribute: testability
 applies-to:
   - UC-FIXTURE-001
 verification:
-  - scenario: The fixture quality requirement validates without errors
+  - id: S1
+    scenario: The fixture quality requirement validates without errors
 ---
 
 ## Requirement

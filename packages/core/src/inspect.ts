@@ -10,10 +10,6 @@ export interface InspectReport {
   digest: string;
   outgoing: Edge[];
   incoming: Edge[];
-  /** Populated by the change layer when overlays exist. */
-  changes: string[];
-  slices: string[];
-  handoffs: string[];
 }
 
 export function inspectArtifact(graph: ProductGraph, id: string): InspectReport {
@@ -28,8 +24,5 @@ export function inspectArtifact(graph: ProductGraph, id: string): InspectReport 
     digest: node.digest,
     outgoing: graph.outgoing.get(id) ?? [],
     incoming: graph.incoming.get(id) ?? [],
-    changes: [],
-    slices: [],
-    handoffs: [],
   };
 }

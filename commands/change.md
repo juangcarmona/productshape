@@ -1,12 +1,29 @@
-# /product:change
+---
+description: Elaborate and validate a Product Change — AI-assisted drafting of the semantic delta and its proposed future-state artifacts, with open questions kept visible. A human approves it, apply materializes it, a merge accepts it. Use /product:change or /ps:change.
+allowed-tools:
+  - prodshape validate
+  - prodshape change validate
+  - prodshape change list
+  - prodshape change apply
+  - prodshape change archive
+  - prodshape impact
+  - prodshape inspect
+  - prodshape schema
+---
 
-Turn a requested product modification into an explicit Product Change.
+Use the `analyze-product-change` skill.
 
-Read the requested change and the current product definition graph. Use the
-`analyze-product-change` skill.
+## Lifecycle
 
-- Create or update one Product Change under `docs/product/changes/active/<chg-id>/` with complete
-  proposed future-state artifacts. Do not modify `docs/product/model`.
-- Run `prodshape change validate <CHG-ID>` before completion; fix structural errors.
-- Stop with explicit product questions when semantic decisions are missing. Approval is a human
-  decision.
+1. **Draft** — create `docs/product/changes/active/<chg-id>/change.md` (`status: draft`) with its operations, `base-revision`, and complete proposed artifacts under `proposed/`
+2. **Validate** — `prodshape change validate <chg-id>` compiles the overlay on the baseline and validates the result
+3. **Propose** — set `status: proposed` once the change is worth reviewing
+4. **Approve** — a human sets `status: approved`. Never do this on their behalf.
+5. **Apply** — `prodshape change apply <chg-id> --dry-run`, then for real: writes the model, reports the product diff, archives the change
+6. **Accept** — a human merges the pull request carrying the result
+
+## Stop conditions
+
+- `prodshape change validate` reports zero errors.
+- All open questions are resolved or explicitly accepted by the engineer.
+- The engineer confirms the change is ready to approve. Stop there: approving, applying and merging are theirs.

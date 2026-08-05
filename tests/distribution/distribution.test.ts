@@ -32,7 +32,7 @@ afterAll(async () => {
 
 describe('bundled assets', () => {
   it('are byte-identical to the canonical repository assets', async () => {
-    for (const dir of ['skills', 'commands', 'hooks', 'templates']) {
+    for (const dir of ['skills', 'commands', 'templates']) {
       const canonical = await listFilesRecursive(join(repoRoot, dir), '');
       expect(canonical.length, dir).toBeGreaterThan(0);
       for (const file of canonical) {
@@ -49,12 +49,11 @@ describe('bundled assets', () => {
     }
   });
 
-  it('loads seven skills, eight commands, four hooks and thirteen templates', async () => {
+  it('loads five skills, six commands and ten templates', async () => {
     const assets = await loadBundledAssets();
-    expect(assets.skills).toHaveLength(7);
-    expect(assets.commands).toHaveLength(8);
-    expect(assets.hooks).toHaveLength(4);
-    expect(assets.templates).toHaveLength(13);
+    expect(assets.skills).toHaveLength(5);
+    expect(assets.commands).toHaveLength(6);
+    expect(assets.templates).toHaveLength(10);
     expect(assets.version).toMatch(/^\d+\.\d+\.\d+$/);
   });
 });
@@ -140,14 +139,11 @@ describe('init --dry-run', () => {
   it('reports what it would create and writes nothing', async () => {
     const scratch = await mkdtemp(join(tmpdir(), 'prodshape-dryrun-'));
     try {
-      const result = await run(
-        ['init', '--ai', 'copilot', '--sdd', 'openspec', '--dry-run'],
-        scratch,
-      );
+      const result = await run(['init', '--ai', 'copilot', '--dry-run'], scratch);
       expect(result.code).toBe(0);
       expect(result.out).toContain('Would create');
       expect(result.out).toContain('docs/product/model/actors/.gitkeep');
-      expect(result.out).toContain('.github/prompts/product-change.prompt.md');
+      expect(result.out).toContain('.github/prompts/product-impact.prompt.md');
       expect(result.out).toContain('Would overwrite (0)');
       expect(result.out).toContain('Conflicts (0)');
       expect(result.out).toContain('Dry run: nothing was changed.');
@@ -177,11 +173,8 @@ describe('init --dry-run', () => {
     // The question that blocked a real adoption: does init refuse outright, or destroy things?
     const scratch = await mkdtemp(join(tmpdir(), 'prodshape-dryrun-populated-'));
     try {
-      await run(['init', '--ai', 'copilot', '--sdd', 'openspec'], scratch);
-      const again = await run(
-        ['init', '--ai', 'copilot', '--sdd', 'openspec', '--dry-run'],
-        scratch,
-      );
+      await run(['init', '--ai', 'copilot'], scratch);
+      const again = await run(['init', '--ai', 'copilot', '--dry-run'], scratch);
       expect(again.code).toBe(0);
       expect(again.out).toContain('Would preserve');
       expect(again.out).toContain('Would regenerate');
@@ -195,14 +188,14 @@ describe('init --dry-run', () => {
   it('reports a conflict, and exits 1, without writing', async () => {
     const scratch = await mkdtemp(join(tmpdir(), 'prodshape-dryrun-conflict-'));
     try {
-      const claimed = join(scratch, '.github', 'prompts', 'product-change.prompt.md');
+      const claimed = join(scratch, '.github', 'prompts', 'product-impact.prompt.md');
       await mkdir(dirname(claimed), { recursive: true });
       await writeFile(claimed, 'my own prompt\n', 'utf8');
 
       const result = await run(['init', '--ai', 'copilot', '--dry-run'], scratch);
       expect(result.code).toBe(1);
       expect(result.out).toContain('Conflicts (1)');
-      expect(result.out).toContain('.github/prompts/product-change.prompt.md');
+      expect(result.out).toContain('.github/prompts/product-impact.prompt.md');
       expect(await readFile(claimed, 'utf8')).toBe('my own prompt\n');
     } finally {
       await rm(scratch, { recursive: true, force: true });
@@ -229,7 +222,7 @@ describe('shorthand command aliases', () => {
       const onPaths = (await listFilesRecursive(join(on, '.github', 'prompts'), '.md')).map((f) =>
         toPosix(f),
       );
-      expect(onPaths.filter((p) => p.includes('/ps-'))).toHaveLength(8);
+      expect(onPaths.filter((p) => p.includes('/ps-'))).toHaveLength(6);
       // Persisted, not just applied: `integration update` re-renders from configuration.
       expect(await readFile(join(on, '.product', 'config.yaml'), 'utf8')).toContain(
         'shorthand-commands: true',
@@ -240,7 +233,7 @@ describe('shorthand command aliases', () => {
         (await listFilesRecursive(join(on, '.github', 'prompts'), '.md')).filter((f) =>
           toPosix(f).includes('/ps-'),
         ),
-      ).toHaveLength(8);
+      ).toHaveLength(6);
     } finally {
       await rm(off, { recursive: true, force: true });
       await rm(on, { recursive: true, force: true });
@@ -256,7 +249,7 @@ describe('shorthand command aliases', () => {
       const prompts = join(scratch, '.github', 'prompts');
       expect(
         (await listFilesRecursive(prompts, '.md')).filter((f) => toPosix(f).includes('/ps-')),
-      ).toHaveLength(8);
+      ).toHaveLength(6);
 
       const config = join(scratch, '.product', 'config.yaml');
       const current = await readFile(config, 'utf8');
@@ -268,7 +261,7 @@ describe('shorthand command aliases', () => {
 
       const update = await run(['integration', 'update'], scratch);
       expect(update.code).toBe(0);
-      expect(update.out).toContain('Removed 8 managed file(s)');
+      expect(update.out).toContain('Removed 6 managed file(s)');
       expect(
         (await listFilesRecursive(prompts, '.md')).filter((f) => toPosix(f).includes('/ps-')),
       ).toEqual([]);
@@ -299,7 +292,7 @@ describe('shorthand command aliases', () => {
       expect(update.code).toBe(0);
       // Deletion is digest-guarded: we only remove what we can prove is ours and unmodified.
       expect(await readFile(edited, 'utf8')).toBe('my own version\n');
-      expect(update.out).toContain('Removed 7 managed file(s)');
+      expect(update.out).toContain('Removed 5 managed file(s)');
     } finally {
       await rm(scratch, { recursive: true, force: true });
     }
@@ -318,7 +311,7 @@ describe('init --flat', () => {
       expect(files).toContain('docs/product/model/.gitkeep');
       expect(files.filter((f) => f.startsWith('docs/product/model/'))).toHaveLength(1);
       // Change lifecycle states are not taxonomy: discovery and promotion read them.
-      expect(files).toContain('docs/product/changes/active/.gitkeep');
+      expect(files).toContain('docs/product/model/.gitkeep');
 
       const validate = await run(['validate'], scratch);
       expect(validate.code).toBe(0);
@@ -330,18 +323,18 @@ describe('init --flat', () => {
 
 describe('init and managed-file lifecycle (end to end)', () => {
   it('init creates the consumer structure with integrations and next steps', async () => {
-    const result = await run(['init', '--ai', 'claude,copilot', '--sdd', 'openspec'], workDir);
+    const result = await run(['init', '--ai', 'claude,copilot'], workDir);
     expect(result.err).toBe('');
     expect(result.code).toBe(0);
     expect(result.out).toContain('Next steps:');
 
     const config = await readFile(join(workDir, '.product', 'config.yaml'), 'utf8');
     expect(config).toContain('- claude');
-    expect(config).toContain('provider: openspec');
+    expect(config).not.toContain('provider: openspec');
     await readFile(join(workDir, 'docs', 'product', 'README.md'), 'utf8');
     await readFile(join(workDir, '.product', 'templates', 'actor.md'), 'utf8');
     await readFile(join(workDir, '.claude', 'skills', 'define-product', 'SKILL.md'), 'utf8');
-    await readFile(join(workDir, '.github', 'prompts', 'product-change.prompt.md'), 'utf8');
+    await readFile(join(workDir, '.github', 'prompts', 'product-impact.prompt.md'), 'utf8');
     const lock = JSON.parse(
       await readFile(join(workDir, '.product', 'installation.lock.json'), 'utf8'),
     ) as { providers: Record<string, { files: Record<string, string> }> };
@@ -429,21 +422,13 @@ describe('init and managed-file lifecycle (end to end)', () => {
   it('doctor reports a healthy repository after repair', async () => {
     const result = await run(['doctor'], workDir);
     expect(result.out).toContain('ok   managed files');
-    // The openspec workspace is configured but absent in this synthetic repo.
-    expect(result.out).toContain('FAIL sdd workspace');
-    expect(result.code).toBe(1);
+    expect(result.out).toContain('framework version');
+    expect(result.code).toBe(0);
   });
 
-  it('doctor treats an absent (empty) changes/active as healthy, not broken structure', async () => {
-    // Git does not track empty directories, so a repository whose last active change was promoted
-    // has no changes/active on a fresh checkout. That is a healthy "no active changes" state.
-    await rm(join(workDir, 'docs', 'product', 'changes', 'active'), {
-      recursive: true,
-      force: true,
-    });
+  it('doctor reports clean after init', async () => {
     const result = await run(['doctor'], workDir);
-    expect(result.out).toContain('ok   changes structure');
-    expect(result.out).toContain('no active changes');
-    expect(result.out).not.toContain('FAIL changes structure');
+    expect(result.out).toContain('ok   configuration');
+    expect(result.out).not.toContain('FAIL configuration');
   });
 });

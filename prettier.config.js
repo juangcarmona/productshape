@@ -2,5 +2,5 @@
 export default {
   printWidth: 100,
   singleQuote: true,
-  proseWrap: 'preserve',
+  proseWrap: 'never',
 };

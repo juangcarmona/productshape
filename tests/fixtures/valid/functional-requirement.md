@@ -6,7 +6,10 @@ status: draft
 derived-from:
   - UC-FIXTURE-001
 verification:
-  - scenario: The fixture requirement validates without errors
+  - id: S1
+    scenario: The fixture requirement validates without errors
+  - id: S2
+    scenario: The fixture requirement accepts multiple citable scenarios
 ---
 
 ## Requirement

@@ -17,16 +17,12 @@ describe('generated configuration round-trips through the parser', () => {
   });
 
   it('round-trips every option init can write', () => {
-    const result = parseConfig(
-      configContent(['claude', 'copilot'], 'openspec', true),
-      '.product/config.yaml',
-    );
+    const result = parseConfig(configContent(['claude', 'copilot'], true), '.product/config.yaml');
     expect(result.diagnostics).toEqual([]);
     expect(result.config).toEqual({
       ...defaultConfig(),
       integrations: {
         ai: ['claude', 'copilot'],
-        sdd: { provider: 'openspec' },
         'shorthand-commands': true,
       },
     });

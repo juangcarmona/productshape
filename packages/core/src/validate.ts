@@ -222,7 +222,7 @@ export function validateModel(
 
 /**
  * Undirected reachability over canonical product edges starting from all actors
- * (docs/specification/relationships.md#reachability).
+ * (https://github.com/product-definition-as-code/spec/blob/main/spec/relationships.md#reachability).
  */
 function undirectedReachabilityFromActors(graph: ProductGraph): Set<string> {
   const visited = new Set<string>();

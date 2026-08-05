@@ -1,50 +1,47 @@
 ---
 id: CHG-EXAMPLE-001
 type: product-change
-title: Example Product Change
+title: Example product change
 status: draft
-base-revision: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+base-revision: '3f2a91c'
 operations:
-  add: []
-  modify: []
+  add:
+    - FR-EXAMPLE-001
+  modify:
+    - UC-EXAMPLE-001
   remove: []
 ---
 
-<!--
-Product change: an explicit delta against the current product model.
-- base-revision: the Git commit of the baseline this change was created against.
-- operations.add / modify: every listed ID needs a complete proposed future-state artifact
-  under this change's proposed/ directory (modify keeps the existing ID).
-- operations.remove: listed IDs are removed at promotion; no tombstone files.
-- The baseline under docs/product/model must not change while this change is active.
-Contract: docs/specification/product-changes.md
 Schema reference: docs/specification/frontmatter-reference.md#product-change
--->
+
+Every ID under `operations.add` and `operations.modify` needs a complete proposed artifact under `proposed/`, laid out exactly as it will live in the model. Set `base-revision` to the baseline commit this change was created against, quoted so YAML reads an all-digit revision as a string.
 
 ## Problem
 
-<!-- The product problem or opportunity motivating this change. -->
+What is wrong or missing in the current Product Definition? State the problem, not the solution.
 
 ## Intended Product Outcome
 
-<!-- What is true about the product after this change, in behaviour terms. -->
+What the Product Definition says once this change is accepted. Describe the destination, not the steps.
 
 ## Rationale
 
-<!-- Why this evolution, and why now. -->
+Why this outcome, and why now. Record the reasoning a future reader would otherwise have to reconstruct.
 
 ## Affected Product Areas
 
-<!-- The actors, journeys, use cases, rules, terms, contexts and requirements affected. -->
+Which parts of the product this change touches, in product language rather than file paths.
 
 ## Open Questions
 
-<!-- Unresolved product decisions. Keep them visible; do not invent answers. -->
+Unresolved questions that need a human decision before the change can be approved. Write `None.` when there are none.
+
+- Should X be Y or Z?
 
 ## Product Acceptance
 
-<!-- How the product owner recognizes the change as correctly realized. -->
+How a human recognises that the accepted definition expresses the intended outcome.
 
 ## Out of Scope
 
-<!-- What this change deliberately does not cover. -->
+What this change explicitly does not touch, including delivery, technical design and implementation.
