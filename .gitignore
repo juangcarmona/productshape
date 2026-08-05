@@ -12,9 +12,6 @@ coverage/
 .product/generated/
 .product/cache/
 
-# Archived change drafts: the PR is the record, not the draft.
-docs/product/changes/archive/
-
 # Editor and OS noise
 .DS_Store
 Thumbs.db

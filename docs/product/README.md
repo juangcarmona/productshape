@@ -6,7 +6,7 @@ This directory is the canonical product definition of Product Definition as Code
 
 ```text
 docs/product/
-├── model/       Current product model (the baseline) — canonical
+├── model/       The accepted Product Definition (the baseline): canonical
 │   ├── actors/
 │   ├── journeys/
 │   ├── use-cases/
@@ -18,17 +18,24 @@ docs/product/
 │   │   ├── functional/
 │   │   ├── quality/
 │   │   └── constraints/
-│   └── index.md  Human navigation only — never a generated index
-└── changes-archive/  Historical Product Changes (retired, inert)
+│   └── index.md  Human navigation only, never a generated index
+└── changes/
+    ├── active/     Live Product Changes, each with its proposed future state
+    ├── completed/  Applied changes: change history, inert
+    └── rejected/   Withdrawn changes: change history, inert
 ```
+
+The archives are history, not model. They are never compiled into the graph and take no part in duplicate detection, reference resolution or operation checks.
 
 The authority rules for these paths are normative in [the specification](https://github.com/product-definition-as-code/spec).
 
 Validate the model with `prodshape validate`. The allowed frontmatter of any artifact kind is printed by `prodshape schema <kind>` and enumerated in the [frontmatter reference](../specification/frontmatter-reference.md); in an adopting repository, `init` also installs an authoring template per kind under `.product/templates/`. This repository authors from the specification directly, so it has none.
 
-## How this baseline evolves
+## How this Product Definition evolves
 
-The baseline changes through exactly one operation: a human merging a validated proposed revision (a pull request). Everything else is a proposal. `prodshape validate` runs as a CI gate; a proposal that fails structural validation MUST NOT be merged. Consumer documents cite product artifacts by ID + digest + anchor; `prodshape citations verify` detects drift.
+Through Product Changes, and nothing else. A change is elaborated under `changes/active/`, validated as an overlay on the baseline with `prodshape change validate`, approved by a human, and materialized by `prodshape change apply`, which writes the result, reports the product diff and archives the change. The pull request that carries the result is where a human accepts it: applying is not accepting, and `prodshape validate` runs as a CI gate so a proposal that fails structural validation is never merged.
+
+This model entered through [`CHG-INITIAL`](changes/completed/chg-initial/change.md), the same mechanism as every change since. Consumer documents cite product artifacts by ID, digest and optional anchor; `prodshape citations verify` detects drift.
 
 ## Scope of this model
 
