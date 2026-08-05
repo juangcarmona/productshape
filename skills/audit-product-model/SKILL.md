@@ -26,7 +26,7 @@ Do not use this skill to author artifacts (use `define-product`) or to reconstru
 
 - The spec repo's [artifacts chapter](https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md) — the contracts semantic findings are judged against.
 - `docs/specification/validation.md` — diagnostic codes, so structural findings cite them.
-- `docs/product/model/business-rules/br-change-001.md` — the change-as-PR rule, when auditing within or around an in-flight change.
+- `docs/product/model/business-rules/br-change-001.md` — the rule governing how the definition changes, when auditing within or around a live change.
 - `references/finding-classification.md` in this skill — ERROR vs OBSERVATION vs QUESTION.
 - The artifact files in scope under `docs/product/model` — for semantic review only, after the structural baseline is established by the CLI.
 

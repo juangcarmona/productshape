@@ -32,6 +32,10 @@ jobs:
       # its data files, so it runs from dist/bin.js after `pnpm build`.
       - name: prodshape validate
         run: node packages/cli/dist/bin.js validate
+      # Conformance requires every live Product Change to satisfy the change contract, so the
+      # gate runs whether or not one happens to be in flight on this branch.
+      - name: prodshape change validate
+        run: node packages/cli/dist/bin.js change validate
       - name: prodshape graph
         run: node packages/cli/dist/bin.js graph
       - name: prodshape doctor

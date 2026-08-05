@@ -30,7 +30,7 @@ Do not use this skill for greenfield intent (use `define-product`) or to review 
 - `docs/methodology/recover.md` — the recovery contract this skill implements.
 - The spec repo's [artifacts chapter](https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md) — target artifact contracts and required body sections.
 - `docs/specification/frontmatter-reference.md` — the exact allowed frontmatter per artifact kind, including the `provenance` object and its permitted values.
-- `docs/product/model/business-rules/br-change-001.md` — the change-as-PR rule.
+- `docs/product/model/business-rules/br-change-001.md` — the rule governing how the definition changes.
 - Artifact templates in the framework's `templates/` (installed copies may be under `.product/templates/`).
 - `references/evidence-sources.md` in this skill — what each evidence source is good for and its typical confidence.
 - Existing artifacts under `docs/product/model`, so candidates extend rather than duplicate.

@@ -29,7 +29,7 @@ Do not use this skill to reconstruct knowledge from an existing system (use `rec
 - The spec repo's [artifacts chapter](https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md) — what each artifact type means, its required body sections and lifecycle.
 - `docs/specification/frontmatter-reference.md` — the exhaustive per-kind field tables: which properties are allowed, which are required, and what values they accept.
 - The spec repo's [identifiers chapter](https://github.com/product-definition-as-code/spec/blob/main/spec/identifiers.md) — ID prefixes and naming rules.
-- `docs/product/model/business-rules/br-change-001.md` — the change-as-PR rule: every model evolution is a validated pull request.
+- `docs/product/model/business-rules/br-change-001.md` — the rule governing how the definition changes: every evolution is an applied and accepted Product Change.
 - Artifact templates: the framework's `templates/` directory (installed copies may live under `.product/templates/`). Always start new artifacts from the matching template.
 - Existing artifacts under `docs/product/model`, including anything already drafted on this branch, before creating anything, to reuse IDs, terms and actors instead of duplicating them.
 

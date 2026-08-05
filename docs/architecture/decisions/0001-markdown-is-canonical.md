@@ -4,7 +4,7 @@ Status: Accepted Date: 2026-07-25
 
 ## Context
 
-Product knowledge needs a source of truth that survives tool churn, diffs cleanly, reviews well in pull requests and can be read without any toolkit installed. Candidates included a database, a structured store (JSON/YAML documents as the primary format), and plain text under Git. The methodology also produces many computed views — graphs, indexes, diagrams, handoffs — and a rule is needed for which files may be edited and which must never be.
+Product knowledge needs a source of truth that survives tool churn, diffs cleanly, reviews well in pull requests and can be read without any toolkit installed. Candidates included a database, a structured store (JSON/YAML documents as the primary format), and plain text under Git. The methodology also produces many computed views, graphs, indexes and diagrams, and a rule is needed for which files may be edited and which must never be.
 
 ## Decision
 
@@ -12,7 +12,7 @@ Authored Markdown files, artifact documents and change definitions with YAML fro
 
 "Markdown is canonical" is shorthand, not a literal file-extension rule: the canonical-authority table in the [specification](https://github.com/product-definition-as-code/spec/blob/main/spec/conformance.md) is normative. What makes a file canonical is that a human (possibly AI-assisted) authored it and reviews it, not its extension.
 
-Everything else — the product graph JSON, generated indexes, Mermaid diagrams, Product Handoffs, Product Context documents, traceability reports — is derived, non-canonical and rebuildable from the canonical files at any time. Tools must never require a generated file to exist in order to rebuild it, and generated files must never be edited by hand.
+Everything else, the product graph JSON, generated indexes, Mermaid diagrams and traceability reports, is derived, non-canonical and rebuildable from the canonical files at any time. Tools must never require a generated file to exist in order to rebuild it, and generated files must never be edited by hand.
 
 ## Consequences
 

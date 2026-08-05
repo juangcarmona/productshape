@@ -20,13 +20,13 @@
         ".claude/skills/analyze-product-change/references/operations-checklist.md": "sha256:a40522e9934190350e0fce72f0cfb12bcdb84a3da668f05bcf58517a5927fbef",
         ".claude/skills/analyze-product-change/SKILL.md": "sha256:ce9ceaab65f8881097ce531c2b7e5497b10597095450a3f6cca480940bfe84bb",
         ".claude/skills/audit-product-model/references/finding-classification.md": "sha256:a3076717767b8953c910ed0e49ca9304bea00b8334d0d95b5a7cf0f710eea4b5",
-        ".claude/skills/audit-product-model/SKILL.md": "sha256:0ad00d43499e2efa72173568e2975fe22b7e83334b0620301daa042a9e99711e",
+        ".claude/skills/audit-product-model/SKILL.md": "sha256:0273ccb826b4913c5143b6c4b00c833940878a692801db402cd599f4280a9d3a",
         ".claude/skills/define-product/references/authoring-order.md": "sha256:29e7c6d8192db3d9801b39f72e784bda1b773ffe881833a7dd9b49c3fbf5ef9a",
-        ".claude/skills/define-product/SKILL.md": "sha256:f56759f983cef0fd53b7144342ee235737df89f8c52135cae1d61341e8beb41c",
+        ".claude/skills/define-product/SKILL.md": "sha256:cd77496a7ca89ecdcba753543d63847deb482a66c6dd217ba022849217ef3ebb",
         ".claude/skills/explore-product/references/exploration-heuristics.md": "sha256:85e09022294e90319a9541d8da1ed446cec9d32be03505a045b1e5925816ab7e",
         ".claude/skills/explore-product/SKILL.md": "sha256:b810a77a5b2f8690c584dcf91514d9b01f4603955f1f47c156cea29abdde4b10",
         ".claude/skills/recover-product/references/evidence-sources.md": "sha256:89a1d8e7a70a5f844ff87246ab210acd425d57074eebad81b386658348aec008",
-        ".claude/skills/recover-product/SKILL.md": "sha256:3e2e83b86015def9830ab225e187b4de5a27e80b9203acfd02ab186454c0e3ee"
+        ".claude/skills/recover-product/SKILL.md": "sha256:fe51f06cd81dc5f62c8201ecdc85f91536ff4ae771c47681985d82f451ab6489"
       }
     },
     "copilot": {
@@ -46,13 +46,13 @@
         ".github/skills/analyze-product-change-references/operations-checklist.md": "sha256:a40522e9934190350e0fce72f0cfb12bcdb84a3da668f05bcf58517a5927fbef",
         ".github/skills/analyze-product-change.md": "sha256:ce9ceaab65f8881097ce531c2b7e5497b10597095450a3f6cca480940bfe84bb",
         ".github/skills/audit-product-model-references/finding-classification.md": "sha256:a3076717767b8953c910ed0e49ca9304bea00b8334d0d95b5a7cf0f710eea4b5",
-        ".github/skills/audit-product-model.md": "sha256:0ad00d43499e2efa72173568e2975fe22b7e83334b0620301daa042a9e99711e",
+        ".github/skills/audit-product-model.md": "sha256:0273ccb826b4913c5143b6c4b00c833940878a692801db402cd599f4280a9d3a",
         ".github/skills/define-product-references/authoring-order.md": "sha256:29e7c6d8192db3d9801b39f72e784bda1b773ffe881833a7dd9b49c3fbf5ef9a",
-        ".github/skills/define-product.md": "sha256:f56759f983cef0fd53b7144342ee235737df89f8c52135cae1d61341e8beb41c",
+        ".github/skills/define-product.md": "sha256:cd77496a7ca89ecdcba753543d63847deb482a66c6dd217ba022849217ef3ebb",
         ".github/skills/explore-product-references/exploration-heuristics.md": "sha256:85e09022294e90319a9541d8da1ed446cec9d32be03505a045b1e5925816ab7e",
         ".github/skills/explore-product.md": "sha256:b810a77a5b2f8690c584dcf91514d9b01f4603955f1f47c156cea29abdde4b10",
         ".github/skills/recover-product-references/evidence-sources.md": "sha256:89a1d8e7a70a5f844ff87246ab210acd425d57074eebad81b386658348aec008",
-        ".github/skills/recover-product.md": "sha256:3e2e83b86015def9830ab225e187b4de5a27e80b9203acfd02ab186454c0e3ee"
+        ".github/skills/recover-product.md": "sha256:fe51f06cd81dc5f62c8201ecdc85f91536ff4ae771c47681985d82f451ab6489"
       }
     }
   }
