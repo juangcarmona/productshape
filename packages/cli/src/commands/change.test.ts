@@ -10,11 +10,19 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runCli } from '../program.js';
 
 const exec = promisify(execFile);
 const repoRoot = fileURLToPath(new URL('../../../..', import.meta.url));
+
+/**
+ * Each test gets its own repository with its own history, because the drift test commits and a
+ * shared fixture would leak that commit into every test after it. Five git invocations plus a
+ * tree copy is slow on a cold Windows runner, so hooks and tests both get room. The default 10s
+ * is a bound on process spawning here, not a signal that anything is stuck.
+ */
+vi.setConfig({ hookTimeout: 60_000, testTimeout: 60_000 });
 
 interface RunResult {
   code: number;
