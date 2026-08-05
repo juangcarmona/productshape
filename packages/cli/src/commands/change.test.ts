@@ -451,19 +451,23 @@ describe('change apply', () => {
       >;
     };
 
-    for (const kind of ['added', 'modified', 'removed'] as const) {
-      expect(diff[kind]).toHaveLength(1);
-      expect(diff[kind][0].kind).toBe(kind);
-    }
-    expect(diff.added[0].digest).toMatch(/^sha256:[0-9a-f]{64}$/);
-    expect(diff.modified[0].digest).toMatch(/^sha256:[0-9a-f]{64}$/);
+    const digest = /^sha256:[0-9a-f]{64}$/;
+    expect(diff.added).toEqual([
+      expect.objectContaining({ kind: 'added', digest: expect.stringMatching(digest) }),
+    ]);
+    expect(diff.modified).toEqual([
+      expect.objectContaining({ kind: 'modified', digest: expect.stringMatching(digest) }),
+    ]);
     // A removal leaves no content, so there is nothing to digest.
-    expect(diff.removed[0].digest).toBeUndefined();
+    expect(diff.removed).toEqual([expect.objectContaining({ kind: 'removed' })]);
+    expect(diff.removed[0]).not.toHaveProperty('digest');
 
     // The human-readable form carries the same three facts per entry.
-    const text = await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run']);
-    expect(text.out.join('\n')).toContain(`${diff.removed[0].id}\tremoved\t-`);
-    expect(text.out.join('\n')).toContain(`${diff.added[0].id}\tadded\t${diff.added[0].digest}`);
+    const [added] = diff.added;
+    const [removed] = diff.removed;
+    const text = (await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run'])).out.join('\n');
+    expect(text).toContain(`${removed?.id}\tremoved\t-`);
+    expect(text).toContain(`${added?.id}\tadded\t${added?.digest}`);
   });
 
   it('writes the model, archives the change and commits nothing', async () => {
