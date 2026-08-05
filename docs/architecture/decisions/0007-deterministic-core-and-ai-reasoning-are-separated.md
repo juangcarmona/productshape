@@ -4,15 +4,15 @@ Status: Accepted Date: 2026-07-25
 
 ## Context
 
-The methodology is designed for AI-assisted engineering, so it is tempting to let AI do everything: elicit knowledge, write artifacts, and also decide whether the model is valid. But a verdict that varies between runs, models or prompts is not a verdict. Traceability, promotion gates and CI decisions need answers that are reproducible and contestable. At the same time, the genuinely hard work — turning conversations and code into good product artifacts — is exactly where AI helps most.
+The methodology is designed for AI-assisted engineering, so it is tempting to let AI do everything: elicit knowledge, write artifacts, and also decide whether the model is valid. But a verdict that varies between runs, models or prompts is not a verdict. Traceability, approval gates and CI decisions need answers that are reproducible and contestable. At the same time, the genuinely hard work — turning conversations and code into good product artifacts — is exactly where AI helps most.
 
 ## Decision
 
 Structural invariants are enforced only by deterministic code. Schema validation, identifier and reference resolution, relationship typing, overlay compilation, digest computation, staleness, closure selection and diagnostic ordering live in the `core` package and are exercised through the CLI. Given the same repository content, they produce the same diagnostics in the same order on every platform. AI output is never an input to a structural verdict.
 
-AI is used only for semantic reasoning, through the six canonical skills: **define** (elicit and draft artifacts), **recover** (reconstruct product knowledge from an existing codebase), **analyze** (judge coherence, gaps and contradictions), **slice** (propose delivery decomposition), **prepare-handoff** (assemble and explain handoff context) and **audit** (review model quality). Skills draft and reason; they always end by invoking deterministic validation, and their output is reviewed like any authored content.
+AI is used only for semantic reasoning, through the canonical skills: **define** (elicit and draft artifacts), **recover** (reconstruct product knowledge from an existing codebase), **explore** (think a fuzzy idea through against the existing graph), **analyze** (turn a request into a Product Change and its proposed artifacts) and **audit** (review model quality). Skills draft and reason; they always end by invoking deterministic validation, and their output is reviewed like any authored content.
 
-The four canonical hooks are deterministic guards: descriptors that invoke CLI commands at provider-defined points. Hooks block or warn on mechanical conditions; they never approve a change, never promote, and never rewrite content. Every approval point — accepting a change, approving a slice, promoting — is held by a human.
+The four canonical hooks are deterministic guards: descriptors that invoke CLI commands at provider-defined points. Hooks block or warn on mechanical conditions; they never approve a change, never apply one, and never rewrite content. Every approval point, approving a change and accepting it by merge, is held by a human.
 
 ## Consequences
 

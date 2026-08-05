@@ -26,14 +26,14 @@ Define is a way of thinking before it is a sequence of steps. The artifact famil
 
 10. **Human approval.** A person reviews the drafts and accepts them. Only then do artifacts become `active` — part of the accepted product definition. Nothing becomes canonical without this step.
 
-## The initial-baseline bootstrap exception
+## Define produces CHG-INITIAL
 
-Normally, every change to the product model goes through a [Product Change](change.md). The very first baseline is the one exception, because there is no baseline yet to change. The normative rule, from [Product Changes](../specification/product-changes.md):
+There is no exception for the first definition. Define's output is the proposed future state of a Product Change with the reserved identifier `CHG-INITIAL`, which is validated, approved, applied and accepted exactly like every later change. The normative rule, from [Product Changes](https://github.com/product-definition-as-code/spec/blob/main/spec/product-changes.md):
 
-> An initial product baseline MAY be established directly during product initialization or the first Define operation, without a Product Change. Once that baseline has been accepted, every subsequent semantic evolution of the product MUST be represented through a Product Change.
+> `CHG-INITIAL` is reserved for the single initialisation change that establishes the first Product Definition. A product MUST NOT have more than one `CHG-INITIAL`. Every semantic evolution after it MUST be represented through a Product Change.
 
-The boundary is sharp: the exception covers exactly one event — the first accepted baseline. The moment that baseline exists, Define's direct-authoring path is closed. Adding a use case the week after bootstrap is a Product Change like any other, however small.
+Greenfield and brownfield both arrive here: authoring from intent and recovering from a running system are two ways of producing the same change. One mechanism means one thing to explain, and nothing that only applies once.
 
 ## What Define hands you
 
-A validated, human-approved baseline under `docs/product/model`: the reference point every future [Change](change.md) is a delta against, and the source every [handoff](sdd-handoff.md) draws its context from. The artifact contracts it must satisfy are in [Artifacts](../specification/artifacts.md) for what each kind means, [Frontmatter reference](../specification/frontmatter-reference.md) for the exact fields each one accepts, and [Identifiers](../specification/identifiers.md) for how they are named. Frontmatter is a closed contract, so it is worth reading the field tables — or running `prodshape schema <kind>`, which prints the same contract and needs no repository — before authoring rather than discovering the boundaries from validation errors.
+A validated, human-approved baseline under `docs/product/model`: the reference point every future [Change](change.md) is a delta against, and the text every consumer document cites. The artifact contracts it must satisfy are in [Artifacts](https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md) for what each kind means, [Frontmatter reference](../specification/frontmatter-reference.md) for the exact fields each one accepts, and [Identifiers](https://github.com/product-definition-as-code/spec/blob/main/spec/identifiers.md) for how they are named. Frontmatter is a closed contract, so it is worth reading the field tables — or running `prodshape schema <kind>`, which prints the same contract and needs no repository — before authoring rather than discovering the boundaries from validation errors.

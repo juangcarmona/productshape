@@ -7,7 +7,7 @@ This guide covers what Product Definition as Code physically adds to any existin
 ## What init touches
 
 ```bash
-prodshape init [--ai claude|copilot] [--sdd openspec] [--flat] [--shorthand] [--dry-run]
+prodshape init [--ai claude|copilot] [--flat] [--shorthand] [--dry-run]
 ```
 
 `init` adds exactly three areas and modifies nothing else:
@@ -39,7 +39,7 @@ It reports every path it would create, preserve, regenerate (a managed file it o
 
 ## Authority rules
 
-Every path has exactly one owner. The full authority model is in the [specification](../specification/index.md#canonical-authority); the installation-level view:
+Every path has exactly one owner. The full authority model is in the [specification](https://github.com/product-definition-as-code/spec/blob/main/spec/index.md#canonical-authority); the installation-level view:
 
 | Path | Authority | Rules |
 | --- | --- | --- |
@@ -68,8 +68,6 @@ generated:
 integrations:
   ai: # AI providers with generated integrations
     - claude
-  sdd:
-    provider: openspec # SDD adapter; openspec is the only v0.1 provider
   shorthand-commands: false # also generate the /ps:<name> aliases for /product:<name>
 validation:
   warnings-as-errors: false # escalate validation warnings to errors for this repository

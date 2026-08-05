@@ -11,13 +11,13 @@ Read this first: **automated brownfield recovery is out of scope in v0.1.** What
 A brownfield repository usually already has a populated `docs/`, so check what `init` would do before it does it:
 
 ```bash
-prodshape init --ai claude --sdd openspec --dry-run
+prodshape init --ai claude --dry-run
 ```
 
 The dry run writes nothing and reports every path it would create, preserve, regenerate or overwrite, plus any conflict — a file that already exists and is not managed by the installation lock. Nothing is overwritten without `--force`, and existing files are reported as preserved.
 
 ```bash
-prodshape init --ai claude --sdd openspec
+prodshape init --ai claude
 ```
 
 This creates `docs/product/` and `.product/` and touches nothing else — your source code, build and existing documentation are untouched. Details of what `init` creates and the authority rules are in [Installing into an existing repository](existing-repository.md).
@@ -53,7 +53,7 @@ The `recover-product` skill drives this loop: it reads evidence you point it at,
 
 ## 3. Establish the baseline
 
-Recovery is the brownfield form of the initial-baseline bootstrap exception: validated candidates are authored directly into `docs/product/model` as the first accepted baseline, without a Product Change. Validate it:
+Recovery is an input activity to `CHG-INITIAL`, not a separate lifecycle: the validated candidates become the proposed future state of the reserved initialisation change, which is applied and accepted exactly as in the greenfield path. Provenance and confidence live on the proposed artifacts, never on the change itself. Validate it:
 
 ```bash
 prodshape validate
@@ -74,9 +74,9 @@ This works on Windows and macOS, where a casing-only rename is otherwise a silen
 ## 4. Set honest expectations
 
 - **Recovery is incremental.** You do not need the whole system modelled before the baseline is useful. Start with the areas you are about to change; a partial but validated model beats a complete but unreviewed one.
-- **The model records what the product does, not what the code looks like.** Artifacts must not contain implementation design (see [Artifacts](../specification/artifacts.md)). If recovery is producing class inventories, it has drifted.
+- **The model records what the product does, not what the code looks like.** Artifacts must not contain implementation design (see [Artifacts](https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md)). If recovery is producing class inventories, it has drifted.
 - **Some knowledge is simply gone.** Where nobody can confirm a rule's rationale, record what is observable and note the uncertainty in the artifact body rather than inventing a justification.
 
 ## 5. Operate through Product Changes
 
-Once the baseline is accepted, the bootstrap exception is closed. Every subsequent semantic evolution — including corrections to recovered artifacts — goes through a Product Change: overlay validation, approval, delivery slices, handoffs to your SDD framework, and explicit promotion. From this point the workflow is identical to the greenfield path; follow [Adopting in a greenfield product](greenfield.md#5-run-your-first-product-change) and [Change](../methodology/change.md).
+Once `CHG-INITIAL` is accepted, every subsequent semantic evolution, including corrections to recovered artifacts, goes through a Product Change: overlay validation, human approval, explicit apply, and acceptance by merge. From this point the workflow is identical to the greenfield path; follow [Adopting in a greenfield product](greenfield.md#5-run-your-first-product-change) and [Change](../methodology/change.md).

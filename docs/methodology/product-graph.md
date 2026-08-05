@@ -1,6 +1,6 @@
 # The product graph
 
-The relationships are the methodology. This page explains how the graph works from a practitioner's point of view; the exact vocabulary and rules are normative in [Relationships](../specification/relationships.md).
+The relationships are the methodology. This page explains how the graph works from a practitioner's point of view; the exact vocabulary and rules are normative in [Relationships](https://github.com/product-definition-as-code/spec/blob/main/spec/relationships.md).
 
 ## Artifacts are nodes, frontmatter references are edges
 
@@ -38,14 +38,14 @@ The same rule covers every pair: which journeys involve an actor, which use case
 
 ## Compiled, always rebuildable
 
-The graph is compiled from the canonical Markdown (and slice YAML) every time it is needed. It is a derived output, like a build artifact: reproducible, disposable, never edited, never a prerequisite of its own rebuild. Delete every generated file and the next tool run recreates them byte-for-byte from the sources. The authoritative list of what is canonical and what is generated is the [canonical-authority table](../specification/index.md#canonical-authority).
+The graph is compiled from the canonical Markdown every time it is needed. It is a derived output, like a build artifact: reproducible, disposable, never edited, never a prerequisite of its own rebuild. Delete every generated file and the next tool run recreates them byte-for-byte from the sources. The authoritative list of what is canonical and what is generated is the [canonical-authority table](https://github.com/product-definition-as-code/spec/blob/main/spec/index.md#canonical-authority).
 
 ## What the graph is for
 
 - **Validation.** Every reference is checked: unknown IDs, disallowed target types, lifecycle violations (an active artifact referencing a retired one), plus structural warnings such as a requirement unreachable from any actor. See [Validation](../specification/validation.md).
 - **Inspection.** Ask about any artifact and see both its authored relationships and every derived reverse view in one place.
 - **Structural impact.** Given an artifact, the set of artifacts reachable through graph edges within a stated direction and depth — the deterministic answer to "what is connected to this?"
-- **Handoff subgraph selection.** When a delivery slice becomes a Product Handoff, a deterministic closure rule walks the graph to select exactly the context that increment needs — no more, no less. See [Handoff contract](../specification/handoff-contract.md).
+- **Overlay validation.** A Product Change is checked by compiling the graph of the baseline with its operations applied virtually, which is how a removal that would strand a reference is caught before anything is written. See [Change](change.md).
 
 ## Structural impact is not semantic judgment
 

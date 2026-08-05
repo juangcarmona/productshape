@@ -25,13 +25,14 @@ Each artifact declares its relationships in frontmatter: a use case names its `p
 - **[Define](define.md)** — greenfield. Establish a product definition from intent: actors first, then journeys, use cases, rules, terms, requirements, with open questions kept visible.
 - **[Recover](recover.md)** — brownfield. Reconstruct candidate product knowledge from an existing system, with provenance and confidence, for a human to validate.
 - **Explore** — pre-change. A product-graph-aware thinking partner (`ps:explore`) that helps clarify a fuzzy idea against the existing model before committing to a change.
-- **Validate** — the structural gate. `prodshape validate` checks the full tree; a proposal that fails validation MUST NOT be merged (CI gate).
+- **[Change](change.md)** — the mechanism. A Product Change is the semantic delta that carries the definition from one accepted state to the next: elaborate it, validate it as an overlay, approve it, apply it.
+- **Validate** — the structural gate. `prodshape validate` checks the Product Definition and `prodshape change validate` checks a live change as an overlay on it; a proposal that fails validation MUST NOT be merged (CI gate).
 - **Cite** — emit a citation record from a consumer document to a product artifact, carrying the artifact ID, a content digest, and an optional scenario anchor.
 - **Verify citations** — `prodshape citations verify` recomputes digests and reports one status per citation: `current`, `stale`, `tampered` or `unresolved`.
 
-## Change as pull request
+## How the definition changes
 
-The baseline is the canonical product model on the repository's canonical branch. A change is the repository's native branch-review-merge mechanism: a pull request. There is no bespoke change artifact, no overlay, no promotion step.
+The Product Definition is the accepted product intent on the repository's canonical branch. It evolves through Product Changes: explicit semantic deltas of add, modify and remove, each carrying the reason it exists. A pull request reviews and accepts a Product Change; it is not the change.
 
 ```text
 Fuzzy idea
@@ -41,11 +42,20 @@ ps:explore ──────── reads the product graph; surfaces gaps and a
         │           areas; sharpens the idea through conversation
         │
         ▼
-Pull request ────── edits docs/product/model/ directly; CI runs
-        │           prodshape validate; human reviews and merges
+Product Change ──── changes/active/<chg-id>/: the delta, its rationale and
+        │           its complete proposed future-state artifacts
         ▼
-Baseline ────────── the merged model is the new canonical definition
-        │
+change validate ─── compiles the overlay on the baseline and validates the
+        │           result end to end, touching no baseline file
+        ▼
+Approval ────────── a human decides the product should say this. No tool
+        │           may take this step.
+        ▼
+change apply ────── writes the result, reports the product diff, archives
+        │           the change. Materialized, not accepted.
+        ▼
+Pull request ────── CI runs prodshape validate; a human reviews and merges.
+        │           The merge is the acceptance.
         ▼
 Consumer docs ───── cite product artifacts by ID + digest + anchor;
         │           prodshape citations verify detects drift
@@ -54,7 +64,7 @@ SDD workflow ────── e.g. OpenSpec: proposal, specs, design, tasks
                     (native SDD ownership, unchanged)
 ```
 
-Merging is a human decision. Tools MUST NOT merge, auto-approve or self-merge model changes. Consumers of the model MUST NOT write to it; they cite it.
+Approval and acceptance are both human decisions. Tools MUST NOT approve a change, apply one implicitly, or merge, auto-approve or self-merge. Consumers of the model MUST NOT write to it; they cite it.
 
 ## The citation contract
 
@@ -66,11 +76,11 @@ See the [citation contract](https://github.com/product-definition-as-code/spec/b
 
 - **Deterministic tooling** (the `prodshape` CLI) enforces structure: schemas, IDs, relationships, digests, citation verification. Same input, same result, every platform.
 - **AI skills** do semantic reasoning: drafting, impact interpretation, exploration. AI preserves unanswered questions and never invents product decisions.
-- **Humans** make the calls that define the product: PR review and merge.
+- **Humans** make the calls that define the product: approving a change, and accepting it by merging.
 
 ## Where to go next
 
 - [Manifesto](../manifesto.md) — why this layer exists.
-- [The product graph](product-graph.md) · [Define](define.md) · [Recover](recover.md)
+- [The product graph](product-graph.md) · [Define](define.md) · [Recover](recover.md) · [Change](change.md)
 - [Validation](../specification/validation.md) — diagnostic codes and exit codes.
 - [Specification](https://github.com/product-definition-as-code/spec) — the normative contracts.

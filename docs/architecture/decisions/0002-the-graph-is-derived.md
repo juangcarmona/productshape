@@ -10,7 +10,7 @@ The relationships between artifacts are the methodology: actors to journeys, use
 
 The product graph is compiled from artifact frontmatter by the toolkit. It is never authored, and `product-graph.json` is a derived output that can be rebuilt from the canonical files at any time.
 
-Every relationship has exactly one canonical direction — one source artifact type, one frontmatter field, one allowed target set — defined in the [relationships specification](../../specification/relationships.md). All reverse relationships are derived by the graph compiler. The worked example that fixes the pattern:
+Every relationship has exactly one canonical direction — one source artifact type, one frontmatter field, one allowed target set — defined in the [relationships specification](https://github.com/product-definition-as-code/spec/blob/main/spec/relationships.md). All reverse relationships are derived by the graph compiler. The worked example that fixes the pattern:
 
 - `Domain Term.defined-in` (term → bounded context) is canonical and authored.
 - `Bounded Context.owns-terms` is derived: a context's owned terms are exactly the terms whose `defined-in` references it. The bounded-context schema rejects an authored `owns-terms` field.

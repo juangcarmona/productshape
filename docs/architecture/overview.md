@@ -12,12 +12,12 @@ The toolkit is a TypeScript monorepo using pnpm workspaces and ESM throughout.
 
 ```text
 packages/
-├── core/                  # pure library: parsing, graph, validation, changes, handoffs
+├── core/                  # pure library: parsing, graph, validation, changes, citations
 ├── cli/                   # commander commands, output, exit codes
 ├── distribution/          # init, provider-asset rendering, update/drift/doctor
 ├── integration-claude/    # Claude Code provider mapping and templates
 ├── integration-copilot/   # GitHub Copilot provider mapping and templates
-└── adapter-openspec/      # OpenSpec sidecar files and coverage validation
+└── adapter-openspec/      # locating OpenSpec changes for citation scanning
 skills/                    # canonical AI skills (6)
 commands/                  # canonical thin /product:* commands (7)
 hooks/                     # canonical deterministic guard descriptors (4)
@@ -26,18 +26,18 @@ schemas/                   # JSON Schemas for artifact kinds
 docs/                      # manifesto, methodology, specification, this architecture
 ```
 
-v0.1 is delivered through four OpenSpec changes: `establish-product-definition-foundation` (contracts, schemas, minimal parsing core), `implement-product-graph-core` (graph, validation, CLI), `implement-product-change-and-handoff` (overlays, slices, handoffs, promotion) and `package-ai-and-sdd-integrations` (distribution, provider integrations, OpenSpec adapter).
+v0.1 is delivered through four OpenSpec changes: `establish-product-definition-foundation` (contracts, schemas, minimal parsing core), `implement-product-graph-core` (graph, validation, CLI), `implement-product-change` (overlays, apply, product diff) and `package-ai-and-sdd-integrations` (distribution, provider integrations, OpenSpec adapter).
 
 ## Packages and responsibilities
 
 | Package | Responsibility |
 | --- | --- |
-| `core` | Parsing (frontmatter, YAML), JSON Schema validation, graph compilation, diagnostics, change overlays, delivery slices, handoff generation, digests, staleness, promotion planning. Pure library: no provider or OpenSpec knowledge, no `process.exit`, no console output. |
+| `core` | Parsing (frontmatter, YAML), JSON Schema validation, graph compilation, diagnostics, change overlays, apply planning, product diffs, digests, citation emission and verification. Pure library: no provider or OpenSpec knowledge, no `process.exit`, no console output. |
 | `cli` | commander command definitions, human and JSON output, exit codes 0/1/2/3. Orchestration only; all domain logic lives in the packages it calls. |
 | `distribution` | `init`, rendering canonical AI assets into provider formats, managed-file headers and content hashes, `installation.lock.json`, `integration update`, drift detection, `doctor`. |
 | `integration-claude` | Claude Code-specific mapping and templates only (renders `.claude/` assets, including executable hooks). |
 | `integration-copilot` | GitHub Copilot-specific mapping and templates only (renders `.github/` assets; hooks render as documentation — see OD-002). |
-| `adapter-openspec` | Locating OpenSpec changes; owning the sidecar files `product-handoff.yaml`, `product-context.md` and `product-coverage.yaml`; coverage validation. Never touches native OpenSpec files. |
+| `adapter-openspec` | Locating OpenSpec changes so their documents can be scanned for citations. Never touches native OpenSpec files. |
 
 ## Dependency graph
 
@@ -61,8 +61,8 @@ The integration packages export their provider renderers as plain, structurally 
 The boundary is fixed by ADR 0007 and holds everywhere in the toolkit:
 
 - **Deterministic code decides structure.** `core` and `cli` enforce every structural invariant: schemas, identifier rules, reference resolution, overlay compilation, digests, diagnostic ordering. Given the same repository content they produce the same result on every platform. AI is never consulted for a structural verdict.
-- **AI reasons about semantics.** The six canonical skills (define, recover, analyze, slice, prepare-handoff, audit) do the semantic work — eliciting knowledge, drafting artifacts, judging coherence — and always end by invoking deterministic validation.
-- **Hooks guard.** The four canonical hooks are deterministic guard descriptors that invoke CLI commands. They block or warn; they never approve, promote or rewrite. Humans hold every approval point.
+- **AI reasons about semantics.** The canonical skills (define, recover, explore, analyze, audit) do the semantic work — eliciting knowledge, drafting artifacts, judging coherence — and always end by invoking deterministic validation.
+- **Hooks guard.** Hooks are deterministic guard descriptors that invoke CLI commands. They block or warn; they never approve, apply or rewrite. Humans hold every approval point.
 
 ## Approved dependencies
 
@@ -72,7 +72,7 @@ Runtime and tooling dependencies are limited to this list. Anything else require
 | --- | --- |
 | `commander` | CLI argument parsing and command tree for the `prodshape` binary. |
 | `gray-matter` | Extracting YAML frontmatter from Markdown artifacts. |
-| `yaml` | Parsing and serializing standalone YAML files (slices, handoffs, coverage, lock files). |
+| `yaml` | Parsing and serializing standalone YAML files (configuration, citation ledgers, lock files). |
 | `ajv` + `ajv-formats` | JSON Schema (2020-12) validation of frontmatter and YAML documents. |
 | `fast-glob` | Deterministic, cross-platform artifact file discovery. |
 | `vitest` | Test runner for all packages. |
@@ -96,7 +96,7 @@ No command requires a generated file as input to rebuild it.
 
 The toolkit runs identically on Windows, macOS and Linux (Node >= 22, the current LTS lines):
 
-- No path-separator assumptions: paths are handled through Node's path APIs internally and are always emitted with POSIX separators in diagnostics, handoffs and generated files.
+- No path-separator assumptions: paths are handled through Node's path APIs internally and are always emitted with POSIX separators in diagnostics, citations and generated files.
 - No shell assumptions: nothing shells out to platform-specific tools for core behaviour.
 - No case-sensitivity assumptions about the filesystem.
 - Digests are SHA-256 over UTF-8 content with CRLF/CR normalized to LF, so they are identical across operating systems and Git line-ending configurations.
@@ -111,7 +111,7 @@ The toolkit runs identically on Windows, macOS and Linux (Node >= 22, the curren
 | [0003](decisions/0003-stable-identifiers-over-paths.md) | Stable identifiers over paths |
 | [0004](decisions/0004-current-model-and-changes-are-separated.md) | Current model and changes are separated |
 | [0005](decisions/0005-product-definition-is-sdd-agnostic.md) | Product Definition is SDD-agnostic |
-| [0006](decisions/0006-product-handoff-is-the-integration-contract.md) | The Product Handoff is the integration contract |
+| [0006](decisions/0006-product-handoff-is-the-integration-contract.md) | The citation contract is the integration contract |
 | [0007](decisions/0007-deterministic-core-and-ai-reasoning-are-separated.md) | Deterministic core and AI reasoning are separated |
 | [0008](decisions/0008-vendor-assets-are-generated.md) | Vendor assets are generated |
 | [0009](decisions/0009-reference-documentation-is-generated.md) | Reference documentation is generated |

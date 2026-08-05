@@ -46,6 +46,19 @@ export const modelScaffoldDirs = [
   'docs/product/model/requirements/constraints',
 ];
 
+/**
+ * The change surface: live changes and the two archives that hold the change history.
+ *
+ * Scaffolded even with `--flat`, which opts out of the model taxonomy only. These three are not a
+ * taxonomy: `change validate` reads `active/`, `apply` files into `completed/` and `archive` files
+ * into `rejected/`, so the names are the contract rather than a recommendation.
+ */
+export const changeScaffoldDirs = [
+  'docs/product/changes/active',
+  'docs/product/changes/completed',
+  'docs/product/changes/rejected',
+];
+
 export type InitActionKind = 'create' | 'preserve' | 'overwrite' | 'regenerate' | 'conflict';
 
 export interface InitAction {
@@ -93,9 +106,13 @@ const productReadme = `# Product definition
 This directory is the canonical product definition of this repository, managed with
 Product Definition as Code.
 
-- \`model/\` holds the current product model (the baseline). The baseline changes through
-  exactly one operation: a human merging a validated proposed revision (a pull request).
-  Everything else is a proposal.
+- \`model/\` holds the accepted Product Definition (the baseline).
+- \`changes/active/\` holds live Product Changes, each with its complete proposed future state.
+  \`changes/completed/\` and \`changes/rejected/\` hold the change history and are inert.
+
+The definition changes through exactly one mechanism: a Product Change, validated as an overlay,
+approved by a human, applied with \`prodshape change apply\`, and accepted when a human merges the
+pull request carrying the result.
 
 Validate with \`prodshape validate\`. Authoring templates are under
 \`.product/templates/\`. The allowed frontmatter of every artifact kind is printed by
@@ -150,7 +167,10 @@ export async function planInit(options: InitOptions): Promise<InitPlan> {
   // are invisible to the tooling.
   // --flat still scaffolds the model directory itself: without it there is nothing for
   // `validate` to walk and `doctor` reports missing structure.
-  const scaffoldDirs = [...(flat ? ['docs/product/model'] : modelScaffoldDirs)];
+  const scaffoldDirs = [
+    ...(flat ? ['docs/product/model'] : modelScaffoldDirs),
+    ...changeScaffoldDirs,
+  ];
   for (const dir of scaffoldDirs) {
     // An existing marker is never rewritten, even with --force: it is an empty marker, so
     // reporting an overwrite would describe a change that does not happen.

@@ -8,7 +8,7 @@ Artifacts reference each other constantly, and those references must survive yea
 
 ## Decision
 
-Every independently addressable artifact carries a stable, immutable ID with a typed prefix (`ACT-`, `JRN-`, `UC-`, `BR-`, `TERM-`, `BC-`, `FR-`, `QR-`, `CON-`, and `CHG-`/`SLI-`/`HOF-` for changes, slices and handoffs), following the grammar in the [identifiers specification](../../specification/identifiers.md).
+Every independently addressable artifact carries a stable, immutable ID with a typed prefix (`ACT-`, `JRN-`, `UC-`, `BR-`, `TERM-`, `BC-`, `FR-`, `QR-`, `CON-`, and `CHG-` for Product Changes), following the grammar in the [identifiers specification](https://github.com/product-definition-as-code/spec/blob/main/spec/identifiers.md).
 
 Identity is defined by the `id` field only. IDs are never inferred from file paths or file names; moving or renaming an artifact file does not change its identity, and references between artifacts always use IDs, never paths or titles. The convention that a file is named after its lowercase ID is exactly that — a convention. Misalignment is a warning (`PRODUCT101`), never an error and never an identity mechanism.
 

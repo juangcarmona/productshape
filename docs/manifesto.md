@@ -37,7 +37,7 @@ Product Definition as Code adds that layer in front. Definition first, then chan
 
 **The relationships are the methodology.** Actors, journeys, use cases, business rules, domain terms, bounded contexts and requirements are not a filing system. Their value is in the typed connections between them: which actor a use case serves, which rules govern it, which terms it uses, which requirements derive from it. Those connections are what let a tool answer "what is structurally affected if this changes?" and what let a handoff carry exactly the context one increment needs. Artifacts without relationships are just better-organized documents.
 
-**Markdown is the source of truth; the graph is compiled from Markdown.** Product knowledge is authored as plain Markdown files with YAML frontmatter, versioned in Git, reviewed in pull requests, diffable and mergeable like everything else engineers trust. (Delivery slices, being structured decompositions, are authored as YAML — the specification's [canonical-authority table](specification/index.md#canonical-authority) is exact.) The product graph is derived from those files, always rebuildable, never authored, never a database you must keep alive. If the graph disappeared, nothing would be lost.
+**Markdown is the source of truth; the graph is compiled from Markdown.** Product knowledge is authored as plain Markdown files with YAML frontmatter, versioned in Git, reviewed in pull requests, diffable and mergeable like everything else engineers trust. (The specification's [canonical-authority table](https://github.com/product-definition-as-code/spec/blob/main/spec/index.md#canonical-authority) is exact about which paths carry which authority.) The product graph is derived from those files, always rebuildable, never authored, never a database you must keep alive. If the graph disappeared, nothing would be lost.
 
 ## Explicit change or nothing
 
@@ -68,4 +68,4 @@ A methodology and a toolkit for keeping a product definition the way we learned 
 
 Two names carry this deliberately. **Product Definition as Code** is the methodology — the long-lived, implementation-independent concept and its normative specification. **ProductShape** is its reference implementation — the first shipped toolkit that realizes the methodology, exactly as OpenSpec is an implementation of Spec-Driven Development. The two names coexist on purpose: a methodology can have more than one implementation, and binding the ideas to one tool's name would quietly narrow both.
 
-The methodology starts in the [overview](methodology/overview.md). The contracts live in the [specification](specification/index.md).
+The methodology starts in the [overview](methodology/overview.md). The contracts live in the [specification](https://github.com/product-definition-as-code/spec/blob/main/spec/index.md).

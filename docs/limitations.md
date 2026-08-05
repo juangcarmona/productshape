@@ -6,16 +6,16 @@ An honest account of what the toolkit does not do: where the implemented scope h
 
 ## Implementation status
 
-Everything the methodology describes is implemented: the `prodshape` CLI (with its `product-definition` alias), the graph compiler, change overlays, delivery slices, handoffs, coverage checking, promotion, and the AI and SDD integrations. The `@prodshape/*` packages are published to npm and the CLI can also be built from the repository. The loop is not theoretical here — this repository defines itself with its own methodology and has taken several Product Changes through it end to end.
+Everything the methodology describes is implemented: the `prodshape` CLI (with its `product-definition` alias), the graph compiler, change overlays, apply with its product diff, citation emission and verification, and the AI and SDD integrations. The `@prodshape/*` packages are published to npm and the CLI can also be built from the repository. The loop is not theoretical here — this repository defines itself with its own methodology and has taken several Product Changes through it end to end.
 
 Honest operational limitations within that scope:
 
 - **Claude Code hooks are not auto-wired.** The Claude integration renders the hook descriptors as a ready-to-merge fragment at `.claude/hooks/product-definition.json`; merging it into `.claude/settings.json` remains a manual step.
 - **Copilot hook rendering is documentation only.** GitHub Copilot has no hook runtime, so the same guards render as conventions rather than enforcement. See [OD-002](../OPEN-DECISIONS.md#od-002-hook-enforcement-for-github-copilot) and the design limitation below.
 - **`recover-product` defines the workflow only.** The skill guides a human-driven recovery session; there is no automated brownfield extraction. Its _output_ is now typed rather than prose — candidates carry a validated `provenance` object — and low-confidence drafts are reported as `PRODUCT111`, so the human review queue is derivable from validation output. The analysis itself is still yours to do.
-- **PRODUCT109, PRODUCT110 and PRODUCT111 are advisory.** The closure-quality diagnostics — a slice affecting artifacts outside its requirements' closure, a handoff context outside the recomputed closure — and the low-confidence-draft warning are warnings, and never block on their own.
+- **PRODUCT108 and PRODUCT111 are advisory.** Approving a change that still lists open questions, and a low-confidence recovered draft, are warnings and never block on their own.
 - **Unknown nested configuration keys are ignored silently.** Only unknown _top-level_ keys in `.product/config.yaml` are rejected, so a misspelling inside `integrations` or `validation` does nothing at all, with no diagnostic. See [OD-007](../OPEN-DECISIONS.md#od-007-validation-of-nested-configuration-keys).
-- **`handoff status` needs Git history for moved artifacts.** Digest recomputation for artifacts no longer in the working tree reads the handoff's recorded source revision, which a shallow or partial clone may be unable to resolve. See [OD-006](../OPEN-DECISIONS.md#od-006-handoff-resolution-in-shallow-or-partial-clones) and the design limitation below.
+- **Baseline-drift detection needs Git history.** Apply compares each artifact the change touches against its content at `base-revision`, which a shallow or partial clone may be unable to resolve. Where the revision is unreachable the check reports drift rather than silently passing, so the failure mode is a refusal to apply, not an unsafe apply.
 
 ## Deliberately excluded
 
@@ -41,9 +41,8 @@ These are scope decisions, not gaps. None of them is on the current path:
 ## Known design limitations
 
 - **Guard enforcement is asymmetric across AI providers.** Canonical hooks are deterministic guards. Claude Code has a native hook runtime and enforces them; GitHub Copilot has no equivalent, so the Copilot integration renders hook expectations as documentation only. A Copilot-assisted session relies on convention where a Claude Code session has enforcement. See [OD-002](../OPEN-DECISIONS.md#od-002-hook-enforcement-for-github-copilot).
-- **Handoff staleness falls back to Git history.** When a referenced artifact is gone from the working tree (for example after promotion), digest recomputation reads the content at the handoff's recorded source revision. In a shallow or partial clone that revision may be unresolvable, and `handoff status` reports `source-revision-unavailable` rather than an answer. See [OD-006](../OPEN-DECISIONS.md#od-006-handoff-resolution-in-shallow-or-partial-clones).
-- **Coverage evidence is defined only for OpenSpec.** Promotion requires traceability evidence, and its format is defined solely through the OpenSpec adapter (`product-coverage.yaml`). Repositories using no SDD framework, or an unsupported one, have no defined evidence format. See [OD-003](../OPEN-DECISIONS.md#od-003-coverage-evidence-policy-without-an-sdd-adapter).
-- **Handoff identifiers are not unique when one work item delivers several slices.** A handoff ID is derived from the work-item reference alone, so two slices delivered by one pull request or ticket produce two distinct handoffs sharing an ID, and nothing rejects it. Evidence discovery is unaffected — it matches on the recorded change and slice, not the ID — so the consequence is human-facing identity. One work item per slice keeps IDs unique. See [OD-009](../OPEN-DECISIONS.md#od-009-product-handoff-identity-when-one-work-item-delivers-several-slices).
+- **Citations resolve within one repository.** A consumer document in a different repository cannot yet bind to this product definition; cross-repository resolution is deferred to a later specification revision.
+- **The product diff is reported, not persisted.** Apply computes and reports the diff, including each impacted artifact's resulting digest, but records it in its output rather than in a stored artifact. Capturing it durably needs a serialization the specification has not yet fixed.
 
 ## Methodology limits
 
