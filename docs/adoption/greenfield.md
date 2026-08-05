@@ -26,7 +26,8 @@ docs/product/
 └── changes/
     ├── active/
     ├── completed/
-    └── rejected/
+    ├── rejected/
+    └── superseded/
 .product/
 ├── config.yaml             # repository configuration (canonical)
 ├── installation.lock.json  # digests of the generated managed files; commit it

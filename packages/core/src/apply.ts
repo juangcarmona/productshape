@@ -15,10 +15,18 @@ export interface ApplyAction {
   to?: string;
 }
 
+/** The kind of impact an applied change had on one artifact. */
+export type ProductDiffKind = 'added' | 'modified' | 'removed';
+
 /** One artifact the applied result differs on, with the digest it ends up carrying. */
 export interface ProductDiffEntry {
   id: string;
   file: string;
+  /**
+   * Carried on the entry as well as implied by the group it sits in, because the diff record is
+   * specified per entry: a consumer reading a flattened diff must not have to infer the kind.
+   */
+  kind: ProductDiffKind;
   /** Absent for a removal: nothing remains to digest. */
   digest?: string;
 }
@@ -40,12 +48,12 @@ export interface ApplyPlan {
   changeId: string;
   actions: ApplyAction[];
   diff: ProductDiff;
-  diagnostics: Diagnostic[];
   /**
-   * Preconditions that are not model-quality findings and so carry no diagnostic code: apply
-   * requires an approved change, and approval is a human decision no tool may make.
+   * Every reason the plan must not execute, including both apply preconditions: the status gate
+   * (PRODUCT028) and baseline drift (PRODUCT027). Both are findings about the model, so both carry
+   * a code; there is no second, codeless channel for a refusal.
    */
-  blockers: string[];
+  diagnostics: Diagnostic[];
 }
 
 export interface PlanApplyOptions {
@@ -73,16 +81,17 @@ function computeDiff(
   for (const [to, { id, digest }] of [...writes].sort((a, b) => a[0].localeCompare(b[0]))) {
     const existing = baselineById.get(id);
     if (!existing) {
-      diff.added.push({ id, file: to, digest });
+      diff.added.push({ id, file: to, kind: 'added', digest });
     } else if (existing.digest !== digest) {
-      diff.modified.push({ id, file: to, digest });
+      diff.modified.push({ id, file: to, kind: 'modified', digest });
     }
     // Same ID, same digest: the file is rewritten with identical bytes, so nothing changed.
   }
 
   for (const id of [...change.operations.remove].sort()) {
     const existing = baselineById.get(id);
-    if (existing) diff.removed.push({ id, file: existing.file });
+    // No digest: a removal has no resulting content to digest.
+    if (existing) diff.removed.push({ id, file: existing.file, kind: 'removed' });
   }
 
   return diff;
@@ -97,17 +106,26 @@ export async function planApply(options: PlanApplyOptions): Promise<ApplyPlan> {
   const { repoRoot, modelRelative, changesRelative, change, baseline, overlayErrors } = options;
   const diagnostics: Diagnostic[] = [...overlayErrors];
   const actions: ApplyAction[] = [];
-  const blockers: string[] = [];
 
+  // The status gate (PRODUCT028). `status` is a field in change.md, so refusing on it is a finding
+  // about the model rather than a complaint about the invocation: the invocation is well formed,
+  // and the caller exits 1 rather than 2. Approval stays a human product decision no tool may make.
   if (change.status !== 'approved') {
-    blockers.push(
-      `Apply requires status 'approved'; the change is '${change.status ?? 'unknown'}'. Approval is a human product decision, so set it by hand once the change is ready.`,
-    );
+    diagnostics.push({
+      severity: 'error',
+      code: 'PRODUCT028',
+      message: `Apply requires status 'approved'; the change is '${change.status ?? 'unknown'}'. Approval is a human product decision, so set it by hand once the change is ready.`,
+      file: change.file,
+      artifact: change.id,
+      field: 'status',
+    });
   }
 
   // Baseline-revision compatibility: artifacts the change touches must be unchanged since
-  // base-revision (PRODUCT027). Additions have no baseline file to drift; an addition whose ID
-  // appeared since is already PRODUCT020.
+  // base-revision (PRODUCT027). The comparison is by normalized content digest, so a commit that
+  // touched a file without changing its content is not drift. `operations.add` is not checked: an
+  // addition has no baseline artifact to compare against, and an ID that appeared in the baseline
+  // since is already PRODUCT020 from the revalidated overlay.
   const baselineById = new Map(baseline.filter((a) => a.id).map((a) => [a.id as string, a]));
   if (change.baseRevision) {
     for (const id of [...change.operations.modify, ...change.operations.remove].sort()) {
@@ -181,7 +199,6 @@ export async function planApply(options: PlanApplyOptions): Promise<ApplyPlan> {
     actions,
     diff: computeDiff(change, baselineById, writes),
     diagnostics,
-    blockers,
   };
 }
 
@@ -202,9 +219,8 @@ async function pathExists(path: string): Promise<boolean> {
  * change-directory move happens last.
  */
 export async function executeApply(repoRoot: string, plan: ApplyPlan): Promise<void> {
-  if (plan.blockers.length > 0) {
-    throw new Error(`Refusing to apply: ${plan.blockers.join(' ')}`);
-  }
+  // Both apply preconditions arrive as error diagnostics, so one guard covers the status gate,
+  // baseline drift and every overlay error alike.
   if (plan.diagnostics.some((d) => d.severity === 'error')) {
     throw new Error('Refusing to apply a plan with unresolved errors');
   }

@@ -124,22 +124,36 @@ export function validateConcurrency(
 }
 
 /**
- * PRODUCT108: an approved change with unresolved open questions.
+ * A Markdown list item: any bullet or ordered marker, at any indentation.
+ *
+ * Content is deliberately not inspected. Nothing in the syntax distinguishes an answered item from
+ * an open one — task-list checkboxes included — so an item counts as a question whatever it says,
+ * and resolving a question means removing its list item rather than annotating it.
+ */
+const LIST_ITEM = /^[ \t]*(?:[-*+]|\d+[.)])(?=[ \t]|$)/m;
+
+/**
+ * PRODUCT108: a change in status `approved` carrying unresolved open questions.
  *
  * Approval is the human product decision that authorizes apply, so it is the point at which an
  * unanswered question stops being elaboration and starts being a decision nobody made.
+ *
+ * State-based, not transition-based: the warning is reported on every validation of an approved
+ * change, so it is reproducible from repository content alone with no need to know when the status
+ * changed. Syntactic for the same reason — two implementations reading the same bytes have to
+ * agree, and no deterministic tool can judge whether prose contains an open question, so prose
+ * such as `None.` and an empty section carry no warning.
  */
 export function validateOpenQuestions(change: LoadedChange): Diagnostic[] {
   if (change.status !== 'approved') return [];
   const section = /##\s+Open Questions\s*\n([\s\S]*?)(?=\n##\s|$)/.exec(change.body);
   const sectionBody = section?.[1] ?? '';
-  const hasListEntries = /^\s*[-*]\s+\S/m.test(sectionBody);
-  if (!hasListEntries) return [];
+  if (!LIST_ITEM.test(sectionBody)) return [];
   return [
     {
       severity: 'warning',
       code: 'PRODUCT108',
-      message: `Change is 'approved' but its Open Questions section still lists unresolved questions`,
+      message: `Change is 'approved' but its Open Questions section still lists unresolved questions; resolve a question by removing its list item`,
       file: change.file,
       artifact: change.id,
     },

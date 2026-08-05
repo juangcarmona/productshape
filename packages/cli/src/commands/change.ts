@@ -104,19 +104,21 @@ export interface ChangeListOptions extends ChangeFormatOptions {
   all?: boolean;
 }
 
+/** The archive directories, one per terminal status. Each is tracked, inert and never compiled. */
+const archiveStates = ['completed', 'rejected', 'superseded'] as const;
+
+type ArchiveState = (typeof archiveStates)[number];
+
 interface ListedChange {
   id: string;
   title: string;
   status: string;
-  state: 'active' | 'completed' | 'rejected';
+  state: 'active' | ArchiveState;
   operations: { add: number; modify: number; remove: number };
   path: string;
 }
 
-async function listArchived(
-  repo: ProductRepository,
-  state: 'completed' | 'rejected',
-): Promise<ListedChange[]> {
+async function listArchived(repo: ProductRepository, state: ArchiveState): Promise<ListedChange[]> {
   const dirs = await discoverChanges(join(repo.changesDir, state));
   const listed: ListedChange[] = [];
   for (const dir of dirs) {
@@ -146,8 +148,7 @@ export async function runChangeList(io: CliIo, options: ChangeListOptions): Prom
   const repo = await resolveRepository(io);
   const listed = (await loadActiveChanges(repo)).map((change) => describe(change, 'active'));
   if (options.all) {
-    listed.push(...(await listArchived(repo, 'completed')));
-    listed.push(...(await listArchived(repo, 'rejected')));
+    for (const state of archiveStates) listed.push(...(await listArchived(repo, state)));
   }
 
   if (options.format === 'json') {
@@ -179,8 +180,11 @@ function reportPlan(io: CliIo, plan: ApplyPlan, dryRun: boolean): void {
   io.out(
     `Product diff: ${added.length} added, ${modified.length} modified, ${removed.length} removed`,
   );
-  for (const entry of [...added, ...modified]) io.out(`  ${entry.id} ${entry.digest}`);
-  for (const entry of removed) io.out(`  ${entry.id} removed`);
+  // Every entry names its impact kind, and a removal carries no digest because it leaves no
+  // content to digest. The JSON form carries the same three facts per entry.
+  for (const entry of [...added, ...modified, ...removed]) {
+    io.out(`  ${entry.id}\t${entry.kind}\t${entry.digest ?? '-'}`);
+  }
 }
 
 /**
@@ -216,16 +220,17 @@ export async function runChangeApply(
     overlayErrors,
   });
 
+  // Both apply preconditions are diagnostics: the status gate is PRODUCT028 and baseline drift is
+  // PRODUCT027. Nothing has been written at this point, so a refusal leaves the working tree
+  // untouched. The invocation is well formed, so this is exit 1 and not 2.
   const blocking = plan.diagnostics.filter((d) => d.severity === 'error');
-  if (plan.blockers.length > 0 || blocking.length > 0) {
-    for (const blocker of plan.blockers) io.err(`error: ${blocker}`);
+  if (blocking.length > 0) {
     for (const diagnostic of blocking) io.err(formatDiagnosticLine(diagnostic));
     if (options.format === 'json') {
       io.out(
         stableJson({
           applied: false,
           change: plan.changeId,
-          blockers: plan.blockers,
           diagnostics: blocking,
         }).trimEnd(),
       );
@@ -262,6 +267,10 @@ export async function runChangeApply(
  * Applying a change archives it under `completed/`, so this command exists for the other outcome:
  * a change that was rejected or superseded rather than applied. It is a file move, never a Git
  * operation.
+ *
+ * Each terminal status has its own directory, so the destination follows the status: `rejected/`
+ * for a refusal, `superseded/` for a change that was overtaken. `superseded` is reachable from
+ * `approved`, so filing both in one place would record a refusal that never happened.
  */
 export async function runChangeArchive(
   io: CliIo,
@@ -280,22 +289,23 @@ export async function runChangeArchive(
     return exitCodes.invalidInvocation;
   }
 
+  const state: ArchiveState = change.status === 'superseded' ? 'superseded' : 'rejected';
   const dirName = basename(change.dir);
-  const destDir = join(repo.changesDir, 'rejected', dirName);
+  const destDir = join(repo.changesDir, state, dirName);
   try {
     await stat(destDir);
     io.err(
-      `error: an archived change already exists at ${repo.config.product.changes}/rejected/${dirName}/`,
+      `error: an archived change already exists at ${repo.config.product.changes}/${state}/${dirName}/`,
     );
     return exitCodes.invalidInvocation;
   } catch {
     // Destination is absent, which is what we need.
   }
 
-  await mkdir(join(repo.changesDir, 'rejected'), { recursive: true });
+  await mkdir(join(repo.changesDir, state), { recursive: true });
   await rename(change.dir, destDir);
 
-  const path = `${repo.config.product.changes}/rejected/${dirName}/change.md`;
+  const path = `${repo.config.product.changes}/${state}/${dirName}/change.md`;
   if (options.format === 'json') {
     io.out(stableJson({ archived: { id: change.id ?? dirName, path } }).trimEnd());
   } else {
