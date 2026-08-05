@@ -2,7 +2,7 @@
 id: CHG-CONFORM-028
 type: product-change
 title: Conform the change and apply requirements to the second refinement of RFC 4
-status: draft
+status: applied
 base-revision: '8fcdb1b'
 operations:
   add: []
