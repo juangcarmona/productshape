@@ -27,8 +27,10 @@ prodshape graph --format mermaid            # compile the product graph
 prodshape schema <kind>                     # the allowed frontmatter for a document kind
 prodshape inspect <ID>                      # metadata + relationships of one artifact
 prodshape impact <ID> --direction incoming  # structural impact analysis
-prodshape change validate                   # validate the working tree as a proposed change
-prodshape change list                       # the change drafts currently in flight
+prodshape change validate [CHG-ID]          # validate live changes as overlays on the baseline
+prodshape change list [--all]               # live changes, or the whole change history
+prodshape change apply CHG-ID [--dry-run]   # materialize an approved change; never commits
+prodshape change archive CHG-ID             # file a rejected or superseded change
 prodshape citations verify                  # check citations in consumer documents
 prodshape doctor                            # repository health
 ```

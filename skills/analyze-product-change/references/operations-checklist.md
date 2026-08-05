@@ -2,21 +2,25 @@
 
 ## Before drafting
 
-- [ ] `prodshape validate` passes on the current model (zero errors).
-- [ ] The change request is understood — restate it in one sentence.
-- [ ] A directory slug has been chosen for the change draft (e.g. `chg-add-cite`).
+- [ ] `prodshape validate` passes on the baseline (zero errors).
+- [ ] The change request is understood: restate it in one sentence.
+- [ ] A `CHG-` identifier has been chosen (e.g. `CHG-ADD-CITE-001`).
+- [ ] The current baseline commit is recorded, to become `base-revision`.
 
 ## During drafting
 
-- [ ] A `change.md` draft exists under `docs/product/changes/<slug>/`.
-- [ ] Each affected artifact has been identified (add/modify/remove).
-- [ ] New artifacts follow the correct schema (`prodshape schema <kind>`).
-- [ ] Relationship edges (derived-from, governed-by, uses-terms, etc.) are correct.
-- [ ] Body sections match the required sections for each artifact type.
-- [ ] The `affected-artifacts` list in the change draft matches the actual changes.
+- [ ] A `change.md` exists under `docs/product/changes/active/<chg-id>/`.
+- [ ] Every affected artifact is listed under exactly one of `add`, `modify` or `remove`.
+- [ ] Every ID under `add` and `modify` has a complete future-state artifact under `proposed/`, laid out as it will live in the model.
+- [ ] A modified artifact keeps its ID; only its content changes.
+- [ ] Proposed artifacts follow their schema (`prodshape schema <kind>`) and carry their required body sections.
+- [ ] Relationship edges (derived-from, governed-by, uses-terms, and the rest) resolve in the overlay, not just in the baseline.
+- [ ] `prodshape impact <ID>` was consulted before proposing any removal.
+- [ ] No baseline file under `docs/product/model/` has been touched.
 
 ## After drafting
 
-- [ ] `prodshape change validate` reports zero errors.
-- [ ] Open questions are listed in the change draft.
-- [ ] No artifacts reference retired prefixes (SLI-, HOF- are retired and never reused).
+- [ ] `prodshape change validate <chg-id>` reports zero errors.
+- [ ] Open questions are listed unanswered under `## Open Questions`, or the section says `None.`
+- [ ] `status` is `draft` or `proposed`. Approval is the engineer's to give.
+- [ ] No artifact references a retired prefix: `SLI-` and `HOF-` are retired and never reused.

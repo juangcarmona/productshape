@@ -11,7 +11,7 @@ Establish or extend a product definition from stated intent. Produce a coherent 
 
 ## When to use
 
-- A repository has adopted Product Definition as Code and no product model exists yet (`docs/product/model` is empty or absent): the initial-baseline bootstrap.
+- A repository has adopted Product Definition as Code and no Product Definition exists yet (`docs/product/model` is empty or absent): the output becomes `CHG-INITIAL`.
 - New product intent must be expressed as artifacts after a baseline already exists: author the drafts on a branch, recorded by a change draft, never directly on the baseline.
 - An existing draft definition is incomplete and needs additional artifact families derived from intent already captured.
 
@@ -21,7 +21,7 @@ Do not use this skill to reconstruct knowledge from an existing system (use `rec
 
 - A statement of product intent from the user: the outcome the product should create, for whom, and why. If intent cannot be stated in one sentence a stakeholder would sign, ask before drafting anything.
 - Whether a baseline exists: check for artifacts under `docs/product/model`. This determines the authoring location (see Allowed modifications).
-- If extending after the baseline: the branch to author on, and the change draft under `docs/product/changes/<slug>/` that records the intent, or the user's request to create one.
+- The change to author into: `docs/product/changes/active/<chg-id>/`, or the user's request to create one.
 
 ## Files to read
 
@@ -53,7 +53,7 @@ Never substitute your own judgement for these commands. If the CLI reports a str
 5. Extract business rules. Every "unless", "must", "only when" hidden in a flow becomes an independently identifiable Business Rule referenced by ID from the flows it governs.
 6. Establish domain terms and bounded contexts. Define every word two people could read differently; when one word carries two meanings, create two terms in two contexts.
 7. Derive requirements with traceability. Every functional requirement, quality requirement and constraint names what it derives from (`derived-from`) and carries verification scenarios.
-8. Preserve uncertainty. Record every unresolved question visibly (in the change's `## Open Questions`, or in the draft body during bootstrap). Never invent an answer.
+8. Preserve uncertainty. Record every unresolved question visibly in the change's `## Open Questions`. Never invent an answer.
 9. Generate draft artifacts from the templates, `status: draft`, one file per artifact named by lowercase ID, in the correct location for the mode (see Allowed modifications).
 10. Run deterministic validation (`validate` or `change validate`) and fix every reported error.
 11. Present the drafts, open questions and validation result to a human for review. Artifacts become `active` only on explicit human approval — never mark them yourself.
@@ -62,8 +62,7 @@ The order above is the natural order of discovery, not a gate sequence: loop bac
 
 ## Allowed modifications
 
-- Initial-baseline bootstrap only (no accepted baseline exists yet): create and edit draft artifacts directly under `docs/product/model`.
-- After the first baseline is accepted, the direct path is closed. Author the proposed artifacts in the working tree (a branch) and structure the intent in a change draft at `docs/product/changes/chg-<slug>/change.md`, listing every touched artifact in its `affected-artifacts`. The change is delivered by a pull request, not by the draft.
+- Author the artifacts under the change's `proposed/` directory and record their IDs in its `operations`. Never edit a baseline file under `docs/product/model`: apply is what writes the model, and a human runs it.
 - Editing existing draft artifacts you created in this session, in either location.
 
 ## Forbidden actions
@@ -79,13 +78,13 @@ The order above is the natural order of discovery, not a gate sequence: loop bac
 ## Human approval points
 
 - Confirm the one-sentence product intent before mass-drafting artifacts.
-- Confirm whether this is the bootstrap or a Product Change when the situation is ambiguous.
-- Present all drafts, open questions and the validation report; the human approves artifacts to `active` (bootstrap) or moves the change forward. Stop and wait — do not proceed past this.
+- Confirm whether this is `CHG-INITIAL` or a later Product Change when the situation is ambiguous.
+- Present all drafts, open questions and the validation report; the human decides whether to approve the change. Stop and wait, and do not proceed past this.
 
 ## Expected outputs
 
 - Draft artifact files, one per artifact, created from templates, valid against their schemas, in the correct location for the mode.
-- For post-baseline work: a change draft at `docs/product/changes/chg-<slug>/change.md` with `affected-artifacts` listing every proposed artifact.
+- A `change.md` at `docs/product/changes/active/<chg-id>/` whose `operations` name every proposed artifact.
 - A clean run of `prodshape validate` (or `change validate`) — zero errors; remaining warnings explained to the human.
 - A summary for the human: what was drafted, the traceability chain, and every open question.
 

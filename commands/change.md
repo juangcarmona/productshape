@@ -1,9 +1,10 @@
 ---
-description: Draft and validate a product change — AI-assisted artifact generation with structured intent, affected-artifact tracking, and open-questions visibility. The change is delivered via a pull request. Use /product:change or /ps:change.
+description: Elaborate and validate a Product Change — AI-assisted drafting of the semantic delta and its proposed future-state artifacts, with open questions kept visible. A human approves it, apply materializes it, a merge accepts it. Use /product:change or /ps:change.
 allowed-tools:
   - prodshape validate
   - prodshape change validate
   - prodshape change list
+  - prodshape change apply
   - prodshape change archive
   - prodshape impact
   - prodshape inspect
@@ -14,15 +15,15 @@ Use the `analyze-product-change` skill.
 
 ## Lifecycle
 
-1. **Draft** — create `docs/product/changes/chg-<slug>/change.md` (`status: draft`)
-2. **Validate** — `prodshape change validate` checks the working tree
-3. **Open PR** — the proposed model edits are on a branch
-4. **Merge** — the PR is reviewed and merged (Git merge is the promotion)
-5. **Mark done** — set `status: done` in the `change.md`
-6. **Archive** — `prodshape change archive <slug>` moves the draft to `changes/archive/`
+1. **Draft** — create `docs/product/changes/active/<chg-id>/change.md` (`status: draft`) with its operations, `base-revision`, and complete proposed artifacts under `proposed/`
+2. **Validate** — `prodshape change validate <chg-id>` compiles the overlay on the baseline and validates the result
+3. **Propose** — set `status: proposed` once the change is worth reviewing
+4. **Approve** — a human sets `status: approved`. Never do this on their behalf.
+5. **Apply** — `prodshape change apply <chg-id> --dry-run`, then for real: writes the model, reports the product diff, archives the change
+6. **Accept** — a human merges the pull request carrying the result
 
 ## Stop conditions
 
 - `prodshape change validate` reports zero errors.
 - All open questions are resolved or explicitly accepted by the engineer.
-- The engineer confirms the change is ready to open as a PR.
+- The engineer confirms the change is ready to approve. Stop there: approving, applying and merging are theirs.

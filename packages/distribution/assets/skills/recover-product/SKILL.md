@@ -19,7 +19,7 @@ Do not use this skill for greenfield intent (use `define-product`) or to review 
 ## Required inputs
 
 - Access to at least one evidence source: source code, tests, API surfaces, user interfaces, database schemas, production behaviour (logs, traces, usage), documentation, tickets and history, or stakeholder input relayed by the user.
-- Whether a baseline exists under `docs/product/model`. With a baseline, recovery output goes into a recovery Product Change; without one, it produces draft candidates for the bootstrap.
+- Whether a Product Definition exists under `docs/product/model`. Without one, recovery output becomes `CHG-INITIAL`; with one, it becomes an ordinary Product Change correcting or extending the definition.
 - The scope the user wants recovered (whole system, one subsystem, one behaviour area). If not stated, ask before sweeping the codebase.
 
 ## Files to read
@@ -60,14 +60,13 @@ Structural facts come from these commands, never from your own judgement (BR-AI-
    `source` and `confidence` are required whenever provenance is present; `recovered-from` is `observation`, `inference`, `interview` or `documentation`, and may be omitted when the evidence is genuinely more than one of these. Keep the reasoning — which claim is observed, which is inferred, and what the evidence does not settle — in the artifact body. A draft whose confidence is `low` is reported as `PRODUCT111`, so the queue of candidates needing human validation is derivable from validation output rather than tracked by hand.
 
 6. Surface contradictions as open questions. When code disagrees with documentation, tests contradict stakeholders, or one term carries two meanings, record the conflict and both sources as an open question. Never pick a winner silently.
-7. Write the candidates: draft artifacts from templates (`status: draft`), named by lowercase ID. Without a baseline, write them under `docs/product/model` as bootstrap candidates; with a baseline, author them in the working tree (a branch) and structure the intent in a change draft at `docs/product/changes/chg-<slug>/change.md`, listing every touched artifact in its `affected-artifacts`.
+7. Write the candidates: draft artifacts from templates (`status: draft`), named by lowercase ID, under the change's `proposed/` directory, with every touched artifact listed in the change's `operations`. Provenance and confidence live on these artifacts, never on the change itself.
 8. Run deterministic validation and fix every structural error.
 9. Hand over to a human with the candidate list, per-candidate confidence, all contradictions and open questions, and the evidence gaps. The human validates semantics, resolves or defers contradictions, and approves what enters the model.
 
 ## Allowed modifications
 
-- Creating and editing draft candidate artifacts under `docs/product/model` only when no accepted baseline exists yet (bootstrap recovery).
-- Creating a recovery change draft at `docs/product/changes/chg-<slug>/change.md` and authoring the proposed artifacts in the working tree when a baseline exists.
+- Creating a Product Change at `docs/product/changes/active/<chg-id>/` and authoring the candidate artifacts under its `proposed/` directory. Never edit a baseline file under `docs/product/model`.
 - Editing candidates you created in this session.
 
 ## Forbidden actions
@@ -82,7 +81,7 @@ Structural facts come from these commands, never from your own judgement (BR-AI-
 
 ## Human approval points
 
-- Confirm the recovery scope and target (bootstrap candidates vs recovery change) before sweeping evidence.
+- Confirm the recovery scope and whether the target is `CHG-INITIAL` or a later change, before sweeping evidence.
 - Ask the user for stakeholder input when evidence conflicts or intent is unrecoverable from artifacts alone — stakeholders are often the only source for "why".
 - Final gate: present candidates, confidence, contradictions and gaps; the human validates every claim before anything is approved. Stop and wait.
 

@@ -8,6 +8,6 @@ Establish or extend a greenfield product model.
 Use the `define-product` skill.
 
 - Work from actors and outcomes; keep every unresolved product decision as an open question.
-- Author draft artifacts only: directly under `docs/product/model` for the initial baseline, or in the working tree (a branch) with a change draft at `docs/product/changes/chg-<slug>/change.md` afterwards.
+- Author draft artifacts under a change's `proposed/` directory at `docs/product/changes/active/<chg-id>/`, never directly into `docs/product/model`.
 - Run `prodshape validate` before finishing; fix structural errors.
 - Stop and present the draft model for human review. Never mark artifacts active yourself.
