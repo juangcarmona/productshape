@@ -72,9 +72,8 @@ export class SchemaRegistry {
   }
 
   /**
-   * Validate a document's structured data against the schema for its kind.
-   * For Markdown artifacts the kind is the frontmatter `type`; for YAML documents
-   * it is the document kind (delivery-slice, product-handoff, product-coverage).
+   * Validate a document's structured data against the schema for its kind, which for a
+   * Markdown document is its frontmatter `type`.
    */
   validate(kind: string, data: unknown, file: string): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];

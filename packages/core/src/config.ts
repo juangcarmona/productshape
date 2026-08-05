@@ -7,6 +7,7 @@ export interface ProductConfig {
   product: {
     root: string;
     model: string;
+    changes: string;
   };
   generated: {
     root: string;
@@ -39,6 +40,7 @@ export function defaultConfig(): ProductConfig {
     product: {
       root: 'docs/product',
       model: 'docs/product/model',
+      changes: 'docs/product/changes',
     },
     generated: {
       root: '.product/generated',
@@ -137,6 +139,7 @@ export function parseConfig(content: string, file: string): ConfigResult {
   if (product) {
     readString(product, 'product', 'root', (v) => (config.product.root = v));
     readString(product, 'product', 'model', (v) => (config.product.model = v));
+    readString(product, 'product', 'changes', (v) => (config.product.changes = v));
   }
 
   const generated = section('generated');

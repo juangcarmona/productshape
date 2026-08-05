@@ -25,19 +25,27 @@ export const codes = {
   disallowedTargetType: 'PRODUCT007',
   activeReferencesRetired: 'PRODUCT008',
   missingBodySection: 'PRODUCT009',
+  additionAlreadyExists: 'PRODUCT020',
+  modificationTargetMissing: 'PRODUCT021',
+  removalTargetMissing: 'PRODUCT022',
+  overlayDuplicateId: 'PRODUCT023',
+  removalLeavesDanglingReference: 'PRODUCT024',
+  concurrentChangeOverlap: 'PRODUCT025',
+  operationProposedMismatch: 'PRODUCT026',
+  baselineRevisionIncompatible: 'PRODUCT027',
   invalidCitationDigest: 'PRODUCT042',
   unresolvedCitation: 'PRODUCT060',
   staleCitation: 'PRODUCT061',
   tamperedCitation: 'PRODUCT062',
   citationAnchorNotFound: 'PRODUCT063',
+  approvedWithOpenQuestions: 'PRODUCT108',
   lowConfidenceDraft: 'PRODUCT111',
-  unknownAffectedArtifact: 'PRODUCT112',
 } as const;
 
 /**
- * Apply the repository's warnings-as-errors escalation. One semantic for every
- * validating command: baseline validate, change validate, handoff generation,
- * graph generation and promotion all gate on the escalated set.
+ * Apply the repository's warnings-as-errors escalation. One semantic for every validating
+ * command: baseline validate, change validate, apply and graph generation all gate on the
+ * escalated set.
  */
 export function escalateWarnings(
   diagnostics: Diagnostic[],

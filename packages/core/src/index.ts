@@ -10,7 +10,17 @@ export {
   isProductArtifactType,
 } from './artifact.js';
 export type { ProductArtifactType, MarkdownDocumentType, ParsedArtifact } from './artifact.js';
+export { executeApply, planApply, withStatus } from './apply.js';
+export type {
+  ApplyAction,
+  ApplyPlan,
+  PlanApplyOptions,
+  ProductDiff,
+  ProductDiffEntry,
+} from './apply.js';
 export { checkRequiredBodySections } from './body-sections.js';
+export { discoverChanges, loadChange } from './changes.js';
+export type { ChangeOperations, LoadedChange } from './changes.js';
 export { configSchemaId, defaultConfig, loadConfig, parseConfig } from './config.js';
 export type { ConfigResult, ProductConfig } from './config.js';
 export { codes, escalateWarnings, sortDiagnostics } from './diagnostics.js';
@@ -65,6 +75,14 @@ export { inspectArtifact } from './inspect.js';
 export type { InspectReport } from './inspect.js';
 export { discoverModelFiles, loadArtifactFile, loadModel, toPosixRelative } from './model.js';
 export type { LoadedArtifact, LoadedModel } from './model.js';
+export {
+  applyOverlay,
+  validateChange,
+  validateConcurrency,
+  validateOpenQuestions,
+  validateOperations,
+} from './overlay.js';
+export type { ChangeValidation } from './overlay.js';
 export {
   buildGeneratedOutputs,
   buildGraphJson,

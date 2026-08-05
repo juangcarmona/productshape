@@ -1,5 +1,10 @@
 import { Command, CommanderError } from 'commander';
-import { runChangeArchive, runChangeList, runChangeValidate } from './commands/change.js';
+import {
+  runChangeApply,
+  runChangeArchive,
+  runChangeList,
+  runChangeValidate,
+} from './commands/change.js';
 import { runCite } from './commands/cite.js';
 import { runCitationsVerify } from './commands/citations.js';
 import { runDoctorCommand } from './commands/doctor.js';
@@ -78,25 +83,38 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
       capture.code = await runDoctorCommand(io);
     });
 
-  const change = program.command('change').description('Draft and validate product changes');
+  const change = program
+    .command('change')
+    .description('Elaborate, validate and apply Product Changes');
   change
     .command('validate')
-    .description('Validate the working tree as a proposed change (full-tree validation)')
+    .description('Validate live Product Changes as overlays on the baseline')
+    .argument('[id]', 'change ID (e.g. CHG-ADD-CITE-001); omit to validate every live change')
     .option('--format <format>', 'output format: text or json', 'text')
-    .action(async (options: { format: 'text' | 'json' }) => {
-      capture.code = await runChangeValidate(io, options);
+    .action(async (id: string | undefined, options: { format: 'text' | 'json' }) => {
+      capture.code = await runChangeValidate(io, id, options);
     });
   change
     .command('list')
-    .description('List change drafts under docs/product/changes/')
+    .description('List live Product Changes')
+    .option('--all', 'include the completed and rejected change history')
     .option('--format <format>', 'output format: text or json', 'text')
-    .action(async (options: { format: 'text' | 'json' }) => {
+    .action(async (options: { all?: boolean; format: 'text' | 'json' }) => {
       capture.code = await runChangeList(io, options);
     });
   change
+    .command('apply')
+    .description('Apply an approved Product Change to the model (never commits, never merges)')
+    .argument('<id>', 'change ID (e.g. CHG-ADD-CITE-001)')
+    .option('--dry-run', 'print the plan and the product diff without writing anything')
+    .option('--format <format>', 'output format: text or json', 'text')
+    .action(async (id: string, options: { dryRun?: boolean; format: 'text' | 'json' }) => {
+      capture.code = await runChangeApply(io, id, options);
+    });
+  change
     .command('archive')
-    .description('Archive a change draft after its PR is merged (moves to changes/archive/)')
-    .argument('<slug>', 'change draft directory slug (e.g. chg-add-cite)')
+    .description('File a rejected or superseded change into the change history')
+    .argument('<id>', 'change ID (e.g. CHG-ADD-CITE-001)')
     .option('--format <format>', 'output format: text or json', 'text')
     .action(async (id: string, options: { format: 'text' | 'json' }) => {
       capture.code = await runChangeArchive(io, id, options);
