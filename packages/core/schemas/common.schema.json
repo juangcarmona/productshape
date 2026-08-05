@@ -2,11 +2,15 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:product-definition-as-code:schema:common:v1alpha1",
   "title": "Common definitions",
-  "description": "Shared identifier patterns and lifecycle enums for product artifacts.",
+  "description": "Shared identifier patterns and lifecycle enums. Lifecycles are deliberately separate definitions: product artifacts and product changes each have their own state machine.",
   "$defs": {
     "artifactStatus": {
       "description": "Lifecycle of a product artifact.",
       "enum": ["draft", "active", "deprecated", "retired"]
+    },
+    "productChangeStatus": {
+      "description": "Lifecycle of a product change.",
+      "enum": ["draft", "proposed", "approved", "applied", "rejected", "superseded"]
     },
     "title": {
       "type": "string",
@@ -47,6 +51,10 @@
     "constraintId": {
       "type": "string",
       "pattern": "^CON-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "productChangeId": {
+      "type": "string",
+      "pattern": "^CHG-[A-Z0-9]+(-[A-Z0-9]+)*$"
     },
     "requirementId": {
       "description": "A functional requirement, quality requirement or constraint.",

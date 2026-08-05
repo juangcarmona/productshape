@@ -12,20 +12,13 @@ export const productArtifactTypes = [
 
 export type ProductArtifactType = (typeof productArtifactTypes)[number];
 
-/** Markdown-authored document types (product artifacts plus the change-draft definition). */
+/** Markdown-authored document types (product artifacts plus the Product Change definition). */
 export const markdownDocumentTypes = [...productArtifactTypes, 'product-change'] as const;
 
 export type MarkdownDocumentType = (typeof markdownDocumentTypes)[number];
 
-/**
- * The ID prefix of each product artifact type, without the trailing hyphen.
- *
- * Keyed by `ProductArtifactType`, not `MarkdownDocumentType`: a change draft carries no `id` at
- * all (the directory name under `docs/product/changes/` identifies it), so it has no prefix. The
- * narrower key type is what makes that absence a fact the compiler knows, rather than an empty
- * string every caller has to remember to test for.
- */
-export const idPrefixByType: Record<ProductArtifactType, string> = {
+/** The ID prefix of each Markdown document type, without the trailing hyphen. */
+export const idPrefixByType: Record<MarkdownDocumentType, string> = {
   actor: 'ACT',
   journey: 'JRN',
   'use-case': 'UC',
@@ -35,6 +28,7 @@ export const idPrefixByType: Record<ProductArtifactType, string> = {
   'functional-requirement': 'FR',
   'quality-requirement': 'QR',
   constraint: 'CON',
+  'product-change': 'CHG',
 };
 
 export const requiredBodySections: Record<MarkdownDocumentType, string[]> = {
@@ -61,7 +55,15 @@ export const requiredBodySections: Record<MarkdownDocumentType, string[]> = {
   'functional-requirement': ['Requirement', 'Rationale', 'Acceptance Scenarios'],
   'quality-requirement': ['Requirement', 'Measurement', 'Verification'],
   constraint: ['Constraint', 'Rationale', 'Consequences'],
-  'product-change': ['Intent', 'Affected Artifacts', 'Open Questions', 'Out of Scope'],
+  'product-change': [
+    'Problem',
+    'Intended Product Outcome',
+    'Rationale',
+    'Affected Product Areas',
+    'Open Questions',
+    'Product Acceptance',
+    'Out of Scope',
+  ],
 };
 
 export function isProductArtifactType(value: unknown): value is ProductArtifactType {
@@ -73,13 +75,13 @@ export function isMarkdownDocumentType(value: unknown): value is MarkdownDocumen
 }
 
 /**
- * The ID prefix for a document kind, or `undefined` when the kind carries no ID.
+ * The ID prefix for a document kind, or `undefined` when the kind is not a Markdown document.
  *
- * The lookup for callers that hold a wider type than `ProductArtifactType`: they neither cast nor
+ * The lookup for callers that hold a wider type than `MarkdownDocumentType`: they neither cast nor
  * fall back to an empty string.
  */
 export function idPrefixFor(kind: string): string | undefined {
-  return isProductArtifactType(kind) ? idPrefixByType[kind] : undefined;
+  return isMarkdownDocumentType(kind) ? idPrefixByType[kind] : undefined;
 }
 
 /** Where each artifact type lives inside the model directory. */

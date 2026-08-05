@@ -16,12 +16,10 @@ export interface SchemaOptions {
 }
 
 /**
- * ID prefixes accepted as aliases for a kind, lowercased. Derived, never invented: the artifact
- * prefixes come from idPrefixByType and the three YAML prefixes from common.schema.json. Plurals
- * and abbreviations are deliberately not accepted — they would create vocabulary the
+ * ID prefixes accepted as aliases for a kind, lowercased. Derived, never invented: the prefixes
+ * come from idPrefixByType, so `chg` reaches `product-change` exactly as `act` reaches `actor`.
+ * Plurals and abbreviations are deliberately not accepted: they would create vocabulary the
  * specification does not own.
- *
- * A kind with no ID contributes no alias: `product-change` is reachable by its kind name only.
  */
 function aliasesFor(kinds: string[]): Map<string, string> {
   const aliases = new Map<string, string>();

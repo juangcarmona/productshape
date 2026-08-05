@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Ajv2020, type ValidateFunction } from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
-import { idPrefixByType, isProductArtifactType } from './artifact.js';
+import { idPrefixByType, isMarkdownDocumentType } from './artifact.js';
 import type { Diagnostic } from './diagnostics.js';
 import { codes } from './diagnostics.js';
 
@@ -97,7 +97,7 @@ export class SchemaRegistry {
     // Dedicated prefix/type mismatch diagnostic; the schema pattern would also
     // reject it, so matching id-pattern violations are folded into PRODUCT004.
     let prefixMismatch = false;
-    if (isProductArtifactType(kind) && artifact !== undefined) {
+    if (isMarkdownDocumentType(kind) && artifact !== undefined) {
       const prefix = idPrefixByType[kind];
       if (!artifact.startsWith(`${prefix}-`)) {
         prefixMismatch = true;

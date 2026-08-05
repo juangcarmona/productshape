@@ -3,14 +3,11 @@
  * directory, pinned to the commit SHA recorded in `schemas/.source.json`.
  *
  * The spec repository (product-definition-as-code/spec) owns the normative schemas at
- * `schemas/v1alpha1`. This script copies the 10 files (9 artifact kinds + common) into both
- * the repository-root `schemas/` directory (consumed by `generate-frontmatter-reference.mts`
- * and the conformance tests) and the `packages/core/schemas/` directory (consumed at runtime
- * by `SchemaRegistry.loadBundled()` and shipped with the published package).
- *
- * The 4 retired schemas (product-change, delivery-slice, product-handoff, product-coverage)
- * are absent from the spec repo and are never written by this script. They remain in the
- * local directories until the push-pipeline retirement removes them.
+ * `schemas/v1alpha1`. This script copies the 11 files (9 artifact kinds, common and
+ * product-change) into both the repository-root `schemas/` directory (consumed by
+ * `generate-frontmatter-reference.mts` and the conformance tests) and the
+ * `packages/core/schemas/` directory (consumed at runtime by `SchemaRegistry.loadBundled()`
+ * and shipped with the published package).
  *
  * Run with: pnpm schemas:sync
  */
@@ -38,6 +35,7 @@ const schemaFiles = [
   'domain-term.schema.json',
   'functional-requirement.schema.json',
   'journey.schema.json',
+  'product-change.schema.json',
   'quality-requirement.schema.json',
   'use-case.schema.json',
 ];

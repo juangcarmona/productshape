@@ -1,24 +1,46 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:product-definition-as-code:schema:product-change:v1alpha1",
-  "title": "Product change draft frontmatter",
-  "description": "A lightweight drafting aid for a proposed product change. Not a normative model artifact: it lives under docs/product/changes/ while work is in flight, deleted or archived when the PR merges. No overlay, no promotion, no lifecycle states beyond draft/done.",
+  "title": "Product change frontmatter",
   "type": "object",
   "additionalProperties": false,
-  "required": ["type", "title", "status"],
+  "required": ["id", "type", "title", "status", "base-revision", "operations"],
   "properties": {
+    "id": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/productChangeId"
+    },
     "type": { "const": "product-change" },
     "title": { "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/title" },
     "status": {
-      "description": "draft while the change is in flight; done when the PR is ready to merge.",
-      "enum": ["draft", "done"]
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/productChangeStatus"
     },
-    "affected-artifacts": {
-      "description": "Artifact IDs this change intends to add, modify or remove. Informational: not validated as an overlay.",
-      "type": "array",
-      "items": {
-        "type": "string",
-        "pattern": "^(ACT|JRN|UC|BR|TERM|BC|FR|QR|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    "base-revision": {
+      "description": "The baseline Git revision this change was created against.",
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/gitRevision"
+    },
+    "operations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["add", "modify", "remove"],
+      "properties": {
+        "add": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/productArtifactId"
+          }
+        },
+        "modify": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/productArtifactId"
+          }
+        },
+        "remove": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/productArtifactId"
+          }
+        }
       }
     }
   }

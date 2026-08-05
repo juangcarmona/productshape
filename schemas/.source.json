@@ -1,6 +1,6 @@
 {
   "repo": "product-definition-as-code/spec",
   "path": "schemas/v1alpha1",
-  "ref": "8fac583c1a6d69f09ecd42f230de18446f2fdce6",
-  "note": "The normative JSON Schemas live in the spec repository. This pin records the exact tree they were vendored from. Run `pnpm schemas:sync` to re-copy after bumping `ref`. The sync script copies all 10 normative schemas (including common.schema.json). This repo additionally holds product-change.schema.json, a non-normative working-document schema pending spec RFC #5; it is not overwritten by the sync script."
+  "ref": "7656f8b8682b11216c0394e4e91adae06a88364f",
+  "note": "The normative JSON Schemas live in the spec repository. This pin records the exact tree they were vendored from. Run `pnpm schemas:sync` to re-copy after bumping `ref`. The sync script copies all 11 normative schemas: 9 artifact kinds, common.schema.json and product-change.schema.json."
 }

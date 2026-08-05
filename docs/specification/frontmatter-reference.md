@@ -22,7 +22,7 @@ prodshape schema use-case
 | Allowed values | The permitted values, or the regular expression a string must match. |
 | Notes | Constraints and guidance carried by the schema itself. |
 
-Four fields are common to every Markdown-authored kind: `id` (stable and immutable, see [Identifiers](identifiers.md)), `type`, `title` and `status`. Artifact `status` is `draft | active | deprecated | retired`; Product Changes and Delivery Slices have their own lifecycles.
+Four fields are common to every Markdown-authored kind: `id` (stable and immutable, see [Identifiers](identifiers.md)), `type`, `title` and `status`. Artifact `status` is `draft | active | deprecated | retired`; the Product Change lifecycle is a separate state machine, listed with its own kind below.
 
 ## Provenance
 
@@ -262,38 +262,29 @@ The nine artifact types of the current product model.
 
 ### Product Change
 
-No ID: the directory name under `docs/product/changes/` identifies the draft. A lightweight drafting aid for a proposed product change, living at `docs/product/changes/<slug>/change.md` while work is in flight, deleted or archived when the PR merges. Not a normative model artifact: no overlay, no promotion, no lifecycle states beyond draft/done.
+`CHG-`. The semantic delta that carries the Product Definition from one accepted state to the next. A live change lives at `docs/product/changes/active/<chg-id>/change.md` with its complete proposed future-state artifacts under `proposed/`; applying it archives the change under `docs/product/changes/completed/<chg-id>/`. `CHG-INITIAL` is reserved for the single initialisation change that establishes the first Product Definition.
 
 <!-- BEGIN GENERATED: product-change -->
 
 | Field | Required | Type | Allowed values | Notes |
 | --- | --- | --- | --- | --- |
+| `id` | yes | string | `^CHG-[A-Z0-9]+(-[A-Z0-9]+)*$` |  |
 | `type` | yes | const | `product-change` |  |
 | `title` | yes | string |  | Must not be empty. |
-| `status` | yes | enum | `draft`, `done` | draft while the change is in flight; done when the PR is ready to merge. |
-| `affected-artifacts` | no | array of string |  | Artifact IDs this change intends to add, modify or remove. Informational: not validated as an overlay. |
-| `affected-artifacts[]` | yes | string | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$` |  |
+| `status` | yes | enum | `draft`, `proposed`, `approved`, `applied`, `rejected`, `superseded` | Lifecycle of a product change. |
+| `base-revision` | yes | string | `^[0-9a-f]{7,40}$` | The baseline Git revision this change was created against. |
+| `operations` | yes | object |  |  |
+| `operations.add` | yes | array of string |  |  |
+| `operations.add[]` | yes | string | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$` | Any artifact of the current product model. |
+| `operations.modify` | yes | array of string |  |  |
+| `operations.modify[]` | yes | string | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$` | Any artifact of the current product model. |
+| `operations.remove` | yes | array of string |  |  |
+| `operations.remove[]` | yes | string | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$` | Any artifact of the current product model. |
 
 <!-- END GENERATED: product-change -->
 
-`prodshape change validate` applies this schema to every draft it finds, so the closed contract holds here as it does for artifacts: a field the table does not list is a `PRODUCT002` error. An `affected-artifacts` entry the model does not contain is reported as `PRODUCT112`, a warning, because a draft proposing to add that artifact is the expected case.
+`prodshape change validate` applies this schema to every live change, so the closed contract holds here as it does for artifacts: a field the table does not list is a `PRODUCT002` error. Quote `base-revision` when the revision is all digits, otherwise YAML reads it as a number and the string pattern rejects it.
 
-Note that `provenance` is **not** accepted here. A recovery change carries provenance on its proposed artifacts, which are ordinary artifact documents, not on the change itself.
+The operations declare intent and the `proposed/` directory carries the future state, so the two must agree: an ID under `add` or `modify` without a proposed artifact, or a proposed artifact no operation names, is a `PRODUCT026` error. See [Validation](validation.md) for the full set of change diagnostics.
 
----
-
-## Document fields (YAML kinds)
-
-Three YAML document kinds complete the change and handoff flow. Their normative semantics live in [Delivery Slices](delivery-slices.md) and the [Handoff Contract](handoff-contract.md); the tables below are the field index.
-
-### Delivery Slice
-
-`SLI-`. Authored by hand (or proposed by the slicing skill) under a change's `slices/` directory. `implements` declares coverage per requirement; `scope` becomes required when `coverage` is `partial`. See [Delivery Slices](delivery-slices.md).
-
-### Product Handoff
-
-`HOF-`. **Generated, never authored by hand.** `prodshape handoff create` produces it and `prodshape handoff status` reports its staleness. Documented here so the contract is inspectable. See [Handoff Contract](handoff-contract.md).
-
-### Product Coverage
-
-**Adapter-owned.** Written alongside an SDD change to evidence that a slice's requirements were implemented, and checked before archive. See [Adopting in an existing OpenSpec repository](../adoption/existing-openspec-repository.md).
+Note that `provenance` is **not** accepted here. A change recovered from a brownfield system carries provenance on its proposed artifacts, which are ordinary artifact documents, not on the change itself.

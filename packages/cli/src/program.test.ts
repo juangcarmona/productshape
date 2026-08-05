@@ -327,14 +327,17 @@ describe('prodshape schema', () => {
     expect(text).toContain("Run 'prodshape schema <kind>' for the full field reference.");
   });
 
-  it('leaves the prefix column empty for a kind that has no ID', async () => {
-    // A change draft is identified by its directory, not an ID. The prefix map used to carry an
-    // empty string for it, which the listing rendered as a bare '-'.
+  it('lists a Product Change under its own prefix', async () => {
     const result = await run(['schema'], workDir);
     expect(result.code).toBe(0);
     const text = result.out.join('\n');
-    expect(text).toMatch(/^product-change\s+Product change draft frontmatter$/m);
-    expect(text).not.toMatch(/^product-change\s+-\s/m);
+    expect(text).toMatch(/^product-change\s+CHG-\s+Product change frontmatter$/m);
+  });
+
+  it('resolves a kind by its ID prefix alias', async () => {
+    const result = await run(['schema', 'chg'], workDir);
+    expect(result.code).toBe(0);
+    expect(result.out.join('\n')).toContain('product-change');
   });
 
   it('prints the field reference for a kind', async () => {
@@ -391,15 +394,36 @@ describe('prodshape schema', () => {
 });
 
 describe('prodshape change validate', () => {
-  /** The sections a draft must carry, matching templates/product-change.md. */
-  const wellFormedBody = ['Intent', 'Affected Artifacts', 'Open Questions', 'Out of Scope'];
+  /** The sections a change must carry, matching templates/product-change.md. */
+  const wellFormedBody = [
+    'Problem',
+    'Intended Product Outcome',
+    'Rationale',
+    'Affected Product Areas',
+    'Open Questions',
+    'Product Acceptance',
+    'Out of Scope',
+  ];
 
-  async function withDraft<T>(
+  const wellFormedFrontmatter = [
+    'id: CHG-PROBE-001',
+    'type: product-change',
+    'title: Probe',
+    'status: draft',
+    "base-revision: '3f2a91c'",
+    'operations:',
+    '  add: []',
+    '  modify:',
+    '    - UC-SHORTEN-001',
+    '  remove: []',
+  ];
+
+  async function withChange<T>(
     frontmatter: string[],
     body: () => Promise<T>,
     sections: string[] = wellFormedBody,
   ): Promise<T> {
-    const dir = join(workDir, 'docs', 'product', 'changes', 'chg-probe');
+    const dir = join(workDir, 'docs', 'product', 'changes', 'chg-probe-001');
     await mkdir(dir, { recursive: true });
     await writeFile(
       join(dir, 'change.md'),
@@ -415,27 +439,17 @@ describe('prodshape change validate', () => {
     }
   }
 
-  it('accepts a well-formed draft', async () => {
-    await withDraft(
-      [
-        'type: product-change',
-        'title: Probe',
-        'status: draft',
-        'affected-artifacts:',
-        '  - UC-SHORTEN-001',
-      ],
-      async () => {
-        const result = await run(['change', 'validate'], workDir);
-        expect(result.code).toBe(0);
-        expect(result.out.at(-2)).toMatch(/0 error\(s\), 0 warning\(s\).*1 change draft\(s\)/);
-      },
-    );
+  it('accepts a well-formed change', async () => {
+    await withChange(wellFormedFrontmatter, async () => {
+      const result = await run(['change', 'validate'], workDir);
+      expect(result.code).toBe(0);
+    });
   });
 
-  it('applies the change-draft schema, so a field it forbids is a PRODUCT002 error', async () => {
-    // The draft carries no ID: the directory name identifies it, and the schema is closed. This
-    // is only enforceable because `change validate` runs the schema over each draft.
-    await withDraft(
+  it('applies the product-change schema, so a missing required field is a PRODUCT002 error', async () => {
+    // The frontmatter is closed and operations are required: a change that declares no operations
+    // states no intent, and the schema is what makes that unrepresentable.
+    await withChange(
       ['id: CHG-PROBE-001', 'type: product-change', 'title: Probe', 'status: draft'],
       async () => {
         const result = await run(['change', 'validate'], workDir);
@@ -446,37 +460,13 @@ describe('prodshape change validate', () => {
   });
 
   it('applies the required body sections, so a missing one is a PRODUCT009 error', async () => {
-    // requiredBodySections declares four sections for a draft. Until change validate ran the
-    // check, only the model loader did, so the declaration held for no file that actually exists.
-    await withDraft(
-      ['type: product-change', 'title: Probe', 'status: draft'],
-      async () => {
-        const result = await run(['change', 'validate'], workDir);
-        expect(result.code).toBe(1);
-        const out = result.out.join('\n');
-        expect(out).toContain('PRODUCT009');
-        expect(out).toContain('Out of Scope');
-      },
-      ['Intent'],
-    );
-  });
-
-  it('warns (PRODUCT112) on an affected artifact the model does not contain', async () => {
-    await withDraft(
-      [
-        'type: product-change',
-        'title: Probe',
-        'status: draft',
-        'affected-artifacts:',
-        '  - UC-ABSENT-001',
-      ],
-      async () => {
-        const result = await run(['change', 'validate'], workDir);
-        // A draft proposing to add an artifact is the expected case, so this must not fail.
-        expect(result.code).toBe(0);
-        expect(result.out.join('\n')).toContain('PRODUCT112');
-      },
-    );
+    await withChange(wellFormedFrontmatter, async () => {
+      const result = await run(['change', 'validate'], workDir);
+      expect(result.code).toBe(1);
+      const out = result.out.join('\n');
+      expect(out).toContain('PRODUCT009');
+      expect(out).toContain('Out of Scope');
+    }, ['Problem']);
   });
 });
 
