@@ -21,11 +21,12 @@ docs/product/
 │   └── index.md  Human navigation only, never a generated index
 └── changes/
     ├── active/     Live Product Changes, each with its proposed future state
-    ├── completed/  Applied changes: change history, inert
-    └── rejected/   Withdrawn changes: change history, inert
+    ├── completed/   Applied changes: change history, inert
+    ├── rejected/    Refused changes: change history, inert
+    └── superseded/  Overtaken changes: change history, inert
 ```
 
-The archives are history, not model. They are never compiled into the graph and take no part in duplicate detection, reference resolution or operation checks.
+The archives are history, not model. They are never compiled into the graph and take no part in duplicate detection, reference resolution or operation checks. There is one directory per terminal status, because a change that was approved and then overtaken is not a change that was refused, and the change history is the record of which happened.
 
 The authority rules for these paths are normative in [the specification](https://github.com/product-definition-as-code/spec).
 

@@ -285,21 +285,64 @@ describe('change validate', () => {
     expect(result.out.join('\n')).toContain('PRODUCT026');
   });
 
-  it('warns (PRODUCT108) when an approved change still lists open questions', async () => {
-    const dir = await writeChange({
-      status: 'approved',
-      add: ['BR-PROBE-001'],
-      openQuestions: '- Should the rule also cover relative URLs?',
-    });
+  /**
+   * PRODUCT108's trigger is syntactic: any Markdown list item under `## Open Questions` counts,
+   * whatever it says. The rule has to be reproducible from bytes alone, so a second implementation
+   * reading the same section reaches the same verdict.
+   */
+  async function validateWithOpenQuestions(
+    openQuestions: string,
+    status = 'approved',
+  ): Promise<RunResult> {
+    const dir = await writeChange({ status, add: ['BR-PROBE-001'], openQuestions });
     await proposeArtifact(
       dir,
       'business-rules',
       'BR-PROBE-001',
       businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN-001'),
     );
-    const result = await run(['change', 'validate']);
+    return run(['change', 'validate']);
+  }
+
+  it.each([
+    ['a dash bullet', '- Should the rule also cover relative URLs?'],
+    ['an asterisk bullet', '* Should the rule also cover relative URLs?'],
+    ['a plus bullet', '+ Should the rule also cover relative URLs?'],
+    ['an ordered item', '1. Should the rule also cover relative URLs?'],
+    ['a parenthesised ordered item', '1) Should the rule also cover relative URLs?'],
+    ['a nested item', 'Context.\n\n  - Nested, and still a question.'],
+    ['an unchecked task item', '- [ ] Should the rule also cover relative URLs?'],
+    // A checked box is not an answer: nothing in the syntax says who checked it or what they
+    // decided, so the item stays a question until it is removed.
+    ['a checked task item', '- [x] Decided, allegedly.'],
+    ['a content-free item', '-'],
+  ])('warns (PRODUCT108) on %s under Open Questions', async (_label, openQuestions) => {
+    const result = await validateWithOpenQuestions(openQuestions);
     expect(result.code).toBe(0);
     expect(result.out.join('\n')).toContain('PRODUCT108');
+  });
+
+  it.each([
+    ['the None. sentinel', 'None.'],
+    ['an empty section', ''],
+    ['prose that mentions a dash mid-sentence', 'Nothing open - the reviewer settled it.'],
+  ])('stays silent on %s: prose is not a question', async (_label, openQuestions) => {
+    const result = await validateWithOpenQuestions(openQuestions);
+    expect(result.code).toBe(0);
+    expect(result.out.join('\n')).not.toContain('PRODUCT108');
+  });
+
+  it('stays silent while the change is not approved: the section is a working list', async () => {
+    const result = await validateWithOpenQuestions('- Still thinking about this one.', 'proposed');
+    expect(result.out.join('\n')).not.toContain('PRODUCT108');
+  });
+
+  it('reports PRODUCT108 on every validation, not only at the transition', async () => {
+    // State-based, so validating the same approved change twice reports it twice. Nothing about
+    // the warning depends on knowing when the status changed.
+    await validateWithOpenQuestions('- Should the rule also cover relative URLs?');
+    const again = await run(['change', 'validate']);
+    expect(again.out.join('\n')).toContain('PRODUCT108');
   });
 
   it('leaves the baseline alone: prodshape validate ignores live changes', async () => {
@@ -344,17 +387,45 @@ describe('change apply', () => {
     return dir;
   }
 
-  it('refuses a change that is not approved', async () => {
-    const dir = await writeChange({ status: 'proposed', add: ['BR-PROBE-001'] });
+  /** A change in a status that does not authorize apply, with its proposed artifact in place. */
+  async function unapprovedChange(status: string): Promise<void> {
+    const dir = await writeChange({ status, add: ['BR-PROBE-001'] });
     await proposeArtifact(
       dir,
       'business-rules',
       'BR-PROBE-001',
       businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN-001'),
     );
-    const result = await run(['change', 'apply', 'CHG-PROBE-001']);
+  }
+
+  it.each(['draft', 'proposed', 'applied', 'rejected', 'superseded'])(
+    'refuses a change in status %s with PRODUCT028, exit 1 and the tree untouched',
+    async (status) => {
+      await unapprovedChange(status);
+      const before = await git('status', '--porcelain');
+      const result = await run(['change', 'apply', 'CHG-PROBE-001']);
+      // Exit 1, not 2: the invocation is well formed, the finding is about the model.
+      expect(result.code).toBe(1);
+      expect(result.err.join('\n')).toContain('PRODUCT028');
+      // The precondition is checked before anything is written.
+      expect(await git('status', '--porcelain')).toBe(before);
+      await expect(
+        stat(join(workDir, 'docs', 'product', 'model', 'business-rules', 'br-probe-001.md')),
+      ).rejects.toThrow();
+    },
+  );
+
+  it('reports PRODUCT028 as a diagnostic in the JSON form', async () => {
+    await unapprovedChange('proposed');
+    const result = await run(['change', 'apply', 'CHG-PROBE-001', '--format', 'json']);
     expect(result.code).toBe(1);
-    expect(result.err.join('\n')).toContain("requires status 'approved'");
+    const payload = JSON.parse(result.out.join('\n')) as {
+      applied: boolean;
+      diagnostics: { code: string; severity: string; field?: string }[];
+    };
+    expect(payload.applied).toBe(false);
+    const diagnostic = payload.diagnostics.find((d) => d.code === 'PRODUCT028');
+    expect(diagnostic).toMatchObject({ severity: 'error', field: 'status' });
   });
 
   it('--dry-run reports the plan and the diff without writing anything', async () => {
@@ -367,6 +438,36 @@ describe('change apply', () => {
     expect(text).toContain('Product diff: 1 added, 1 modified, 1 removed');
     expect(text).toContain('Dry run: nothing was written.');
     expect(await git('status', '--porcelain')).toBe(before);
+  });
+
+  it('carries an impact kind on every diff entry, and no digest on a removal', async () => {
+    await approvedChange();
+    const result = await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run', '--format', 'json']);
+    expect(result.code).toBe(0);
+    const { diff } = JSON.parse(result.out.join('\n')) as {
+      diff: Record<
+        'added' | 'modified' | 'removed',
+        { id: string; kind: string; digest?: string }[]
+      >;
+    };
+
+    const digest = /^sha256:[0-9a-f]{64}$/;
+    expect(diff.added).toEqual([
+      expect.objectContaining({ kind: 'added', digest: expect.stringMatching(digest) }),
+    ]);
+    expect(diff.modified).toEqual([
+      expect.objectContaining({ kind: 'modified', digest: expect.stringMatching(digest) }),
+    ]);
+    // A removal leaves no content, so there is nothing to digest.
+    expect(diff.removed).toEqual([expect.objectContaining({ kind: 'removed' })]);
+    expect(diff.removed[0]).not.toHaveProperty('digest');
+
+    // The human-readable form carries the same three facts per entry.
+    const [added] = diff.added;
+    const [removed] = diff.removed;
+    const text = (await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run'])).out.join('\n');
+    expect(text).toContain(`${removed?.id}\tremoved\t-`);
+    expect(text).toContain(`${added?.id}\tadded\t${added?.digest}`);
   });
 
   it('writes the model, archives the change and commits nothing', async () => {
@@ -451,6 +552,62 @@ describe('change apply', () => {
     ).rejects.toThrow();
   });
 
+  it('does not treat an addition as drift: an addition has nothing to compare against', async () => {
+    // Drift covers operations.modify and operations.remove only. BR-PROBE-001 has no baseline file
+    // at base-revision, so there is no digest to differ; an ID that appeared since would be
+    // PRODUCT020 from the overlay instead. Committing an unrelated baseline edit first proves the
+    // baseline genuinely moved without making the addition drift.
+    const dir = await writeChange({ status: 'approved', add: ['BR-PROBE-001'] });
+    await proposeArtifact(
+      dir,
+      'business-rules',
+      'BR-PROBE-001',
+      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN-001'),
+    );
+    const untouched = join(
+      workDir,
+      'docs',
+      'product',
+      'model',
+      'business-rules',
+      'br-valid-url-001.md',
+    );
+    const current = await readFile(untouched, 'utf8');
+    await writeFile(
+      untouched,
+      current.replace('## Rationale', '## Rationale\n\nUnrelated.\n'),
+      'utf8',
+    );
+    await git('add', '-A');
+    await git('commit', '-m', 'an artifact the change does not touch moves');
+
+    const result = await run(['change', 'apply', 'CHG-PROBE-001']);
+    expect(result.err.join('\n')).not.toContain('PRODUCT027');
+    expect(result.code).toBe(0);
+  });
+
+  it('judges drift by content digest: a formatting-only commit is not drift', async () => {
+    await approvedChange();
+    // Digests normalize CRLF and CR to LF, so rewriting a baseline artifact with CRLF endings and
+    // committing it moves the file in Git without changing its normalized content.
+    const target = join(
+      workDir,
+      'docs',
+      'product',
+      'model',
+      'business-rules',
+      'br-valid-url-001.md',
+    );
+    const current = await readFile(target, 'utf8');
+    await writeFile(target, current.replace(/\r?\n/g, '\r\n'), 'utf8');
+    await git('add', '-A');
+    await git('commit', '-m', 'line endings only');
+
+    const result = await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run']);
+    expect(result.err.join('\n')).not.toContain('PRODUCT027');
+    expect(result.code).toBe(0);
+  });
+
   it('reports a declared modification that changes nothing as no diff entry', async () => {
     // Intent and effective change may legitimately disagree: a modification whose proposed text
     // is byte-identical to the baseline changes nothing, and must not send citations stale.
@@ -481,6 +638,34 @@ describe('change list and archive', () => {
     await expect(
       stat(join(workDir, 'docs', 'product', 'changes', 'rejected', 'chg-probe-001', 'change.md')),
     ).resolves.toBeDefined();
+  });
+
+  it('archives a superseded change under superseded/, not rejected/', async () => {
+    // One directory per terminal status: a change that was overtaken was not refused, and
+    // `superseded` is reachable from `approved`, so filing it under rejected/ would record a
+    // decision nobody made.
+    await writeChange({ status: 'superseded' });
+    const result = await run(['change', 'archive', 'CHG-PROBE-001']);
+    expect(result.code).toBe(0);
+    expect(result.out.join('\n')).toContain('changes/superseded/chg-probe-001/change.md');
+    const changes = join(workDir, 'docs', 'product', 'changes');
+    await expect(
+      stat(join(changes, 'superseded', 'chg-probe-001', 'change.md')),
+    ).resolves.toBeDefined();
+    await expect(stat(join(changes, 'rejected', 'chg-probe-001'))).rejects.toThrow();
+  });
+
+  it('lists a superseded change in the history with --all', async () => {
+    await writeChange({ status: 'superseded' });
+    expect((await run(['change', 'archive', 'CHG-PROBE-001'])).code).toBe(0);
+    const result = await run(['change', 'list', '--all', '--format', 'json']);
+    expect(result.code).toBe(0);
+    const { changes } = JSON.parse(result.out.join('\n')) as {
+      changes: { id: string; state: string; status: string }[];
+    };
+    expect(changes).toEqual([
+      expect.objectContaining({ id: 'CHG-PROBE-001', state: 'superseded', status: 'superseded' }),
+    ]);
   });
 
   it('refuses to archive a change that was not withdrawn', async () => {

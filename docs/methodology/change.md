@@ -28,7 +28,7 @@ The Product Change (`CHG-…`) declares its operations, `add`, `modify` and `rem
 
 ### 5. Surface unresolved product decisions
 
-Questions the change raises but does not answer go in its `## Open Questions` section, visibly. AI drafting a change must preserve them, never resolve them by inventing an answer. Approving a change with open questions still unresolved is possible, and the tooling warns about it (`PRODUCT108`).
+Questions the change raises but does not answer go in its `## Open Questions` section, visibly, one list item each. AI drafting a change must preserve them, never resolve them by inventing an answer. Approving a change with open questions still unresolved is possible, and the tooling warns about it (`PRODUCT108`) on every validation for as long as the change stays `approved` with a list item in that section. Resolving a question means removing its list item — deleting it, or folding it into the prose that answers it; prose such as `None.` is not a question.
 
 ### 6. Validate the overlay
 
@@ -40,9 +40,9 @@ Elaboration happens here. A change stays `draft` or `proposed` for as long as it
 
 ### 7. Apply, explicitly
 
-**Human approval point 2, running apply.** Apply is the operation that materializes an approved change, and it is never implicit: not triggered by an AI hook, not by SDD archival, not by any automation. The tooling enforces the preconditions: status `approved`, the overlay revalidated, and the baseline unchanged since `base-revision` for every artifact the change touches, otherwise the change must be explicitly rebased first. A `--dry-run` reports every action without performing any.
+**Human approval point 2, running apply.** Apply is the operation that materializes an approved change, and it is never implicit: not triggered by an AI hook, not by SDD archival, not by any automation. The tooling enforces the preconditions: status `approved`, otherwise `PRODUCT028`; the overlay revalidated; and the baseline unchanged since `base-revision` for every artifact the change modifies or removes, otherwise `PRODUCT027` and the change must be explicitly rebased first. Both preconditions are checked before anything is written, so a refusal leaves the working tree untouched. A `--dry-run` reports every action without performing any.
 
-Apply writes the operations into `docs/product/model`, computes the **product diff** between the baseline and the result, moves the change to `changes/completed/` with status `applied`, and creates no Git commits. Applied means materialized and archived. It does not mean accepted.
+Apply writes the operations into `docs/product/model`, computes the **product diff** between the baseline and the result and reports it in both a human-readable and a machine-readable form, moves the change to `changes/completed/` with status `applied`, and creates no Git commits. Applied means materialized and archived. It does not mean accepted.
 
 ### 8. Accept, by merging
 
@@ -57,10 +57,12 @@ Three things, never substitutable for one another:
 | Concept | Authoritative for |
 | --- | --- |
 | The change's `operations` | What the change **intended** |
-| The product diff | What **effectively** changed, with the resulting digests |
+| The product diff | What **effectively** changed: each impacted artifact, its kind of impact, and its resulting digest for an addition or a modification |
 | Impact | Which citations are affected, derived from the diff and the citation index |
 
 They can legitimately disagree. A declared modification whose proposed text turns out identical to the baseline changed nothing, and reporting it as changed would send every citation of that artifact stale for no reason. So the diff is computed from the applied result, never read off the operations.
+
+The diff is derived, not canonical: it is recomputable from `base-revision` and the applied result. Apply therefore reports it and never writes it into the archived change, which is immutable once archived.
 
 ## Change history
 

@@ -15,7 +15,7 @@ prodshape init [--ai claude|copilot] [--flat] [--shorthand] [--dry-run]
 ```text
 docs/product/                    # canonical product definition
 ├── model/                       # one directory per artifact kind (recommended, not required)
-└── changes/{active,completed,rejected}/
+└── changes/{active,completed,rejected,superseded}/
 .product/                        # tool home
 ├── config.yaml
 ├── installation.lock.json       # only with --ai; commit it

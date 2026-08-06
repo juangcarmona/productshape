@@ -17,6 +17,7 @@ export type {
   PlanApplyOptions,
   ProductDiff,
   ProductDiffEntry,
+  ProductDiffKind,
 } from './apply.js';
 export { checkRequiredBodySections } from './body-sections.js';
 export { discoverChanges, loadChange } from './changes.js';

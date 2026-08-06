@@ -33,6 +33,7 @@ export const codes = {
   concurrentChangeOverlap: 'PRODUCT025',
   operationProposedMismatch: 'PRODUCT026',
   baselineRevisionIncompatible: 'PRODUCT027',
+  applyStatusNotApproved: 'PRODUCT028',
   invalidCitationDigest: 'PRODUCT042',
   unresolvedCitation: 'PRODUCT060',
   staleCitation: 'PRODUCT061',

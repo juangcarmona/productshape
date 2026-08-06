@@ -41,6 +41,7 @@ Warnings are not errors. `validation.warnings-as-errors` in `.product/config.yam
 | `PRODUCT025` | Concurrent live Product Changes with overlapping modify/remove operations |
 | `PRODUCT026` | Proposed artifact not listed in operations, or operation without its proposed artifact |
 | `PRODUCT027` | Baseline revision incompatible at apply without explicit resolution |
+| `PRODUCT028` | Apply attempted on a Product Change whose status is not `approved` |
 | `PRODUCT042` | Invalid or unverifiable citation digest |
 | `PRODUCT050` | Invalid configuration or unknown top-level configuration key |
 | `PRODUCT051` | Managed integration file modified by hand |
@@ -49,7 +50,9 @@ Warnings are not errors. `validation.warnings-as-errors` in `.product/config.yam
 | `PRODUCT062` | Tampered embedded projection: the embedded block differs from canonical content at the recorded digest |
 | `PRODUCT063` | Anchor not found: the target resolves but the named anchor does not exist within it |
 
-`PRODUCT020` to `PRODUCT027` apply to Product Changes and their overlays. They are reported when a change is validated or applied, never when validating the baseline alone, and never against the inert archives under `changes/completed/` and `changes/rejected/`.
+`PRODUCT020` to `PRODUCT028` apply to Product Changes and their overlays. They are reported when a change is validated or applied, never when validating the baseline alone, and never against the inert archives under `changes/completed/`, `changes/rejected/` and `changes/superseded/`.
+
+`PRODUCT027` and `PRODUCT028` are apply preconditions: both are evaluated before anything is written and reported with the working tree untouched. The invocation itself is well formed in either case, so apply exits `1`, not `2`.
 
 `PRODUCT050`–`PRODUCT052` are reported by `doctor` and integration commands; product-model validation does not inspect managed files.
 
@@ -64,7 +67,7 @@ Warnings are not errors. `validation.warnings-as-errors` in `.product/config.yam
 | `PRODUCT105` | Business rule with no consumers |
 | `PRODUCT106` | Domain term with no usage |
 | `PRODUCT107` | Bounded context with no owned domain language |
-| `PRODUCT108` | Product Change approved while its `## Open Questions` section still contains unresolved questions |
+| `PRODUCT108` | Product Change in status `approved` with an unresolved question (a list item) under `## Open Questions` |
 | `PRODUCT111` | Draft artifact whose `provenance.confidence` is `low` |
 
 `PRODUCT061` is a warning despite its `0xx` numbering: the citation contract (spec/citation-contract.md) fixes it as a warning so a stale citation does not block a consumer pipeline unless the repository escalates it via `warnings-as-errors`. Tools MUST NOT apply per-artifact-type severity defaults.
@@ -74,6 +77,8 @@ Warnings are not errors. `validation.warnings-as-errors` in `.product/config.yam
 `PRODUCT111` marks recovered knowledge that needs human validation rather than a defect to repair; see [Frontmatter reference → Provenance](frontmatter-reference.md#provenance).
 
 `PRODUCT108` fires at `approved` and nowhere else. Approval is the human decision that authorizes apply, so an unanswered question at that point has stopped being elaboration and become a decision nobody made. While the change is `draft` or `proposed` the section is a working list and carries no diagnostic.
+
+It is state-based, not transition-based: the warning is reported on every validation of a change in status `approved`, not only at the moment the status changes, so it is reproducible from repository content alone. An unresolved question is a Markdown list item within the `## Open Questions` section, at any nesting depth — bullet or ordered, and a list item counts regardless of its content, task-list checkboxes included. Resolving a question therefore means removing its list item: deleting it, or folding it into the prose that answers it. Prose is not a question, so `None.` and an empty section are resolved by construction. The rule is syntactic on purpose, because no deterministic tool can judge whether prose contains an open question and two implementations reading the same bytes have to agree.
 
 ## Exit codes
 
@@ -90,5 +95,7 @@ Content digests are SHA-256 over the artifact's UTF-8 bytes with CRLF and CR lin
 
 ## Determinism requirements
 
-- Artifact discovery, graph compilation, traversal, impact analysis and diagnostic ordering MUST be deterministic and platform-independent.
+- Artifact discovery, graph compilation, traversal, product diff computation, impact analysis and diagnostic ordering MUST be deterministic and platform-independent.
 - Generated outputs (`product-graph.json`, indexes, Mermaid, diagnostics JSON) MUST be byte-identical for identical input content, and `product-graph.json` MUST carry a versioned schema identifier.
+
+Product diff determinism is semantic: the same baseline and applied result MUST yield the same set of impacted artifacts, impact kinds and resulting digests. Byte-identity of the diff report is not required while its serialization remains unfixed.

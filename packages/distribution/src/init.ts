@@ -47,16 +47,19 @@ export const modelScaffoldDirs = [
 ];
 
 /**
- * The change surface: live changes and the two archives that hold the change history.
+ * The change surface: live changes and the three archives that hold the change history, one per
+ * terminal status.
  *
- * Scaffolded even with `--flat`, which opts out of the model taxonomy only. These three are not a
+ * Scaffolded even with `--flat`, which opts out of the model taxonomy only. These four are not a
  * taxonomy: `change validate` reads `active/`, `apply` files into `completed/` and `archive` files
- * into `rejected/`, so the names are the contract rather than a recommendation.
+ * into `rejected/` or `superseded/` according to status, so the names are the contract rather than
+ * a recommendation.
  */
 export const changeScaffoldDirs = [
   'docs/product/changes/active',
   'docs/product/changes/completed',
   'docs/product/changes/rejected',
+  'docs/product/changes/superseded',
 ];
 
 export type InitActionKind = 'create' | 'preserve' | 'overwrite' | 'regenerate' | 'conflict';
@@ -108,7 +111,8 @@ Product Definition as Code.
 
 - \`model/\` holds the accepted Product Definition (the baseline).
 - \`changes/active/\` holds live Product Changes, each with its complete proposed future state.
-  \`changes/completed/\` and \`changes/rejected/\` hold the change history and are inert.
+  \`changes/completed/\`, \`changes/rejected/\` and \`changes/superseded/\` hold the change history,
+  one directory per terminal status, and are inert.
 
 The definition changes through exactly one mechanism: a Product Change, validated as an overlay,
 approved by a human, applied with \`prodshape change apply\`, and accepted when a human merges the
