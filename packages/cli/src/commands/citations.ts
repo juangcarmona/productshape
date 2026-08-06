@@ -60,6 +60,7 @@ export async function runCitationsVerify(
           form: v.citation.form,
           status: v.status,
         })),
+        diagnostics,
         summary: {
           total: verifications.length,
           current: verifications.filter((v) => v.status === 'current').length,

@@ -56,6 +56,8 @@ Warnings are not errors. `validation.warnings-as-errors` in `.product/config.yam
 
 `PRODUCT050`–`PRODUCT052` are reported by `doctor` and integration commands; product-model validation does not inspect managed files.
 
+A citation's status is evaluated in a fixed order: invalid digest, unresolved target, unresolved anchor, tampered, stale, current; the first match wins. A citation carries the diagnostic of its status and no other, so `PRODUCT062` (tampered) and `PRODUCT061` (stale) are never both reported for the same citation. An embedded projection's faithfulness is judged against its recorded digest alone, never against the target's current content, so a tampered embedding is reported as `PRODUCT062` even when the cited target has also changed since the citation was recorded.
+
 ## Warning codes
 
 | Code | Condition |

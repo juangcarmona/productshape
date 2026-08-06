@@ -48,6 +48,8 @@ Every citation resolves to exactly one status:
 
 `stale` is a warning, so it reports drift without blocking a consumer pipeline unless the repository escalates it with `validation.warnings-as-errors`. `tampered` and `unresolved` are errors.
 
+A citation carries exactly one of these statuses, in this precedence: `unresolved`, `tampered`, `stale`, `current`. A marker block whose embedded projection was hand-edited reports `tampered` even when the cited artifact has also changed since the citation was recorded; a citation is never both.
+
 ## Where the boundary is enforced
 
 - **Consumers never write to the model.** An OpenSpec change that discovers a business rule is wrong reports it; it does not edit `docs/product/model`. The correction flows through a Product Change like any other evolution.

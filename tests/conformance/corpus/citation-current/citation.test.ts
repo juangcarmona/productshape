@@ -166,6 +166,30 @@ This is NOT the canonical text.
     expect(verifications[0].diagnostics.map((d) => d.code)).toContain('PRODUCT062');
   });
 
+  it('reports tampered, not stale, when the embedded projection differs and the canonical content has also moved', async () => {
+    const { artifacts } = await loadCorpusModel();
+    const fr = artifacts.find((a) => a.id === 'FR-AVAILABILITY-001');
+    expect(fr).toBeDefined();
+
+    // The recorded digest matches neither the embedded block nor the artifact's current
+    // content: the citation is both tampered and stale. Tampered MUST win.
+    const recordedDigest = 'sha256:1111111111111111111111111111111111111111111111111111111111111111';
+    expect(recordedDigest).not.toBe(fr!.digest);
+    const consumerContent = `<!-- pdac:cite id="FR-AVAILABILITY-001" digest="${recordedDigest}" -->
+This is NOT the canonical text.
+<!-- /pdac:cite -->`;
+    const consumerPath = join(corpusDir, 'consumer-tampered-and-stale.md');
+    const { writeFile } = await import('node:fs/promises');
+    await writeFile(consumerPath, consumerContent, 'utf8');
+
+    const citations = await parseCitations(consumerPath, repoRoot);
+    const verifications = verifyCitations(citations, artifacts);
+    expect(verifications[0].status).toBe('tampered');
+    const codes = verifications[0].diagnostics.map((d) => d.code);
+    expect(codes).toContain('PRODUCT062');
+    expect(codes).not.toContain('PRODUCT061');
+  });
+
   it('reports invalid digest format with PRODUCT042', async () => {
     const { artifacts } = await loadCorpusModel();
     const consumerContent = `{pdac:cite id="FR-AVAILABILITY-001" digest="not-a-digest"}`;
