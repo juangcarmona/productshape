@@ -344,12 +344,12 @@ export function verifyCitation(
 
   // PRODUCT062: tampered embedded projection.
   // The embedded text must be byte-identical to the canonical content at the recorded digest.
+  // Faithfulness is judged against the recorded digest alone, never against the target's
+  // current content, so a tampered embedding is reported even when the canonical text has
+  // also moved since the citation was recorded (precedence: tampered before stale).
   if (citation.form === 'marker-block' && citation.embeddedText !== undefined) {
     const embeddedDigest = contentDigest(normalizeToLf(citation.embeddedText));
-    // Only flag tampering when the canonical content hasn't changed (artifact digest matches
-    // the recorded digest), so the difference is genuinely in the embedded projection, not
-    // caused by a canonical edit (which is staleness, handled below).
-    if (artifact.digest === citation.digest && embeddedDigest !== citation.digest) {
+    if (embeddedDigest !== citation.digest) {
       diagnostics.push({
         severity: 'error',
         code: codes.tamperedCitation,
