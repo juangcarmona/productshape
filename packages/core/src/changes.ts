@@ -1,7 +1,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { checkRequiredBodySections } from './body-sections.js';
-import { contentDigest } from './digest.js';
+import { contentDigestBytes } from './digest.js';
 import type { Diagnostic } from './diagnostics.js';
 import type { LoadedArtifact } from './model.js';
 import { loadArtifactFile, toPosixRelative } from './model.js';
@@ -86,7 +86,9 @@ export async function loadChange(
   const diagnostics: Diagnostic[] = [];
   const changePath = join(changeDir, 'change.md');
   const file = toPosixRelative(repoRoot, changePath);
-  const content = await readFile(changePath, 'utf8');
+  // Digested from the bytes, for the reason given in `contentDigestBytes`.
+  const bytes = await readFile(changePath);
+  const content = bytes.toString('utf8');
 
   const parsed = parseArtifactDocument(content, file);
   const frontmatter = parsed.artifact?.frontmatter ?? {};
@@ -112,7 +114,7 @@ export async function loadChange(
     file,
     frontmatter,
     body,
-    digest: contentDigest(content),
+    digest: contentDigestBytes(bytes),
     id: typeof frontmatter.id === 'string' ? frontmatter.id : undefined,
     title: typeof frontmatter.title === 'string' ? frontmatter.title : undefined,
     status: typeof frontmatter.status === 'string' ? frontmatter.status : undefined,

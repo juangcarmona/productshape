@@ -3,7 +3,7 @@ import { relative, sep } from 'node:path';
 import fg from 'fast-glob';
 import { isMarkdownDocumentType } from './artifact.js';
 import { checkRequiredBodySections } from './body-sections.js';
-import { contentDigest } from './digest.js';
+import { contentDigestBytes } from './digest.js';
 import type { Diagnostic } from './diagnostics.js';
 import { parseArtifactDocument } from './parse.js';
 import type { SchemaRegistry } from './schema-registry.js';
@@ -49,7 +49,10 @@ export async function loadArtifactFile(
   registry: SchemaRegistry,
 ): Promise<{ artifact?: LoadedArtifact; diagnostics: Diagnostic[] }> {
   const file = toPosixRelative(repoRoot, absolutePath);
-  const content = await readFile(absolutePath, 'utf8');
+  // The digest is taken from the bytes, not from `content`: decoding first would hash U+FFFD in
+  // place of any invalid UTF-8 sequence (spec issue #32).
+  const bytes = await readFile(absolutePath);
+  const content = bytes.toString('utf8');
   const parsed = parseArtifactDocument(content, file);
   if (!parsed.artifact) return { diagnostics: parsed.diagnostics };
 
@@ -67,7 +70,7 @@ export async function loadArtifactFile(
     absolutePath,
     frontmatter,
     body,
-    digest: contentDigest(content),
+    digest: contentDigestBytes(bytes),
     id,
     type: type || undefined,
     title: typeof frontmatter.title === 'string' ? frontmatter.title : undefined,

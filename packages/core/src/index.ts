@@ -41,7 +41,7 @@ export type {
   CitationVerification,
   CiteOptions,
 } from './citations.js';
-export { contentDigest, normalizeToLf } from './digest.js';
+export { contentDigest, contentDigestBytes, normalizeToLf } from './digest.js';
 export {
   applyFilenameFixes,
   applyFilenameRecovery,
@@ -67,7 +67,7 @@ export {
   renderKindText,
 } from './frontmatter-reference.js';
 export type { FieldDescriptor, FieldKind, KindDescriptor } from './frontmatter-reference.js';
-export { gitHead, gitShow } from './git.js';
+export { gitHead, gitShow, gitShowBytes } from './git.js';
 export { compileGraph, ownedTerms } from './graph.js';
 export type { GraphNode, ProductGraph } from './graph.js';
 export { analyzeImpact } from './impact.js';
