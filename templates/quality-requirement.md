@@ -12,7 +12,7 @@ verification:
 
 <!--
 Quality requirement: a measurable quality obligation. "The system should be fast" does not
-satisfy this contract — Measurement must state how conformance is measured.
+satisfy this contract - Measurement must state how conformance is measured.
 quality-attribute: e.g. portability, determinism, explainability, extensibility.
 provenance (optional): the evidence behind recovered knowledge. Set it on recovered
 (brownfield) artifacts; leave it unset when authoring from intent. It records evidence,
@@ -34,7 +34,3 @@ Schema reference: docs/specification/frontmatter-reference.md#quality-requiremen
 ## Measurement
 
 <!-- How conformance is measured: the metric, the method, the threshold. -->
-
-## Verification
-
-<!-- How the measurement is exercised, matching the verification entries above. -->

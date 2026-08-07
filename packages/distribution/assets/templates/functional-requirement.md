@@ -33,7 +33,3 @@ Schema reference: docs/specification/frontmatter-reference.md#functional-require
 ## Rationale
 
 <!-- Why this obligation exists, in product terms. -->
-
-## Acceptance Scenarios
-
-<!-- Concrete scenarios, matching the verification entries above, that show conformance. -->

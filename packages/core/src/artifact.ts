@@ -52,8 +52,8 @@ export const requiredBodySections: Record<MarkdownDocumentType, string[]> = {
   'business-rule': ['Rule', 'Rationale', 'Examples', 'Exceptions'],
   'domain-term': ['Definition', 'Distinguish From', 'Usage'],
   'bounded-context': ['Responsibility', 'Language', 'Boundaries', 'External Relationships'],
-  'functional-requirement': ['Requirement', 'Rationale', 'Acceptance Scenarios'],
-  'quality-requirement': ['Requirement', 'Measurement', 'Verification'],
+  'functional-requirement': ['Requirement', 'Rationale'],
+  'quality-requirement': ['Requirement', 'Measurement'],
   constraint: ['Constraint', 'Rationale', 'Consequences'],
   'product-change': [
     'Problem',
