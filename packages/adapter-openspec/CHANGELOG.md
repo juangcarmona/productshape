@@ -1,5 +1,13 @@
 # @prodshape/adapter-openspec
 
+## 0.3.2
+
+### Patch Changes
+
+- Updated dependencies [5c00292]
+- Updated dependencies [527c213]
+  - @prodshape/core@0.10.0
+
 ## 0.3.1
 
 ### Patch Changes
