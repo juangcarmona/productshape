@@ -1,6 +1,6 @@
 {
   "name": "@prodshape/adapter-openspec",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "OpenSpec adapter for Product Definition as Code: locates OpenSpec change directories for citation verification.",
   "license": "Apache-2.0",
   "type": "module",
