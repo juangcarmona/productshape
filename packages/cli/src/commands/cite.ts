@@ -1,4 +1,4 @@
-import { contentDigest, emitCitation, type CiteOptions } from '@prodshape/core';
+import { contentDigestBytes, emitCitation, type CiteOptions } from '@prodshape/core';
 import { exitCodes, type CliIo } from '../context.js';
 
 export interface CiteCommandOptions {
@@ -25,8 +25,7 @@ export async function runCite(io: CliIo, options: CiteCommandOptions): Promise<n
       return exitCodes.invalidInvocation;
     }
     const { readFile } = await import('node:fs/promises');
-    const content = await readFile(options.file, 'utf8');
-    digest = contentDigest(content);
+    digest = contentDigestBytes(await readFile(options.file));
   }
 
   const citeOptions: CiteOptions = {

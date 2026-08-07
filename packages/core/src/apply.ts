@@ -2,9 +2,9 @@ import { access, mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/pr
 import { dirname, join } from 'node:path';
 import { modelSubdirByType } from './artifact.js';
 import type { LoadedChange } from './changes.js';
-import { contentDigest } from './digest.js';
+import { contentDigestBytes } from './digest.js';
 import type { Diagnostic } from './diagnostics.js';
-import { gitShow } from './git.js';
+import { gitShowBytes } from './git.js';
 import type { LoadedArtifact } from './model.js';
 
 export interface ApplyAction {
@@ -131,8 +131,8 @@ export async function planApply(options: PlanApplyOptions): Promise<ApplyPlan> {
     for (const id of [...change.operations.modify, ...change.operations.remove].sort()) {
       const artifact = baselineById.get(id);
       if (!artifact) continue; // PRODUCT021/022 already reported by validation.
-      const historical = await gitShow(repoRoot, change.baseRevision, artifact.file);
-      if (historical === undefined || contentDigest(historical) !== artifact.digest) {
+      const historical = await gitShowBytes(repoRoot, change.baseRevision, artifact.file);
+      if (historical === undefined || contentDigestBytes(historical) !== artifact.digest) {
         diagnostics.push({
           severity: 'error',
           code: 'PRODUCT027',
