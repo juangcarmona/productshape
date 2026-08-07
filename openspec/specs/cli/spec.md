@@ -10,6 +10,8 @@ The prodshape command-line surface: commands, options, exit codes and output con
 
 The `product-definition` binary SHALL provide `validate`, `graph`, `inspect <ID>` and `impact <ID>` with the documented options, resolving the repository root and configuration from the working directory.
 
+{pdac:cite id="UC-VALIDATE-001" digest="sha256:4b4c1c37376d3faf2c84d130866083c1f33ef7f4990495da15b9d15570f94368"}
+
 #### Scenario: Running from a subdirectory
 
 - **WHEN** a command runs from a subdirectory of the repository
