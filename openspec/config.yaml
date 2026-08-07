@@ -12,7 +12,7 @@ rules:
     - State which PDaC artifacts this change touches, each with an inline citation emitted by `npx prodshape cite --id <ID> --digest <digest>`. Never write a citation record by hand.
     - If the change alters product behaviour, name the Product Change (CHG id) it implements. If no Product Change exists yet, stop and ask for one instead of proceeding.
   specs:
-    - Every requirement derived from canonical product text MUST carry a citation to the PDaC artifact it derives from, placed on its own line after the requirement text and before the first scenario. Never place it between the requirement heading and the requirement text; OpenSpec reads the first paragraph as the requirement.
+    - Every requirement derived from canonical product text MUST carry a citation to every PDaC artifact it derives from, one citation per line, placed after the requirement text and before the first scenario. A requirement often derives from more than one artifact; citing only the closest one silently hides the other derivations. Never place citations between the requirement heading and the requirement text; OpenSpec reads the first paragraph as the requirement.
     - Cite a specific verification scenario with an anchor when the requirement maps to one (anchor="<scenario id>").
     - Never paraphrase canonical text as if it were new; either cite it inline or embed it in a marker-block citation (<!-- pdac:cite ... --> canonical text <!-- /pdac:cite -->).
     - Never invent artifact ids or digests. Read them with `npx prodshape inspect <ID>`.
