@@ -138,7 +138,7 @@ describe('prodshape graph / inspect / impact', () => {
     ) as { artifacts: { id: string }[]; edges: unknown[] };
     expect(data.artifacts.length).toBe(9);
     expect(html).toMatch(/revision (unavailable|[0-9a-f]{40})/);
-    // The opening document orients without exposing the corpus: no artifact body, no graph.
+    // The opening document orients without exposing the whole product model: no artifact body, no graph.
     const opening = html.slice(html.indexOf('<body'), html.indexOf('<script id='));
     expect(opening).toContain('Product Snapshot');
     expect(opening).toContain('Relationships by kind');

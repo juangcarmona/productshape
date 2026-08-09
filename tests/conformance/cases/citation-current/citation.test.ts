@@ -9,24 +9,24 @@ import {
 } from '@prodshape/core';
 import { repoRoot } from '../../../helpers.js';
 
-const corpusDir = join(repoRoot, 'tests', 'conformance', 'corpus', 'citation-current');
-const modelDir = join(corpusDir, 'model');
+const caseDir = join(repoRoot, 'tests', 'conformance', 'cases', 'citation-current');
+const modelDir = join(caseDir, 'model');
 
-async function loadCorpusModel() {
+async function loadCaseModel() {
   const registry = await SchemaRegistry.load(join(repoRoot, 'schemas'));
   return loadModel(modelDir, repoRoot, registry);
 }
 
-describe('citation contract — citation-current corpus', () => {
+describe('citation contract for the citation-current test case', () => {
   it('resolves a current citation to the matching artifact', async () => {
-    const { artifacts } = await loadCorpusModel();
+    const { artifacts } = await loadCaseModel();
     const fr = artifacts.find((a) => a.id === 'FR-AVAILABILITY-001');
     expect(fr).toBeDefined();
 
     // Build a consumer document with a current inline citation.
     const digest = fr!.digest;
     const consumerContent = `{pdac:cite id="FR-AVAILABILITY-001" digest="${digest}"}`;
-    const consumerPath = join(corpusDir, 'consumer-inline.md');
+    const consumerPath = join(caseDir, 'consumer-inline.md');
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
@@ -41,14 +41,14 @@ describe('citation contract — citation-current corpus', () => {
   });
 
   it('reports stale when the canonical content changed', async () => {
-    const { artifacts } = await loadCorpusModel();
+    const { artifacts } = await loadCaseModel();
     const fr = artifacts.find((a) => a.id === 'FR-AVAILABILITY-001');
     expect(fr).toBeDefined();
 
     // A digest that does not match the current content.
     const staleDigest = 'sha256:0000000000000000000000000000000000000000000000000000000000000000';
     const consumerContent = `{pdac:cite id="FR-AVAILABILITY-001" digest="${staleDigest}"}`;
-    const consumerPath = join(corpusDir, 'consumer-stale.md');
+    const consumerPath = join(caseDir, 'consumer-stale.md');
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
@@ -59,10 +59,10 @@ describe('citation contract — citation-current corpus', () => {
   });
 
   it('reports unresolved when the target id does not resolve', async () => {
-    const { artifacts } = await loadCorpusModel();
+    const { artifacts } = await loadCaseModel();
     const digest = contentDigest('nonexistent');
     const consumerContent = `{pdac:cite id="FR-NONEXISTENT-001" digest="${digest}"}`;
-    const consumerPath = join(corpusDir, 'consumer-unresolved.md');
+    const consumerPath = join(caseDir, 'consumer-unresolved.md');
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
@@ -73,13 +73,13 @@ describe('citation contract — citation-current corpus', () => {
   });
 
   it('reports anchor not found when the anchor does not resolve', async () => {
-    const { artifacts } = await loadCorpusModel();
+    const { artifacts } = await loadCaseModel();
     const fr = artifacts.find((a) => a.id === 'FR-AVAILABILITY-001');
     expect(fr).toBeDefined();
 
     const digest = fr!.digest;
     const consumerContent = `{pdac:cite id="FR-AVAILABILITY-001" digest="${digest}" anchor="S99"}`;
-    const consumerPath = join(corpusDir, 'consumer-anchor-missing.md');
+    const consumerPath = join(caseDir, 'consumer-anchor-missing.md');
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
@@ -90,13 +90,13 @@ describe('citation contract — citation-current corpus', () => {
   });
 
   it('resolves a current citation with a valid anchor', async () => {
-    const { artifacts } = await loadCorpusModel();
+    const { artifacts } = await loadCaseModel();
     const fr = artifacts.find((a) => a.id === 'FR-AVAILABILITY-001');
     expect(fr).toBeDefined();
 
     const digest = fr!.digest;
     const consumerContent = `{pdac:cite id="FR-AVAILABILITY-001" digest="${digest}" anchor="S1"}`;
-    const consumerPath = join(corpusDir, 'consumer-anchor-valid.md');
+    const consumerPath = join(caseDir, 'consumer-anchor-valid.md');
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
@@ -107,7 +107,7 @@ describe('citation contract — citation-current corpus', () => {
   });
 
   it('parses marker-block citations with embedded text', async () => {
-    const { artifacts } = await loadCorpusModel();
+    const { artifacts } = await loadCaseModel();
     const fr = artifacts.find((a) => a.id === 'FR-AVAILABILITY-001');
     expect(fr).toBeDefined();
 
@@ -115,7 +115,7 @@ describe('citation contract — citation-current corpus', () => {
     const consumerContent = `<!-- pdac:cite id="FR-AVAILABILITY-001" digest="${digest}" anchor="S1" -->
 The applicant MUST provide availability information.
 <!-- /pdac:cite -->`;
-    const consumerPath = join(corpusDir, 'consumer-marker-block.md');
+    const consumerPath = join(caseDir, 'consumer-marker-block.md');
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
@@ -126,7 +126,7 @@ The applicant MUST provide availability information.
   });
 
   it('parses sidecar-ledger citations from a YAML file', async () => {
-    const { artifacts } = await loadCorpusModel();
+    const { artifacts } = await loadCaseModel();
     const fr = artifacts.find((a) => a.id === 'FR-AVAILABILITY-001');
     expect(fr).toBeDefined();
 
@@ -134,7 +134,7 @@ The applicant MUST provide availability information.
     const consumerContent = `- id: FR-AVAILABILITY-001
   digest: ${digest}
   anchor: S1`;
-    const consumerPath = join(corpusDir, 'citations.yaml');
+    const consumerPath = join(caseDir, 'citations.yaml');
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
@@ -147,7 +147,7 @@ The applicant MUST provide availability information.
   });
 
   it('reports tampered when an embedded projection differs from canonical', async () => {
-    const { artifacts } = await loadCorpusModel();
+    const { artifacts } = await loadCaseModel();
     const fr = artifacts.find((a) => a.id === 'FR-AVAILABILITY-001');
     expect(fr).toBeDefined();
 
@@ -156,7 +156,7 @@ The applicant MUST provide availability information.
     const consumerContent = `<!-- pdac:cite id="FR-AVAILABILITY-001" digest="${digest}" -->
 This is NOT the canonical text.
 <!-- /pdac:cite -->`;
-    const consumerPath = join(corpusDir, 'consumer-tampered.md');
+    const consumerPath = join(caseDir, 'consumer-tampered.md');
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
@@ -167,7 +167,7 @@ This is NOT the canonical text.
   });
 
   it('reports tampered, not stale, when the embedded projection differs and the canonical content has also moved', async () => {
-    const { artifacts } = await loadCorpusModel();
+    const { artifacts } = await loadCaseModel();
     const fr = artifacts.find((a) => a.id === 'FR-AVAILABILITY-001');
     expect(fr).toBeDefined();
 
@@ -178,7 +178,7 @@ This is NOT the canonical text.
     const consumerContent = `<!-- pdac:cite id="FR-AVAILABILITY-001" digest="${recordedDigest}" -->
 This is NOT the canonical text.
 <!-- /pdac:cite -->`;
-    const consumerPath = join(corpusDir, 'consumer-tampered-and-stale.md');
+    const consumerPath = join(caseDir, 'consumer-tampered-and-stale.md');
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
@@ -191,9 +191,9 @@ This is NOT the canonical text.
   });
 
   it('reports invalid digest format with PRODUCT042', async () => {
-    const { artifacts } = await loadCorpusModel();
+    const { artifacts } = await loadCaseModel();
     const consumerContent = `{pdac:cite id="FR-AVAILABILITY-001" digest="not-a-digest"}`;
-    const consumerPath = join(corpusDir, 'consumer-invalid-digest.md');
+    const consumerPath = join(caseDir, 'consumer-invalid-digest.md');
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 

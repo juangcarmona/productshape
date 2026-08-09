@@ -12,7 +12,7 @@
 
   The `functional-requirement` and `quality-requirement` templates stop scaffolding the section, so a newly authored artifact no longer starts life restating its own criteria.
 
-  Before this change every case in the spec's conformance corpus failed against `prodshape validate`, because the corpus fixtures had already dropped the sections the specification no longer requires.
+  Before this change every case in the spec's conformance tests failed against `prodshape validate`, because the test fixtures had already dropped the sections the specification no longer requires.
 
 - 527c213: Citation status precedence: tampered wins over stale, and the JSON envelope carries diagnostics
 
