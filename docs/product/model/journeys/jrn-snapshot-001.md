@@ -11,7 +11,7 @@ steps:
 
 ## Intended Outcome
 
-A person with no access to the repository — and no intention of ever getting any — understands the product deeply: its actors, journeys, use cases, rules, language and requirements, and how they connect. The understanding comes from a Product Snapshot: a read-only projection of the canonical model, generated as a single self-contained file and shared as one. They reach that understanding through the Product Explorer, one artifact and one neighbourhood at a time, never by being handed the whole corpus at once.
+A person with no access to the repository — and no intention of ever getting any — understands the product deeply: its actors, journeys, use cases, rules, language and requirements, and how they connect. The understanding comes from a Product Snapshot: a read-only projection of the canonical model, generated as a single self-contained file and shared as one. They reach that understanding through the Product Explorer, one artifact and one neighbourhood at a time, never by being handed the whole product model at once.
 
 ## Entry Conditions
 

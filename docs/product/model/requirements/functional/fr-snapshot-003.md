@@ -1,7 +1,7 @@
 ---
 id: FR-SNAPSHOT-003
 type: functional-requirement
-title: Orient the reader before exposing the product corpus
+title: Orient the reader before exposing the whole product model
 status: active
 derived-from:
   - UC-SNAPSHOT-EXPLORE-001

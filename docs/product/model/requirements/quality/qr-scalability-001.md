@@ -18,7 +18,7 @@ verification:
 
 ## Requirement
 
-The Product Snapshot MUST remain usable as the product model it projects grows well beyond the model the product defines for itself. Scalability is defined over the operations a reader actually performs, on a representative corpus of roughly 730 artifacts — never over rendering the corpus simultaneously, which no surface does.
+The Product Snapshot MUST remain usable as the product model it projects grows well beyond the model the product defines for itself. Scalability is defined over the operations a reader actually performs, on a representative model of roughly 730 artifacts — never over rendering the whole model simultaneously, which no surface does.
 
 The document the page renders when it opens MUST NOT grow in proportion to the number of artifacts in the model. Because the opening state renders no artifact content and no artifact-level graph, its size MUST be bounded by the number of artifact kinds present and the kind-level aggregate over them, not by the artifact count. Artifact content and relationship structure MUST be carried in the file as data that the page renders on demand.
 

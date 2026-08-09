@@ -59,7 +59,7 @@ The Product Explorer receives or opens a Product Snapshot — a file someone sha
 
 ## Postconditions
 
-- The explorer has understood the product at the depth the canonical model records, without cloning, installing or reading raw Markdown, and without ever having been shown the whole corpus or the whole graph at once.
+- The explorer has understood the product at the depth the canonical model records, without cloning, installing or reading raw Markdown, and without ever having been shown the whole product model or the whole graph at once.
 - Every artifact and every canonical relationship in the model was reachable to them, through more than one surface.
 - The state they were exploring is addressable, so the same view can be reopened or shared.
 - No product knowledge was created, modified or approved: the snapshot offered no such capability, and nothing the explorer did was persisted anywhere.

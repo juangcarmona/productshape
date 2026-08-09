@@ -2,7 +2,7 @@
 id: CHG-SNAPSHOT-WORDING-001
 type: product-change
 title: Reword the Snapshot artifacts to drop a banned jargon term
-status: draft
+status: applied
 base-revision: '08cd643'
 operations:
   add: []

@@ -33,7 +33,7 @@ The following are prohibited on every surface, at every scale, behind every cont
 - product-owned visual bands, lanes or strata, or any universal global grouping or orientation rule whose purpose is to make a whole-product picture work;
 - navigation that depends primarily on graph layout: every traversal a projection offers MUST also be available through the Artifact Reader, the Catalog, search and deep links.
 
-Completeness is a property of reachability: every artifact and every canonical relationship MUST be reachable and readable through the Explorer's surfaces. Completeness MUST NOT be demonstrated by simultaneous rendering, and scalability MUST NOT be demonstrated by laying out the whole corpus at once.
+Completeness is a property of reachability: every artifact and every canonical relationship MUST be reachable and readable through the Explorer's surfaces. Completeness MUST NOT be demonstrated by simultaneous rendering, and scalability MUST NOT be demonstrated by laying out the whole product model at once.
 
 Selecting an artifact in either projection MUST make it the page's single selected artifact as FR-SNAPSHOT-006 defines; a projection MUST NOT hold a selection of its own. No projection MAY display a node, relationship or direction the compiled graph does not contain, and identical model content MUST produce identical projections.
 
@@ -45,7 +45,7 @@ The prohibitions are stated as properties rather than as the withdrawal of named
 
 ## Acceptance Scenarios
 
-- The snapshot is inspected: exactly two projections exist, and exercising every control at the reference corpus scale never yields a rendering of every artifact at once, a whole-product canvas, bands or a whole-graph drawing.
+- The snapshot is inspected: exactly two projections exist, and exercising every control at the reference model scale never yields a rendering of every artifact at once, a whole-product canvas, bands or a whole-graph drawing.
 - Every traversal demonstrated through the Focused Topology is repeated using only the Reader, the Catalog, search and deep links, reaching the same artifacts and relationships.
 - Reachability is verified as completeness: every artifact and every canonical relationship of the compiled model is reached and read through the Explorer's surfaces, without any of it having been rendered simultaneously.
 - A node selected in either projection becomes the page's selected artifact everywhere.
