@@ -31,11 +31,11 @@ Spec-Driven Development is a real improvement: it makes an implementation increm
 
 But an SDD spec answers a bounded question: _how does this one increment change the software?_ It is scoped to a change, owned by a delivery workflow, and archived when the change ships. It inherits the backlog's shape — a sequence of deltas — with better rigor per delta. What is still missing is the thing the deltas are deltas _of_: a canonical, current, validated description of the product that every increment reads from and, once verified, writes back to.
 
-Product Definition as Code adds that layer in front. Definition first, then change, then slice, then handoff to SDD, then implementation, then verification, then explicit promotion back into the definition. The loop closes.
+Product Definition as Code adds that layer in front. The product is defined first; each change to it is an explicit, validated delta that a human accepts by merge, and from that baseline the native SDD workflow drives implementation and verification. The loop closes.
 
 ## Two assertions
 
-**The relationships are the methodology.** Actors, journeys, use cases, business rules, domain terms, bounded contexts and requirements are not a filing system. Their value is in the typed connections between them: which actor a use case serves, which rules govern it, which terms it uses, which requirements derive from it. Those connections are what let a tool answer "what is structurally affected if this changes?" and what let a handoff carry exactly the context one increment needs. Artifacts without relationships are just better-organized documents.
+**The relationships are the methodology.** Actors, journeys, use cases, business rules, domain terms, bounded contexts and requirements are not a filing system. Their value is in the typed connections between them: which actor a use case serves, which rules govern it, which terms it uses, which requirements derive from it. Those connections are what let a tool answer "what is structurally affected if this changes?" and what let an SDD increment cite exactly the context it needs. Artifacts without relationships are just better-organized documents.
 
 **Markdown is the source of truth; the graph is compiled from Markdown.** Product knowledge is authored as plain Markdown files with YAML frontmatter, versioned in Git, reviewed in pull requests, diffable and mergeable like everything else engineers trust. (The specification's [canonical-authority table](https://github.com/product-definition-as-code/spec/blob/main/spec/index.md#canonical-authority) is exact about which paths carry which authority.) The product graph is derived from those files, always rebuildable, never authored, never a database you must keep alive. If the graph disappeared, nothing would be lost.
 
@@ -51,9 +51,9 @@ The methodology divides responsibility deliberately, and the division is not neg
 
 **Deterministic tools enforce structure.** Identity, schema conformance, relationship integrity, lifecycle rules, overlay validation, digests, staleness. Given the same files, the tooling produces the same answer on every machine, every time. Structure is never enforced by AI.
 
-**AI does semantic work.** Drafting artifacts, proposing journeys and slices, tracing the likely meaning of a change, assembling context. AI operates under hard obligations: it preserves open questions instead of resolving them by fiat, and it never invents a product decision. Uncertainty is a first-class citizen of the definition, not an embarrassment to be smoothed over.
+**AI does semantic work.** Drafting artifacts, proposing journeys, tracing the likely meaning of a change, assembling context. AI operates under hard obligations: it preserves open questions instead of resolving them by fiat, and it never invents a product decision. Uncertainty is a first-class citizen of the definition, not an embarrassment to be smoothed over.
 
-**Humans decide.** Approving a Product Change, approving a delivery slice, promoting verified work into the current definition. These are judgment calls about what the product should be, and no tool or model makes them. Every path from "proposed" to "canonical" passes through a person.
+**Humans decide.** Approving a Product Change, and accepting it into the current definition by merge. These are judgment calls about what the product should be, and no tool or model makes them. Every path from "proposed" to "canonical" passes through a person.
 
 ## What this is not
 
