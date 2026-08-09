@@ -109,7 +109,7 @@ None.
 
 ## Product Acceptance
 
-The applied model validates without errors, every consumer citation into it resolves, and the conformance corpus reproduces the same diagnostics on every platform.
+The applied model validates without errors, every consumer citation into it resolves, and the conformance tests reproduce the same diagnostics on every platform.
 
 ## Out of Scope
 

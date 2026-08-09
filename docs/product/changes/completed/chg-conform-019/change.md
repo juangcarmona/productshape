@@ -23,9 +23,9 @@ Without the precedence stated, this product's own implementation gated the tampe
 
 ## Rationale
 
-This product is the reference implementation of the specification, so where the two disagree the specification wins and this product's definition is what has to move. A requirement that lists four statuses without an order between them cannot be conformance-tested against a case that puts two of them in contention for the same citation, and the specification's own corpus does exactly that (`conformance/cases/citation-tampered-and-stale/`).
+This product is the reference implementation of the specification, so where the two disagree the specification wins and this product's definition is what has to move. A requirement that lists four statuses without an order between them cannot be conformance-tested against a case that puts two of them in contention for the same citation, and the specification's own conformance tests do exactly that (`conformance/cases/citation-tampered-and-stale/`).
 
-Stating the order is what turns an implicit implementation choice into a requirement a corpus can check: `S6` asserts both the status the tool must report and the diagnostic it must not.
+Stating the order is what turns an implicit implementation choice into a requirement a conformance test can check: `S6` asserts both the status the tool must report and the diagnostic it must not.
 
 ## Affected Product Areas
 

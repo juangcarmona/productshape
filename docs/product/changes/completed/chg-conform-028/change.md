@@ -16,7 +16,7 @@ operations:
 
 Five points of the Product Changes chapter did not determine implementation behaviour when this product's change and apply requirements were written, so those requirements state defaults this product chose rather than the contract it now has to meet. The specification has since determined all five (spec PR #14, the second refinement of RFC 4), and two of the determinations override the defaults.
 
-`FR-CHANGE-002` says apply "MUST require `status: approved`" without naming an observable failure, so the one apply precondition a conformance corpus could otherwise test is untestable. It scopes baseline drift to "any artifact named in the change's operations", which reads as covering additions that have no baseline artifact to compare against. It describes the product diff as "every impacted artifact and its resulting content digest", which omits the kind of impact, says nothing about reporting the diff, and leaves open the reading that apply writes it into the change directory it is about to archive.
+`FR-CHANGE-002` says apply "MUST require `status: approved`" without naming an observable failure, so the one apply precondition the conformance tests could otherwise check is untestable. It scopes baseline drift to "any artifact named in the change's operations", which reads as covering additions that have no baseline artifact to compare against. It describes the product diff as "every impacted artifact and its resulting content digest", which omits the kind of impact, says nothing about reporting the diff, and leaves open the reading that apply writes it into the change directory it is about to archive.
 
 `FR-CHANGE-001` names `changes/completed/` and `changes/rejected/` as the inert archives, so a change that was approved and then overtaken is filed under a refusal that never happened. It also states the open-questions warning as a fact about approval as an event, which is not reproducible from repository content alone.
 
@@ -30,9 +30,9 @@ Each terminal status has its own archive directory, so `changes/superseded/` joi
 
 ## Rationale
 
-This product is the reference implementation of the specification, so where the two disagree the specification wins and this product's definition is what has to move. The alternative — holding the old defaults and documenting the divergence — would make the conformance claim in `docs/specification/` untrue, and the corpus that will eventually verify it unbuildable.
+This product is the reference implementation of the specification, so where the two disagree the specification wins and this product's definition is what has to move. The alternative — holding the old defaults and documenting the divergence — would make the conformance claim in `docs/specification/` untrue, and the conformance tests that will eventually verify it unbuildable.
 
-The two overrides both replace a silence with an observable fact. A precondition with no diagnostic code cannot be asserted by a corpus that compares diagnostics, and `PRODUCT028` is the next unallocated code in the band already reserved for Product Changes and apply. A single archive for two different terminal outcomes loses the distinction between refused and overtaken at exactly the moment the change history becomes the only record of it; reconstructing that from `git log` is archaeology, and `superseded` is reachable from `approved`, so the loss is not hypothetical.
+The two overrides both replace a silence with an observable fact. A precondition with no diagnostic code cannot be asserted by conformance tests that compare diagnostics, and `PRODUCT028` is the next unallocated code in the band already reserved for Product Changes and apply. A single archive for two different terminal outcomes loses the distinction between refused and overtaken at exactly the moment the change history becomes the only record of it; reconstructing that from `git log` is archaeology, and `superseded` is reachable from `approved`, so the loss is not hypothetical.
 
 The three confirmations are recorded here rather than left implicit because a requirement that happens to describe conforming behaviour without saying why is one refactor away from not describing it any more.
 
@@ -54,6 +54,6 @@ A reader who knows only the specification and reads these two requirements finds
 
 ## Out of Scope
 
-The implementation of these requirements, and every document that is not part of the Product Definition: the validation chapter's diagnostic tables, the adoption and methodology guides, the scaffolded directory list and the conformance corpus run. Those follow this change; they are not part of it.
+The implementation of these requirements, and every document that is not part of the Product Definition: the validation chapter's diagnostic tables, the adoption and methodology guides, the scaffolded directory list and the conformance tests run. Those follow this change; they are not part of it.
 
 No new diagnostic code beyond `PRODUCT028` is introduced, and no retired code is revived.
