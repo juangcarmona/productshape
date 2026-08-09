@@ -11,9 +11,11 @@
 
 # ProductShape
 
-**ProductShape — Product Definition as Code.** ProductShape is the reference implementation of the Product Definition as Code methodology: it is to Product Definition as Code what OpenSpec is to Spec-Driven Development.
+ProductShape, the reference implementation of Product Definition as Code. It is to Product Definition as Code what OpenSpec is to Spec-Driven Development.
 
 A TypeScript toolkit that puts a canonical, versioned, machine-validatable product definition in front of your backlog and your Spec-Driven Development workflow.
+
+> **Already using OpenSpec?** The [10-minute quickstart: add PDaC to an existing OpenSpec repo](docs/adoption/existing-openspec-repository.md) is the fastest way in. The OpenSpec experiment ([#71](https://github.com/juangcarmona/productshape/issues/71), [PR #76](https://github.com/juangcarmona/productshape/pull/76)) is the worked example.
 
 ## The problem
 
@@ -99,7 +101,7 @@ cd productshape
 pnpm install && pnpm build
 ```
 
-This repository defines itself with its own methodology, so the built CLI has a real product model to run against — 64 artifacts, zero diagnostics:
+This repository defines itself with its own methodology, so the built CLI has a real product model to run against, with 80+ artifacts and zero diagnostics:
 
 ```bash
 node packages/cli/dist/bin.js validate
