@@ -127,7 +127,7 @@ describe('buildSnapshotHtml — the opening document is bounded', () => {
 });
 
 describe('buildSnapshotHtml — orientation view', () => {
-  it('states identity, revision and totals without exposing the corpus', () => {
+  it('states identity, revision and totals without exposing the whole product model', () => {
     const html = build();
     const opening = openingDocument(html);
     expect(opening).toContain('<h1>Product Snapshot</h1>');
