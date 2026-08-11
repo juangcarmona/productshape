@@ -41,9 +41,9 @@ Product Definition as Code adds that layer in front. The product is defined firs
 
 ## Explicit change or nothing
 
-A definition that can be edited casually is a definition nobody can trust. So the baseline — the product as currently defined — is modified by exactly one operation: promotion of a verified Product Change. Everything else is a proposal. A change states its delta explicitly, carries complete proposed future-state artifacts, keeps its open questions visible, and is validated as an overlay against the baseline before a human approves it. The one exception is the first baseline itself, which may be established directly because there is nothing yet to change against; from that moment on, the exception is closed.
+A definition that can be edited casually is a definition nobody can trust. So the baseline, the product as currently defined, is modified by exactly one operation: a human merging a reviewed, validated Product Change. Everything else is a proposal. A change states its delta explicitly, carries complete proposed future-state artifacts, keeps its open questions visible, and is validated as an overlay against the baseline before a human approves it. The one exception is the first baseline itself, which may be established directly because there is nothing yet to change against; from that moment on, the exception is closed.
 
-This is the same discipline that made code trustworthy: no direct pushes to main, every change reviewable as a diff, history that explains itself. Product knowledge deserves the pipeline code already has.
+This is the same discipline that made code trustworthy: no direct pushes to main, every change reviewable as a diff, history that explains itself. Product knowledge deserves the discipline code already has.
 
 ## Who does what
 
