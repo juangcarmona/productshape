@@ -69,7 +69,7 @@ npm install -g @prodshape/cli
 prodshape init
 ```
 
-`init` creates `docs/product/` and `.product/` and touches nothing else; `openspec/` is untouched. Add `--ai claude` if you also want the generated skills and agent files.
+`init` creates `docs/product/` and `.product/` and touches nothing else; `openspec/` is untouched. Add `--ai claude`, `--ai copilot` or `--ai claude,copilot` if you also want the generated skills and agent files for Claude Code, GitHub Copilot or both.
 
 ### 2. Author CHG-INITIAL, the first Product Change (5 minutes)
 
