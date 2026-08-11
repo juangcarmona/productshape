@@ -93,21 +93,16 @@ pnpm dlx @prodshape/cli --help
 
 ## Try it in five minutes
 
-The `prodshape` CLI is published on npm (see [Packages](#packages)). To try it against this repository's own product model, build from source:
+Install the CLI from npm, then point it at a real product model. This repository defines itself with its own methodology, so a plain clone gives you one; `validate` reports zero diagnostics across the whole model:
 
 ```bash
-git clone git@github.com:juangcarmona/productshape.git
+npm install -g @prodshape/cli
+git clone https://github.com/juangcarmona/productshape.git
 cd productshape
-pnpm install && pnpm build
-```
-
-This repository defines itself with its own methodology, so the built CLI has a real product model to run against, with 80+ artifacts and zero diagnostics:
-
-```bash
-node packages/cli/dist/bin.js validate
-node packages/cli/dist/bin.js graph --format mermaid
-node packages/cli/dist/bin.js inspect FR-CITE-001
-node packages/cli/dist/bin.js impact BR-SDD-001 --direction incoming
+prodshape validate
+prodshape graph --format mermaid
+prodshape inspect FR-CITE-001
+prodshape impact BR-SDD-001 --direction incoming
 ```
 
 The authoring contract is queryable, and needs no repository — useful before you have one:
@@ -130,7 +125,7 @@ prodshape doctor                               # check the result is healthy
 
 `--ai` takes a comma-separated list (`--ai claude,copilot`). `--dry-run` reports what would be created, preserved, regenerated or overwritten and exits non-zero on a conflict, so it is worth running first in a repository that already has content — and it works as a CI precheck.
 
-`prodshape` is the installed CLI (`npm install -g @prodshape/cli`); from a source checkout, run it as `node packages/cli/dist/bin.js`. The package installs `product-definition` alongside it — a v0.x compatibility alias with identical output, removed before v1. The `/product:*` commands stay canonical and are always generated; `/ps:*` is an opt-in shorthand (`/ps:explore`, `/ps:impact`), enabled with `init --shorthand` or by setting `integrations.shorthand-commands: true`. This repository has it enabled.
+Contributors building from source run the same commands as `node packages/cli/dist/bin.js` after `pnpm install && pnpm build`. The package installs `product-definition` alongside `prodshape` — a v0.x compatibility alias with identical output, removed before v1. The `/product:*` commands stay canonical and are always generated; `/ps:*` is an opt-in shorthand (`/ps:explore`, `/ps:impact`), enabled with `init --shorthand` or by setting `integrations.shorthand-commands: true`. This repository has it enabled.
 
 What you can read alongside:
 

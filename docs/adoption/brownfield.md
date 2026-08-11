@@ -47,7 +47,7 @@ prodshape schema business-rule
 
 Frontmatter is a closed contract: an unrecognised property is a `PRODUCT002` error, so inventing a field to hold something the schema does not model will fail validation. Put such things in the body.
 
-**A human validates before anything becomes active.** Candidates enter the model with status `draft`. A person who understands the product reviews each candidate — confirming, correcting or discarding it — before it is promoted to `active`. Recovered knowledge is never auto-canonical: the tool and the skill propose, the human decides. This boundary is deliberate and permanent, not a v0.1 gap.
+**A human validates before anything becomes active.** Candidates enter the model with status `draft`. A person who understands the product reviews each candidate — confirming, correcting or discarding it — before its status moves to `active`. Recovered knowledge is never auto-canonical: the tool and the skill propose, the human decides. This boundary is deliberate and permanent, not a v0.1 gap.
 
 The `recover-product` skill drives this loop: it reads evidence you point it at, drafts candidates with provenance and confidence recorded, and queues them for your review. It is installed by `init --ai`. Without it, the same workflow works by hand using the templates in `.product/templates/`.
 

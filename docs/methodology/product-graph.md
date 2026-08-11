@@ -27,9 +27,9 @@ Every relationship has exactly one authored direction. The reverse is always com
 The clearest example is term ownership. A Domain Term declares where it is defined:
 
 ```yaml
-id: TERM-PRODUCT-HANDOFF
+id: TERM-REFUND-WINDOW
 type: domain-term
-defined-in: BC-DELIVERY
+defined-in: BC-CHECKOUT
 ```
 
 `defined-in` is canonical. The reverse — a Bounded Context's `owns-terms` — is derived: a context's owned terms are exactly the terms whose `defined-in` points at it. You never author `owns-terms`; the schema rejects it if you try. Tooling may still _display_ it in inspection output and generated indexes, because the derived view is useful — it just is not yours to maintain.
