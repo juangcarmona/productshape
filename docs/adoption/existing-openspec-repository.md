@@ -2,6 +2,8 @@
 
 This guide is for repositories that already run OpenSpec. Product Definition as Code adds a product-definition layer above your existing workflow; OpenSpec keeps owning everything it owns today. This repository itself works exactly this way.
 
+Want to start typing? Jump to [the walkthrough](#the-walkthrough-first-rule-first-citation-first-drift-about-15-minutes): first rule, first citation, first drift, about 15 minutes, every step copy-paste with its expected output.
+
 > The CLI ships as [`@prodshape/cli`](https://www.npmjs.com/package/@prodshape/cli) and includes the OpenSpec adapter. The commands below use `prodshape`; the `product-definition` alias is equivalent through v0.x. The contracts are fixed in the [specification](https://github.com/product-definition-as-code/spec). See [Limitations](../limitations.md).
 
 ## What Product Definition adds
@@ -56,9 +58,211 @@ A citation carries exactly one of these statuses, in this precedence: `unresolve
 - **Archiving never accepts anything.** Completing and archiving the OpenSpec change is OpenSpec's decision and only OpenSpec's. The Product Definition moves when a human applies an approved Product Change and merges the result, and at no other time.
 - **Applying is not accepting.** `prodshape change apply` materializes a change into the working tree and creates no commit. The pull request is where a human accepts it.
 
-## Getting started in an OpenSpec repository
+## The walkthrough: first rule, first citation, first drift (about 15 minutes)
 
-1. **Install the layer.** `prodshape init --ai claude` adds `docs/product/`, `.product/` and the generated integration files. Your `openspec/` directory is untouched. See [Installing into an existing repository](existing-repository.md).
-2. **Establish the definition.** Recover it from what you have already specified: your OpenSpec specs are unusually good evidence, because they already state behaviour in product terms. Follow [Adopting in a brownfield product](brownfield.md); the result is `CHG-INITIAL`.
-3. **Cite from your next OpenSpec change.** Where a spec restates product behaviour, replace the restatement with a citation, and add `prodshape citations verify openspec` to CI.
-4. **Run the first change through both layers.** Create a Product Change, validate its overlay, have a human approve it, apply it, and open a pull request. Then work the OpenSpec change that implements it exactly as you always have, citing the artifacts it depends on.
+You need: Node.js 22 or later, npm, and your OpenSpec repository, meaning a git repository with at least one commit (the change record pins a `base-revision`) and an `openspec/` directory. Every step is copy-paste, and the output under each command comes from a real run. The walkthrough models a refund window; where it says "the checkout spec", read "whichever of your specs restates the rule you pick", and expect your own paths in the output.
+
+### 1. Install the layer (2 minutes)
+
+```bash
+npm install -g @prodshape/cli
+prodshape init
+```
+
+`init` creates `docs/product/` and `.product/` and touches nothing else; `openspec/` is untouched. Add `--ai claude`, `--ai copilot` or `--ai claude,copilot` if you also want the generated skills and agent files for Claude Code, GitHub Copilot or both.
+
+### 2. Author CHG-INITIAL, the first Product Change (5 minutes)
+
+The definition changes through exactly one mechanism, an explicit Product Change, and initialisation is no exception: the first artifact enters through the reserved change `CHG-INITIAL`. Pick one business rule your OpenSpec specs restate.
+
+Record the commit your change is based on:
+
+```bash
+git rev-parse --short HEAD
+```
+
+Create `docs/product/changes/active/chg-initial/change.md`, putting that commit in `base-revision`:
+
+```markdown
+---
+id: CHG-INITIAL
+type: product-change
+title: Establish the first Product Definition
+status: proposed
+base-revision: 'e7af6cd'
+operations:
+  add:
+    - BR-REFUND-001
+  modify: []
+  remove: []
+---
+
+## Problem
+
+The product has no definition: the refund window lives only inside an OpenSpec spec, restated where it is used instead of defined where it is owned.
+
+## Intended Product Outcome
+
+An accepted Product Definition carrying the one business rule the checkout specs depend on, so they can cite it instead of restating it.
+
+## Rationale
+
+Initialisation uses the same mechanism as every later change, so the product has one way to evolve rather than two.
+
+## Affected Product Areas
+
+The whole model; it did not exist before this change.
+
+## Open Questions
+
+None.
+
+## Product Acceptance
+
+The applied model validates without errors and the checkout spec's citation of BR-REFUND-001 reports current.
+
+## Out of Scope
+
+Modeling the rest of the product; the [brownfield guide](brownfield.md) covers that.
+```
+
+Create the proposed artifact, `docs/product/changes/active/chg-initial/proposed/business-rules/br-refund-001.md`:
+
+```markdown
+---
+id: BR-REFUND-001
+type: business-rule
+title: Refund window
+status: active
+---
+
+## Rule
+
+Refunds are accepted within 30 days of delivery.
+
+## Rationale
+
+Customers need a predictable window; finance needs a bounded liability.
+
+## Examples
+
+A delivery on March 1 may be refunded through March 31.
+
+## Exceptions
+
+None.
+```
+
+Validate the change as an overlay on the (empty) baseline:
+
+```bash
+prodshape change validate
+```
+
+```text
+warning PRODUCT105 docs/product/changes/active/chg-initial/proposed/business-rules/br-refund-001.md [BR-REFUND-001]: Business rule 'BR-REFUND-001' has no consumers
+0 error(s), 1 warning(s) across 0 artifact(s) and 1 live change(s)
+```
+
+The warning is the graph working: a business rule no use case consumes is suspicious, and in a one-artifact model that is exactly the situation. Nothing blocks.
+
+### 3. Approve and apply (2 minutes)
+
+Approval is a human decision the tool never makes. Edit `change.md` and set `status: approved`. Then:
+
+```bash
+prodshape change apply CHG-INITIAL
+```
+
+```text
+Applied CHG-INITIAL:
+  Add BR-REFUND-001 at docs/product/model/business-rules/br-refund-001.md
+  Set CHG-INITIAL status to applied
+  Move change to docs/product/changes/completed/chg-initial
+Product diff: 1 added, 0 modified, 0 removed
+  BR-REFUND-001	added	sha256:b5c5806732cb3e3f32a6b7da97fd3e712a1bb733b4bb50e2840874ae64713228
+Applied and archived. Nothing was committed: open a pull request so a human can accept it.
+```
+
+The rule is now in the baseline and the change is archived under `completed/`. In a real adoption this is the moment to commit and open the pull request that accepts the baseline; the walkthrough keeps going in the working tree.
+
+```bash
+prodshape validate
+```
+
+```text
+warning PRODUCT105 docs/product/model/business-rules/br-refund-001.md [BR-REFUND-001]: Business rule 'BR-REFUND-001' has no consumers
+0 error(s), 1 warning(s) across 1 artifact(s)
+```
+
+### 4. Cite it from your OpenSpec spec (3 minutes)
+
+Print the rule's citation record; the digest is computed for you:
+
+```bash
+prodshape cite --id BR-REFUND-001 --file docs/product/model/business-rules/br-refund-001.md
+```
+
+```text
+{pdac:cite id="BR-REFUND-001" digest="sha256:b5c5806732cb3e3f32a6b7da97fd3e712a1bb733b4bb50e2840874ae64713228"}
+```
+
+In the spec that restates the rule, let the citation replace the restated number, and paste the printed line after the requirement text. After, never between the heading and the text: OpenSpec reads the first paragraph under a requirement heading as the requirement itself.
+
+```diff
+ ### Requirement: Refund handling
+
+-The system SHALL accept refund requests within 30 days of delivery and reject later requests with a clear message.
++The system SHALL accept refund requests within the refund window defined by BR-REFUND-001 and reject later requests with a clear message.
++
++{pdac:cite id="BR-REFUND-001" digest="sha256:b5c5806732cb3e3f32a6b7da97fd3e712a1bb733b4bb50e2840874ae64713228"}
+```
+
+Verify; `citations verify` scans `openspec/` by default:
+
+```bash
+prodshape citations verify
+```
+
+```text
+current	BR-REFUND-001	openspec/specs/checkout/spec.md:13
+1 citation(s): 1 current, 0 stale, 0 tampered, 0 unresolved
+```
+
+### 5. See it catch drift (2 minutes)
+
+Narrow the refund window in the canonical rule: edit `docs/product/model/business-rules/br-refund-001.md` and change 30 days to 14. Then:
+
+```bash
+prodshape citations verify
+```
+
+```text
+stale	BR-REFUND-001	openspec/specs/checkout/spec.md:13
+warning PRODUCT061 openspec/specs/checkout/spec.md [BR-REFUND-001]: Citation of 'BR-REFUND-001' is stale: canonical content changed since the citation was recorded
+1 citation(s): 0 current, 1 stale, 0 tampered, 0 unresolved
+```
+
+Nobody had to remember that the checkout spec depends on that rule.
+
+### 6. Gate it in CI (1 minute)
+
+`stale` is a warning, so it reports without blocking until the repository escalates it. In `.product/config.yaml`, find the `validation:` section `init` created and set `warnings-as-errors: true`. Edit the existing key; appending a second `validation:` section is invalid YAML. The same command now exits `1`:
+
+```bash
+prodshape citations verify
+```
+
+```text
+stale	BR-REFUND-001	openspec/specs/checkout/spec.md:13
+error PRODUCT061 openspec/specs/checkout/spec.md [BR-REFUND-001]: Citation of 'BR-REFUND-001' is stale: canonical content changed since the citation was recorded
+1 citation(s): 0 current, 1 stale, 0 tampered, 0 unresolved
+```
+
+Add `prodshape citations verify` to CI and drift blocks the merge instead of waiting to be noticed.
+
+### Where to go next
+
+- Undo the demo drift: revert the edit to the rule, or run it forward as a real Product Change, which from now on is the only way the definition moves. The direct edit in step 5 was the last one the walkthrough allows itself.
+- Model the rest of the product incrementally through [the brownfield guide](brownfield.md): your OpenSpec specs are unusually good evidence, because they already state behaviour in product terms. A partial but validated model beats a complete but unreviewed one.
+- Wire `prodshape citations verify` into the pipeline that runs `openspec validate`, and keep the two verdicts separate: one is about your specs, the other about their grounding.

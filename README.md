@@ -15,7 +15,7 @@ ProductShape, the reference implementation of Product Definition as Code. It is 
 
 A TypeScript toolkit that puts a canonical, versioned, machine-validatable product definition in front of your backlog and your Spec-Driven Development workflow.
 
-> **Already using OpenSpec?** The [10-minute quickstart: add PDaC to an existing OpenSpec repo](docs/adoption/existing-openspec-repository.md) is the fastest way in. The OpenSpec experiment ([#71](https://github.com/juangcarmona/productshape/issues/71), [PR #76](https://github.com/juangcarmona/productshape/pull/76)) is the worked example.
+> **Already using OpenSpec?** The [walkthrough: add PDaC to an existing OpenSpec repo in about 15 minutes](docs/adoption/existing-openspec-repository.md#the-walkthrough-first-rule-first-citation-first-drift-about-15-minutes) is the fastest way in: first rule, first citation, first caught drift, every step with its real output. This repository itself is the worked example ([#71](https://github.com/juangcarmona/productshape/issues/71), [PR #76](https://github.com/juangcarmona/productshape/pull/76)).
 
 ## The problem
 
