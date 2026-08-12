@@ -3,7 +3,7 @@ id: CHG-OPENSPEC-CITATION-ARCHITECTURE
 type: product-change
 title: OpenSpec integration is citation-based configuration, not sidecar artifacts
 status: draft
-base-revision: 'HEAD'
+base-revision: 'e9e0e9ca7e8b2794f239567f5183daa3383ce5e9'
 operations:
   add: []
   modify:
