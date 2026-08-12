@@ -11,9 +11,39 @@ import { runDoctorCommand } from './commands/doctor.js';
 import { runFix } from './commands/fix.js';
 import { runGraph } from './commands/graph.js';
 import { runInit } from './commands/init.js';
-import { runIntegrationAdd, runIntegrationUpdate } from './commands/integration.js';
+import {
+  runIntegrationAdd,
+  runIntegrationCheck,
+  runIntegrationRemove,
+  runIntegrationUpdate,
+} from './commands/integration.js';
 import { runImpact } from './commands/impact.js';
 import { runInspect } from './commands/inspect.js';
+import {
+  runRecoverCheck,
+  runRecoverEvidenceAdd,
+  runRecoverEvidenceList,
+  runRecoverEvidenceSnapshot,
+  runRecoverFamily,
+  runRecoverLeadAdd,
+  runRecoverLeadList,
+  runRecoverLeadResolve,
+  runRecoverMark,
+  runRecoverNext,
+  runRecoverQuestionAdd,
+  runRecoverQuestionAnswer,
+  runRecoverQuestionDefer,
+  runRecoverQuestionList,
+  runRecoverReport,
+  runRecoverStart,
+  runRecoverStatus,
+  type RecoverEvidenceAddOptions,
+  type RecoverFamilyOptions,
+  type RecoverFormatOptions,
+  type RecoverMarkOptions,
+  type RecoverNextOptions,
+  type RecoverStartOptions,
+} from './commands/recover.js';
 import { runSchema } from './commands/schema.js';
 import { runValidate } from './commands/validate.js';
 import { CliError, exitCodes, type CliIo } from './context.js';
@@ -39,7 +69,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
   program
     .command('init')
     .description('Initialize Product Definition as Code in this repository')
-    .option('--ai <providers>', 'comma-separated AI integrations: claude, copilot')
+    .option('--ai <providers>', 'comma-separated AI integrations: claude, copilot, codex')
     .option('--force', 'overwrite existing files')
     .option('--flat', 'scaffold the model directory without per-kind subdirectories')
     .option('--shorthand', 'also generate the /ps:<name> aliases for /product:<name>')
@@ -61,10 +91,11 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .description('Manage generated AI provider integrations');
   integration
     .command('add')
-    .description('Install a provider integration (claude, copilot, openspec)')
+    .description('Install a provider integration (claude, copilot, codex, openspec)')
     .argument('<provider>', 'provider name')
     .option('--force', 'overwrite existing unmanaged or hand-edited files')
-    .action(async (provider: string, options: { force?: boolean }) => {
+    .option('--dry-run', 'report what would change without writing anything')
+    .action(async (provider: string, options: { force?: boolean; dryRun?: boolean }) => {
       capture.code = await runIntegrationAdd(io, provider, options);
     });
   integration
@@ -74,6 +105,20 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .option('--force', 'regenerate even over hand-edited managed files')
     .action(async (options: { check?: boolean; force?: boolean }) => {
       capture.code = await runIntegrationUpdate(io, options);
+    });
+  integration
+    .command('check')
+    .description('Check the health of installed integrations')
+    .action(async () => {
+      capture.code = await runIntegrationCheck(io);
+    });
+  integration
+    .command('remove')
+    .description('Remove a provider integration and its managed files')
+    .argument('<provider>', 'provider name')
+    .option('--dry-run', 'report what would be removed without deleting anything')
+    .action(async (provider: string, options: { dryRun?: boolean }) => {
+      capture.code = await runIntegrationRemove(io, provider, options);
     });
 
   program
@@ -156,9 +201,22 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .description('Scan consumer documents and report citation statuses')
     .argument('[target]', 'consumer documents root (default: openspec)')
     .option('--format <format>', 'output format: text or json', 'text')
-    .action(async (target: string | undefined, options: { format: 'text' | 'json' }) => {
-      capture.code = await runCitationsVerify(io, target, options);
-    });
+    .option('--provider <provider>', 'provider-aware verification (openspec)')
+    .option('--change <name>', 'limit to one OpenSpec change (with --provider openspec)')
+    .option('--include-archived', 'include archived OpenSpec changes (with --provider openspec)')
+    .action(
+      async (
+        target: string | undefined,
+        options: {
+          format: 'text' | 'json';
+          provider?: string;
+          change?: string;
+          includeArchived?: boolean;
+        },
+      ) => {
+        capture.code = await runCitationsVerify(io, target, options);
+      },
+    );
 
   program
     .command('inspect')
@@ -188,6 +246,222 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
       capture.code = await runSchema(io, kind, options);
     });
 
+  const recover = program
+    .command('recover')
+    .description(
+      'Manage deterministic brownfield recovery sessions (semantic extraction stays with the recover-product skill)',
+    );
+  const sessionOption = [
+    '--session <id>',
+    'recovery session id (defaults to the only session)',
+  ] as const;
+  const formatOption = ['--format <format>', 'output format: text or json', 'text'] as const;
+  recover
+    .command('start')
+    .description('Start a recovery session: inventory the authorised evidence and checkpoint it')
+    .option('--brief <file>', 'recovery brief (YAML) declaring scope, sources and boundaries')
+    .option('--session <id>', 'session id (defaults to session-001, session-002, ...)')
+    .option(...formatOption)
+    .action(async (options: RecoverStartOptions) => {
+      capture.code = await runRecoverStart(io, options);
+    });
+  recover
+    .command('status')
+    .description('Coverage, open work and completion criteria of a session')
+    .option(...sessionOption)
+    .option(...formatOption)
+    .action(async (options: RecoverFormatOptions) => {
+      capture.code = await runRecoverStatus(io, options);
+    });
+  recover
+    .command('next')
+    .description('The next bounded batch of pending evidence to process')
+    .option(...sessionOption)
+    .option('--limit <n>', 'batch size (defaults to the brief batch-size)')
+    .option(...formatOption)
+    .action(async (options: RecoverNextOptions) => {
+      capture.code = await runRecoverNext(io, options);
+    });
+  recover
+    .command('mark')
+    .description('Record how a source (or one of its sections) was classified')
+    .requiredOption('--source <id-or-path>', 'evidence id, path, url or title')
+    .option(
+      '--as <classification>',
+      'represented, duplicate, contradiction, question, out-of-scope or no-product-intent',
+    )
+    .option('--artifacts <ids>', 'comma-separated candidate artifact IDs (represented, duplicate)')
+    .option('--question <id>', 'linked question id (question, contradiction)')
+    .option('--reason <text>', 'required for out-of-scope, no-product-intent and --exclude')
+    .option('--note <text>', 'free-form note; required for contradiction')
+    .option('--complete', 'declare the source fully classified (requires at least one finding)')
+    .option('--exclude', 'take the source out of scope entirely (requires --reason)')
+    .option(
+      '--accept-changed',
+      'refresh the digest of a changed source and drop invalidated findings',
+    )
+    .option(...sessionOption)
+    .option(...formatOption)
+    .action(async (options: RecoverMarkOptions) => {
+      capture.code = await runRecoverMark(io, options);
+    });
+  const evidence = recover
+    .command('evidence')
+    .description('Manage external and user-provided evidence');
+  evidence
+    .command('add')
+    .description('Register an external or user-provided source (externals need --authorized)')
+    .option('--url <url>', 'online resource the user explicitly authorised')
+    .option('--file <path>', 'file outside the inventoried roots')
+    .option('--text <text>', 'inline user-relayed knowledge, stored in the session directory')
+    .option('--title <title>', 'human-readable name for the source')
+    .option('--authorized', 'record that the user explicitly authorised this external source')
+    .option(...sessionOption)
+    .option(...formatOption)
+    .action(async (options: RecoverEvidenceAddOptions) => {
+      capture.code = await runRecoverEvidenceAdd(io, options);
+    });
+  evidence
+    .command('snapshot')
+    .description('Freeze fetched external content into the session so its hash is checkable')
+    .argument('<evidence-id>', 'evidence id (E-0001, ...)')
+    .option('--file <path>', 'file holding the fetched content')
+    .option(...sessionOption)
+    .option(...formatOption)
+    .action(async (evidenceId: string, options: { file?: string } & RecoverFormatOptions) => {
+      capture.code = await runRecoverEvidenceSnapshot(io, evidenceId, options);
+    });
+  evidence
+    .command('list')
+    .description('List the full evidence inventory')
+    .option(...sessionOption)
+    .option(...formatOption)
+    .action(async (options: RecoverFormatOptions) => {
+      capture.code = await runRecoverEvidenceList(io, options);
+    });
+  const lead = recover.command('lead').description('Track search leads until each is resolved');
+  lead
+    .command('add')
+    .description('Record a lead discovered while processing evidence')
+    .option('--description <text>', 'what to look for and why')
+    .option('--source <id>', 'evidence id or origin of the lead')
+    .option('--kind <kind>', 'repo, external or user', 'repo')
+    .option(...sessionOption)
+    .option(...formatOption)
+    .action(
+      async (
+        options: { description?: string; source?: string; kind?: string } & RecoverFormatOptions,
+      ) => {
+        capture.code = await runRecoverLeadAdd(io, options);
+      },
+    );
+  lead
+    .command('resolve')
+    .description('Resolve a lead with what it turned up')
+    .argument('<lead-id>', 'lead id (L-0001, ...)')
+    .option('--resolution <text>', 'what following the lead produced')
+    .option(...sessionOption)
+    .option(...formatOption)
+    .action(async (leadId: string, options: { resolution?: string } & RecoverFormatOptions) => {
+      capture.code = await runRecoverLeadResolve(io, leadId, options);
+    });
+  lead
+    .command('list')
+    .description('List leads')
+    .option(...sessionOption)
+    .option(...formatOption)
+    .action(async (options: RecoverFormatOptions) => {
+      capture.code = await runRecoverLeadList(io, options);
+    });
+  const question = recover
+    .command('question')
+    .description('Track questions for the user and their answers');
+  question
+    .command('add')
+    .description('Record a question only the user can settle')
+    .option('--text <text>', 'the question')
+    .option('--context <text>', 'evidence summary behind the question')
+    .option(
+      '--option <option>',
+      'a possible answer (repeatable)',
+      (value: string, all: string[]) => [...all, value],
+      [] as string[],
+    )
+    .option('--recommendation <text>', 'recommended interpretation, when the evidence supports one')
+    .option(...sessionOption)
+    .option(...formatOption)
+    .action(
+      async (
+        options: {
+          text?: string;
+          context?: string;
+          option?: string[];
+          recommendation?: string;
+        } & RecoverFormatOptions,
+      ) => {
+        capture.code = await runRecoverQuestionAdd(io, options);
+      },
+    );
+  question
+    .command('answer')
+    .description('Record the user answer to a question')
+    .argument('<question-id>', 'question id (Q-0001, ...)')
+    .option('--answer <text>', 'the user answer, verbatim where possible')
+    .option(...sessionOption)
+    .option(...formatOption)
+    .action(async (questionId: string, options: { answer?: string } & RecoverFormatOptions) => {
+      capture.code = await runRecoverQuestionAnswer(io, questionId, options);
+    });
+  question
+    .command('defer')
+    .description('Defer a question explicitly instead of leaving it open')
+    .argument('<question-id>', 'question id (Q-0001, ...)')
+    .option('--reason <text>', 'why the question can wait, and for whom')
+    .option(...sessionOption)
+    .option(...formatOption)
+    .action(async (questionId: string, options: { reason?: string } & RecoverFormatOptions) => {
+      capture.code = await runRecoverQuestionDefer(io, questionId, options);
+    });
+  question
+    .command('list')
+    .description('List questions')
+    .option(...sessionOption)
+    .option(...formatOption)
+    .action(async (options: RecoverFormatOptions) => {
+      capture.code = await runRecoverQuestionList(io, options);
+    });
+  recover
+    .command('family')
+    .description('Record that an artifact family was probed and yielded no candidates')
+    .argument(
+      '<family>',
+      'actor, journey, use-case, business-rule, domain-term, bounded-context, functional-requirement, quality-requirement or constraint',
+    )
+    .option('--none-found', 'the probe found no candidates of this family')
+    .option('--note <text>', 'what was searched to conclude that')
+    .option(...sessionOption)
+    .option(...formatOption)
+    .action(async (family: string, options: RecoverFamilyOptions) => {
+      capture.code = await runRecoverFamily(io, family, options);
+    });
+  recover
+    .command('check')
+    .description(
+      'Re-hash evidence, detect drift, verify CHG-INITIAL-only output and revalidate the overlay',
+    )
+    .option(...sessionOption)
+    .option(...formatOption)
+    .action(async (options: RecoverFormatOptions) => {
+      capture.code = await runRecoverCheck(io, options);
+    });
+  recover
+    .command('report')
+    .description('Write the final recovery report into the session directory')
+    .option(...sessionOption)
+    .option(...formatOption)
+    .action(async (options: RecoverFormatOptions) => {
+      capture.code = await runRecoverReport(io, options);
+    });
   program
     .command('impact')
     .description('Analyze structural impact of one artifact')

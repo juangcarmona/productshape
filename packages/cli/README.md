@@ -31,6 +31,9 @@ prodshape change validate [CHG-ID]          # validate live changes as overlays 
 prodshape change list [--all]               # live changes, or the whole change history
 prodshape change apply CHG-ID [--dry-run]   # materialize an approved change; never commits
 prodshape change archive CHG-ID             # file a rejected or superseded change
+prodshape recover start --brief brief.yaml  # open a brownfield recovery session: evidence inventory, hashes, checkpoints
+prodshape recover next | mark | check       # bounded batches, per-source classification, drift detection and overlay validation
+prodshape recover report                    # final recovery report; candidates stay proposed under CHG-INITIAL
 prodshape citations verify                  # check citations in consumer documents
 prodshape doctor                            # repository health
 ```
@@ -39,7 +42,7 @@ Exit codes: `0` success (warnings allowed), `1` validation errors, `2` invalid i
 
 ## Status
 
-The CLI bundles `@prodshape/core`, `@prodshape/distribution`, `@prodshape/adapter-openspec` and the provider integrations at build time, so installing it is all you need. Each of those is also published separately, for programmatic use. See the [repository](https://github.com/juangcarmona/productshape) for the methodology, the normative specification and the self-hosted product model.
+The CLI bundles `@prodshape/core`, `@prodshape/distribution`, `@prodshape/integration-openspec` and the provider integrations at build time, so installing it is all you need. Each of those is also published separately, for programmatic use. See the [repository](https://github.com/juangcarmona/productshape) for the methodology, the normative specification and the self-hosted product model.
 
 ## License
 

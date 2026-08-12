@@ -11,11 +11,9 @@
 
 # ProductShape
 
-ProductShape, the reference implementation of Product Definition as Code. It is to Product Definition as Code what OpenSpec is to Spec-Driven Development.
+**ProductShape — Product Definition as Code.** ProductShape is the reference implementation of the Product Definition as Code methodology: it is to Product Definition as Code what OpenSpec is to Spec-Driven Development.
 
 A TypeScript toolkit that puts a canonical, versioned, machine-validatable product definition in front of your backlog and your Spec-Driven Development workflow.
-
-> **Already using OpenSpec?** The [walkthrough: add PDaC to an existing OpenSpec repo in about 15 minutes](docs/adoption/existing-openspec-repository.md#the-walkthrough-first-rule-first-citation-first-drift-about-15-minutes) is the fastest way in: first rule, first citation, first caught drift, every step with its real output. This repository itself is the worked example ([#71](https://github.com/juangcarmona/productshape/issues/71), [PR #76](https://github.com/juangcarmona/productshape/pull/76)).
 
 ## The problem
 
@@ -93,16 +91,21 @@ pnpm dlx @prodshape/cli --help
 
 ## Try it in five minutes
 
-Install the CLI from npm, then point it at a real product model. This repository defines itself with its own methodology, so a plain clone gives you one; `validate` reports zero diagnostics across the whole model:
+The `prodshape` CLI is published on npm (see [Packages](#packages)). To try it against this repository's own product model, build from source:
 
 ```bash
-npm install -g @prodshape/cli
-git clone https://github.com/juangcarmona/productshape.git
+git clone git@github.com:juangcarmona/productshape.git
 cd productshape
-prodshape validate
-prodshape graph --format mermaid
-prodshape inspect FR-CITE-001
-prodshape impact BR-SDD-001 --direction incoming
+pnpm install && pnpm build
+```
+
+This repository defines itself with its own methodology, so the built CLI has a real product model to run against — 64 artifacts, zero diagnostics:
+
+```bash
+node packages/cli/dist/bin.js validate
+node packages/cli/dist/bin.js graph --format mermaid
+node packages/cli/dist/bin.js inspect FR-CITE-001
+node packages/cli/dist/bin.js impact BR-SDD-001 --direction incoming
 ```
 
 The authoring contract is queryable, and needs no repository — useful before you have one:
@@ -125,7 +128,7 @@ prodshape doctor                               # check the result is healthy
 
 `--ai` takes a comma-separated list (`--ai claude,copilot`). `--dry-run` reports what would be created, preserved, regenerated or overwritten and exits non-zero on a conflict, so it is worth running first in a repository that already has content — and it works as a CI precheck.
 
-Contributors building from source run the same commands as `node packages/cli/dist/bin.js` after `pnpm install && pnpm build`. The package installs `product-definition` alongside `prodshape` — a v0.x compatibility alias with identical output, removed before v1. The `/product:*` commands stay canonical and are always generated; `/ps:*` is an opt-in shorthand (`/ps:explore`, `/ps:impact`), enabled with `init --shorthand` or by setting `integrations.shorthand-commands: true`. This repository has it enabled.
+`prodshape` is the installed CLI (`npm install -g @prodshape/cli`); from a source checkout, run it as `node packages/cli/dist/bin.js`. The package installs `product-definition` alongside it — a v0.x compatibility alias with identical output, removed before v1. The `/product:*` commands stay canonical and are always generated; `/ps:*` is an opt-in shorthand (`/ps:explore`, `/ps:impact`), enabled with `init --shorthand` or by setting `integrations.shorthand-commands: true`. This repository has it enabled.
 
 What you can read alongside:
 

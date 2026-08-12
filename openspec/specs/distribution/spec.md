@@ -22,7 +22,7 @@ Repository scaffolding, managed provider assets, the installation lock and the d
 
 ### Requirement: Provider assets are generated with managed headers
 
-`integration add <provider>` and `integration update` SHALL render the canonical skills, commands and hooks into provider-specific files (Claude: `.claude/skills`, `.claude/commands/product`, `.claude/hooks`; Copilot: `.github/skills`, `.github/prompts`, `.github/hooks`), each carrying a managed-file header with framework version and source asset, with every generated path and content hash recorded in `.product/installation.lock.json`, reproducibly.
+`integration add <provider>` and `integration update` SHALL render the canonical skills and commands into provider-specific files (Claude: `.claude/skills/<name>/SKILL.md`, `.claude/commands/product/`; Copilot: `.github/skills/<name>/SKILL.md`, `.github/prompts/`; Codex: `.agents/skills/<name>/SKILL.md`, `.agents/commands/product/`), each carrying a managed-file header with framework version and source asset, with every generated path and content hash recorded in `.product/installation.lock.json`, reproducibly. Skills SHALL be directory-based portable skills following the Agent Skills open standard, with references bundled inside the skill directory.
 
 #### Scenario: Reproducible generation
 
@@ -31,7 +31,7 @@ Repository scaffolding, managed provider assets, the installation lock and the d
 
 ### Requirement: Managed-file drift is detected
 
-`integration update --check` and `doctor` SHALL detect manually modified managed files (PRODUCT051) and missing managed files (PRODUCT052) by comparing lock-file hashes, without touching the files in check mode.
+`integration update --check`, `integration check` and `doctor` SHALL detect manually modified managed files (PRODUCT051) and missing managed files (PRODUCT052) by comparing lock-file hashes, without touching the files in check mode.
 
 #### Scenario: Manual edit detected
 
@@ -40,12 +40,17 @@ Repository scaffolding, managed provider assets, the installation lock and the d
 
 ### Requirement: Doctor reports repository health
 
-`product-definition doctor` SHALL check directory structure, configuration validity, framework version metadata, managed integration files, expected generated files, and the configured SDD provider's workspace presence, reporting findings with the documented diagnostic fields.
+`product-definition doctor` SHALL check directory structure, configuration validity, framework version metadata, managed integration files, expected generated files, provider skill layouts, installed skill references, invocation collisions, and OpenSpec integration health (when installed), reporting findings with the documented diagnostic fields. Doctor MUST report failure when an advertised integration is absent or a configured integration is non-functional.
 
 #### Scenario: Healthy repository
 
 - **WHEN** doctor runs on this repository after integration update
 - **THEN** it exits 0 and reports each check as passing
+
+#### Scenario: Broken OpenSpec integration detected
+
+- **WHEN** doctor runs on a repository with an OpenSpec integration recorded but the OpenSpec CLI is missing or the config is absent
+- **THEN** the openspec integration check fails and doctor exits non-zero
 
 ### Requirement: Provider installation and updates never destroy unmanaged content
 

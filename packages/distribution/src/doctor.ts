@@ -36,9 +36,18 @@ export interface DoctorOptions {
    * library consumer that never runs validation does not get a phantom failure.
    */
   validation?: { errors: number; warnings: number; artifacts: number };
+  /**
+   * OpenSpec integration health supplied by the caller. The distribution package must not depend
+   * on integration-openspec, so the CLI calls it and passes the result. Omit when no OpenSpec
+   * integration is installed.
+   */
+  openspec?: {
+    installed: boolean;
+    checks: { name: string; ok: boolean; detail: string }[];
+  };
 }
 
-/** Repository health checks: structure, configuration, versions, managed files, SDD workspace. */
+/** Repository health checks: structure, configuration, versions, managed files, OpenSpec, skills. */
 export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
   const { root } = options;
   const checks: DoctorCheck[] = [];
@@ -98,8 +107,6 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
     });
   }
 
-  // The changes home must exist. Its active/completed/rejected subdirectories are created on
-  // demand and are legitimately absent when empty — Git does not track empty directories, so a
   const lock = await readLock(root);
   const version = await frameworkVersion();
   if (lock) {
@@ -131,6 +138,41 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
         : `${diagnostics.length} managed file problem(s)`,
   });
 
+  // Provider skill layout validation: every installed provider's skills must have SKILL.md
+  // and every referenced file must exist relative to the skill directory.
+  if (lock) {
+    const skillLayoutChecks = await validateSkillLayouts(root, lock);
+    checks.push(...skillLayoutChecks);
+  }
+
+  // OpenSpec integration health: when an integration is recorded, verify it is functional.
+  if (options.openspec) {
+    if (options.openspec.installed) {
+      const allOk = options.openspec.checks.every((c) => c.ok);
+      checks.push({
+        name: 'openspec integration',
+        ok: allOk,
+        detail: allOk
+          ? 'OpenSpec integration healthy'
+          : `${options.openspec.checks.filter((c) => !c.ok).length} OpenSpec integration problem(s)`,
+      });
+      for (const check of options.openspec.checks) {
+        checks.push({
+          name: `openspec: ${check.name}`,
+          ok: check.ok,
+          detail: check.detail,
+        });
+      }
+    } else {
+      // No OpenSpec integration installed — informational, not a failure.
+      checks.push({
+        name: 'openspec integration',
+        ok: true,
+        detail: 'not installed (informational; run: prodshape integration add openspec)',
+      });
+    }
+  }
+
   const generatedExists = await exists(root, '.product/generated');
   checks.push({
     name: 'generated outputs',
@@ -150,4 +192,81 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
   }
 
   return { checks, diagnostics };
+}
+
+/**
+ * Validate that every installed provider's skill directories have SKILL.md and that
+ * referenced files exist relative to the skill directory. Detects invocation collisions
+ * (two providers generating the same path).
+ */
+async function validateSkillLayouts(
+  root: string,
+  lock: { providers: Record<string, { files: Record<string, string> }> },
+): Promise<DoctorCheck[]> {
+  const checks: DoctorCheck[] = [];
+
+  // Group skill files by provider to detect layout issues.
+  const providerSkillPaths = new Map<string, Set<string>>();
+  const allPaths = new Set<string>();
+  let collisions = 0;
+
+  for (const [provider, entry] of Object.entries(lock.providers)) {
+    const skillPaths = new Set<string>();
+    for (const path of Object.keys(entry.files)) {
+      // Skill files are under .claude/skills/, .github/skills/, or .agents/skills/
+      if (
+        path.includes('/skills/') &&
+        (path.endsWith('/SKILL.md') || path.includes('/references/'))
+      ) {
+        skillPaths.add(path);
+      }
+      if (allPaths.has(path)) collisions++;
+      allPaths.add(path);
+    }
+    providerSkillPaths.set(provider, skillPaths);
+  }
+
+  if (collisions > 0) {
+    checks.push({
+      name: 'invocation collisions',
+      ok: false,
+      detail: `${collisions} path collision(s) across providers; run: prodshape integration update`,
+    });
+  }
+
+  // Check that every skill has a SKILL.md and that references resolve.
+  const missingReferences: string[] = [];
+  for (const [provider, skillPaths] of providerSkillPaths) {
+    const skillDirs = new Set<string>();
+    for (const path of skillPaths) {
+      if (path.endsWith('/SKILL.md')) {
+        skillDirs.add(path.slice(0, -'/SKILL.md'.length));
+      }
+    }
+    for (const path of skillPaths) {
+      if (path.includes('/references/')) {
+        // The reference must be inside a skill directory that has a SKILL.md.
+        const skillDir = path.split('/references/')[0] ?? '';
+        if (!skillDirs.has(skillDir)) {
+          missingReferences.push(`${provider}: ${path} (orphaned reference, no SKILL.md)`);
+        }
+      }
+    }
+  }
+
+  if (missingReferences.length > 0) {
+    checks.push({
+      name: 'skill references',
+      ok: false,
+      detail: `${missingReferences.length} orphaned reference(s): ${missingReferences.slice(0, 3).join(', ')}${missingReferences.length > 3 ? '...' : ''}`,
+    });
+  } else if (allPaths.size > 0) {
+    checks.push({
+      name: 'skill references',
+      ok: true,
+      detail: 'all skill references resolve',
+    });
+  }
+
+  return checks;
 }

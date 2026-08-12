@@ -49,6 +49,10 @@ Warnings are not errors. `validation.warnings-as-errors` in `.product/config.yam
 | `PRODUCT060` | Unresolved citation: target id or anchor does not resolve |
 | `PRODUCT062` | Tampered embedded projection: the embedded block differs from canonical content at the recorded digest |
 | `PRODUCT063` | Anchor not found: the target resolves but the named anchor does not exist within it |
+| `PRODUCT070` | Missing scope declaration in a consumer document: an expected current OpenSpec consumer document has neither `pdac-scope: none` nor at least one PDaC citation |
+| `PRODUCT071` | Unsupported external OpenSpec store: the OpenSpec workspace points to a store ProductShape cannot verify locally |
+| `PRODUCT072` | OpenSpec root cannot be resolved: no `openspec/` directory found and no alternative root configured |
+| `PRODUCT073` | OpenSpec CLI missing or unsupported version: `openspec` is not on PATH or reports an unparseable version |
 
 `PRODUCT020` to `PRODUCT028` apply to Product Changes and their overlays. They are reported when a change is validated or applied, never when validating the baseline alone, and never against the inert archives under `changes/completed/`, `changes/rejected/` and `changes/superseded/`.
 

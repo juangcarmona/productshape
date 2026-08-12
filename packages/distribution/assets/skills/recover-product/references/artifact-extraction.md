@@ -1,0 +1,50 @@
+# Artifact extraction
+
+How evidence becomes candidates. The destination is always the proposed overlay of `CHG-INITIAL`; the accepted model directory is never written during initial recovery.
+
+## Layout
+
+```text
+docs/product/changes/active/chg-initial/
+  change.md                 The Product Change document for the initial baseline
+  proposed/                 Candidates, mirroring the model layout
+    actors/act-<slug>.md
+    journeys/jrn-<slug>.md
+    use-cases/uc-<slug>.md
+    business-rules/br-<slug>.md
+    domain/terms/term-<slug>.md
+    domain/bounded-contexts/bc-<slug>.md
+    requirements/functional/fr-<slug>.md
+    requirements/quality/qr-<slug>.md
+    requirements/constraints/con-<slug>.md
+```
+
+File names are the lowercase artifact ID plus `.md`. Author from the templates under `.product/templates/` and check the exact allowed frontmatter with `prodshape schema <kind>` before inventing anything.
+
+## change.md
+
+Create it once, from the product-change template, with `id: CHG-INITIAL`, `status: draft`, `base-revision` set to the repository's current commit (or `'0000000'` outside Git), and keep `operations.add` in step with the candidates: every proposed artifact is listed, nothing else is. `prodshape recover check` validates the whole overlay and reports any mismatch between `operations` and `proposed/`.
+
+The change document describes the recovery itself: the problem (no product definition exists), the intended outcome (a reviewable initial baseline), what evidence grounded it, and its open questions. Candidate-level detail stays on the candidates.
+
+## Extraction discipline, per source
+
+1. State observed behaviour first. What does this evidence verifiably say the system does? Each observation cites its exact evidence: file and path, test name, endpoint, table and column, document section, person.
+2. Record implications separately. A hypothesis about why ("requires approval because of fraud risk") is inference, labelled as such in the candidate body, never merged into an observed statement.
+3. Choose the artifact kind by what the knowledge is, not by where it was found: who acts (actor), an end-to-end path with an outcome (journey), one interaction with a trigger and flows (use case), a constraint the business imposes (business rule), a word with a precise meaning (domain term), a language boundary (bounded context), something the product must do (functional requirement), how well (quality requirement), an imposed limitation (constraint).
+4. Reuse before creating. Search the existing candidates first (ids, titles, the brief's synonyms). Evidence that lands on an existing candidate strengthens it: extend its `provenance.source`, raise or lower its confidence, note the corroboration in the body, and classify the source as `duplicate` against it.
+5. Every candidate carries `provenance` (see `references/provenance-format.md`) and `status: draft`. A candidate you cannot give a source is an opinion; do not write it.
+6. Respect the brief's `confirm` list: candidates in those areas are proposed to the user in conversation before the files are written.
+
+## Naming and identity
+
+- IDs are uppercase with the kind's prefix (`ACT-`, `JRN-`, `UC-`, `BR-`, `TERM-`, `BC-`, `FR-`, `QR-`, `CON-`) followed by a stable, meaningful slug. Use the current vocabulary from the brief's `synonyms`, not the obsolete names found in old evidence.
+- One candidate per concept. Two names for the same thing is a reconciliation case, not two candidates; one name for two things is two candidates and usually a domain term clarifying the split.
+
+## Relationships
+
+Candidates reference each other by ID in their frontmatter relationship fields (what `prodshape schema <kind>` lists for the kind). Only reference IDs that exist among the candidates; the overlay validation `recover check` runs reports dangling references. When evidence implies a relationship to something not yet recovered, record a lead instead of a broken reference.
+
+## After each batch
+
+Run `prodshape recover check`. It validates every candidate against its schema and required body sections, revalidates the whole overlay (duplicates, dangling references, operations completeness), and confirms candidates carry provenance and stay `draft`. Fix errors before taking the next batch; a pile of invalid candidates is not progress.

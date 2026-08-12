@@ -17,7 +17,8 @@ packages/
 ├── distribution/          # init, provider-asset rendering, update/drift/doctor
 ├── integration-claude/    # Claude Code provider mapping and templates
 ├── integration-copilot/   # GitHub Copilot provider mapping and templates
-└── adapter-openspec/      # locating OpenSpec changes for citation scanning
+├── integration-codex/     # Codex provider mapping and templates
+└── integration-openspec/  # OpenSpec config + citation-rule integration
 skills/                    # canonical AI skills (6)
 commands/                  # canonical thin /product:* commands (7)
 hooks/                     # canonical deterministic guard descriptors (4)
@@ -37,7 +38,8 @@ v0.1 is delivered through four OpenSpec changes: `establish-product-definition-f
 | `distribution` | `init`, rendering canonical AI assets into provider formats, managed-file headers and content hashes, `installation.lock.json`, `integration update`, drift detection, `doctor`. |
 | `integration-claude` | Claude Code-specific mapping and templates only (renders `.claude/` assets, including executable hooks). |
 | `integration-copilot` | GitHub Copilot-specific mapping and templates only (renders `.github/` assets; hooks render as documentation — see OD-002). |
-| `adapter-openspec` | Locating OpenSpec changes so their documents can be scanned for citations. Never touches native OpenSpec files. |
+| `integration-codex` | Codex-specific mapping and templates only (renders `.agents/` assets). |
+| `integration-openspec` | Configures an OpenSpec workspace with PDaC citation rules (merges into `openspec/config.yaml`) and records integration metadata. Never patches OpenSpec-generated files or forks the schema. |
 
 ## Dependency graph
 
@@ -45,13 +47,15 @@ Internal dependencies are strictly acyclic:
 
 ```text
 cli ─────────────► core
-cli ─────────────► adapter-openspec ─► core (types only)
+cli ─────────────► integration-openspec
 cli ─────────────► distribution ─┬───► integration-claude
-                                 └───► integration-copilot
+                                 ├───► integration-copilot
+                                 └───► integration-codex
 
-core:                no internal dependencies
-integration-claude:  no internal dependencies
-integration-copilot: no internal dependencies
+integration-claude:   no internal dependencies
+integration-copilot:  no internal dependencies
+integration-codex:    no internal dependencies
+integration-openspec: no internal dependencies (yaml only)
 ```
 
 The integration packages export their provider renderers as plain, structurally typed objects. `distribution` consumes them through TypeScript structural typing; there is deliberately no shared types package. This keeps the integration packages dependency-free and lets a future provider integration be added without touching any existing package's imports.

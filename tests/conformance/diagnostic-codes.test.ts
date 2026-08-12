@@ -39,7 +39,7 @@ const specifiedButNotEmitted: string[] = [];
 
 async function sourceFiles(): Promise<string[]> {
   const files: string[] = [];
-  for (const pkg of ['core', 'cli', 'distribution', 'adapter-openspec']) {
+  for (const pkg of ['core', 'cli', 'distribution', 'integration-openspec']) {
     files.push(...(await listFilesRecursive(join(repoRoot, 'packages', pkg, 'src'), '.ts')));
   }
   return files.filter((file) => !file.endsWith('.test.ts') && !file.endsWith('test-support.ts'));

@@ -19,8 +19,9 @@ export default defineConfig({
     options.alias = {
       '@prodshape/core': internal('core'),
       '@prodshape/distribution': internal('distribution'),
-      '@prodshape/adapter-openspec': internal('adapter-openspec'),
+      '@prodshape/integration-openspec': internal('integration-openspec'),
       '@prodshape/integration-claude': internal('integration-claude'),
+      '@prodshape/integration-codex': internal('integration-codex'),
       '@prodshape/integration-copilot': internal('integration-copilot'),
     };
   },

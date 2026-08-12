@@ -365,7 +365,7 @@ describe('init and managed-file lifecycle (end to end)', () => {
     const drift = await run(['integration', 'update', '--check'], workDir);
     expect(drift.code).toBe(1);
     expect(drift.out).toContain('PRODUCT051');
-    await rm(join(workDir, '.github', 'skills', 'audit-product-model.md'));
+    await rm(join(workDir, '.github', 'skills', 'audit-product-model', 'SKILL.md'));
     const missing = await run(['integration', 'update', '--check'], workDir);
     expect(missing.out).toContain('PRODUCT052');
     const diagnostics = await checkIntegrations(workDir);

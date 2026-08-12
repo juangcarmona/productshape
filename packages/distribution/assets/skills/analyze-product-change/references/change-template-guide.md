@@ -1,0 +1,84 @@
+# Product Change template guide
+
+A Product Change lives at `docs/product/changes/active/<chg-id>/change.md`. Start from `.product/templates/product-change.md` and fill in every field. The frontmatter is a closed contract: any field the schema does not list is rejected as `PRODUCT002`. Check with `prodshape schema product-change` when in doubt.
+
+## Frontmatter
+
+```yaml
+---
+id: CHG-EXAMPLE-001
+type: product-change
+title: Example product change
+status: draft
+base-revision: '3f2a91c'
+operations:
+  add:
+    - FR-EXAMPLE-001
+  modify:
+    - UC-EXAMPLE-001
+  remove: []
+---
+```
+
+| Field | Required | Value |
+| --- | --- | --- |
+| `id` | yes | The `CHG-` identifier. The directory name is its lowercase form. |
+| `type` | yes | `product-change` |
+| `title` | yes | What the change is, in one line. |
+| `status` | yes | `draft`, `proposed`, `approved`, `rejected`, or `superseded`. Never set `approved` yourself. |
+| `base-revision` | yes | The baseline commit this change was created against, quoted so YAML reads digits as a string. |
+| `operations` | yes | `add`, `modify` and `remove`, all three present even when empty. |
+
+### `operations`
+
+Every ID under `add` and `modify` needs a complete proposed future-state artifact under the change's `proposed/` directory, laid out exactly as it will live in the model. A modification keeps the same ID; only its content changes.
+
+- `add` — IDs that will be created in the model when the change is applied.
+- `modify` — IDs that already exist in the baseline and will be replaced by the proposed version.
+- `remove` — IDs that will be deleted from the model when the change is applied.
+
+`prodshape change validate <chg-id>` checks that `proposed/` and `operations` match in both directions: a proposed artifact not listed in operations is `PRODUCT026`, and an operation without its proposed artifact is also `PRODUCT026`.
+
+## Body sections (in order)
+
+The body sections MUST appear in this order. A missing or out-of-order section is `PRODUCT009`.
+
+### `## Problem`
+
+What is wrong or missing in the current Product Definition? State the problem, not the solution.
+
+### `## Intended Product Outcome`
+
+What the Product Definition says once this change is accepted. Describe the destination, not the steps.
+
+### `## Rationale`
+
+Why this outcome, and why now. Record the reasoning a future reader would otherwise have to reconstruct.
+
+### `## Affected Product Areas`
+
+Which parts of the product this change touches, in product language rather than file paths.
+
+### `## Open Questions`
+
+Unresolved questions that need a human decision before the change can be approved. Write `None.` when there are none. An unresolved question is a Markdown list item at any nesting depth; a change in status `approved` with any list item here is `PRODUCT108`.
+
+### `## Product Acceptance`
+
+How a human recognises that the accepted definition expresses the intended outcome.
+
+### `## Out of Scope`
+
+What this change explicitly does not touch, including delivery, technical design and implementation.
+
+## Proposed artifacts
+
+Under `proposed/`, write the complete future-state artifact for every ID under `add` and `modify`. Not a diff and not an instruction: the whole artifact as it should exist afterwards, laid out as it will live in the model. Each proposed artifact follows its own schema (`prodshape schema <kind>`) and carries its required body sections.
+
+## Lifecycle
+
+1. **Draft** — `status: draft`, operations and proposed artifacts authored.
+2. **Propose** — `status: proposed` once the change is worth reviewing.
+3. **Approve** — a human sets `status: approved`. Never do this on their behalf.
+4. **Apply** — `prodshape change apply <chg-id>` writes the model, reports the product diff, archives the change.
+5. **Accept** — a human merges the pull request carrying the result.

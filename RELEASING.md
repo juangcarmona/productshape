@@ -4,14 +4,15 @@ The `@prodshape/*` packages are published to npm **only from GitHub Actions** ([
 
 ## Published packages
 
-| Package                          | Notes                                                        |
-| -------------------------------- | ------------------------------------------------------------ |
-| `@prodshape/core`                | library                                                      |
-| `@prodshape/cli`                 | self-contained executable (bundles the others at build time) |
-| `@prodshape/distribution`        | library                                                      |
-| `@prodshape/adapter-openspec`    | library                                                      |
-| `@prodshape/integration-claude`  | library                                                      |
-| `@prodshape/integration-copilot` | library                                                      |
+| Package                           | Notes                                                        |
+| --------------------------------- | ------------------------------------------------------------ |
+| `@prodshape/core`                 | library                                                      |
+| `@prodshape/cli`                  | self-contained executable (bundles the others at build time) |
+| `@prodshape/distribution`         | library                                                      |
+| `@prodshape/integration-openspec` | library                                                      |
+| `@prodshape/integration-claude`   | library                                                      |
+| `@prodshape/integration-copilot`  | library                                                      |
+| `@prodshape/integration-codex`    | library                                                      |
 
 Each sets `publishConfig.access: "public"` and `publishConfig.provenance: true`. Only packages that receive a changeset are versioned and published, in dependency order.
 

@@ -1,5 +1,8 @@
 import { escalateWarnings, validateBaseline } from '@prodshape/core';
 import { runDoctor } from '@prodshape/distribution';
+import { checkOpenSpecIntegration } from '@prodshape/integration-openspec';
+import { access } from 'node:fs/promises';
+import { join } from 'node:path';
 import { exitCodes, formatDiagnosticLine, resolveRepository, type CliIo } from '../context.js';
 
 export async function runDoctorCommand(io: CliIo): Promise<number> {
@@ -14,6 +17,19 @@ export async function runDoctorCommand(io: CliIo): Promise<number> {
   );
 
   const configErrors = repo.configDiagnostics.filter((d) => d.severity === 'error');
+
+  // Check OpenSpec integration health if the integration metadata exists.
+  let openspecHealth:
+    { installed: boolean; checks: { name: string; ok: boolean; detail: string }[] } | undefined;
+  const openspecMetaPath = join(repo.root, '.product', 'integrations', 'openspec.json');
+  try {
+    await access(openspecMetaPath);
+    const result = await checkOpenSpecIntegration(repo.root);
+    openspecHealth = { installed: true, checks: result.checks };
+  } catch {
+    // No OpenSpec integration metadata — not an error.
+  }
+
   const report = await runDoctor({
     root: repo.root,
     configValid: configErrors.length === 0,
@@ -27,6 +43,7 @@ export async function runDoctorCommand(io: CliIo): Promise<number> {
       warnings: diagnostics.filter((d) => d.severity === 'warning').length,
       artifacts: baseline.graph.nodes.length,
     },
+    ...(openspecHealth ? { openspec: openspecHealth } : {}),
   });
 
   let failed = 0;

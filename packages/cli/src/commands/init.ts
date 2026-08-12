@@ -13,7 +13,6 @@ import { CliError, exitCodes, type CliIo } from '../context.js';
 
 export interface InitCliOptions {
   ai?: string;
-  sdd?: string;
   force?: boolean;
   flat?: boolean;
   shorthand?: boolean;
@@ -68,16 +67,10 @@ export async function runInit(io: CliIo, options: InitCliOptions): Promise<numbe
   for (const provider of ai) {
     if (!rendererFor(provider)) {
       throw new CliError(
-        `Unknown AI provider '${provider}' (supported: claude, copilot)`,
+        `Unknown AI provider '${provider}' (supported: claude, copilot, codex)`,
         exitCodes.invalidInvocation,
       );
     }
-  }
-  if (options.sdd && options.sdd !== 'openspec') {
-    throw new CliError(
-      `Unknown SDD provider '${options.sdd}' (v0.1 supports: openspec)`,
-      exitCodes.invalidInvocation,
-    );
   }
 
   // Read any existing configuration first, so a preserved config.yaml keeps deciding what is
@@ -88,7 +81,6 @@ export async function runInit(io: CliIo, options: InitCliOptions): Promise<numbe
     root: io.cwd,
     ai,
     existingShorthand: existing.config.integrations['shorthand-commands'],
-    ...(options.sdd ? { sdd: options.sdd } : {}),
     ...(options.force !== undefined ? { force: options.force } : {}),
     ...(options.flat !== undefined ? { flat: options.flat } : {}),
     ...(options.shorthand !== undefined ? { shorthand: options.shorthand } : {}),
