@@ -141,6 +141,13 @@ jobs:
     name: manual (${{ github.event.inputs.task }})
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    # Same protected environment as publish-stable. It carries the npm publish credentials — the
+    # environment-scoped token and the OIDC environment claim the npm trusted publisher requires —
+    # so every publish PUT from this job authenticates. Without it npm returns E404 (it masks an
+    # unauthorized publish as "not found"), which is exactly how the first manual `publish` failed.
+    # It also gates every dispatch task behind maintainer approval, which is correct: publishing and
+    # entering/exiting a pre-release train are both releases.
+    environment: npm-publish
     permissions:
       contents: write # commit pre.json / push tags
       id-token: write # OIDC trusted publishing
