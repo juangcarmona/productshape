@@ -36,6 +36,8 @@ const expectedIds: Record<string, string[]> = {
     'UC-SNAPSHOT-EXPLORE-001',
     // Added by CHG-EXPLORE-001 (ps:explore thinking partner).
     'UC-EXPLORE-001',
+    // Added by CHG-RECOVERY-SESSIONS (deterministic brownfield recovery).
+    'UC-RECOVER-001',
   ],
   'business-rule': [
     'BR-CANONICAL-001',
@@ -95,6 +97,8 @@ const expectedIds: Record<string, string[]> = {
     'FR-SNAPSHOT-006',
     'FR-SNAPSHOT-008',
     'FR-SNAPSHOT-009',
+    // Added by CHG-RECOVERY-SESSIONS (deterministic brownfield recovery).
+    'FR-RECOVER-001',
   ],
   'quality-requirement': [
     'QR-PORTABILITY-001',

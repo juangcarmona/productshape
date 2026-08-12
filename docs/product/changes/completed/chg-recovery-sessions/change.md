@@ -2,7 +2,7 @@
 id: CHG-RECOVERY-SESSIONS
 type: product-change
 title: Brownfield recovery is a bounded, resumable session
-status: draft
+status: applied
 base-revision: 'e9e0e9ca7e8b2794f239567f5183daa3383ce5e9'
 operations:
   add:
