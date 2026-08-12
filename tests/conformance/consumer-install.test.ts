@@ -8,9 +8,10 @@
  * OpenSpec integration. Snapshot tests alone are not sufficient.
  */
 import { execFile } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { access, mkdtemp, readFile, readdir, rm, writeFile, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { delimiter, join } from 'node:path';
 import { promisify } from 'node:util';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { runCli } from '@prodshape/cli';
@@ -18,6 +19,24 @@ import { repoRoot } from '../helpers.js';
 
 const execFileAsync = promisify(execFile);
 const isWindows = process.platform === 'win32';
+
+/**
+ * The OpenSpec integration tests drive the real `openspec` CLI (`@fission-ai/openspec`), which is a
+ * peer tool, not a dependency of this package: CI installs it (see `.github/workflows/`), but the
+ * publish path in `release.yml` deliberately does not, and neither will an arbitrary machine. Probe
+ * PATH once — without executing anything, so a CLI-flag change cannot make the probe lie — and skip
+ * the OpenSpec-dependent suites when it is absent rather than fail the whole run on a missing
+ * external binary. The suites still run in full wherever `openspec` is installed.
+ */
+function openspecOnPath(): boolean {
+  const names = isWindows
+    ? ['openspec.cmd', 'openspec.exe', 'openspec.bat', 'openspec']
+    : ['openspec'];
+  return (process.env.PATH ?? '')
+    .split(delimiter)
+    .some((dir) => dir.length > 0 && names.some((name) => existsSync(join(dir, name))));
+}
+const hasOpenspec = openspecOnPath();
 
 let scratch: string;
 let tarball: string;
@@ -327,7 +346,7 @@ describe('collision detection and file preservation', () => {
   });
 });
 
-describe('OpenSpec integration', () => {
+describe.skipIf(!hasOpenspec)('OpenSpec integration', () => {
   let openspecDir: string;
 
   beforeAll(async () => {
@@ -676,7 +695,7 @@ describe('brownfield recovery session (packed binary)', () => {
   });
 });
 
-describe('doctor detects broken integrations', () => {
+describe.skipIf(!hasOpenspec)('doctor detects broken integrations', () => {
   it('doctor fails when OpenSpec integration is recorded but config is absent', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'prodshape-doctor-'));
     try {
