@@ -12,8 +12,10 @@
  * Diagnostics: PRODUCT042 (invalid digest), PRODUCT060 (unresolved), PRODUCT061 (stale),
  * PRODUCT062 (tampered), PRODUCT063 (anchor not found).
  */
+import { execFile } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
-import { relative, sep } from 'node:path';
+import { join, relative, sep } from 'node:path';
+import { promisify } from 'node:util';
 import fg from 'fast-glob';
 import { parseAllDocuments } from 'yaml';
 import { contentDigest, normalizeToLf } from './digest.js';
@@ -409,4 +411,373 @@ export function emitCitation(options: CiteOptions): string {
     case 'sidecar-ledger':
       return `- id: ${options.id}\n  digest: ${options.digest}${options.anchor ? `\n  anchor: ${options.anchor}` : ''}`;
   }
+}
+
+// --- OpenSpec population discovery -------------------------------------------
+
+const execFileAsync = promisify(execFile);
+
+/** A consumer document discovered in an OpenSpec workspace. */
+export interface ConsumerDocument {
+  /** Repository-relative path (POSIX separators). */
+  path: string;
+  /** Absolute path. */
+  absolutePath: string;
+  /** The OpenSpec change this document belongs to (null for specs/). */
+  change?: string;
+  /** Whether this document is in an archived change. */
+  archived: boolean;
+  /** The artifact kind: proposal, specs, design, tasks, or spec (for openspec/specs/). */
+  artifactKind?: string;
+}
+
+/** Scope declaration found in a consumer document. */
+export interface ScopeDeclaration {
+  /** 'none' means the document explicitly declares no PDaC citations. */
+  scope: 'none' | 'cited';
+  /** The document path. */
+  source: string;
+}
+
+export interface OpenSpecPopulation {
+  documents: ConsumerDocument[];
+  /** Documents that have no scope declaration and are expected to have one. */
+  undocumented: ConsumerDocument[];
+  /** Documents that declared pdac-scope: none. */
+  excluded: ConsumerDocument[];
+  /** Documents that have at least one citation. */
+  cited: ConsumerDocument[];
+  /** The OpenSpec root resolved. */
+  root: string;
+  /** Whether archived changes were included. */
+  includeArchived: boolean;
+}
+
+/** Options for {@link discoverOpenSpecPopulation}. */
+export interface DiscoverOpenSpecPopulationOptions {
+  /** Include archived changes (default false). */
+  includeArchived?: boolean;
+  /** Limit to one change name. */
+  change?: string;
+}
+
+/**
+ * The artifact files that make up an OpenSpec change, relative to the change directory.
+ * `specs/` is a directory containing one or more `<capability>/spec.md` files.
+ */
+const CHANGE_ARTIFACT_FILES: Array<{ file: string; kind: string }> = [
+  { file: 'proposal.md', kind: 'proposal' },
+  { file: 'design.md', kind: 'design' },
+  { file: 'tasks.md', kind: 'tasks' },
+];
+
+/** Match `pdac-scope: none` in YAML frontmatter or as an HTML comment. */
+const SCOPE_NONE_PATTERN = /(?:^pdac-scope:\s*none\s*$|<!--\s*pdac-scope:\s*none\s*-->)/m;
+
+/**
+ * Scan a consumer document for a pdac-scope declaration.
+ * Looks for `pdac-scope: none` in YAML frontmatter or as an HTML comment.
+ *
+ * Returns `null` when no declaration is found (the document is expected to carry citations).
+ * Returns `{ scope: 'none' }` when the document explicitly declares no PDaC citations.
+ * Returns `{ scope: 'cited' }` when the document declares it carries citations
+ * (`pdac-scope: cited`), though the absence of a declaration also means citations are expected.
+ */
+export function extractScopeDeclaration(content: string, source: string): ScopeDeclaration | null {
+  // YAML frontmatter: a leading `---` block. Check for `pdac-scope:` key.
+  const frontmatterMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (frontmatterMatch?.[1]) {
+    const fmLine = frontmatterMatch[1].split('\n').find((l) => /^\s*pdac-scope\s*:\s*\S+/.test(l));
+    if (fmLine) {
+      const value = fmLine.replace(/^\s*pdac-scope\s*:\s*/, '').trim();
+      if (value === 'none') return { scope: 'none', source };
+      if (value === 'cited') return { scope: 'cited', source };
+      // Any other value: treat as no valid declaration.
+      return null;
+    }
+  }
+
+  // HTML comment form: <!-- pdac-scope: none -->
+  if (SCOPE_NONE_PATTERN.test(content)) {
+    return { scope: 'none', source };
+  }
+
+  // HTML comment form: <!-- pdac-scope: cited -->
+  const citedComment = content.match(/<!--\s*pdac-scope:\s*cited\s*-->/);
+  if (citedComment) return { scope: 'cited', source };
+
+  return null;
+}
+
+/** Run `openspec` with the given args, returning stdout. Uses `shell: true` for Windows .cmd shims. */
+async function runOpenSpec(args: string[]): Promise<{ stdout: string; stderr: string }> {
+  return execFileAsync('openspec', args, {
+    shell: true,
+    maxBuffer: 10 * 1024 * 1024,
+  });
+}
+
+/** Parsed entry from `openspec list --json`. */
+interface OpenSpecListEntry {
+  name: string;
+}
+
+/**
+ * Call `openspec list --json` and return the change names. Returns `null` when the CLI is
+ * unavailable or the output is unparseable, so the caller can fall back to filesystem scanning.
+ */
+async function openspecListChanges(): Promise<string[] | null> {
+  try {
+    const { stdout } = await runOpenSpec(['list', '--json']);
+    const parsed = JSON.parse(stdout) as { changes?: OpenSpecListEntry[] };
+    if (!Array.isArray(parsed.changes)) return null;
+    return parsed.changes.map((c) => c.name).filter((n): n is string => typeof n === 'string');
+  } catch {
+    return null;
+  }
+}
+
+/** Check whether `openspec` is on PATH and reports a supported version. */
+export async function isOpenSpecCliAvailable(): Promise<boolean> {
+  try {
+    const { stdout } = await runOpenSpec(['--version']);
+    return /\d+\.\d+\.\d+/.test(stdout);
+  } catch {
+    return false;
+  }
+}
+
+/** Resolve the OpenSpec root: the directory containing `openspec/`. Never falls back silently. */
+function resolveOpenSpecRoot(repoRoot: string): string {
+  return join(repoRoot, 'openspec');
+}
+
+/** Discover all `.md` files under a directory, returning absolute paths sorted. */
+async function discoverMarkdownFiles(dir: string): Promise<string[]> {
+  const entries = await fg('**/*.md', {
+    cwd: dir,
+    absolute: true,
+    dot: false,
+    ignore: ['**/node_modules/**'],
+  });
+  return entries.map((e) => e.split('/').join(sep)).sort();
+}
+
+/** Build a {@link ConsumerDocument} from an absolute path. */
+async function buildConsumerDocument(
+  absolutePath: string,
+  repoRoot: string,
+  opts: { change?: string; archived: boolean; artifactKind?: string },
+): Promise<ConsumerDocument> {
+  return {
+    path: relative(repoRoot, absolutePath).split(sep).join('/'),
+    absolutePath,
+    change: opts.change,
+    archived: opts.archived,
+    artifactKind: opts.artifactKind,
+  };
+}
+
+/** Discover artifact files for a single change directory. */
+async function discoverChangeDocuments(
+  changeDir: string,
+  repoRoot: string,
+  change: string,
+  archived: boolean,
+): Promise<ConsumerDocument[]> {
+  const docs: ConsumerDocument[] = [];
+
+  // Fixed artifact files: proposal.md, design.md, tasks.md.
+  for (const { file, kind } of CHANGE_ARTIFACT_FILES) {
+    const absolutePath = join(changeDir, file);
+    try {
+      await readFile(absolutePath);
+      docs.push(
+        await buildConsumerDocument(absolutePath, repoRoot, {
+          change,
+          archived,
+          artifactKind: kind,
+        }),
+      );
+    } catch {
+      // File doesn't exist; skip.
+    }
+  }
+
+  // specs/ directory: one or more <capability>/spec.md files.
+  const specsDir = join(changeDir, 'specs');
+  try {
+    const specFiles = await discoverMarkdownFiles(specsDir);
+    for (const absolutePath of specFiles) {
+      docs.push(
+        await buildConsumerDocument(absolutePath, repoRoot, {
+          change,
+          archived,
+          artifactKind: 'specs',
+        }),
+      );
+    }
+  } catch {
+    // No specs/ directory; skip.
+  }
+
+  return docs;
+}
+
+/** Discover all `.md` files under `openspec/specs/` (the current specs, not changes). */
+async function discoverSpecDocuments(
+  specsDir: string,
+  repoRoot: string,
+): Promise<ConsumerDocument[]> {
+  const docs: ConsumerDocument[] = [];
+  try {
+    const specFiles = await discoverMarkdownFiles(specsDir);
+    for (const absolutePath of specFiles) {
+      docs.push(
+        await buildConsumerDocument(absolutePath, repoRoot, {
+          archived: false,
+          artifactKind: 'spec',
+        }),
+      );
+    }
+  } catch {
+    // No specs/ directory; skip.
+  }
+  return docs;
+}
+
+/** Discover archived change directories under `openspec/changes/archive/`. */
+async function discoverArchivedChanges(archiveDir: string): Promise<string[]> {
+  try {
+    const { readdir } = await import('node:fs/promises');
+    const entries = await readdir(archiveDir, { withFileTypes: true });
+    return entries
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name)
+      .sort();
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Discover the consumer document population of an OpenSpec workspace.
+ *
+ * Uses `openspec list --json` to determine the current (non-archived) changes. The OpenSpec CLI
+ * excludes `openspec/changes/archive/` from `list`, so the default population is current-only.
+ * When `includeArchived` is true, archived changes under `openspec/changes/archive/` are also
+ * scanned via the filesystem (the CLI cannot address archived changes by name).
+ *
+ * For each change, the artifact files are resolved by filesystem convention:
+ * `proposal.md`, `specs/` (one or more spec files), `design.md`, `tasks.md`. The `openspec show --json` output does
+ * not include artifact paths, so convention-based resolution is the stable contract.
+ *
+ * For `openspec/specs/` (the current specs, not changes), all `.md` files are discovered.
+ *
+ * Each document is classified:
+ * - `excluded`: declared `pdac-scope: none`
+ * - `cited`: has at least one citation (via existing {@link parseCitations})
+ * - `undocumented`: no scope declaration AND no citations (these are the problem)
+ *
+ * If the OpenSpec CLI is not available, falls back to filesystem scanning of
+ * `openspec/changes/` (excluding `archive/` unless `includeArchived`) and `openspec/specs/`.
+ *
+ * @param repoRoot - The repository root.
+ * @param options - `includeArchived` (default false), `change` (limit to one change).
+ */
+export async function discoverOpenSpecPopulation(
+  repoRoot: string,
+  options?: DiscoverOpenSpecPopulationOptions,
+): Promise<OpenSpecPopulation> {
+  const includeArchived = options?.includeArchived ?? false;
+  const root = resolveOpenSpecRoot(repoRoot);
+  const changesDir = join(root, 'changes');
+  const archiveDir = join(changesDir, 'archive');
+  const specsDir = join(root, 'specs');
+
+  const documents: ConsumerDocument[] = [];
+
+  // 1. Discover current changes. Prefer `openspec list --json`; fall back to filesystem.
+  let currentChangeNames: string[] | null = await openspecListChanges();
+
+  if (currentChangeNames === null) {
+    // CLI unavailable or unparseable: fall back to filesystem scanning of openspec/changes/,
+    // excluding archive/ (it's handled separately below).
+    try {
+      const { readdir } = await import('node:fs/promises');
+      const entries = await readdir(changesDir, { withFileTypes: true });
+      currentChangeNames = entries
+        .filter((e) => e.isDirectory() && e.name !== 'archive')
+        .map((e) => e.name)
+        .sort();
+    } catch {
+      currentChangeNames = [];
+    }
+  }
+
+  // 2. Filter to a single change if requested.
+  if (options?.change) {
+    const wanted = options.change;
+    if (currentChangeNames.includes(wanted)) {
+      currentChangeNames = [wanted];
+    } else {
+      // The requested change isn't in the current list. Check if it's archived.
+      currentChangeNames = [];
+    }
+  }
+
+  // 3. Discover documents for each current change.
+  for (const name of currentChangeNames) {
+    const changeDir = join(changesDir, name);
+    documents.push(...(await discoverChangeDocuments(changeDir, repoRoot, name, false)));
+  }
+
+  // 4. Discover archived changes if requested.
+  if (includeArchived) {
+    const archivedNames = await discoverArchivedChanges(archiveDir);
+    for (const name of archivedNames) {
+      // If a specific change was requested and it wasn't current, check the archive.
+      if (options?.change && name !== options.change) continue;
+      const changeDir = join(archiveDir, name);
+      documents.push(...(await discoverChangeDocuments(changeDir, repoRoot, name, true)));
+    }
+  }
+
+  // 5. Discover current specs (openspec/specs/).
+  documents.push(...(await discoverSpecDocuments(specsDir, repoRoot)));
+
+  // 6. Classify each document.
+  const excluded: ConsumerDocument[] = [];
+  const cited: ConsumerDocument[] = [];
+  const undocumented: ConsumerDocument[] = [];
+
+  for (const doc of documents) {
+    const content = await readFile(doc.absolutePath, 'utf8');
+    const scope = extractScopeDeclaration(content, doc.path);
+
+    if (scope?.scope === 'none') {
+      excluded.push(doc);
+      continue;
+    }
+
+    const citations = await parseCitations(doc.absolutePath, repoRoot);
+    if (citations.length > 0) {
+      cited.push(doc);
+    } else if (scope?.scope === 'cited') {
+      // Declared cited but has no citations — that's a problem (undocumented).
+      undocumented.push(doc);
+    } else {
+      // No scope declaration and no citations.
+      undocumented.push(doc);
+    }
+  }
+
+  return {
+    documents,
+    undocumented,
+    excluded,
+    cited,
+    root,
+    includeArchived,
+  };
 }

@@ -10,13 +10,13 @@ Spec-Driven Development frameworks (OpenSpec, Spec Kit and others) own the speci
 
 Product Definition is framework-agnostic. SDD frameworks retain native ownership of their artifacts and lifecycle; the toolkit integrates through adapters, with OpenSpec as the first.
 
-Concretely, for the OpenSpec adapter (`adapter-openspec`):
+Concretely, for the OpenSpec integration (`integration-openspec`):
 
-- The adapter locates OpenSpec changes so that citations inside them can be scanned and verified. It never modifies, reorganizes or generates OpenSpec's own files, and OpenSpec's commands, conventions and archive workflow remain untouched.
+- The integration configures an OpenSpec workspace with PDaC citation rules by merging guidance into `openspec/config.yaml`, and records metadata under `.product/integrations/`. It never modifies, reorganizes or generates OpenSpec's own files (commands, skills, specs), and OpenSpec's commands, conventions and archive workflow remain untouched.
 - SDD may report questions and contradictions back to Product Definition; discovering during implementation that a business rule is wrong is valuable signal. But SDD never silently rewrites canonical product knowledge — corrections flow through a Product Change like any other evolution.
 - Archiving an SDD change never applies or accepts a Product Change. Finishing an implementation increment and evolving the product definition are separate decisions with separate owners (see ADR 0004).
 
-The `core` package has no OpenSpec (or any SDD) knowledge; only the adapter does.
+The `core` package has no OpenSpec (or any SDD) knowledge; only the integration does.
 
 ## Consequences
 

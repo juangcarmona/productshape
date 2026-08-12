@@ -1,0 +1,33 @@
+{
+  "name": "@prodshape/integration-codex",
+  "version": "0.1.0",
+  "description": "Codex-compatible (Agent Skills standard) renderer for Product Definition as Code canonical assets.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juangcarmona/productshape.git",
+    "directory": "packages/integration-codex"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0"
+  }
+}

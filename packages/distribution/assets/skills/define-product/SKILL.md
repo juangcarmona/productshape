@@ -25,12 +25,8 @@ Do not use this skill to reconstruct knowledge from an existing system (use `rec
 
 ## Files to read
 
-- `docs/methodology/define.md` — the Define flow this skill implements.
-- The spec repo's [artifacts chapter](https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md) — what each artifact type means, its required body sections and lifecycle.
-- `docs/specification/frontmatter-reference.md` — the exhaustive per-kind field tables: which properties are allowed, which are required, and what values they accept.
-- The spec repo's [identifiers chapter](https://github.com/product-definition-as-code/spec/blob/main/spec/identifiers.md) — ID prefixes and naming rules.
-- `docs/product/model/business-rules/br-change-001.md` — the rule governing how the definition changes: every evolution is an applied and accepted Product Change.
-- Artifact templates: the framework's `templates/` directory (installed copies may live under `.product/templates/`). Always start new artifacts from the matching template.
+- `references/authoring-order.md` in this skill — the Define flow and the conceptual dependency chain this skill implements.
+- `.product/templates/<kind>.md` — the artifact templates. Always start new artifacts from the matching template.
 - Existing artifacts under `docs/product/model`, including anything already drafted on this branch, before creating anything, to reuse IDs, terms and actors instead of duplicating them.
 
 ## Deterministic commands
@@ -40,7 +36,8 @@ Do not use this skill to reconstruct knowledge from an existing system (use `rec
 - `prodshape graph --format json` — the compiled product graph, for reuse checks.
 - `prodshape inspect <ID>` — details of an existing artifact before referencing it.
 - `prodshape impact <ID>` — what an existing artifact touches, before extending near it.
-- `prodshape schema <kind>` — the allowed frontmatter for a kind, read from the schemas. Use it instead of guessing; it needs no repository.
+- `prodshape schema <kind>` — the allowed frontmatter for a kind, read from the schemas bundled with the CLI. Use it instead of guessing; it needs no repository.
+- `prodshape inspect BR-CHANGE-001` — the rule governing how the definition changes: every evolution is an applied and accepted Product Change. Run it to read the rule before authoring a change.
 
 Never substitute your own judgement for these commands. If the CLI reports a structural fact, that fact is authoritative (BR-AI-001).
 

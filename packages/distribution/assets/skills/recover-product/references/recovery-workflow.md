@@ -1,0 +1,84 @@
+# Recovery workflow
+
+The session loop, in the order the work actually happens. The CLI persists everything after every command; you can stop at any point and a later session (yours or another agent's) resumes without loss.
+
+```text
+Orient
+  then Inventory evidence (repository + external + user inputs)
+  then Process the next batch
+  then Extract candidates
+  then Validate and reconcile
+  then Follow discovered leads
+  then Ask material questions
+  then Checkpoint
+  repeat until verified completion
+```
+
+## 1. Orient
+
+Before any extraction:
+
+- Confirm this is initial recovery. `prodshape recover start` refuses when the model directory already holds artifacts or a completed `chg-initial` exists in the change history. If it refuses, stop and explain to the user that recovered knowledge now enters through an ordinary Product Change; do not work around the refusal.
+- Agree the recovery brief with the user (template in `references/evidence-classification.md`). Scope questions are cheapest before the first batch. If the user cannot answer a scope question yet, record it with `recover question add` and keep the affected area out of the brief until answered.
+- Check the toolchain: `prodshape schema actor` should print a schema. If commands fail, fix the installation before starting a session.
+
+## 2. Inventory
+
+`prodshape recover start --brief brief.yaml` builds the evidence inventory:
+
+- Repository files matching the brief's roots, includes and excludes, minus forbidden paths, always minus `docs/product/` and `.product/` (the output side is never evidence).
+- External sources declared in the brief, registered but not fetched.
+- Every item gets a stable id (`E-0001`, ...) and, where bytes exist, a content hash.
+
+The inventory survives restarts. Later additions go through `recover evidence add`; never edit session files by hand.
+
+## 3. Process the next batch
+
+`prodshape recover next --format json` returns the next bounded batch (the brief's `batch-size`, override with `--limit`). For each source:
+
+1. Read the complete in-scope content, not a sample. Skimming produces confident nonsense.
+2. Identify explicit product claims (what the source states the product does or must do) and implications (what the source suggests but does not state) separately.
+3. Extract or update candidates per `references/artifact-extraction.md`.
+4. Classify every relevant section and record it: `prodshape recover mark --source E-0001 --as represented --artifacts UC-CHECKOUT-001,BR-LIMIT-001`. One source usually accumulates several findings across multiple `mark` calls.
+5. When nothing relevant remains unclassified, add `--complete` to the final mark. A source is not processed because it was opened; it is processed when every relevant section is accounted for.
+
+Reading a source may also surface leads (unseen modules, referenced documents, named people) and questions (uncertain meaning). Record them immediately; do not hold them in memory.
+
+## 4. Extract candidates
+
+See `references/artifact-extraction.md`. The short version: candidates go under `docs/product/changes/active/chg-initial/proposed/`, mirror the model layout, carry `status: draft` and `provenance`, and are listed in the change's `operations.add`.
+
+## 5. Validate and reconcile
+
+After each batch:
+
+- `prodshape recover check` re-hashes evidence, verifies the model stayed untouched, cross-checks that every mapped candidate exists, and revalidates the whole `CHG-INITIAL` overlay. Fix every error it reports before continuing.
+- Reconcile per `references/reconciliation.md`: merge duplicates (union the provenance), record contradictions as questions, keep relationships consistent.
+
+## 6. Follow leads
+
+Every lead is followed or explicitly closed:
+
+- Repository leads: search the inventory; if the lead points outside the brief's scope, ask the user whether to extend the brief rather than silently expanding it.
+- External leads: name the source, explain why it matters, and ask for authorisation. Only after the user agrees: `recover evidence add --url <url> --title <t> --authorized`, fetch it, save the fetched content to a file, then `recover evidence snapshot E-00NN --file <path>` so its hash is checkable.
+- User leads: ask the user directly, then store what they said as evidence: `recover evidence add --text "<their statement>" --title "<who and what>"`.
+
+Close each with `recover lead resolve L-00NN --resolution "<what it turned up>"`.
+
+## 7. Ask material questions
+
+Ask when interpretation genuinely forks: code and documentation disagree, the product boundary is unclear, inferred intent is uncertain, several readings are valid, or an external source needs confirmation. Each question carries the evidence summary, the options, their consequences, and your recommendation when the evidence supports one. Put it to the user in the conversation, then persist the outcome verbatim: `recover question answer Q-00NN --answer "<their decision>"`. Deferring (`recover question defer`) is a user decision with a reason, not a way to empty the queue.
+
+## 8. Checkpoint and resume
+
+Every `recover` command checkpoints atomically. To resume after any interruption (new conversation, new agent, days later):
+
+1. `prodshape recover status --format json`: where things stand, including `nextAction`.
+2. `prodshape recover check`: detect anything that changed while nobody was looking (edited files, new files matching the brief, a touched model, stale snapshots, schema drift surfacing as validation errors).
+3. Handle what check reports: re-read and re-mark stale sources with `--accept-changed`, restore or exclude missing ones, then continue with `recover next`.
+
+Trust only the persisted state. If a state file is corrupted, the CLI refuses it and says why; recovery state is generated material, so the worst case is discarding the session directory and re-running the loop, never lost canonical content.
+
+## 9. Finish
+
+When `recover status` reports complete (the criteria are enumerated in `references/completion-criteria.md`): run `recover check` one final time, then `recover report`, then hand over to the human. You never apply, merge or accept anything.

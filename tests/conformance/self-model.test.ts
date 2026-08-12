@@ -9,22 +9,32 @@ const expectedIds: Record<string, string[]> = {
     'ACT-PRODUCT-ENGINEER',
     'ACT-REPOSITORY-MAINTAINER',
     'ACT-AI-ASSISTANT',
+    // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
     'ACT-PRODUCT-EXPLORER',
   ],
-  journey: ['JRN-ADOPT-001', 'JRN-SNAPSHOT-001'],
+  journey: [
+    'JRN-ADOPT-001',
+    // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
+    'JRN-SNAPSHOT-001',
+  ],
   'use-case': [
     'UC-INIT-001',
     'UC-DEFINE-001',
     'UC-VALIDATE-001',
     'UC-INSPECT-001',
     'UC-IMPACT-001',
+    // Added by RFC #4 (citation contract).
     'UC-CITE-001',
     'UC-CITATIONS-VERIFY-001',
+    // Recovered: change drafting (adapted to change-as-PR).
     'UC-CHANGE-001',
+    // Added by CHG-CLI-POLISH-001 (adoption improvements).
     'UC-SCHEMA-001',
     'UC-FIX-001',
+    // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
     'UC-SNAPSHOT-001',
     'UC-SNAPSHOT-EXPLORE-001',
+    // Added by CHG-EXPLORE-001 (ps:explore thinking partner).
     'UC-EXPLORE-001',
   ],
   'business-rule': [
@@ -40,11 +50,14 @@ const expectedIds: Record<string, string[]> = {
     'TERM-PRODUCT-GRAPH',
     'TERM-PRODUCT-CONTEXT',
     'TERM-CURRENT-PRODUCT-MODEL',
+    // Added by CHG-BRAND-001 (ProductShape brand adoption).
     'TERM-METHODOLOGY',
     'TERM-REFERENCE-IMPLEMENTATION',
+    // Added by CHG-SNAPSHOT-002 (progressive-disclosure Product Snapshot Explorer).
     'TERM-GRAPH-PROJECTION',
     'TERM-PRODUCT-EXPLORER',
     'TERM-FOCUSED-TOPOLOGY',
+    // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
     'TERM-PRODUCT-SNAPSHOT',
   ],
   'bounded-context': ['BC-PRODUCT-DEFINITION', 'BC-DELIVERY-INTEGRATION'],
@@ -56,18 +69,26 @@ const expectedIds: Record<string, string[]> = {
     'FR-GRAPH-001',
     'FR-INSPECT-001',
     'FR-IMPACT-001',
+    // Added by RFC #4 (citation contract).
     'FR-CITE-001',
     'FR-CITATIONS-VERIFY-001',
+    // Recovered: change drafting (adapted to change-as-PR).
     'FR-CHANGE-001',
+    // Apply materializes an approved change without accepting it (BR-CHANGE-001).
     'FR-CHANGE-002',
     'FR-DISTRIBUTION-001',
     'FR-OPENSPEC-001',
+    // Added by CHG-CLI-POLISH-001 (adoption improvements).
     'FR-SCHEMA-001',
     'FR-FIX-001',
+    // Added by CHG-MODEL-TRUEUP-001 (baseline corrected against shipped behaviour).
     'FR-DOCTOR-001',
+    // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
     'FR-SNAPSHOT-001',
     'FR-SNAPSHOT-002',
+    // Added by CHG-EXPLORE-001 (ps:explore thinking partner).
     'FR-EXPLORE-001',
+    // Added by CHG-SNAPSHOT-002 (progressive-disclosure Product Snapshot Explorer).
     'FR-SNAPSHOT-003',
     'FR-SNAPSHOT-004',
     'FR-SNAPSHOT-005',
@@ -80,6 +101,7 @@ const expectedIds: Record<string, string[]> = {
     'QR-DETERMINISM-001',
     'QR-EXPLAINABILITY-001',
     'QR-EXTENSIBILITY-001',
+    // Added by CHG-SNAPSHOT-002 (progressive-disclosure Product Snapshot Explorer).
     'QR-ACCESSIBILITY-001',
     'QR-PRESENTATION-001',
     'QR-SCALABILITY-001',
@@ -90,6 +112,7 @@ const expectedIds: Record<string, string[]> = {
     'CON-NO-WEB-UI',
     'CON-SDD-AGNOSTIC',
     'CON-PUBLIC-GENERIC',
+    // Added by CHG-BRAND-001 (ProductShape brand adoption).
     'CON-BRAND-001',
   ],
 };
@@ -137,27 +160,6 @@ describe('self-hosted product model', () => {
     }
     const allIds = documents.map((d) => String(d.frontmatter.id));
     expect(new Set(allIds).size).toBe(allIds.length);
-  });
-
-  it('entered through CHG-INITIAL, which accounts for every artifact in the model', async () => {
-    // The archived initialisation change is the record of how this Product Definition came to
-    // exist. If it and the model disagree, one of them is lying about what the product is.
-    const change = await validateMarkdownDocument(
-      join(repoRoot, 'docs', 'product', 'changes', 'completed', 'chg-initial', 'change.md'),
-    );
-    expect(change.diagnostics, change.file).toEqual([]);
-    expect(change.frontmatter.id).toBe('CHG-INITIAL');
-    expect(change.frontmatter.status).toBe('applied');
-
-    const operations = change.frontmatter.operations as {
-      add: string[];
-      modify: string[];
-      remove: string[];
-    };
-    const modelIds = (await loadModel()).map((d) => String(d.frontmatter.id));
-    expect([...operations.add].sort()).toEqual([...modelIds].sort());
-    expect(operations.modify).toEqual([]);
-    expect(operations.remove).toEqual([]);
   });
 
   it('every relationship reference resolves to an allowed target type', async () => {

@@ -1,6 +1,7 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { claudeRenderer } from '@prodshape/integration-claude';
+import { codexRenderer } from '@prodshape/integration-codex';
 import { copilotRenderer } from '@prodshape/integration-copilot';
 import type { CanonicalAssets, ProviderRenderer, RenderOptions } from './assets.js';
 import { loadBundledAssets } from './assets.js';
@@ -14,7 +15,7 @@ export interface IntegrationDiagnostic {
 }
 
 /** Renderers consumed via structural typing; integrations never import distribution. */
-export const renderers: ProviderRenderer[] = [claudeRenderer, copilotRenderer];
+export const renderers: ProviderRenderer[] = [claudeRenderer, copilotRenderer, codexRenderer];
 
 export function rendererFor(provider: string): ProviderRenderer | undefined {
   return renderers.find((r) => r.provider === provider);

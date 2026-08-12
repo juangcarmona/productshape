@@ -1,0 +1,36 @@
+# Completion criteria
+
+Recovery is complete when `prodshape recover status` reports every criterion met, and not before. The criteria are computed from persisted state and the repository, never from your recollection of the session.
+
+| Criterion | Meaning |
+| --- | --- |
+| `sourcesClassified` | No pending, stale or missing evidence; every source is processed (each relevant section classified) or excluded with a reason |
+| `leadsResolved` | Every lead followed and closed with a resolution |
+| `questionsResolved` | Every question answered, or deferred with a reason the user agreed to |
+| `familiesProbed` | Each of the nine artifact families has candidates or an explicit none-found probe with a note |
+| `duplicatesReconciled` | Every duplicate finding maps to a candidate that exists |
+| `validationPasses` | The `CHG-INITIAL` overlay validates with zero errors |
+| `validationFresh` | Nothing under the change directory changed since validation last ran |
+| `noStaleEvidence` | Every content hash matches; nothing changed behind the session's back |
+| `lowConfidenceReported` | The low-confidence queue (PRODUCT111) is current and will appear in the report |
+| `modelUntouched` | The accepted model directory is byte-identical to the session start |
+| `outputOnlyChgInitial` | Every evidence-to-candidate mapping resolves under the `CHG-INITIAL` proposed overlay |
+
+Two of these deserve emphasis. `modelUntouched` failing means the doctrine was violated: something wrote to the accepted model during recovery, and that must be surfaced to the user, not repaired quietly. `sourcesClassified` is the whole-population guarantee: "repository-wide" means the declared evidence population plus authorised external inputs, each accounted for, not a tour of the interesting parts.
+
+## The final report
+
+`prodshape recover report` writes `report.md` into the session directory: scope and boundaries, source counts with exclusions and reasons, external source usage, candidates by kind, the per-candidate provenance mapping, contradictions, questions with answers and deferrals, leads, validation results with the low-confidence queue, the completion checklist, and the non-acceptance statement naming `CHG-INITIAL` as the only output.
+
+## The handover
+
+The report is not the handover; you still present the result in the conversation:
+
+1. Where the output lives: `docs/product/changes/active/chg-initial/` and the session report path.
+2. The candidate list by kind, with confidence distribution and the low-confidence queue called out as the review priority.
+3. Every contradiction and how it stands (decided, or deferred and why).
+4. Deferred questions the reviewer inherits.
+5. Evidence that was excluded or classified as carrying no product intent, so the reviewer can audit the negative claims too.
+6. The explicit statement: nothing is accepted. The human reviews the change, and acceptance happens through the normal pull request, not through this session.
+
+Then stop. Applying the change, committing, merging and every later correction (an ordinary Product Change) are outside this skill's authority.

@@ -8,11 +8,11 @@ The toolkit ships AI assets for multiple providers: Claude Code reads `.claude/`
 
 ## Decision
 
-The canonical AI assets live once, provider-neutrally, in the repository: `skills/` (six skills), `commands/` (seven thin `/product:*` commands), `hooks/` (four deterministic guard descriptors) and `templates/`. Provider files under `.claude/` and `.github/` are generated from them by the `distribution` package, using the provider mappings exported by `integration-claude` and `integration-copilot`.
+The canonical AI assets live once, provider-neutrally, in the repository: `skills/` (five skills), `commands/` (six thin `/product:*` commands) and `templates/`. The push-pipeline hooks were retired by RFC #4. Provider files under `.claude/`, `.github/` and `.agents/` are generated from them by the `distribution` package, using the provider mappings exported by `integration-claude`, `integration-copilot` and `integration-codex`.
 
 Every generated provider file carries a managed-file header — a marker, the framework version, the canonical source and a content hash — and is recorded in `installation.lock.json`. `prodshape integration update` regenerates managed files; `prodshape doctor` compares actual content hashes against the lock file and reports hand-edited (`PRODUCT051`) or missing (`PRODUCT052`) managed files. No manually maintained provider duplicates exist.
 
-The providers are not symmetric. Claude Code has a native hook runtime, so the Claude integration renders executable hooks. GitHub Copilot offers no equivalent mechanism (OPEN-DECISIONS OD-002), so the Copilot integration renders the hook expectations as documentation only; the enforcement gap is recorded in `docs/limitations.md`.
+The providers are not symmetric. Claude Code has a native hook runtime. GitHub Copilot and Codex-compatible agents offer no equivalent mechanism (OPEN-DECISIONS OD-002); the enforcement gap is recorded in `docs/limitations.md`. The push-pipeline hooks were retired by RFC #4, so no hooks are currently shipped.
 
 Ownership extends to absence. A managed file the current assets and configuration no longer produce is removed, conditional on its content still matching the recorded hash; a file that has diverged is kept and reported instead. Without this a file dropped from the lock would persist unreferenced and unchecked — never regenerated, never reported as drifted, indistinguishable from something the user wrote — which is a worse outcome than deleting it.
 

@@ -88,14 +88,17 @@ export const copilotRenderer = {
   render(assets: CanonicalAssets, options: RenderOptions = {}): RenderedFile[] {
     const files: RenderedFile[] = [];
 
+    // Copilot reads the Agent Skills standard: .github/skills/<name>/SKILL.md with
+    // supporting files (references/, scripts/) inside the skill directory. This matches
+    // the Claude layout and the agentskills.io specification.
     for (const skill of assets.skills) {
       files.push({
-        path: `.github/skills/${skill.name}.md`,
+        path: `.github/skills/${skill.name}/SKILL.md`,
         content: withHeader(skill.content, assets.version, `skills/${skill.name}/SKILL.md`),
       });
       for (const reference of skill.references) {
         files.push({
-          path: `.github/skills/${skill.name}-references/${reference.name}`,
+          path: `.github/skills/${skill.name}/references/${reference.name}`,
           content: withHeader(
             reference.content,
             assets.version,

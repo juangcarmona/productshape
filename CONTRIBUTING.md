@@ -43,7 +43,7 @@ pnpm changeset
 
 Choose the affected packages and bump type and write a short, user-facing summary. Only packages that receive a changeset are released. A non-blocking CI check reminds you when a changeset is missing. The full release process, pre-release (alpha/beta) tracks and rollback are documented in [RELEASING.md](RELEASING.md).
 
-> **CLI bundling:** `@prodshape/cli` bundles the other packages at build time and declares no `@prodshape/*` dependencies, so Changesets cannot bump it automatically. When you change a bundled package (`core`, `distribution`, `adapter-openspec`, `integration-claude`, `integration-copilot`) **and want the CLI to ship that change, add `@prodshape/cli` to the changeset yourself.**
+> **CLI bundling:** `@prodshape/cli` bundles the other packages at build time and declares no `@prodshape/*` dependencies, so Changesets cannot bump it automatically. When you change a bundled package (`core`, `distribution`, `integration-openspec`, `integration-claude`, `integration-copilot`, `integration-codex`) **and want the CLI to ship that change, add `@prodshape/cli` to the changeset yourself.**
 
 ## Unresolved decisions
 

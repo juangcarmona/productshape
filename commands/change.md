@@ -1,15 +1,4 @@
----
-description: Elaborate and validate a Product Change — AI-assisted drafting of the semantic delta and its proposed future-state artifacts, with open questions kept visible. A human approves it, apply materializes it, a merge accepts it. Use /product:change or /ps:change.
-allowed-tools:
-  - prodshape validate
-  - prodshape change validate
-  - prodshape change list
-  - prodshape change apply
-  - prodshape change archive
-  - prodshape impact
-  - prodshape inspect
-  - prodshape schema
----
+# /product:change
 
 Use the `analyze-product-change` skill.
 

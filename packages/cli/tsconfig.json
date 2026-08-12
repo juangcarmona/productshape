@@ -5,8 +5,9 @@
     "paths": {
       "@prodshape/core": ["../core/src/index.ts"],
       "@prodshape/distribution": ["../distribution/src/index.ts"],
-      "@prodshape/adapter-openspec": ["../adapter-openspec/src/index.ts"],
+      "@prodshape/integration-openspec": ["../integration-openspec/src/index.ts"],
       "@prodshape/integration-claude": ["../integration-claude/src/index.ts"],
+      "@prodshape/integration-codex": ["../integration-codex/src/index.ts"],
       "@prodshape/integration-copilot": ["../integration-copilot/src/index.ts"]
     }
   },

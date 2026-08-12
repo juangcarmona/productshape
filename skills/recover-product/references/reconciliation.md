@@ -1,0 +1,33 @@
+# Reconciliation
+
+Recovery converges by continuously reconciling what the evidence produced. Four mechanisms, all persisted through the CLI, none held in memory.
+
+## Duplicates
+
+Two candidates describing the same concept are merged, never left to compete:
+
+1. Keep the candidate with the better name (current vocabulary, per the brief's `synonyms`) and the richer content.
+2. Union the provenance: the surviving candidate's `provenance.source` cites both evidence trails, and its confidence reflects the combined support (corroborating independent sources usually raise it).
+3. Delete the losing file, move anything it alone knew into the survivor, and update every reference and every `operations.add` entry.
+4. Re-mark affected evidence so mappings point at the survivor, and classify newly arriving repeats as `duplicate` against it: `prodshape recover mark --source E-00NN --as duplicate --artifacts <SURVIVOR-ID> --note "corroborates"`.
+
+`recover check` reports mappings to candidates that no longer exist, which is how a sloppy merge surfaces.
+
+## Contradictions
+
+A contradiction is evidence disagreeing with evidence: code enforcing what documentation denies, a test pinning behaviour a stakeholder calls a bug, one term with two meanings. Contradictions are findings, not noise, and never resolved silently:
+
+1. Record a question carrying both sides: `prodshape recover question add --text "Docs say 5000, code enforces 10000; which is intended?" --context "E-0004 (README) vs E-0011 (validation.ts + limits.spec.ts)" --option "5000 is intent, code is a bug" --option "10000 is current truth" --recommendation "10000; tests pin it and the README predates the last two releases"`.
+2. Mark each conflicting source: `prodshape recover mark --source E-0004 --as contradiction --note "limit disagrees with code" --question Q-00NN`.
+3. If a candidate must exist meanwhile, write it from the higher-authority source (the brief's `authority` order), set confidence no higher than `medium`, and state the open conflict in its body.
+4. When the user answers, update the candidate (content, confidence, provenance) and record the answer: `recover question answer Q-00NN --answer "..."`.
+
+## Leads
+
+A lead is anything the evidence points at that the session has not examined: an imported module, a linked document, a named system or person, a directory the brief excluded that suddenly looks load-bearing. Record leads the moment they appear (`recover lead add --description ... --source E-00NN --kind repo|external|user`), follow them deliberately (see the workflow reference), and close every one with a resolution. An open lead is unfinished recovery; the completion criteria refuse it.
+
+Leads that would expand the authorised scope (new roots, new external sources) are questions for the user first; the brief's boundary moves only when the user moves it.
+
+## Questions
+
+Questions are the interface between uncertain evidence and the one person who can settle it. Every question is persisted with its context, options and recommendation; every answer is persisted verbatim; deferrals carry a reason and the user's agreement. The question queue doubles as the contradiction register, so an empty queue at completion means every conflict was either decided or knowingly deferred, with the decision trail in the session state and the final report.

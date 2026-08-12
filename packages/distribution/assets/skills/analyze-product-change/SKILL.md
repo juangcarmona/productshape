@@ -29,7 +29,9 @@ Provide a structured, AI-assisted elaboration workflow that reads the product gr
 
 - All artifact files under `docs/product/model/**` (to understand the current graph).
 - `.product/config.yaml` for repository configuration.
-- `templates/product-change.md` for the change template.
+- `.product/templates/product-change.md` for the change template.
+- `references/operations-checklist.md` in this skill — the drafting checklist (before, during, after).
+- `references/change-template-guide.md` in this skill — the product-change frontmatter and body sections.
 
 ## Deterministic commands
 
@@ -47,7 +49,7 @@ prodshape schema product-change     # The frontmatter contract for a change
 1. **Validate the baseline** — run `prodshape validate` to ensure the Product Definition is structurally sound before drafting a delta against it.
 2. **Read the full model** — read all artifact files under `docs/product/model/**`. Understand the current graph: actors, journeys, use cases, rules, terms, requirements.
 3. **Analyze the change request** — identify which artifacts the intended outcome requires added, modified or removed. Use `prodshape impact <ID>` to check structural reach, especially before proposing a removal.
-4. **Create the change** — create `docs/product/changes/active/<chg-id>/change.md` from `templates/product-change.md`. The frontmatter is closed, so any field the schema does not list is a `PRODUCT002` error. Fill in:
+4. **Create the change** — create `docs/product/changes/active/<chg-id>/change.md` from `.product/templates/product-change.md`. The frontmatter is closed, so any field the schema does not list is a `PRODUCT002` error. Fill in:
    - `id`: the `CHG-` identifier
    - `type`: `product-change`
    - `title`: what the change is, in one line

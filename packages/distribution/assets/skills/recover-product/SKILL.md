@@ -1,101 +1,100 @@
 ---
 name: recover-product
-description: Generate candidate product knowledge from a brownfield system, with provenance and confidence, for human validation; use when a shipped system has no canonical product definition.
+description: Recover an initial ProductShape definition from a brownfield system through a resumable, evidence-tracked session with provenance and confidence, for human validation; use when a shipped system has no canonical product definition.
 ---
 
 # Recover Product
 
 ## Purpose
 
-Reconstruct candidate product knowledge — actors, journeys, use cases, business rules, domain terms, requirements — from the evidence a shipped system leaves behind. The output is always CANDIDATE knowledge: draft artifacts carrying provenance and confidence, contradictions surfaced as open questions, nothing canonical until a human validates the semantics. Full automated recovery is out of scope in v0.1; this skill defines the workflow and the extension point that future recovery tooling implements.
+Reconstruct candidate product knowledge (actors, journeys, use cases, business rules, domain terms, bounded contexts, functional requirements, quality requirements, constraints) from the evidence an existing system leaves behind: its repository, materials the user supplies, and online resources the user explicitly authorises. The work is split on a hard line. The deterministic CLI (`prodshape recover ...`) owns the bookkeeping: evidence inventory, content hashes, batches, coverage, checkpoints, validation, the final report. This skill owns the semantics: reading evidence, extracting candidates, reconciling duplicates and contradictions, and asking the user when meaning is uncertain. Neither side may do the other's job.
+
+Every candidate is proposed, never accepted: candidates live in the proposed overlay of `CHG-INITIAL` under `docs/product/changes/active/chg-initial/`, carry `status: draft` and `provenance` frontmatter, and enter the model only when a human reviews the change and accepts it through the normal pull request path.
 
 ## When to use
 
-- A system exists in production but has no product definition, or only a partial one, and the team wants candidate artifacts reconstructed from evidence.
-- A baseline exists but a subsystem's behaviour was never captured; recovery proposes it as an explicit delta through a recovery Product Change.
+- A system exists but has no accepted Product Definition, and the team wants an initial baseline recovered from evidence. This is the session loop below.
+- If an accepted baseline already exists (the model directory has artifacts, or a completed `chg-initial` is in the change history), `prodshape recover start` refuses, and so must you: `CHG-INITIAL` is the reserved initialisation change and reusing it would rewrite history. Newly recovered knowledge then enters through an ordinary Product Change under `docs/product/changes/active/<chg-id>/`, following the same evidence discipline (provenance, confidence, contradictions as open questions).
 
 Do not use this skill for greenfield intent (use `define-product`) or to review an existing model (use `audit-product-model`).
 
 ## Required inputs
 
-- Access to at least one evidence source: source code, tests, API surfaces, user interfaces, database schemas, production behaviour (logs, traces, usage), documentation, tickets and history, or stakeholder input relayed by the user.
-- Whether a Product Definition exists under `docs/product/model`. Without one, recovery output becomes `CHG-INITIAL`; with one, it becomes an ordinary Product Change correcting or extending the definition.
-- The scope the user wants recovered (whole system, one subsystem, one behaviour area). If not stated, ask before sweeping the codebase.
+- A recovery brief agreed with the user before any extraction: source roots, include and exclude globs, forbidden directories, documentation languages, product scope, known actors and terminology, synonyms and obsolete names, source authority rules, known contradictions, material to ignore, secondary evidence policy, batch size, areas requiring confirmation, and any external sources. Authoring guidance and the full template are in `references/evidence-classification.md`.
+- Explicit user authorisation, in this conversation, for every external file or online resource before it is read. Listing a source in the brief the user reviewed counts; assuming access does not.
+- Whether a session already exists: `prodshape recover status` resumes; `prodshape recover start` begins.
 
 ## Files to read
 
-- `docs/methodology/recover.md` — the recovery contract this skill implements.
-- The spec repo's [artifacts chapter](https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md) — target artifact contracts and required body sections.
-- `docs/specification/frontmatter-reference.md` — the exact allowed frontmatter per artifact kind, including the `provenance` object and its permitted values.
-- `docs/product/model/business-rules/br-change-001.md` — the rule governing how the definition changes.
-- Artifact templates in the framework's `templates/` (installed copies may be under `.product/templates/`).
-- `references/evidence-sources.md` in this skill — what each evidence source is good for and its typical confidence.
-- Existing artifacts under `docs/product/model`, so candidates extend rather than duplicate.
+- `references/recovery-workflow.md`: the session loop, resuming, checkpoint discipline.
+- `references/evidence-classification.md`: the brief template, the six classifications, external evidence intake.
+- `references/artifact-extraction.md`: how evidence becomes candidates under `CHG-INITIAL`.
+- `references/reconciliation.md`: duplicates, contradictions, leads and questions.
+- `references/completion-criteria.md`: when recovery is verifiably done, and the final handover.
+- `references/evidence-sources.md`: what each evidence source is good for and its typical confidence.
+- `references/provenance-format.md`: the `provenance` frontmatter object and body labelling.
+- `.product/templates/<kind>.md`: the artifact templates.
 
 ## Deterministic commands
 
-- `prodshape validate --format json` — structural validation of draft candidates.
-- `prodshape change validate` — full-tree validation of the working tree as a proposed change (takes no argument).
-- `prodshape graph --format json` — the existing graph, to attach candidates correctly.
-- `prodshape inspect <ID>` — existing artifact detail before referencing or modifying.
-- `prodshape schema <kind>` — the allowed frontmatter for a kind, read from the schemas.
+- `prodshape recover start --brief <file>`: create the session, inventory the authorised evidence, hash it, checkpoint.
+- `prodshape recover status --format json`: coverage, open work, completion criteria. The single source of truth for progress; never track coverage from memory or chat history.
+- `prodshape recover next --format json`: the next bounded batch of pending evidence.
+- `prodshape recover mark --source <id> --as <classification> ...`: record how each relevant section of a source was classified.
+- `prodshape recover evidence add|snapshot|list`: register and freeze external or user-provided evidence.
+- `prodshape recover lead add|resolve|list` and `prodshape recover question add|answer|defer|list`: persist every lead and every user question with its answer.
+- `prodshape recover family <kind> --none-found --note <what was searched>`: record a probed family that yielded nothing.
+- `prodshape recover check`: re-hash evidence, detect drift, verify the model stayed untouched, revalidate the `CHG-INITIAL` overlay.
+- `prodshape recover report`: the final report into the session directory.
+- `prodshape schema <kind>`: the exact allowed frontmatter per kind. `prodshape validate --format json` for baseline validation.
 
-Structural facts come from these commands, never from your own judgement (BR-AI-001).
+Structural facts come from these commands, never from your own reading of state files (BR-AI-001).
 
 ## Reasoning procedure
 
-1. Inventory available evidence. For the requested scope, list which sources actually exist and are reachable: code, tests, APIs, UI, database schemas, production behaviour, documentation, tickets, stakeholder input. Record what is missing — absent evidence bounds confidence.
-2. Extract observed behaviour. From code, tests, schemas and APIs, state what the system verifiably does ("the system rejects orders above 10,000"). Each observation cites the exact evidence: file and path, test name, endpoint, table or column.
-3. Separate inferred intent. Hypotheses about why ("requires approval because of fraud risk") are recorded as inference, explicitly labeled, never merged into observed statements.
-4. Assign provenance and confidence to every candidate claim: which evidence produced it, and high, medium or low support. A rule enforced by code and pinned by tests is high; a meaning guessed from a column name is low.
-5. Record provenance in the frontmatter of every candidate, so it is queryable and validated rather than buried in prose:
-
-   ```yaml
-   provenance:
-     source: src/orders/validation.ts (limit check), tests/orders/limits.spec.ts
-     confidence: high
-     recovered-from: observation
-   ```
-
-   `source` and `confidence` are required whenever provenance is present; `recovered-from` is `observation`, `inference`, `interview` or `documentation`, and may be omitted when the evidence is genuinely more than one of these. Keep the reasoning — which claim is observed, which is inferred, and what the evidence does not settle — in the artifact body. A draft whose confidence is `low` is reported as `PRODUCT111`, so the queue of candidates needing human validation is derivable from validation output rather than tracked by hand.
-
-6. Surface contradictions as open questions. When code disagrees with documentation, tests contradict stakeholders, or one term carries two meanings, record the conflict and both sources as an open question. Never pick a winner silently.
-7. Write the candidates: draft artifacts from templates (`status: draft`), named by lowercase ID, under the change's `proposed/` directory, with every touched artifact listed in the change's `operations`. Provenance and confidence live on these artifacts, never on the change itself.
-8. Run deterministic validation and fix every structural error.
-9. Hand over to a human with the candidate list, per-candidate confidence, all contradictions and open questions, and the evidence gaps. The human validates semantics, resolves or defers contradictions, and approves what enters the model.
+1. Orient. Confirm this is genuinely initial recovery (`recover start` enforces it), agree the brief with the user, and resolve ambiguity about scope before extraction, not after.
+2. Inventory. `recover start` builds the deterministic inventory from the brief: repository files plus declared external sources. Register anything the user hands you later with `recover evidence add` (externals need `--authorized`).
+3. Process batches. `recover next`, then read each source in full. Identify explicit product claims and implications separately. Extract candidates into `CHG-INITIAL/proposed/` with provenance and confidence. Classify every relevant section of the source and `recover mark` it, with `--complete` only when nothing relevant is left unclassified.
+4. Expand. Every mention of an unseen subsystem, document or person becomes a lead (`recover lead add`). Resolve every lead before completion.
+5. Reconcile continuously. Duplicates merge with provenance preserved; contradictions are recorded, linked to a question, and never resolved silently.
+6. Ask. When meaning is uncertain, interpretations conflict, the product boundary is unclear, or an external source needs confirmation: `recover question add` with evidence summary, options and a recommendation where the evidence supports one, then put the question to the user and `recover question answer` with their decision. Defer only with the user's agreement.
+7. Checkpoint and repeat. State persists on every command; a new session of work resumes from `recover status`, trusting only persisted state. Run `recover check` after every few batches and after any pause: it catches changed evidence, model drift and validation regressions.
+8. Finish. When `recover status` reports every completion criterion met, run `recover report` and hand over per `references/completion-criteria.md`.
 
 ## Allowed modifications
 
-- Creating a Product Change at `docs/product/changes/active/<chg-id>/` and authoring the candidate artifacts under its `proposed/` directory. Never edit a baseline file under `docs/product/model`.
-- Editing candidates you created in this session.
+- `docs/product/changes/active/chg-initial/`: `change.md` and the candidate artifacts under `proposed/`.
+- Recovery session state, only through `prodshape recover` commands.
+- Nothing else in the repository.
 
 ## Forbidden actions
 
-- Treating any recovered claim as canonical: candidates stay `draft`; a human must validate semantics before anything becomes `active`.
-- Modifying `docs/product/model` directly when an accepted baseline exists.
-- Presenting inferred intent as observed behaviour, or emitting a candidate without provenance — candidates without provenance are opinions.
-- Resolving contradictions between evidence sources yourself; they remain open questions.
-- Inventing frontmatter fields. Each kind accepts exactly the properties its schema defines — `provenance` is the one recovery adds, and it accepts only its own defined sub-fields. Anything outside that is rejected as `PRODUCT002`. Check with `schema <kind>` rather than guessing.
-- Marking artifacts `active`, or merging/pushing changes.
-- Replacing deterministic validation with your own reading of files (BR-AI-001).
+- Writing to `docs/product/model` in any way; initial recovery proposes, it never touches the accepted model.
+- Targeting any change other than `CHG-INITIAL`, or starting recovery when a baseline exists.
+- Marking candidates `active`, applying the change, committing, merging or pushing anything.
+- Reading paths the brief forbids, or any credential and secret material; they are never evidence.
+- Fetching an external file or URL the user has not explicitly authorised.
+- Resolving contradictions between sources yourself; they stay open questions until the user decides.
+- Emitting a candidate without provenance, or presenting inferred intent as observed behaviour.
+- Inventing frontmatter fields; each kind accepts exactly what `prodshape schema <kind>` prints.
+- Using chat history as session state; the persisted session files are the only memory that counts.
 
 ## Human approval points
 
-- Confirm the recovery scope and whether the target is `CHG-INITIAL` or a later change, before sweeping evidence.
-- Ask the user for stakeholder input when evidence conflicts or intent is unrecoverable from artifacts alone — stakeholders are often the only source for "why".
-- Final gate: present candidates, confidence, contradictions and gaps; the human validates every claim before anything is approved. Stop and wait.
+- The brief: scope, sources, exclusions and external access are the user's call. Confirm before the first batch.
+- Every external source: named, explained and authorised by the user before it is read.
+- Every question raised during processing: present evidence, options, consequences and your recommendation; record the answer verbatim.
+- The final gate: present the report, the candidate list with confidence, the contradictions and the deferred questions. The human reviews `CHG-INITIAL` and accepts or rejects it through the pull request; you stop at the handover.
 
 ## Expected outputs
 
-- Draft candidate artifacts (or a recovery Product Change containing them), each carrying `provenance` frontmatter with its source, its confidence, and where classifiable the recovery method, and labelling each body claim observed or inferred.
-- Every contradiction between evidence sources recorded as an explicit open question.
-- A clean structural validation run (`validate` or `change validate`).
-- A recovery summary for the human: candidates by confidence level, unresolved contradictions, and evidence sources that were unavailable or unexamined.
+- `docs/product/changes/active/chg-initial/change.md` with complete `operations`, plus draft candidates under `proposed/` mirroring the model layout, every one carrying `provenance` with source and confidence and labelling body claims observed or inferred.
+- A recovery session directory under `.product/generated/recovery/<session-id>/` with the complete inventory, coverage, leads, questions and `report.md`. Generated, non-canonical material.
+- Every contradiction and unresolved meaning recorded as an explicit, persisted question.
+- A clean `prodshape recover check` and a final `recover report` stating that nothing was accepted.
 
 ## Completion checks
 
-- Every candidate carries `provenance` frontmatter with a source and a confidence, and labels each body claim observed or inferred; no unlabeled mixtures.
-- No contradiction was silently resolved; all appear as open questions.
-- All candidates are `status: draft`; nothing was marked active or merged.
-- `prodshape validate` (or `change validate`) was run after the last edit and reports no errors.
-- The human validation handover was issued, including confidence breakdown and evidence gaps.
+- `prodshape recover status` reports every completion criterion met: all sources classified, leads resolved, questions answered or explicitly deferred, all nine artifact families probed, duplicates reconciled, overlay validation passing and fresh, no stale evidence, model untouched, output confined to `CHG-INITIAL`.
+- `prodshape recover check` exits clean immediately before handover.
+- The handover to the human happened and nothing was applied, merged or accepted by you.

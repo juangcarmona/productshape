@@ -1,7 +1,7 @@
 {
-  "name": "@prodshape/adapter-openspec",
-  "version": "0.3.3",
-  "description": "OpenSpec adapter for Product Definition as Code: locates OpenSpec change directories for citation verification.",
+  "name": "@prodshape/integration-openspec",
+  "version": "0.1.0",
+  "description": "OpenSpec integration for Product Definition as Code: configures OpenSpec workspaces with PDaC citation rules and verifies citations against the OpenSpec population.",
   "license": "Apache-2.0",
   "type": "module",
   "publishConfig": {
@@ -11,7 +11,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/juangcarmona/productshape.git",
-    "directory": "packages/adapter-openspec"
+    "directory": "packages/integration-openspec"
   },
   "exports": {
     ".": {
@@ -28,7 +28,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@prodshape/core": "workspace:*",
     "yaml": "^2.5.0"
   },
   "devDependencies": {

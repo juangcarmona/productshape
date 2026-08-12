@@ -18,12 +18,16 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # The OpenSpec CLI ships as @fission-ai/openspec; the bare `openspec` npm package is an
+      # unrelated empty placeholder with no bin. Pinned so a version bump is a deliberate change,
+      # not a drifting CI surface. The consumer-install tests spawn the bare `openspec` command,
+      # so it must be resolvable from PATH before the suite runs, not just before this last step.
+      - name: install OpenSpec CLI
+        run: npm install -g @fission-ai/openspec@1.3.0
       # The packed-tarball test in the repo project installs the built CLI package.
       - run: pnpm build
       # Conformance fixtures, schema/template/example conformance, the self-hosted
       # model and the end-to-end traceability fixture all live in the repo project.
       - run: npx vitest run --project repo
-      # The OpenSpec CLI ships as @fission-ai/openspec; the bare `openspec` npm package is an
-      # unrelated empty placeholder with no bin. Pin the real package for a reproducible check.
       - name: openspec artifact validation
-        run: npx --yes @fission-ai/openspec@1.3.0 validate --all --no-interactive
+        run: openspec validate --all --no-interactive

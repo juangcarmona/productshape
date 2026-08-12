@@ -2,7 +2,7 @@
 
 This guide covers adopting Product Definition as Code for an existing system: software that already has behaviour, users and accumulated decisions, but no canonical product model. The path is initialize, recover a model from evidence, validate it into a baseline, then operate through Product Changes like any other repository.
 
-Read this first: **automated brownfield recovery is out of scope in v0.1.** What exists is the Recover workflow — a defined, human-driven process — and the `recover-product` skill contract that assists it. No tool will scan your codebase and emit a product model. Plan for recovery to be real analytical work; the methodology structures it, it does not eliminate it.
+Read this first: **no tool will scan your codebase and emit a product model.** Semantic extraction stays with you and the AI assistant executing the `recover-product` skill, and a human validates everything before it becomes canonical. What is deterministic is the session around that work: `prodshape recover` manages the evidence inventory, content hashes, bounded batches, coverage, leads, user questions, checkpoints and the final report, so a recovery that spans days and many assistant conversations never loses track of what was examined, what changed and what remains. Plan for recovery to be real analytical work; the tooling structures it, it does not eliminate it.
 
 > The CLI ships as [`@prodshape/cli`](https://www.npmjs.com/package/@prodshape/cli). The commands below use `prodshape`; the `product-definition` alias is equivalent through v0.x. See [Limitations](../limitations.md).
 
@@ -28,7 +28,19 @@ This creates `docs/product/` and `.product/` and touches nothing else — your s
 
 The Recover operation reconstructs product knowledge from what the system already tells you. The workflow is described in [Recover](../methodology/recover.md); the essentials:
 
-**Evidence sources.** Anything that records product behaviour or intent: source code and its tests, API contracts, UI flows, database constraints, existing documentation and wikis, issue trackers and old tickets, support conversations, and — often the highest-value source — interviews with the people who operate and maintain the system.
+**A recovery brief bounds the session.** Before anything is read, you and the assistant agree a brief: which roots and file patterns are evidence, what is excluded or forbidden, the documentation languages, the product scope, known actors and vocabulary (including obsolete names), which source wins when sources disagree, the batch size, the areas where you want to confirm candidates personally, and any external material you explicitly authorise. Then:
+
+```bash
+prodshape recover start --brief brief.yaml   # inventory the declared evidence, hash it, checkpoint
+prodshape recover next                       # the next bounded batch to read
+prodshape recover status                     # coverage, open questions and completion criteria
+prodshape recover check                      # detect changed evidence, revalidate the overlay
+prodshape recover report                     # the final report, once complete
+```
+
+The session lives under `.product/generated/recovery/<session-id>/` and survives interruption: a new conversation (or a different assistant) resumes from `recover status` with the same boundaries, because the brief travels inside the session state. Repository-wide recovery means that declared population plus what you explicitly authorise, never arbitrary filesystem or internet access.
+
+**Evidence sources.** Anything that records product behaviour or intent: source code and its tests, API contracts, UI flows, database constraints, existing documentation and wikis, issue trackers and old tickets, support conversations, and — often the highest-value source — interviews with the people who operate and maintain the system. Files you hand over, statements you relay and online resources you authorise join the inventory as first-class evidence (`prodshape recover evidence add`), hashed where content is available so later drift is detected like any other staleness.
 
 **Candidates carry provenance and confidence.** Each recovered artifact is a _candidate_: a schema-conformant draft that records where the knowledge came from (which files, tests, tickets or conversations) and how confident the recovery is in it. A business rule read directly from a validation test is not the same as one inferred from a variable name, and the candidate must say so — in frontmatter, so it can be queried:
 
@@ -53,7 +65,7 @@ The `recover-product` skill drives this loop: it reads evidence you point it at,
 
 ## 3. Establish the baseline
 
-Recovery is an input activity to `CHG-INITIAL`, not a separate lifecycle: the validated candidates become the proposed future state of the reserved initialisation change, which is applied and accepted exactly as in the greenfield path. Provenance and confidence live on the proposed artifacts, never on the change itself. Validate it:
+Recovery is an input activity to `CHG-INITIAL`, not a separate lifecycle: the candidates become the proposed future state of the reserved initialisation change, which is applied and accepted exactly as in the greenfield path. Provenance and confidence live on the proposed artifacts, never on the change itself. While the session runs, `prodshape recover check` revalidates the whole overlay; once the change is applied, validate the accepted model:
 
 ```bash
 prodshape validate

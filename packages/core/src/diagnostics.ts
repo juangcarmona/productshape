@@ -39,6 +39,10 @@ export const codes = {
   staleCitation: 'PRODUCT061',
   tamperedCitation: 'PRODUCT062',
   citationAnchorNotFound: 'PRODUCT063',
+  missingScopeDeclaration: 'PRODUCT070',
+  unsupportedOpenSpecStore: 'PRODUCT071',
+  openSpecRootUnresolved: 'PRODUCT072',
+  openSpecCliMissing: 'PRODUCT073',
   approvedWithOpenQuestions: 'PRODUCT108',
   lowConfidenceDraft: 'PRODUCT111',
 } as const;

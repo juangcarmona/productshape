@@ -4,7 +4,7 @@ Reconstruct candidate product knowledge from an existing system.
 
 Use the `recover-product` skill.
 
-- Inventory the available evidence first; separate observed behaviour from inferred intent.
-- Record provenance and confidence in the frontmatter of every candidate; surface contradictions as open questions.
-- Write draft candidates (or a recovery Product Change); run `prodshape validate`.
-- Stop and present the candidates. Recovered knowledge never becomes canonical without explicit human validation.
+- Agree the recovery brief with the user first, then drive the resumable session loop: `prodshape recover start`, `next`, `mark`, `check`, `report`.
+- The CLI owns structural truth (inventory, hashes, coverage, validation); the skill owns meaning. Record every lead, question and answer through the CLI as you go.
+- Candidates carry provenance and confidence and live only under the `CHG-INITIAL` proposed overlay; with an existing baseline, recovery goes through an ordinary Product Change instead.
+- Stop at the handover. Recovered knowledge never becomes canonical without explicit human validation.

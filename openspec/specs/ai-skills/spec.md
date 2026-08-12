@@ -8,7 +8,7 @@ The canonical AI skills, slash commands and hook descriptors rendered into provi
 
 ### Requirement: Canonical skills are complete and provider-independent
 
-The repository SHALL provide the six canonical skills (define-product, recover-product, analyze-product-change, slice-product-change, prepare-sdd-handoff, audit-product-model), each defining purpose, when to use it, required inputs, files to read, deterministic commands to execute, reasoning procedure, allowed modifications, forbidden actions, human approval points, expected outputs and completion checks, with no provider-specific content.
+The repository SHALL provide the five canonical skills (define-product, recover-product, explore-product, analyze-product-change, audit-product-model), each defining purpose, when to use it, required inputs, files to read, deterministic commands to execute, reasoning procedure, allowed modifications, forbidden actions, human approval points, expected outputs and completion checks, with no provider-specific content.
 
 #### Scenario: Skill completeness check
 
@@ -17,21 +17,21 @@ The repository SHALL provide the six canonical skills (define-product, recover-p
 
 ### Requirement: Commands are thin wrappers
 
-The seven `/product:*` commands (define, recover, change, slice, impact, handoff, audit) SHALL reference their skill and the deterministic CLI operations without duplicating the full skill instructions.
+The six `/product:*` commands (define, recover, explore, change, impact, audit) SHALL reference their skill and the deterministic CLI operations without duplicating the full skill instructions.
 
 #### Scenario: Command brevity
 
 - **WHEN** a command file is reviewed
 - **THEN** it names the skill to use, the CLI commands to run and the stop conditions, in under thirty lines of content
 
-### Requirement: Hooks invoke deterministic commands only
+### Requirement: Skills are self-contained and portable
 
-The four canonical hook descriptors SHALL declare trigger, commands and blocking semantics, and SHALL only invoke deterministic CLI commands — never approving, promoting, editing product semantics or creating backlog items.
+Every skill SHALL use only portable Agent Skills frontmatter fields (`name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`), SHALL NOT reference repository-only files that do not exist after `npm pack` and clean installation, and SHALL bundle all detailed reference material in `references/` inside the skill directory. Skills SHALL NOT depend on mutable remote `main` content or ProductShape dogfooding artifacts.
 
-#### Scenario: Hook safety check
+#### Scenario: Self-contained after installation
 
-- **WHEN** each hook descriptor is validated
-- **THEN** every command it declares is a product-definition CLI invocation and its declared effect is validation or reporting
+- **WHEN** a skill is installed into a clean consumer repository
+- **THEN** every local link and referenced resource resolves relative to the skill directory
 
 ### Requirement: Recovery records provenance in frontmatter
 

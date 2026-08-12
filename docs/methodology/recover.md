@@ -2,7 +2,7 @@
 
 Recover is the brownfield operation: reconstructing a product definition for a system that already exists. Most products live here — years of shipped behaviour, no canonical definition, the real product knowledge distributed across code and colleagues.
 
-Be clear about scope up front: **automated recovery is out of scope in v0.1.** This page documents the workflow, its obligations and its extension point, so that recovery skills and tools can be built against a stable contract. What v0.1 guarantees is the destination — recovered knowledge enters the model through the same validated, human-approved paths as everything else.
+Be clear about scope up front: **semantic extraction is never automated.** No tool scans a codebase and emits a product model; reading meaning out of evidence belongs to the person doing the recovery and the assistant helping them. What the tooling makes deterministic is everything around that judgement: the evidence population and its hashes, per-source coverage, checkpoints and resumption, leads and questions, validation, and the guarantee that recovered knowledge enters the model through the same validated, human-approved path as everything else.
 
 ## Evidence sources
 
@@ -55,10 +55,12 @@ Recovery routinely surfaces conflicts: the code does one thing, the documentatio
 
 ## Output and validation
 
-Recovery produces draft candidate artifacts — actors, use cases, rules, terms, requirements — or, when a baseline already exists, a recovery Product Change proposing them as an explicit delta (see [Change](change.md)). Either way the gate is the same:
+Initial recovery produces the proposed future state of `CHG-INITIAL`: draft candidate artifacts under the change's `proposed/` directory, never edits to the accepted model. When a baseline already exists, recovered knowledge is proposed as an ordinary Product Change instead (see [Change](change.md)); `CHG-INITIAL` is the reserved initialisation change and is never reused. Either way the gate is the same:
 
 **A human must validate recovered semantics before anything becomes canonical.** Deterministic tooling checks the structure of candidates like any other artifact; no tool and no model decides that a recovered claim is true. The person validating confirms observed behaviour, judges inferred intent, resolves or defers contradictions, and approves what enters the model.
 
-## The extension point
+## The recovery session
 
-The workflow above — evidence in, candidates with provenance and confidence out, contradictions surfaced, human validation gating the model — is the contract that future recovery skills and tools implement. v0.1 fixes the contract and the destination formats ([Artifacts](https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md), [Product Changes](https://github.com/product-definition-as-code/spec/blob/main/spec/product-changes.md)); the automation that fills the pipeline is deliberately left to later versions and to adopters, who can start today by performing the workflow manually with AI assistance.
+Whole-repository recovery outlives any single sitting, so the workflow runs as a bounded, resumable session with a deterministic split of responsibilities. The CLI (`prodshape recover ...`) owns the bookkeeping: it inventories the authorised evidence population from a user-authored recovery brief (repository roots and filters, plus user-provided files and explicitly authorised online resources), hashes every hashable source, serves bounded batches, records how each source was classified, tracks leads and questions with their answers, detects changed or missing evidence, revalidates the `CHG-INITIAL` overlay, computes coverage and completion, and writes the final report. The recovery skill owns the semantics: reading evidence, extracting candidates with provenance and confidence, reconciling duplicates and contradictions, and asking the user when meaning is uncertain. Session state lives under the generated-output root, is schema-validated, survives interruption, and is never canonical.
+
+A session is complete only when every authorised source is classified, every lead is resolved, every question is answered or explicitly deferred, all artifact families were probed, duplicates are reconciled, the overlay validates, no evidence hash is stale, and the accepted model is untouched. The final report states all of it, including that nothing was accepted: acceptance stays with the human reviewing the change.

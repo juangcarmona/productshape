@@ -8,11 +8,14 @@ export const workspaceSourceAliases = {
   '@prodshape/distribution': fileURLToPath(
     new URL('./packages/distribution/src/index.ts', import.meta.url),
   ),
-  '@prodshape/adapter-openspec': fileURLToPath(
-    new URL('./packages/adapter-openspec/src/index.ts', import.meta.url),
+  '@prodshape/integration-openspec': fileURLToPath(
+    new URL('./packages/integration-openspec/src/index.ts', import.meta.url),
   ),
   '@prodshape/integration-claude': fileURLToPath(
     new URL('./packages/integration-claude/src/index.ts', import.meta.url),
+  ),
+  '@prodshape/integration-codex': fileURLToPath(
+    new URL('./packages/integration-codex/src/index.ts', import.meta.url),
   ),
   '@prodshape/integration-copilot': fileURLToPath(
     new URL('./packages/integration-copilot/src/index.ts', import.meta.url),
