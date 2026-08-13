@@ -203,6 +203,162 @@ describe('init --dry-run', () => {
   });
 });
 
+describe('init SDD detection and --sdd', () => {
+  it('reports no detection in an empty repository and suggests pairing later', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-sdd-none-'));
+    try {
+      const result = await run(['init'], scratch);
+      expect(result.code).toBe(0);
+      expect(result.out).toContain('SDD frameworks:');
+      expect(result.out).toContain('detected: none');
+      expect(result.out).toContain('Pair with an SDD framework when ready');
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+
+  it('detects an OpenSpec workspace, installs nothing without a choice, and recommends the wiring and recovery', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-sdd-brownfield-'));
+    try {
+      await mkdir(join(scratch, 'openspec'), { recursive: true });
+      const result = await run(['init'], scratch);
+      expect(result.code).toBe(0);
+      expect(result.out).toContain(
+        'detected: OpenSpec (openspec/ present; ProductShape integration not installed)',
+      );
+      expect(result.out).toContain('prodshape integration add openspec');
+      expect(result.out).toContain('Brownfield: recover the product definition');
+      await expect(
+        readFile(join(scratch, '.product', 'integrations', 'openspec.json'), 'utf8'),
+      ).rejects.toThrow();
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+
+  it('--sdd none opts out without the pairing suggestion', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-sdd-optout-'));
+    try {
+      const result = await run(['init', '--sdd', 'none'], scratch);
+      expect(result.code).toBe(0);
+      expect(result.out).toContain('detected: none');
+      expect(result.out).not.toContain('Pair with an SDD framework when ready');
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+
+  it('--sdd kiro prints setup guidance instead of attempting an install', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-sdd-kiro-'));
+    try {
+      const result = await run(['init', '--sdd', 'kiro'], scratch);
+      expect(result.code).toBe(0);
+      expect(result.out).toContain('Kiro is set up from its own tooling');
+      expect(result.out).toContain('kiro.dev');
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects an unsupported framework with exit 2 and no changes', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-sdd-bogus-'));
+    try {
+      const result = await run(['init', '--sdd', 'bogus'], scratch);
+      expect(result.code).toBe(2);
+      expect(result.err).toContain(
+        "Unknown SDD framework 'bogus' (supported: openspec, kiro, speckit, none)",
+      );
+      expect(await listFilesRecursive(scratch, '')).toEqual([]);
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+
+  it('--sdd openspec --dry-run describes the SDD actions, runs nothing and writes nothing', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-sdd-dryrun-'));
+    try {
+      const result = await run(['init', '--sdd', 'openspec', '--dry-run'], scratch);
+      expect(result.code).toBe(0);
+      expect(result.out).toContain('SDD plan (dry run):');
+      expect(result.out).toContain('would create an OpenSpec workspace');
+      expect(result.out).toContain('would merge PDaC guidance into openspec/config.yaml');
+      expect(result.out).toContain('would write .product/integrations/openspec.json');
+      expect(await listFilesRecursive(scratch, '')).toEqual([]);
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+
+  it('prompts on a detected workspace and declining installs nothing', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-sdd-decline-'));
+    try {
+      await mkdir(join(scratch, 'openspec'), { recursive: true });
+      const questions: string[] = [];
+      const out: string[] = [];
+      const code = await runCli(['init'], {
+        cwd: scratch,
+        out: (l) => out.push(l),
+        err: () => {},
+        prompt: async (question) => {
+          questions.push(question);
+          return 'n';
+        },
+      });
+      expect(code).toBe(0);
+      expect(questions).toHaveLength(1);
+      expect(questions[0]).toContain('OpenSpec workspace detected');
+      await expect(
+        readFile(join(scratch, '.product', 'integrations', 'openspec.json'), 'utf8'),
+      ).rejects.toThrow();
+      expect(out.join('\n')).toContain('prodshape integration add openspec');
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+
+  it('offers the framework menu when nothing is detected and honours the selection', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-sdd-menu-'));
+    try {
+      const questions: string[] = [];
+      const out: string[] = [];
+      const code = await runCli(['init'], {
+        cwd: scratch,
+        out: (l) => out.push(l),
+        err: () => {},
+        prompt: async (question) => {
+          questions.push(question);
+          return '2';
+        },
+      });
+      expect(code).toBe(0);
+      expect(questions[0]).toContain('Choose [1-4');
+      const output = out.join('\n');
+      expect(output).toContain('1) OpenSpec');
+      expect(output).toContain('Kiro is set up from its own tooling');
+      await expect(
+        readFile(join(scratch, '.product', 'integrations', 'openspec.json'), 'utf8'),
+      ).rejects.toThrow();
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+
+  it('doctor points at the integration when a workspace exists without it', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-sdd-doctor-'));
+    try {
+      await run(['init'], scratch);
+      await mkdir(join(scratch, 'openspec'), { recursive: true });
+      const result = await run(['doctor'], scratch);
+      expect(result.code).toBe(0);
+      expect(result.out).toContain(
+        'OpenSpec workspace detected; integration not installed (informational; run: prodshape integration add openspec)',
+      );
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
+  });
+});
+
 describe('shorthand command aliases', () => {
   it('init generates none by default and --shorthand persists the choice', async () => {
     const off = await mkdtemp(join(tmpdir(), 'prodshape-shorthand-off-'));

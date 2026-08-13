@@ -398,6 +398,6 @@ describe('self-application', () => {
     const result = await run(['validate'], repoRoot);
     expect(result.code).toBe(0);
     // The whole Product Definition, zero diagnostics.
-    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across 77 artifact\(s\)/);
+    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across 78 artifact\(s\)/);
   });
 });

@@ -22,6 +22,11 @@ export interface CliIo {
   cwd: string;
   out: (line: string) => void;
   err: (line: string) => void;
+  /**
+   * Ask the user a question and resolve their answer. Wired only when the process is attached to
+   * an interactive terminal; absent in scripts, CI and tests, where commands must never prompt.
+   */
+  prompt?: (question: string) => Promise<string>;
 }
 
 /** Resolve the repository from the working directory or fail with exit code 2. */

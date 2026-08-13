@@ -61,7 +61,7 @@ describe('self-hosted model through the full pipeline', () => {
     // TERM-REFERENCE-IMPLEMENTATION) are referenced from UC-INIT-001.
     const warnings = diagnostics.filter((d) => d.severity === 'warning');
     expect(warnings).toEqual([]);
-    expect(graph.nodes).toHaveLength(77);
+    expect(graph.nodes).toHaveLength(78);
     expect(graph.edges.length).toBeGreaterThan(60);
   });
 });

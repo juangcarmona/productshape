@@ -164,11 +164,12 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
         });
       }
     } else {
-      // No OpenSpec integration installed — informational, not a failure.
+      // An OpenSpec workspace exists but the integration is not installed — informational.
       checks.push({
         name: 'openspec integration',
         ok: true,
-        detail: 'not installed (informational; run: prodshape integration add openspec)',
+        detail:
+          'OpenSpec workspace detected; integration not installed (informational; run: prodshape integration add openspec)',
       });
     }
   }

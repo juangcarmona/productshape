@@ -65,6 +65,8 @@ const expectedIds: Record<string, string[]> = {
   'bounded-context': ['BC-PRODUCT-DEFINITION', 'BC-DELIVERY-INTEGRATION'],
   'functional-requirement': [
     'FR-INIT-001',
+    // Added by CHG-INIT-SDD-001 (SDD-aware initialization).
+    'FR-INIT-002',
     'FR-PARSE-001',
     'FR-VALIDATE-001',
     'FR-VALIDATE-002',

@@ -431,6 +431,74 @@ describe.skipIf(!hasOpenspec)('OpenSpec integration', () => {
   });
 });
 
+describe.skipIf(!hasOpenspec)('SDD-aware init (one-command OpenSpec adoption)', () => {
+  it('init --sdd openspec wires an existing workspace in one run and recommends recovery', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'prodshape-init-sdd-brown-'));
+    try {
+      await execFileAsync('openspec', ['init', '--tools', 'none'], {
+        cwd: dir,
+        encoding: 'utf8',
+        shell: isWindows,
+      });
+      const result = await run(['init', '--sdd', 'openspec'], dir);
+      expect(result.code, result.err).toBe(0);
+      expect(result.out).toContain('detected: OpenSpec');
+      expect(result.out).toContain('Installed OpenSpec integration');
+      expect(result.out).toContain('Brownfield: recover the product definition');
+      expect(await exists(join(dir, '.product', 'integrations', 'openspec.json'))).toBe(true);
+      const config = await readFile(join(dir, 'openspec', 'config.yaml'), 'utf8');
+      expect(config).toContain('pdac:context');
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('init --sdd openspec bootstraps a workspace when none exists', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'prodshape-init-sdd-green-'));
+    try {
+      const result = await run(['init', '--sdd', 'openspec'], dir);
+      expect(result.code, result.err).toBe(0);
+      expect(result.out).toContain('Created OpenSpec workspace');
+      expect(result.out).toContain('Installed OpenSpec integration');
+      // Greenfield: nothing to recover from, so no recovery recommendation.
+      expect(result.out).not.toContain('Brownfield: recover');
+      expect(await exists(join(dir, 'openspec', 'config.yaml'))).toBe(true);
+      expect(await exists(join(dir, '.product', 'integrations', 'openspec.json'))).toBe(true);
+      const check = await run(['integration', 'check'], dir);
+      expect(check.code, check.out).toBe(0);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  }, 60_000);
+
+  it('a prompted yes on a detected workspace installs the integration', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'prodshape-init-sdd-prompt-'));
+    try {
+      await execFileAsync('openspec', ['init', '--tools', 'none'], {
+        cwd: dir,
+        encoding: 'utf8',
+        shell: isWindows,
+      });
+      const questions: string[] = [];
+      const out: string[] = [];
+      const code = await runCli(['init'], {
+        cwd: dir,
+        out: (l) => out.push(l),
+        err: () => {},
+        prompt: async (question) => {
+          questions.push(question);
+          return '';
+        },
+      });
+      expect(code).toBe(0);
+      expect(questions[0]).toContain('OpenSpec workspace detected');
+      expect(await exists(join(dir, '.product', 'integrations', 'openspec.json'))).toBe(true);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+});
+
 describe('brownfield recovery session (packed binary)', () => {
   let consumerDir: string;
   let bin: string;

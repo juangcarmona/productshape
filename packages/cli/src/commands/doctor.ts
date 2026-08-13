@@ -1,8 +1,10 @@
 import { escalateWarnings, validateBaseline } from '@prodshape/core';
 import { runDoctor } from '@prodshape/distribution';
-import { checkOpenSpecIntegration } from '@prodshape/integration-openspec';
-import { access } from 'node:fs/promises';
-import { join } from 'node:path';
+import {
+  checkOpenSpecIntegration,
+  isOpenSpecIntegrationInstalled,
+  isOpenSpecWorkspace,
+} from '@prodshape/integration-openspec';
 import { exitCodes, formatDiagnosticLine, resolveRepository, type CliIo } from '../context.js';
 
 export async function runDoctorCommand(io: CliIo): Promise<number> {
@@ -18,16 +20,15 @@ export async function runDoctorCommand(io: CliIo): Promise<number> {
 
   const configErrors = repo.configDiagnostics.filter((d) => d.severity === 'error');
 
-  // Check OpenSpec integration health if the integration metadata exists.
+  // Check OpenSpec integration health when it is installed; when an OpenSpec workspace exists
+  // without the integration, report that informationally so the adopter learns the command.
   let openspecHealth:
     { installed: boolean; checks: { name: string; ok: boolean; detail: string }[] } | undefined;
-  const openspecMetaPath = join(repo.root, '.product', 'integrations', 'openspec.json');
-  try {
-    await access(openspecMetaPath);
+  if (await isOpenSpecIntegrationInstalled(repo.root)) {
     const result = await checkOpenSpecIntegration(repo.root);
     openspecHealth = { installed: true, checks: result.checks };
-  } catch {
-    // No OpenSpec integration metadata — not an error.
+  } else if (await isOpenSpecWorkspace(repo.root)) {
+    openspecHealth = { installed: false, checks: [] };
   }
 
   const report = await runDoctor({

@@ -7,7 +7,7 @@ This guide covers what Product Definition as Code physically adds to any existin
 ## What init touches
 
 ```bash
-prodshape init [--ai claude|copilot] [--flat] [--shorthand] [--dry-run]
+prodshape init [--ai claude|copilot|codex] [--sdd openspec|kiro|speckit|none] [--flat] [--shorthand] [--dry-run]
 ```
 
 `init` adds exactly three areas and modifies nothing else:
@@ -19,11 +19,15 @@ docs/product/                    # canonical product definition
 .product/                        # tool home
 ├── config.yaml
 ├── installation.lock.json       # only with --ai; commit it
+├── integrations/openspec.json   # only with --sdd openspec; commit it
 └── templates/
-.claude/ and/or .github/         # optional, only with --ai: generated AI integrations
+.claude/, .github/, .agents/     # optional, only with --ai: generated AI integrations
+openspec/config.yaml             # only with --sdd openspec: PDaC guidance merged additively
 ```
 
 Your source code, build configuration, CI and existing documentation are untouched — including your `.gitignore`, which `init` does not modify (see below). `.product/generated/` and `.product/cache/` are not created by `init`; they appear when a command writes them.
+
+`init` also detects SDD frameworks already present in the repository (OpenSpec via `openspec/`, Kiro via `.kiro/`, Spec Kit via `.specify/`) and reports what it found; detection is a passive inspection that runs no framework tooling. `--sdd openspec` wires the OpenSpec integration in the same run, creating the workspace first (`openspec init --tools none`, through `npx` when the CLI is not installed) if none exists. Kiro and Spec Kit install through their own tooling, so `--sdd kiro` and `--sdd speckit` print setup guidance instead. In an interactive terminal a bare `init` asks, informed by the detection; with an explicit `--sdd` value, with `--sdd none`, or without a terminal it never prompts. The merge into `openspec/config.yaml` is additive and reversible with `prodshape integration remove openspec`.
 
 `init` in a repository that already has these paths **preserves** every existing file and reports it as skipped; `--force` overwrites. The exception is generated integration files: if one exists that the installation lock does not own, `init` refuses the whole provider install rather than claiming a file that might be yours.
 
@@ -48,6 +52,7 @@ Every path has exactly one owner. The full authority model is in the [specificat
 | `.product/generated/**` | Generated | Compiled graph, indexes, diagrams. Regenerable from canonical files at any time; never hand-edit. |
 | `.product/cache/**` | Disposable | Safe to delete. |
 | `.claude/**`, `.github/**` managed files | Generated | Carry a managed-file header. Never hand-edit: `prodshape integration update` regenerates them, and `prodshape doctor` reports hand modification as `PRODUCT051`. |
+| `openspec/config.yaml` | Yours, with a PDaC-managed block | The file stays yours; the OpenSpec integration merges its context and rules additively, replaces only what it injected, and `integration remove openspec` takes exactly that back out. |
 | Your source code | Yours | Never touched by any `prodshape` command. |
 
 Managed integration files are generated from canonical assets (skills, command definitions, hook descriptors) shipped with the toolkit. If a generated file is wrong, fix the canonical asset or open an issue — a hand edit will be flagged as drift and lost on the next `integration update`.

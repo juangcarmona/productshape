@@ -10,7 +10,9 @@ This guide covers adopting Product Definition as Code for a new product: a fresh
 prodshape init --ai claude
 ```
 
-`--ai` accepts a comma-separated list of `claude` and `copilot` (`--ai claude,copilot`). It is optional: you can add integrations later with `prodshape integration add`.
+`--ai` accepts a comma-separated list of `claude`, `copilot` and `codex` (`--ai claude,copilot`). It is optional: you can add integrations later with `prodshape integration add`.
+
+`init` also detects SDD frameworks in the repository and can pair one with the product definition from the same command: `--sdd openspec` sets up an OpenSpec workspace (when none exists) and wires the citation integration end to end, while Kiro and Spec Kit install through their own tooling, so `--sdd kiro` and `--sdd speckit` print setup guidance instead. In an interactive terminal a bare `init` offers the choice; in scripts and CI it never prompts. `--sdd none` opts out.
 
 `init` creates:
 

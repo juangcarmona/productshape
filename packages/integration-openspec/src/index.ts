@@ -21,6 +21,13 @@ import { parse, stringify } from 'yaml';
 export const MIN_SUPPORTED_OPENSPEC = '1.0.0';
 
 /**
+ * The npm spec used when bootstrapping OpenSpec through npx. Pinned to the supported major:
+ * MIN_SUPPORTED_OPENSPEC guards the floor, the pin guards the ceiling, so a future OpenSpec 2.x
+ * cannot silently change what `init --tools none` does for new adopters.
+ */
+export const OPENSPEC_NPX_SPEC = '@fission-ai/openspec@1';
+
+/**
  * Sentinel markers that bracket the PDaC-injected context block. They let `mergeConfig` find
  * and replace exactly the PDaC portion without touching user-authored context lines.
  */
@@ -72,6 +79,26 @@ export const PDAC_OPERATIONS: {
   },
 };
 
+/**
+ * The exact strings PDaC injected into openspec/config.yaml, recorded so a later update can
+ * remove entries whose wording has since changed instead of appending duplicates alongside them.
+ * The context block needs no record: its sentinels already identify it in place.
+ */
+export interface ManagedStrings {
+  rules: Record<string, string[]>;
+  operations: Record<string, string[]>;
+}
+
+/** The managed strings the current PDaC guidance injects. */
+export function currentManagedStrings(): ManagedStrings {
+  return {
+    rules: Object.fromEntries(Object.entries(PDAC_RULES).map(([key, list]) => [key, [...list]])),
+    operations: Object.fromEntries(
+      Object.entries(PDAC_OPERATIONS).map(([key, op]) => [key, [...op.guidance]]),
+    ),
+  };
+}
+
 /** Metadata recorded under .product/integrations/openspec.json. */
 export interface OpenSpecIntegrationMeta {
   provider: 'openspec';
@@ -79,11 +106,16 @@ export interface OpenSpecIntegrationMeta {
   openspecVersion: string;
   installedAt: string;
   configPath: string;
+  /** Absent in metadata written before the field existed; treated as the current guidance. */
+  managed?: ManagedStrings;
 }
 
 /** Repository-relative paths used by this integration. */
 const CONFIG_RELATIVE = 'openspec/config.yaml';
 const META_RELATIVE = '.product/integrations/openspec.json';
+
+/** The repository-relative path of the integration metadata file, for callers that probe it. */
+export const OPENSPEC_META_RELATIVE = META_RELATIVE;
 
 function configPath(root: string): string {
   return join(root, ...CONFIG_RELATIVE.split('/'));
@@ -119,33 +151,127 @@ function compareVersions(a: string, b: string): number {
   return aPatch - bPatch;
 }
 
-/** Detect the installed OpenSpec CLI version by running `openspec --version`. */
-export async function detectOpenSpecVersion(): Promise<{ version: string } | { error: string }> {
+/**
+ * Build a child-process environment whose PATH starts with the repository's node_modules/.bin,
+ * so an OpenSpec installed as a devDependency counts as installed. Windows spells the variable
+ * `Path` (and env objects lose the case-insensitive lookup once spread), so every casing is
+ * collapsed into a single `PATH` entry.
+ */
+function envWithLocalBin(root: string): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = { ...process.env };
+  const separator = process.platform === 'win32' ? ';' : ':';
+  let existing = '';
+  for (const key of Object.keys(env)) {
+    if (key.toUpperCase() === 'PATH') {
+      existing = env[key] ?? '';
+      delete env[key];
+    }
+  }
+  const localBin = join(root, 'node_modules', '.bin');
+  env['PATH'] = existing ? `${localBin}${separator}${existing}` : localBin;
+  return env;
+}
+
+/** Run a command at the repository root, resolving stdout+stderr or rejecting on failure. */
+function runAtRoot(root: string, command: string, args: string[]): Promise<string> {
+  return new Promise((resolve, reject) => {
+    // Commands are typically .cmd shims on Windows; `shell: true` lets execFile find them on PATH
+    // across platforms without callers needing to know the extension.
+    execFile(
+      command,
+      args,
+      { cwd: root, shell: true, env: envWithLocalBin(root) },
+      (error, stdout, stderr) => {
+        if (error) {
+          reject(new Error(`${command} ${args.join(' ')} failed: ${error.message}`));
+          return;
+        }
+        resolve(`${stdout}${stderr}`);
+      },
+    );
+  });
+}
+
+/**
+ * Detect the installed OpenSpec CLI version by running `openspec --version`. When a repository
+ * root is given, its node_modules/.bin is consulted first, so a devDependency install counts.
+ */
+export async function detectOpenSpecVersion(
+  root?: string,
+): Promise<{ version: string } | { error: string }> {
   return new Promise((resolve) => {
     // `openspec` is typically a .cmd shim on Windows; `shell: true` lets execFile find it on PATH
     // across platforms without callers needing to know the extension.
-    execFile('openspec', ['--version'], { shell: true }, (error, stdout, stderr) => {
-      if (error) {
-        resolve({
-          error: `OpenSpec CLI not found on PATH (run: npm install -g openspec). ${error.message}`,
-        });
-        return;
-      }
-      const output = `${stdout}${stderr}`.trim();
-      // `openspec --version` prints something like "1.3.0" or "openspec/1.3.0 ...".
-      const match = output.match(/(\d+\.\d+\.\d+(?:-[^\s]+)?)/);
-      if (!match?.[1]) {
-        resolve({ error: `Could not parse OpenSpec version from output: ${output}` });
-        return;
-      }
-      resolve({ version: match[1] });
-    });
+    execFile(
+      'openspec',
+      ['--version'],
+      { shell: true, ...(root ? { env: envWithLocalBin(root) } : {}) },
+      (error, stdout, stderr) => {
+        if (error) {
+          resolve({
+            error: `OpenSpec CLI not found on PATH (run: npm install -g ${OPENSPEC_NPX_SPEC}). ${error.message}`,
+          });
+          return;
+        }
+        const output = `${stdout}${stderr}`.trim();
+        // `openspec --version` prints something like "1.3.0" or "openspec/1.3.0 ...".
+        const match = output.match(/(\d+\.\d+\.\d+(?:-[^\s]+)?)/);
+        if (!match?.[1]) {
+          resolve({ error: `Could not parse OpenSpec version from output: ${output}` });
+          return;
+        }
+        resolve({ version: match[1] });
+      },
+    );
   });
+}
+
+/**
+ * Create an OpenSpec workspace at the root. Uses the installed CLI when one is on PATH (or in
+ * node_modules/.bin); otherwise runs the pinned OpenSpec major through npx, which downloads
+ * nothing permanent and never mutates the global environment. `--tools none` keeps the
+ * framework's own initializer non-interactive.
+ *
+ * Returns the CLI version that ran and whether it came through npx, so callers can pass the
+ * version on to `addOpenSpecIntegration` (nothing may be on PATH afterwards) and recommend a
+ * permanent install.
+ */
+export async function bootstrapOpenSpecWorkspace(
+  root: string,
+): Promise<{ version: string; viaNpx: boolean; command: string }> {
+  if (await isOpenSpecWorkspace(root)) {
+    throw new Error('An OpenSpec workspace already exists at this root.');
+  }
+  const detected = await detectOpenSpecVersion(root);
+  if (!('error' in detected)) {
+    if (compareVersions(detected.version, MIN_SUPPORTED_OPENSPEC) < 0) {
+      throw new Error(
+        `OpenSpec CLI version ${detected.version} is below the minimum supported ${MIN_SUPPORTED_OPENSPEC}. Please upgrade OpenSpec.`,
+      );
+    }
+    const command = 'openspec init --tools none';
+    await runAtRoot(root, 'openspec', ['init', '--tools', 'none']);
+    return { version: detected.version, viaNpx: false, command };
+  }
+  const command = `npx -y ${OPENSPEC_NPX_SPEC} init --tools none`;
+  await runAtRoot(root, 'npx', ['-y', OPENSPEC_NPX_SPEC, 'init', '--tools', 'none']);
+  // A second npx call resolves from the cache the first one populated.
+  const output = await runAtRoot(root, 'npx', ['-y', OPENSPEC_NPX_SPEC, '--version']);
+  const match = output.trim().match(/(\d+\.\d+\.\d+(?:-[^\s]+)?)/);
+  if (!match?.[1]) {
+    throw new Error(`Could not parse OpenSpec version from npx output: ${output.trim()}`);
+  }
+  return { version: match[1], viaNpx: true, command };
 }
 
 /** Check if an OpenSpec workspace exists at the given root (openspec/ directory present). */
 export async function isOpenSpecWorkspace(root: string): Promise<boolean> {
   return exists(join(root, 'openspec'));
+}
+
+/** Check if the OpenSpec integration is installed (its metadata file is present). */
+export async function isOpenSpecIntegrationInstalled(root: string): Promise<boolean> {
+  return exists(metaPath(root));
 }
 
 /** Read and parse the existing openspec/config.yaml, or null if it does not exist. */
@@ -180,18 +306,28 @@ function extractPdacContext(context: string | undefined): string | null {
  *   (idempotent); otherwise the PDaC block is appended after a separator. User-authored context
  *   lines are never lost.
  * - `rules`: for each PDaC artifact (proposal, specs, design, tasks), PDaC rules are appended to
- *   existing rules, deduplicating identical entries.
- * - `operations`: PDaC apply/archive guidance is appended to existing guidance, deduplicating.
+ *   existing rules, deduplicating identical entries. Entries recorded as previously managed whose
+ *   wording is no longer current are removed first, so a guidance change replaces the old string
+ *   instead of accumulating next to it. User-authored entries are never removed.
+ * - `operations`: PDaC apply/archive guidance is appended to existing guidance, deduplicating,
+ *   with the same previously-managed replacement.
  * - Any other fields (githubCopilot, etc.) are preserved untouched.
  *
  * Returns the merged config and a list of human-readable change descriptions.
  */
-export function mergeConfig(existing: Record<string, unknown> | null): {
+export function mergeConfig(
+  existing: Record<string, unknown> | null,
+  previouslyManaged?: ManagedStrings,
+): {
   config: Record<string, unknown>;
   changes: string[];
 } {
   const config: Record<string, unknown> = { ...(existing ?? {}) };
   const changes: string[] = [];
+
+  // Strings PDaC injected in the past but no longer injects verbatim: remove before appending.
+  const staleManaged = (recorded: string[] | undefined, current: string[]): string[] =>
+    (recorded ?? []).filter((entry) => !current.includes(entry));
 
   // --- context ---
   const existingContext =
@@ -223,22 +359,45 @@ export function mergeConfig(existing: Record<string, unknown> | null): {
       ? { ...(config['rules'] as Record<string, unknown>) }
       : {};
   let rulesChanged = false;
-  for (const [artifact, pdacRules] of Object.entries(PDAC_RULES)) {
+  let staleRulesRemoved = false;
+  const ruleArtifacts = new Set([
+    ...Object.keys(PDAC_RULES),
+    ...Object.keys(previouslyManaged?.rules ?? {}),
+  ]);
+  for (const artifact of ruleArtifacts) {
+    const pdacRules = PDAC_RULES[artifact] ?? [];
+    const stale = staleManaged(previouslyManaged?.rules[artifact], pdacRules);
     const existingList = Array.isArray(existingRules[artifact])
       ? [...(existingRules[artifact] as string[])]
       : [];
-    const merged = [...existingList];
+    const merged = existingList.filter((entry) => !stale.includes(entry));
+    if (merged.length !== existingList.length) {
+      staleRulesRemoved = true;
+      rulesChanged = true;
+    }
     for (const rule of pdacRules) {
       if (!merged.includes(rule)) {
         merged.push(rule);
         rulesChanged = true;
       }
     }
-    existingRules[artifact] = merged;
+    if (merged.length === 0) {
+      delete existingRules[artifact];
+    } else {
+      existingRules[artifact] = merged;
+    }
   }
   if (rulesChanged) {
-    config['rules'] = existingRules;
-    changes.push('Merged PDaC citation rules into openspec/config.yaml (rules:).');
+    if (Object.keys(existingRules).length === 0) {
+      delete config['rules'];
+    } else {
+      config['rules'] = existingRules;
+    }
+    changes.push(
+      staleRulesRemoved
+        ? 'Merged PDaC citation rules into openspec/config.yaml (rules:), replacing outdated PDaC entries.'
+        : 'Merged PDaC citation rules into openspec/config.yaml (rules:).',
+    );
   }
 
   // --- operations ---
@@ -249,8 +408,10 @@ export function mergeConfig(existing: Record<string, unknown> | null): {
       ? { ...(config['operations'] as Record<string, unknown>) }
       : {};
   let opsChanged = false;
+  let staleOpsRemoved = false;
   for (const opKey of ['apply', 'archive'] as const) {
     const pdacGuidance = PDAC_OPERATIONS[opKey].guidance;
+    const stale = staleManaged(previouslyManaged?.operations[opKey], pdacGuidance);
     const existingOp =
       existingOperations[opKey] &&
       typeof existingOperations[opKey] === 'object' &&
@@ -260,7 +421,11 @@ export function mergeConfig(existing: Record<string, unknown> | null): {
     const existingGuidance = Array.isArray(existingOp['guidance'])
       ? [...(existingOp['guidance'] as string[])]
       : [];
-    const merged = [...existingGuidance];
+    const merged = existingGuidance.filter((entry) => !stale.includes(entry));
+    if (merged.length !== existingGuidance.length) {
+      staleOpsRemoved = true;
+      opsChanged = true;
+    }
     for (const guidance of pdacGuidance) {
       if (!merged.includes(guidance)) {
         merged.push(guidance);
@@ -272,7 +437,11 @@ export function mergeConfig(existing: Record<string, unknown> | null): {
   }
   if (opsChanged) {
     config['operations'] = existingOperations;
-    changes.push('Merged PDaC operation guidance into openspec/config.yaml (operations:).');
+    changes.push(
+      staleOpsRemoved
+        ? 'Merged PDaC operation guidance into openspec/config.yaml (operations:), replacing outdated PDaC entries.'
+        : 'Merged PDaC operation guidance into openspec/config.yaml (operations:).',
+    );
   }
 
   return { config, changes };
@@ -295,26 +464,33 @@ async function productshapeVersion(): Promise<string> {
  * Add the OpenSpec integration to a repository.
  *
  * - Detects the OpenSpec CLI version; rejects if not found or below MIN_SUPPORTED_OPENSPEC.
+ *   A caller that already ran the CLI (the init bootstrap) can pass `cliVersion` to skip the
+ *   probe: after an npx bootstrap nothing is on PATH, yet the version is known.
  * - Requires an existing `openspec/` workspace (run `openspec init` first).
  * - Merges PDaC guidance into `openspec/config.yaml`, preserving existing user configuration.
- * - Records metadata under `.product/integrations/openspec.json`.
+ * - Records metadata under `.product/integrations/openspec.json`, including the exact strings
+ *   injected, so a later update replaces outdated PDaC entries instead of accumulating them.
  * - Idempotent: running twice produces the same result.
  * - `--dry-run` reports what would change without writing.
  * - `--force` re-merges even if the PDaC block is already present (useful after a PDaC upgrade).
  */
 export async function addOpenSpecIntegration(
   root: string,
-  options: { force?: boolean; dryRun?: boolean } = {},
+  options: { force?: boolean; dryRun?: boolean; cliVersion?: string } = {},
 ): Promise<{ written: string[]; changes: string[]; meta: OpenSpecIntegrationMeta }> {
   const { force = false, dryRun = false } = options;
 
-  const detected = await detectOpenSpecVersion();
-  if ('error' in detected) {
-    throw new Error(detected.error);
+  let openspecVersion = options.cliVersion;
+  if (!openspecVersion) {
+    const detected = await detectOpenSpecVersion(root);
+    if ('error' in detected) {
+      throw new Error(detected.error);
+    }
+    openspecVersion = detected.version;
   }
-  if (compareVersions(detected.version, MIN_SUPPORTED_OPENSPEC) < 0) {
+  if (compareVersions(openspecVersion, MIN_SUPPORTED_OPENSPEC) < 0) {
     throw new Error(
-      `OpenSpec CLI version ${detected.version} is below the minimum supported ${MIN_SUPPORTED_OPENSPEC}. Please upgrade OpenSpec.`,
+      `OpenSpec CLI version ${openspecVersion} is below the minimum supported ${MIN_SUPPORTED_OPENSPEC}. Please upgrade OpenSpec.`,
     );
   }
 
@@ -323,29 +499,21 @@ export async function addOpenSpecIntegration(
   }
 
   const existing = await readOpenSpecConfig(root);
+  const previousMeta = await readMeta(root);
 
-  // Detect a conflicting user context that is NOT the PDaC block and has no room for it.
-  // In practice we always append, so a "conflict" only arises if the user explicitly removed the
-  // PDaC block after a previous install and we are re-adding without --force.
-  if (!force && existing) {
-    const existingContext =
-      typeof existing['context'] === 'string' ? (existing['context'] as string) : undefined;
-    if (existingContext && extractPdacContext(existingContext) === null) {
-      // The user has context but no PDaC block. We will append, which is safe — not a conflict.
-    }
-  }
+  const { config, changes } = mergeConfig(existing, previousMeta?.managed);
 
-  const { config, changes } = mergeConfig(existing);
+  const meta: OpenSpecIntegrationMeta = {
+    provider: 'openspec',
+    version: await productshapeVersion(),
+    openspecVersion,
+    installedAt: new Date().toISOString(),
+    configPath: CONFIG_RELATIVE,
+    managed: currentManagedStrings(),
+  };
 
   if (changes.length === 0 && !force) {
     // Already up to date. Still record/refresh metadata.
-    const meta: OpenSpecIntegrationMeta = {
-      provider: 'openspec',
-      version: await productshapeVersion(),
-      openspecVersion: detected.version,
-      installedAt: new Date().toISOString(),
-      configPath: CONFIG_RELATIVE,
-    };
     if (!dryRun) {
       await writeMeta(root, meta);
     }
@@ -358,29 +526,11 @@ export async function addOpenSpecIntegration(
     await mkdir(dirname(configPath(root)), { recursive: true });
     await writeFile(configPath(root), serialized, 'utf8');
     written.push(CONFIG_RELATIVE);
-
-    const meta: OpenSpecIntegrationMeta = {
-      provider: 'openspec',
-      version: await productshapeVersion(),
-      openspecVersion: detected.version,
-      installedAt: new Date().toISOString(),
-      configPath: CONFIG_RELATIVE,
-    };
     await writeMeta(root, meta);
     written.push(META_RELATIVE);
   }
 
-  return {
-    written,
-    changes,
-    meta: {
-      provider: 'openspec',
-      version: await productshapeVersion(),
-      openspecVersion: detected.version,
-      installedAt: new Date().toISOString(),
-      configPath: CONFIG_RELATIVE,
-    },
-  };
+  return { written, changes, meta };
 }
 
 /** Write the integration metadata file. */
@@ -425,7 +575,7 @@ export async function checkOpenSpecIntegration(root: string): Promise<{
   const checks: { name: string; ok: boolean; detail: string }[] = [];
 
   // 1. OpenSpec CLI installed and supported.
-  const detected = await detectOpenSpecVersion();
+  const detected = await detectOpenSpecVersion(root);
   if ('error' in detected) {
     checks.push({ name: 'openspec CLI', ok: false, detail: detected.error });
   } else if (compareVersions(detected.version, MIN_SUPPORTED_OPENSPEC) < 0) {
@@ -539,6 +689,30 @@ export async function removeOpenSpecIntegration(
   const { dryRun = false } = options;
   const removed: string[] = [];
 
+  // Remove both what the metadata recorded as injected and what the current guidance would
+  // inject: the union covers metadata written before the record existed as well as entries left
+  // behind by an older ProductShape.
+  const recorded = (await readMeta(root))?.managed;
+  const current = currentManagedStrings();
+  const managedRules: Record<string, string[]> = {};
+  for (const key of new Set([
+    ...Object.keys(current.rules),
+    ...Object.keys(recorded?.rules ?? {}),
+  ])) {
+    managedRules[key] = [
+      ...new Set([...(current.rules[key] ?? []), ...(recorded?.rules[key] ?? [])]),
+    ];
+  }
+  const managedOperations: Record<string, string[]> = {};
+  for (const key of new Set([
+    ...Object.keys(current.operations),
+    ...Object.keys(recorded?.operations ?? {}),
+  ])) {
+    managedOperations[key] = [
+      ...new Set([...(current.operations[key] ?? []), ...(recorded?.operations[key] ?? [])]),
+    ];
+  }
+
   const config = await readOpenSpecConfig(root);
   if (config !== null) {
     let configChanged = false;
@@ -569,7 +743,7 @@ export async function removeOpenSpecIntegration(
         : null;
     if (rules) {
       let rulesChanged = false;
-      for (const [artifact, pdacRules] of Object.entries(PDAC_RULES)) {
+      for (const [artifact, pdacRules] of Object.entries(managedRules)) {
         if (!Array.isArray(rules[artifact])) continue;
         const list = rules[artifact] as string[];
         const filtered = list.filter((r) => !pdacRules.includes(r));
@@ -600,7 +774,7 @@ export async function removeOpenSpecIntegration(
     if (operations) {
       let opsChanged = false;
       for (const opKey of ['apply', 'archive'] as const) {
-        const pdacGuidance = PDAC_OPERATIONS[opKey].guidance;
+        const pdacGuidance = managedOperations[opKey] ?? [];
         const op =
           operations[opKey] &&
           typeof operations[opKey] === 'object' &&
