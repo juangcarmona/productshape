@@ -14,13 +14,15 @@ A brownfield repository usually already has a populated `docs/`, so check what `
 prodshape init --ai claude --dry-run
 ```
 
-The dry run writes nothing and reports every path it would create, preserve, regenerate or overwrite, plus any conflict — a file that already exists and is not managed by the installation lock. Nothing is overwritten without `--force`, and existing files are reported as preserved.
+The dry run writes nothing and reports every path it would create, preserve, regenerate or overwrite, plus any conflict — a file that already exists and is not managed by the installation lock. Nothing is overwritten without `--force`, and existing files are reported as preserved. The report also names any SDD framework detected in the repository and, for `--sdd openspec`, describes the integration actions a real run would take without executing anything.
 
 ```bash
 prodshape init --ai claude
 ```
 
 This creates `docs/product/` and `.product/` and touches nothing else — your source code, build and existing documentation are untouched. Details of what `init` creates and the authority rules are in [Installing into an existing repository](existing-repository.md).
+
+A brownfield repository that already runs OpenSpec should pass `--sdd openspec` so the citation integration is wired in the same run; `init` then recommends this guide's recovery workflow as the next step. See [Adopting in an existing OpenSpec repository](existing-openspec-repository.md).
 
 `init` scaffolds one directory per artifact kind under `docs/product/model/`. The layout is a recommendation, not a rule — discovery walks the model directory recursively and keys on the frontmatter `type` — but taking it means not having to invent a taxonomy. Use `--flat` to opt out.
 

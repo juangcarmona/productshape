@@ -42,3 +42,5 @@ export {
   writeLock,
 } from './lock.js';
 export type { InstallationLock } from './lock.js';
+export { detectSddFrameworks, sddFrameworkById, sddFrameworks } from './sdd.js';
+export type { SddFramework, SddFrameworkId } from './sdd.js';

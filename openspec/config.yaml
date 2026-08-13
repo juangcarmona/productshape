@@ -1,30 +1,36 @@
 schema: spec-driven
-
-context: |
+context: >-
   This repository is ProductShape, the reference implementation of Product Definition as Code (PDaC).
-  The canonical product definition lives in docs/product/model (actors, journeys, use cases, business rules, domain terms, requirements). It is the single source of truth for product behaviour. OpenSpec artifacts are downstream consumers of it, never a second source of truth.
+  
+  
+  <!-- pdac:context begin -->
+  
+  This repository uses Product Definition as Code (PDaC). The canonical product definition lives in docs/product/model (actors, journeys, use cases, business rules, domain terms, requirements) and is the single source of truth for product behaviour. OpenSpec artifacts are downstream consumers of it, never a second source of truth.
+  
   Consumers bind to canonical text through the PDaC Citation Contract: a citation records the target artifact id, a sha256 content digest, and an optional verification scenario anchor. Verification reports one status per citation: current, stale, tampered or unresolved.
-  To cite: run `prodshape inspect <ID>` to read the current digest, then `prodshape cite --id <ID> --digest <digest>` to emit the citation record. Place inline citations on their own line directly under the text they ground.
+  
+  To cite: run `npx prodshape inspect <ID>` to read the current digest, then `npx prodshape cite --id <ID> --digest <digest>` to emit the citation record. Place inline citations on their own line directly under the text they ground.
+  
   The product definition changes only through a Product Change under docs/product/changes/. OpenSpec changes never edit docs/product/model directly.
-
+  
+  <!-- pdac:context end -->
 rules:
   proposal:
-    - State which PDaC artifacts this change touches, each with an inline citation emitted by `prodshape cite --id <ID> --digest <digest>`. Never write a citation record by hand.
+    - State which PDaC artifacts this change touches, each with an inline citation emitted by `npx prodshape cite --id <ID> --digest <digest>`. Never write a citation record by hand.
     - If the change alters product behaviour, name the Product Change (CHG id) it implements. If no Product Change exists yet, stop and ask for one instead of proceeding.
   specs:
     - Every requirement derived from canonical product text MUST carry a citation to every PDaC artifact it derives from, one citation per line, placed after the requirement text and before the first scenario. A requirement often derives from more than one artifact; citing only the closest one silently hides the other derivations. Never place citations between the requirement heading and the requirement text; OpenSpec reads the first paragraph as the requirement.
     - Cite a specific verification scenario with an anchor when the requirement maps to one (anchor="<scenario id>").
     - Never paraphrase canonical text as if it were new; either cite it inline or embed it in a marker-block citation (<!-- pdac:cite ... --> canonical text <!-- /pdac:cite -->).
-    - Never invent artifact ids or digests. Read them with `prodshape inspect <ID>`.
+    - Never invent artifact ids or digests. Read them with `npx prodshape inspect <ID>`.
   design:
     - When a design decision depends on canonical product text, cite the artifact it depends on.
   tasks:
     - A task that changes cited behaviour must include a follow-up task to refresh the affected citations.
-
 operations:
   apply:
     guidance:
-      - Before finishing, run `prodshape citations verify` and fix every stale, tampered or unresolved citation. Refresh a stale digest by re-running `prodshape inspect <ID>`; never delete a citation to silence a diagnostic.
+      - Before finishing, run `npx prodshape citations verify` and fix every stale, tampered or unresolved citation. Refresh a stale digest by re-running `npx prodshape inspect <ID>`; never delete a citation to silence a diagnostic.
   archive:
     guidance:
-      - Run `prodshape citations verify` one final time. Archive only when every citation is current.
+      - Run `npx prodshape citations verify` one final time. Archive only when every citation is current.

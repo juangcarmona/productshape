@@ -70,6 +70,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .command('init')
     .description('Initialize Product Definition as Code in this repository')
     .option('--ai <providers>', 'comma-separated AI integrations: claude, copilot, codex')
+    .option('--sdd <framework>', 'SDD framework: openspec, kiro, speckit, or none to skip')
     .option('--force', 'overwrite existing files')
     .option('--flat', 'scaffold the model directory without per-kind subdirectories')
     .option('--shorthand', 'also generate the /ps:<name> aliases for /product:<name>')
@@ -77,6 +78,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .action(
       async (options: {
         ai?: string;
+        sdd?: string;
         force?: boolean;
         flat?: boolean;
         shorthand?: boolean;

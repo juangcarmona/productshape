@@ -4,7 +4,7 @@ This guide is for repositories that already run OpenSpec. Product Definition as 
 
 Want to start typing? Jump to [the walkthrough](#the-walkthrough-first-rule-first-citation-first-drift-about-15-minutes): first rule, first citation, first drift, about 15 minutes, every step copy-paste with its expected output.
 
-> The CLI ships as [`@prodshape/cli`](https://www.npmjs.com/package/@prodshape/cli) and includes the OpenSpec adapter. The commands below use `prodshape`; the `product-definition` alias is equivalent through v0.x. The contracts are fixed in the [specification](https://github.com/product-definition-as-code/spec). See [Limitations](../limitations.md).
+> The CLI ships as [`@prodshape/cli`](https://www.npmjs.com/package/@prodshape/cli) and includes the OpenSpec integration. The commands below use `prodshape`; the `product-definition` alias is equivalent through v0.x. The contracts are fixed in the [specification](https://github.com/product-definition-as-code/spec). See [Limitations](../limitations.md).
 
 ## What Product Definition adds
 
@@ -62,14 +62,14 @@ A citation carries exactly one of these statuses, in this precedence: `unresolve
 
 You need: Node.js 22 or later, npm, and your OpenSpec repository, meaning a git repository with at least one commit (the change record pins a `base-revision`) and an `openspec/` directory. Every step is copy-paste, and the output under each command comes from a real run. The walkthrough models a refund window; where it says "the checkout spec", read "whichever of your specs restates the rule you pick", and expect your own paths in the output.
 
-### 1. Install the layer (2 minutes)
+### 1. Install the layer and wire the integration (2 minutes)
 
 ```bash
 npm install -g @prodshape/cli
-prodshape init
+prodshape init --sdd openspec
 ```
 
-`init` creates `docs/product/` and `.product/` and touches nothing else; `openspec/` is untouched. Add `--ai claude`, `--ai copilot` or `--ai claude,copilot` if you also want the generated skills and agent files for Claude Code, GitHub Copilot or both.
+`init` creates `docs/product/` and `.product/`, detects your `openspec/` workspace, and wires the OpenSpec integration in the same run: PDaC citation rules are merged additively into `openspec/config.yaml` (reversible with `prodshape integration remove openspec`) and the integration is recorded under `.product/integrations/`. Nothing else in `openspec/` is touched, and your own configuration entries survive the merge. In an interactive terminal a bare `prodshape init` detects the workspace and asks before wiring; in scripts and CI it never prompts and prints the exact command instead. Add `--ai claude`, `--ai copilot` or `--ai claude,copilot` if you also want the generated skills and agent files for Claude Code, GitHub Copilot or both.
 
 ### 2. Author CHG-INITIAL, the first Product Change (5 minutes)
 

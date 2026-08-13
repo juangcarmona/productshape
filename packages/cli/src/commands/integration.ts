@@ -11,10 +11,11 @@ import {
 import {
   addOpenSpecIntegration,
   checkOpenSpecIntegration,
+  isOpenSpecIntegrationInstalled,
   removeOpenSpecIntegration,
   updateOpenSpecIntegration,
 } from '@prodshape/integration-openspec';
-import { readFile, rm } from 'node:fs/promises';
+import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
   CliError,
@@ -120,14 +121,7 @@ export async function runIntegrationUpdate(
   }
 
   // Update OpenSpec integration if installed.
-  const openspecMetaPath = join(repo.root, '.product', 'integrations', 'openspec.json');
-  let openspecInstalled = false;
-  try {
-    await readFile(openspecMetaPath, 'utf8');
-    openspecInstalled = true;
-  } catch {
-    // OpenSpec integration not installed; skip silently.
-  }
+  const openspecInstalled = await isOpenSpecIntegrationInstalled(repo.root);
   if (openspecInstalled) {
     try {
       const osResult = await updateOpenSpecIntegration(repo.root, { force: options.force });
@@ -167,16 +161,7 @@ export async function runIntegrationCheck(io: CliIo): Promise<number> {
   );
 
   // Check OpenSpec integration if installed.
-  const openspecMetaPath = join(repo.root, '.product', 'integrations', 'openspec.json');
-  let openspecInstalled = false;
-  try {
-    await readFile(openspecMetaPath, 'utf8');
-    openspecInstalled = true;
-  } catch {
-    // Not installed.
-  }
-
-  if (openspecInstalled) {
+  if (await isOpenSpecIntegrationInstalled(repo.root)) {
     const osResult = await checkOpenSpecIntegration(repo.root);
     for (const check of osResult.checks) {
       io.out(`${check.ok ? 'ok  ' : 'FAIL'} ${check.name}: ${check.detail}`);

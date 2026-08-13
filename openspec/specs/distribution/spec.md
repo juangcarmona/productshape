@@ -20,6 +20,34 @@ Repository scaffolding, managed provider assets, the installation lock and the d
 - **WHEN** init runs where docs/product/README.md already exists
 - **THEN** the file is left untouched and reported as skipped unless --force is passed
 
+### Requirement: Initialization detects SDD frameworks and can adopt a supported one
+
+`init` SHALL detect supported SDD frameworks present in the repository by passive inspection (OpenSpec via `openspec/`, Kiro via `.kiro/`, Spec Kit via `.specify/`) and report the detection without executing framework tooling. `--sdd openspec` SHALL wire the OpenSpec integration in the same run, creating the workspace first (`openspec init --tools none`, through the pinned `npx -y @fission-ai/openspec@1` when no CLI is installed) when none exists; frameworks that install through their own tooling SHALL receive printed setup guidance instead of an installation attempt. With an explicit selection, an explicit `--sdd none`, or no interactive terminal, init SHALL NOT prompt, and report-only mode SHALL describe the SDD actions while executing no external command and writing nothing. When the scaffold succeeds but the integration step fails, the partial outcome SHALL be reported distinctly together with the command that retries only the failed step.
+
+{pdac:cite id="FR-INIT-002" digest="sha256:48bd2d28649dc2079f8fd5d111740f588616da5695293e6e44e47f9c24617e0d"}
+
+{pdac:cite id="UC-INIT-001" digest="sha256:38b655bfcb9d320a6ce29d2684b70249165cbc87a7b0326a98f48bbe9dd1d39a"}
+
+#### Scenario: Existing workspace wired in one run
+
+- **WHEN** `init --sdd openspec` runs in a repository with an existing `openspec/` workspace
+- **THEN** the OpenSpec integration is installed in the same run and the next steps recommend the brownfield recovery workflow
+
+#### Scenario: Guidance instead of installation
+
+- **WHEN** `init --sdd kiro` runs
+- **THEN** setup guidance is printed, nothing is installed, and the command exits 0
+
+#### Scenario: Non-interactive determinism
+
+- **WHEN** init runs without an interactive terminal and without `--sdd`
+- **THEN** no prompt is shown, the detection and next steps are reported, and no SDD action is taken
+
+#### Scenario: Report-only runs nothing
+
+- **WHEN** `init --sdd openspec --dry-run` runs in an empty repository
+- **THEN** the SDD actions are described, no external command runs, and nothing is written
+
 ### Requirement: Provider assets are generated with managed headers
 
 `integration add <provider>` and `integration update` SHALL render the canonical skills and commands into provider-specific files (Claude: `.claude/skills/<name>/SKILL.md`, `.claude/commands/product/`; Copilot: `.github/skills/<name>/SKILL.md`, `.github/prompts/`; Codex: `.agents/skills/<name>/SKILL.md`, `.agents/commands/product/`), each carrying a managed-file header with framework version and source asset, with every generated path and content hash recorded in `.product/installation.lock.json`, reproducibly. Skills SHALL be directory-based portable skills following the Agent Skills open standard, with references bundled inside the skill directory.

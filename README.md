@@ -128,6 +128,8 @@ prodshape doctor                               # check the result is healthy
 
 `--ai` takes a comma-separated list (`--ai claude,copilot`). `--dry-run` reports what would be created, preserved, regenerated or overwritten and exits non-zero on a conflict, so it is worth running first in a repository that already has content — and it works as a CI precheck.
 
+`init` also detects SDD frameworks in the repository (OpenSpec, Kiro, Spec Kit) and can pair one from the same command: `prodshape init --sdd openspec` sets up an OpenSpec workspace when none exists and wires the citation integration end to end; frameworks that install through their own tooling get setup guidance instead. Without a terminal it never prompts, so scripts and CI stay deterministic.
+
 `prodshape` is the installed CLI (`npm install -g @prodshape/cli`); from a source checkout, run it as `node packages/cli/dist/bin.js`. The package installs `product-definition` alongside it — a v0.x compatibility alias with identical output, removed before v1. The `/product:*` commands stay canonical and are always generated; `/ps:*` is an opt-in shorthand (`/ps:explore`, `/ps:impact`), enabled with `init --shorthand` or by setting `integrations.shorthand-commands: true`. This repository has it enabled.
 
 What you can read alongside:
