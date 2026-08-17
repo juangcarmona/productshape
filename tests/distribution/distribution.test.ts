@@ -3,7 +3,13 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { runCli } from '@prodshape/cli';
-import { checkIntegrations, loadBundledAssets } from '@prodshape/distribution';
+import {
+  checkIntegrations,
+  fileDigest,
+  loadBundledAssets,
+  lockSchemaId,
+  writeLock,
+} from '@prodshape/distribution';
 import { claudeRenderer } from '@prodshape/integration-claude';
 import { copilotRenderer } from '@prodshape/integration-copilot';
 import { listFilesRecursive, repoRoot, toPosix } from '../helpers.js';
@@ -131,6 +137,51 @@ describe('provider renderers', () => {
     expect(skill?.content).toContain('MANAGED FILE');
     for (const section of ['## Purpose', '## Forbidden actions', '## Completion checks']) {
       expect(skill?.content).toContain(section);
+    }
+  });
+});
+
+describe('integration diagnostic ordering', () => {
+  it('uses explicit UTF-16 code-unit order instead of locale collation', async () => {
+    const scratch = await mkdtemp(join(tmpdir(), 'prodshape-integration-diagnostics-'));
+    const paths = [
+      'managed/ä.md',
+      'managed/Z.md',
+      'managed/a.md',
+      'managed/A.md',
+      'managed/10.md',
+      'managed/2.md',
+      'managed/_.md',
+      'managed/-.md',
+    ];
+    try {
+      await writeLock(scratch, {
+        schema: lockSchemaId,
+        version: '0.0.0-test',
+        providers: {
+          probe: {
+            files: Object.fromEntries(paths.map((path) => [path, fileDigest('expected\n')])),
+          },
+        },
+      });
+      for (const path of paths) {
+        const absolute = join(scratch, ...path.split('/'));
+        await mkdir(dirname(absolute), { recursive: true });
+        await writeFile(absolute, 'tampered\n', 'utf8');
+      }
+
+      expect((await checkIntegrations(scratch)).map((diagnostic) => diagnostic.file)).toEqual([
+        'managed/-.md',
+        'managed/10.md',
+        'managed/2.md',
+        'managed/A.md',
+        'managed/Z.md',
+        'managed/_.md',
+        'managed/a.md',
+        'managed/ä.md',
+      ]);
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
     }
   });
 });
