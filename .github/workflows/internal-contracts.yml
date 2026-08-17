@@ -1,4 +1,4 @@
-name: Conformance
+name: Internal contracts
 
 on:
   push:
@@ -6,8 +6,11 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
-  conformance:
+  internal-contracts:
     name: fixtures, self-model and traceability
     runs-on: ubuntu-latest
     steps:
@@ -26,8 +29,8 @@ jobs:
         run: npm install -g @fission-ai/openspec@1.3.0
       # The packed-tarball test in the repo project installs the built CLI package.
       - run: pnpm build
-      # Conformance fixtures, schema/template/example conformance, the self-hosted
+      # Internal fixtures, schema/template/example contracts, the self-hosted
       # model and the end-to-end traceability fixture all live in the repo project.
-      - run: npx vitest run --project repo
+      - run: pnpm exec vitest run --project repo
       - name: openspec artifact validation
         run: openspec validate --all --no-interactive

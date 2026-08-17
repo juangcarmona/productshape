@@ -1,0 +1,128 @@
+name: PDaC conformance (pinned)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  PDAC_SPEC_SHA: 89b43b78a6547c9dea709b6d261212c2fe4f3c4b
+  PDAC_LINT_VERSION: 0.1.2
+  PDAC_REPORTS_DIR: ${{ github.workspace }}/pdac-conformance-reports
+
+jobs:
+  conformance:
+    name: packaged CLI against pinned PDaC spec
+    runs-on: ubuntu-latest
+    steps:
+      - name: check out ProductShape
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: check out the pinned PDaC specification
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          repository: product-definition-as-code/spec
+          ref: ${{ env.PDAC_SPEC_SHA }}
+          path: pdac-spec
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: install and build ProductShape
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: pack and install the conformance toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          package_dir="$RUNNER_TEMP/productshape-package"
+          toolchain_dir="$RUNNER_TEMP/pdac-conformance-toolchain"
+          reports_dir="$PDAC_REPORTS_DIR"
+          mkdir -p "$package_dir" "$toolchain_dir" "$reports_dir"
+
+          cli_version="$(node -p "require('./packages/cli/package.json').version")"
+          pnpm --dir packages/cli pack --pack-destination "$package_dir"
+          cli_tarball="$package_dir/prodshape-cli-$cli_version.tgz"
+          test -f "$cli_tarball"
+
+          npm install --prefix "$toolchain_dir" --save-exact --ignore-scripts \
+            "$cli_tarball" "pdac-lint@$PDAC_LINT_VERSION"
+
+          prodshape_bin="$toolchain_dir/node_modules/.bin/prodshape"
+          pdac_lint_bin="$toolchain_dir/node_modules/.bin/pdac-lint"
+          productshape_package="$toolchain_dir/node_modules/@prodshape/cli/package.json"
+          test -x "$prodshape_bin"
+          test -x "$pdac_lint_bin"
+          test -f "$productshape_package"
+
+          installed_cli="$(realpath "$toolchain_dir/node_modules/@prodshape/cli")"
+          case "$installed_cli" in
+            "$GITHUB_WORKSPACE"/*)
+              echo "Packaged CLI resolved into the workspace: $installed_cli" >&2
+              exit 1
+              ;;
+          esac
+
+          cp "$cli_tarball" "$reports_dir/"
+          cp "$toolchain_dir/package-lock.json" "$reports_dir/isolated-install-lock.json"
+          npm ls --prefix "$toolchain_dir" @prodshape/cli pdac-lint --json \
+            > "$reports_dir/isolated-install.json"
+
+          {
+            echo "PRODSHAPE_BIN=$prodshape_bin"
+            echo "PRODSHAPE_PACKAGE=$productshape_package"
+            echo "PRODSHAPE_TARBALL=$reports_dir/$(basename "$cli_tarball")"
+            echo "PDAC_LINT_BIN=$pdac_lint_bin"
+          } >> "$GITHUB_ENV"
+
+      - name: run pinned PDaC conformance
+        run: |
+          node scripts/verify-pdac-conformance.mjs \
+            --spec "$GITHUB_WORKSPACE/pdac-spec" \
+            --spec-sha "$PDAC_SPEC_SHA" \
+            --prodshape "$PRODSHAPE_BIN" \
+            --productshape-package "$PRODSHAPE_PACKAGE" \
+            --tarball "$PRODSHAPE_TARBALL" \
+            --pdac-lint "$PDAC_LINT_BIN" \
+            --pdac-lint-version "$PDAC_LINT_VERSION" \
+            --reports "$PDAC_REPORTS_DIR" \
+            --source-sha "$GITHUB_SHA" \
+            --evidence-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+      - name: publish job summary
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f "$PDAC_REPORTS_DIR/summary.md" ]]; then
+            cat "$PDAC_REPORTS_DIR/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          elif [[ -f "$PDAC_REPORTS_DIR/failure.txt" ]]; then
+            {
+              echo "## PDaC conformance failed before producing a summary"
+              echo
+              echo '```text'
+              cat "$PDAC_REPORTS_DIR/failure.txt"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: retain conformance evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pdac-conformance-${{ github.sha }}
+          path: pdac-conformance-reports/
+          if-no-files-found: error
+          retention-days: 30

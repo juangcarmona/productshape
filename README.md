@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/juangcarmona/productshape/actions/workflows/ci.yml"><img src="https://github.com/juangcarmona/productshape/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
-  <a href="https://github.com/juangcarmona/productshape/actions/workflows/conformance.yml"><img src="https://github.com/juangcarmona/productshape/actions/workflows/conformance.yml/badge.svg" alt="Conformance" /></a>
+  <a href="https://github.com/juangcarmona/productshape/actions/workflows/pdac-conformance.yml"><img src="https://github.com/juangcarmona/productshape/actions/workflows/pdac-conformance.yml/badge.svg" alt="PDaC conformance (pinned)" /></a>
   <a href="https://www.npmjs.com/package/@prodshape/cli"><img src="https://img.shields.io/npm/v/@prodshape/cli?logo=npm&label=%40prodshape%2Fcli" alt="npm version" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/npm/l/@prodshape/cli" alt="License" /></a>
 </p>
@@ -141,6 +141,12 @@ What you can read alongside:
 - `schemas/` and `templates/` — the machine contracts the CLI validates against, and a conformant starting point for each artifact kind.
 
 Adoption guides for the four entry paths: [greenfield](docs/adoption/greenfield.md), [brownfield](docs/adoption/brownfield.md), [existing repository](docs/adoption/existing-repository.md) and [existing OpenSpec repository](docs/adoption/existing-openspec-repository.md).
+
+## PDaC conformance
+
+The pinned conformance workflow builds and packs ProductShape, installs that tarball outside the workspace, and runs the external `pdac-lint` suite. It targets [PDaC spec commit `89b43b78a6547c9dea709b6d261212c2fe4f3c4b`](https://github.com/product-definition-as-code/spec/commit/89b43b78a6547c9dea709b6d261212c2fe4f3c4b) with `pdac-lint` `0.1.2`. The profile is the full published v0.1-draft suite: kernel, reference profile and reference workflow; the specification defines no smaller conformance subset.
+
+The gate retains JSON and human-readable reports, verifies every pinned digest, and runs a citation-omission negative control. The published tests are not yet a complete normative set, so the badge claims only this pinned executable profile. ProductShape's own fixtures, self-model and traceability checks run separately as **Internal contracts**.
 
 ## Current status
 
