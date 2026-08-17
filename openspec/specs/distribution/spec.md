@@ -26,7 +26,7 @@ Repository scaffolding, managed provider assets, the installation lock and the d
 
 {pdac:cite id="FR-INIT-002" digest="sha256:48bd2d28649dc2079f8fd5d111740f588616da5695293e6e44e47f9c24617e0d"}
 
-{pdac:cite id="UC-INIT-001" digest="sha256:38b655bfcb9d320a6ce29d2684b70249165cbc87a7b0326a98f48bbe9dd1d39a"}
+{pdac:cite id="UC-INIT-001" digest="sha256:c3154d02b4d81b3bcbfccbebae64aeeb6f92922bec9ece5dc70c2cb5ea08974c"}
 
 #### Scenario: Existing workspace wired in one run
 
@@ -105,9 +105,9 @@ Initialization SHALL scaffold one directory per artifact kind under the model di
 
 The per-kind layout SHALL be a recommendation, not a requirement: artifact discovery walks the model directory recursively and keys on the frontmatter `type`, so no diagnostic SHALL be produced for an artifact in any other location under the model directory. Initialization SHALL offer `--flat` to opt out of the per-kind directories, and SHALL still create the model directory itself so validation has a directory to read.
 
-The change lifecycle directories SHALL NOT be affected by `--flat`: they are read by change discovery and written by promotion, and are not taxonomy.
+The change lifecycle directories SHALL NOT be affected by `--flat`: they are read by change discovery and written by change archival and apply, and are not taxonomy.
 
-The scaffolded directories SHALL be the same set that promotion writes into, verified by a check rather than by convention.
+The scaffolded per-kind model directories SHALL be the same set that Product Change apply uses when placing artifacts, verified by a check rather than by convention.
 
 #### Scenario: Structure survives a fresh clone
 
@@ -124,9 +124,9 @@ The scaffolded directories SHALL be the same set that promotion writes into, ver
 - **WHEN** a repository is initialized with `--flat`
 - **THEN** the model directory exists with no per-kind subdirectories, and `validate` exits 0
 
-#### Scenario: Scaffold and promotion targets cannot diverge
+#### Scenario: Scaffold and apply targets cannot diverge
 
-- **WHEN** the scaffold list and the promotion target map are compared
+- **WHEN** the scaffold list and the apply target map are compared
 - **THEN** they contain the same directories, and a change to either alone fails the check
 
 ### Requirement: Initialization can be reported without being applied

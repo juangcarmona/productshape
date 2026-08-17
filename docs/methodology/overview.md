@@ -1,6 +1,6 @@
 # Methodology overview
 
-Product Definition as Code keeps a canonical, versioned, machine-validatable definition of your product in your repository — plain Markdown with YAML frontmatter — and evolves it through native pull requests. It sits _before_ your backlog and before Spec-Driven Development (SDD): the definition says what the product is; backlog items and SDD specs cite it rather than re-stating it.
+Product Definition as Code keeps a canonical, versioned, machine-validatable definition of your product in your repository — plain Markdown with YAML frontmatter — and evolves it through Product Changes whose applied result is accepted by pull-request merge. It sits _before_ your backlog and before Spec-Driven Development (SDD): the definition says what the product is; backlog items and SDD specs cite it rather than re-stating it.
 
 Five minutes here gives you the artifact families, the product graph, the operations, and the citation contract. The normative contracts live in the [specification repository](https://github.com/product-definition-as-code/spec); these pages explain, the specification decides.
 
@@ -32,7 +32,7 @@ Each artifact declares its relationships in frontmatter: a use case names its `p
 
 ## How the definition changes
 
-The Product Definition is the accepted product intent on the repository's canonical branch. It evolves through Product Changes: explicit semantic deltas of add, modify and remove, each carrying the reason it exists. A pull request reviews and accepts a Product Change; it is not the change.
+The Product Definition is the accepted product intent on the repository's canonical branch. It evolves through Product Changes: explicit semantic deltas of add, modify and remove, each carrying the reason it exists. A pull request reviews the applied result, and its merge accepts the resulting baseline; the pull request is not the Product Change.
 
 ```text
 Fuzzy idea
@@ -66,6 +66,8 @@ SDD workflow ────── e.g. OpenSpec: proposal, specs, design, tasks
 
 Approval and acceptance are both human decisions. Tools MUST NOT approve a change, apply one implicitly, or merge, auto-approve or self-merge. Consumers of the model MUST NOT write to it; they cite it.
 
+Product-definition work and implementation work have independent cadence. They may share a pull request, or implementation may follow later, but they remain separate. Product approval says the proposed intent is wanted, apply materializes it on a working branch, merge accepts the resulting definition, and none of those facts proves implementation, verification, release or deployment.
+
 ## The citation contract
 
 A citation is a machine-verifiable reference from a consumer document (an SDD spec, a task, an agent prompt file, a design doc) to canonical product text. It records the target artifact `id`, a content `digest`, and an optional `anchor` (a verification scenario id). When the canonical content changes, the citation reports `stale` — drift is machine-detectable rather than silent.
@@ -76,7 +78,7 @@ See the [citation contract](https://github.com/product-definition-as-code/spec/b
 
 - **Deterministic tooling** (the `prodshape` CLI) enforces structure: schemas, IDs, relationships, digests, citation verification. Same input, same result, every platform.
 - **AI skills** do semantic reasoning: drafting, impact interpretation, exploration. AI preserves unanswered questions and never invents product decisions.
-- **Humans** make the calls that define the product: approving a change, and accepting it by merging.
+- **Humans** make the calls that define the product: approving a Product Change and accepting the resulting baseline by merging. Delivery evidence remains separate.
 
 ## Where to go next
 

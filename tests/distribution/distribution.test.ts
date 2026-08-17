@@ -517,7 +517,7 @@ describe('init --flat', () => {
       );
       expect(files).toContain('docs/product/model/.gitkeep');
       expect(files.filter((f) => f.startsWith('docs/product/model/'))).toHaveLength(1);
-      // Change lifecycle states are not taxonomy: discovery and promotion read them.
+      // Change lifecycle states are not taxonomy: discovery, validation and apply read them.
       expect(files).toContain('docs/product/model/.gitkeep');
 
       const validate = await run(['validate'], scratch);
@@ -534,6 +534,16 @@ describe('init and managed-file lifecycle (end to end)', () => {
     expect(result.err).toBe('');
     expect(result.code).toBe(0);
     expect(result.out).toContain('Next steps:');
+    expect(result.out).toContain(
+      'Create CHG-INITIAL under docs/product/changes/active/chg-initial/',
+    );
+    expect(result.out).toContain('prodshape change validate CHG-INITIAL');
+    expect(result.out).toContain('prodshape change apply CHG-INITIAL --dry-run');
+    expect(result.out).toContain('its merge accepts the initial baseline. Apply does not.');
+    expect(result.out).toContain(
+      'Implementation may share that pull request or follow later; Product Change status never reports delivery.',
+    );
+    expect(result.out).not.toContain('Author your initial product model under docs/product/model');
 
     const config = await readFile(join(workDir, '.product', 'config.yaml'), 'utf8');
     expect(config).toContain('- claude');

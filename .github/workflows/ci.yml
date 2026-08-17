@@ -61,6 +61,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm format:check
+      - run: pnpm lifecycle:check
 
   # Warn when a PR touches package source but adds no changeset. Deliberately never fails during
   # v0.x — it only emits an annotation.

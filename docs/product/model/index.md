@@ -23,7 +23,7 @@ Adoption: [UC-INIT-001](use-cases/uc-init-001.md), [UC-DEFINE-001](use-cases/uc-
 - [BR-CANONICAL-001](business-rules/br-canonical-001.md) — authored artifacts are canonical.
 - [BR-IDENTITY-001](business-rules/br-identity-001.md) — identity is immutable IDs, not paths.
 - [BR-RELATIONSHIPS-001](business-rules/br-relationships-001.md) — reverse relationships are derived.
-- [BR-CHANGE-001](business-rules/br-change-001.md) — product-model changes happen through validated pull requests.
+- [BR-CHANGE-001](business-rules/br-change-001.md) — Product Changes are overlay-validated, approved and applied; merge accepts the resulting baseline.
 - [BR-SDD-001](business-rules/br-sdd-001.md) — consumers cite, never own semantics.
 - [BR-AI-001](business-rules/br-ai-001.md) — deterministic validation is never delegated to AI.
 
@@ -31,7 +31,7 @@ Adoption: [UC-INIT-001](use-cases/uc-init-001.md), [UC-DEFINE-001](use-cases/uc-
 
 Bounded contexts: [BC-PRODUCT-DEFINITION](domain/bounded-contexts/bc-product-definition.md), [BC-DELIVERY-INTEGRATION](domain/bounded-contexts/bc-delivery-integration.md).
 
-Terms: [TERM-PRODUCT-ARTIFACT](domain/terms/term-product-artifact.md), [TERM-PRODUCT-GRAPH](domain/terms/term-product-graph.md), [TERM-CURRENT-PRODUCT-MODEL](domain/terms/term-current-product-model.md), [TERM-PRODUCT-CONTEXT](domain/terms/term-product-context.md), [TERM-METHODOLOGY](domain/terms/term-methodology.md), [TERM-REFERENCE-IMPLEMENTATION](domain/terms/term-reference-implementation.md), [TERM-GRAPH-PROJECTION](domain/terms/term-graph-projection.md), [TERM-PRODUCT-EXPLORER](domain/terms/term-product-explorer.md), [TERM-FOCUSED-TOPOLOGY](domain/terms/term-focused-topology.md), [TERM-PRODUCT-SNAPSHOT](domain/terms/term-product-snapshot.md).
+Terms: [TERM-PRODUCT-ARTIFACT](domain/terms/term-product-artifact.md), [TERM-PRODUCT-GRAPH](domain/terms/term-product-graph.md), [TERM-CURRENT-PRODUCT-MODEL](domain/terms/term-current-product-model.md), [TERM-CITATION](domain/terms/term-citation.md), [TERM-METHODOLOGY](domain/terms/term-methodology.md), [TERM-REFERENCE-IMPLEMENTATION](domain/terms/term-reference-implementation.md), [TERM-GRAPH-PROJECTION](domain/terms/term-graph-projection.md), [TERM-PRODUCT-EXPLORER](domain/terms/term-product-explorer.md), [TERM-FOCUSED-TOPOLOGY](domain/terms/term-focused-topology.md), [TERM-PRODUCT-SNAPSHOT](domain/terms/term-product-snapshot.md).
 
 ## Requirements — derived obligations
 

@@ -93,7 +93,7 @@ describe('frontmatter reference', () => {
     for (const file of files) {
       const parsed = parseArtifactDocument(await readFile(file, 'utf8'), file);
       const kind = parsed.artifact?.frontmatter.type;
-      // product-context.md is a generated-output template with no schema kind.
+      // A template without a schema kind has no generated reference section to link to.
       if (typeof kind !== 'string' || !doc.includes(`<!-- BEGIN GENERATED: ${kind} -->`)) continue;
       const pointer = `Schema reference: docs/specification/frontmatter-reference.md#${kind}`;
       expect.soft(parsed.artifact?.body ?? '', file).toContain(pointer);

@@ -22,7 +22,7 @@ Structural impact traversal over the product graph in both directions.
 
 ### Requirement: Inspect reports the full local picture of one artifact
 
-`product-definition inspect <ID>` SHALL report the artifact's metadata, canonical path, outgoing relationships and derived incoming relationships, SHALL additionally list the active Product Changes whose operations affect the artifact, the delivery slices implementing or affecting it and the handoffs referencing it, and SHALL fail clearly on an unknown ID.
+`product-definition inspect <ID>` SHALL report the artifact's metadata, canonical path, content digest, outgoing relationships and derived incoming relationships, and SHALL fail clearly on an unknown ID. It SHALL NOT claim to report in-flight work that the command does not inspect.
 
 #### Scenario: Incoming relationships shown
 
@@ -34,7 +34,7 @@ Structural impact traversal over the product graph in both directions.
 - **WHEN** inspect runs with an ID that does not exist
 - **THEN** the command exits non-zero naming the unknown ID
 
-#### Scenario: Affecting change listed
+#### Scenario: Content digest shown
 
-- **WHEN** an active change modifies the inspected artifact
-- **THEN** inspect lists that change ID under affecting changes
+- **WHEN** an artifact is inspected so a consumer can cite it
+- **THEN** inspect reports the artifact's current content digest

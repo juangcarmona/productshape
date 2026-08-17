@@ -91,7 +91,7 @@ export function planFilenameFixes(artifacts: LoadedArtifact[]): FilenamePlan {
 
 /**
  * Apply a plan. All-or-nothing: a blocked entry refuses the whole plan rather than partially
- * mutating canonical files, matching `applyPromotion` and `installProvider`.
+ * mutating canonical files, matching Product Change apply and `installProvider`.
  *
  * Each rename is two steps through a temporary name, unconditionally — branching on "is this
  * case-only?" would mean guessing the filesystem's semantics. The temporary name is derived from

@@ -34,7 +34,7 @@ Validate the model with `prodshape validate`. The allowed frontmatter of any art
 
 ## How this Product Definition evolves
 
-Through Product Changes, and nothing else. A change is elaborated under `changes/active/`, validated as an overlay on the baseline with `prodshape change validate`, approved by a human, and materialized by `prodshape change apply`, which writes the result, reports the product diff and archives the change. The pull request that carries the result is where a human accepts it: applying is not accepting, and `prodshape validate` runs as a CI gate so a proposal that fails structural validation is never merged.
+Through Product Changes, and nothing else. A change is elaborated under `changes/active/`, validated as an overlay on the baseline with `prodshape change validate`, approved by a human, and materialized by `prodshape change apply`, which writes the result on a working branch, reports the product diff and archives the change. The pull request reviews that result, and its merge accepts the resulting baseline: applying is not accepting, and `prodshape validate` runs as a CI gate so a structurally invalid proposal is never merged. Product-definition work and implementation work may share a pull request or proceed at different times, but they remain distinct; neither apply nor merge proves delivery.
 
 This model entered through [`CHG-INITIAL`](changes/completed/chg-initial/change.md), the same mechanism as every change since. Consumer documents cite product artifacts by ID, digest and optional anchor; `prodshape citations verify` detects drift.
 

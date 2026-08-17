@@ -84,4 +84,6 @@ Under `proposed/`, write the complete future-state artifact for every ID under `
 2. **Propose** — `status: proposed` once the change is worth reviewing.
 3. **Approve** — a human sets `status: approved`. Never do this on their behalf.
 4. **Apply** — `prodshape change apply <chg-id>` writes the model, reports the product diff, archives the change.
-5. **Accept** — a human merges the pull request carrying the result.
+5. **Accept the resulting baseline** — a human reviews and merges the pull request carrying the applied result.
+
+Product-definition work and implementation work may share that pull request or proceed at different times, but the Product Change, apply, merge acceptance and delivery evidence remain distinct.

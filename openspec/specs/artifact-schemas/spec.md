@@ -2,13 +2,13 @@
 
 ## Purpose
 
-The JSON Schema contracts every product artifact kind and change-flow document validates against.
+The JSON Schema contracts every product artifact kind and Product Change document validates against.
 
 ## Requirements
 
 ### Requirement: Every artifact kind has a JSON Schema
 
-The repository SHALL provide JSON Schemas (draft 2020-12) for: common definitions, actor, journey, use-case, business-rule, domain-term, bounded-context, functional-requirement, quality-requirement, constraint, product-change, delivery-slice, product-handoff and product-coverage.
+The repository SHALL provide JSON Schemas (draft 2020-12) for: common definitions, actor, journey, use-case, business-rule, domain-term, bounded-context, functional-requirement, quality-requirement, constraint and product-change.
 
 #### Scenario: Validating an actor frontmatter
 
@@ -17,7 +17,7 @@ The repository SHALL provide JSON Schemas (draft 2020-12) for: common definition
 
 ### Requirement: Common schema exposes separate lifecycle definitions
 
-`schemas/common.schema.json` SHALL expose `artifactStatus`, `productChangeStatus` and `deliverySliceStatus` as separate reusable definitions, and each schema SHALL reference only its own lifecycle definition.
+`schemas/common.schema.json` SHALL expose `artifactStatus` and `productChangeStatus` as separate reusable definitions, and each schema SHALL reference only its own lifecycle definition. Product Change status SHALL contain no implementation, verification, release or deployment state.
 
 #### Scenario: A product change declares an artifact status
 
@@ -44,7 +44,7 @@ The constraint schema SHALL define `applies-to` as optional; an absent `applies-
 
 ### Requirement: Templates conform to their schemas
 
-Every authoring template in `templates/` SHALL parse and validate against its corresponding schema using example values, and the delivery-slice and product-handoff templates SHALL carry their versioned `schema:` keys.
+Every authoring template in `templates/` SHALL parse and validate against its corresponding schema using example values. The Product Change template SHALL carry its versioned `schema:` key and SHALL distinguish apply, acceptance and delivery.
 
 #### Scenario: Template conformance test
 

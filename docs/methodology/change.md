@@ -2,7 +2,7 @@
 
 Change is the central operation of v0.1. After the first Product Definition, every semantic evolution of the product, however small, travels this path. A requested modification never silently edits the model; it becomes a **Product Change**: an explicit, validated, human-approved delta. The normative contract is [Product Changes](https://github.com/product-definition-as-code/spec/blob/main/spec/product-changes.md).
 
-A Product Change is not a pull request, a delivery container or an implementation state. The pull request is where a human reviews and accepts the change; it is not the change itself.
+A Product Change is not a pull request, a delivery container or an implementation state. The pull request reviews the applied result, and its merge accepts the resulting baseline; it is not the change itself.
 
 ## The path, step by step
 
@@ -36,17 +36,19 @@ The tooling compiles the **overlay**, the baseline with the change's operations 
 
 Elaboration happens here. A change stays `draft` or `proposed` for as long as it takes; several changes may be live at once, and while a change is live the baseline artifacts it touches remain authoritative and unchanged.
 
-**Human approval point 1, the Product Change.** A person moves the change to `approved`. This is a decision about what the product should become, and no tool or AI makes it. It says nothing about whether anything has been built.
+**Product approval.** A person moves the change to `approved`. This is a decision about what the product should become, and no tool or AI makes it. It says nothing about whether anything has been built.
 
 ### 7. Apply, explicitly
 
-**Human approval point 2, running apply.** Apply is the operation that materializes an approved change, and it is never implicit: not triggered by an AI hook, not by SDD archival, not by any automation. The tooling enforces the preconditions: status `approved`, otherwise `PRODUCT028`; the overlay revalidated; and the baseline unchanged since `base-revision` for every artifact the change modifies or removes, otherwise `PRODUCT027` and the change must be explicitly rebased first. Both preconditions are checked before anything is written, so a refusal leaves the working tree untouched. A `--dry-run` reports every action without performing any.
+Apply is the explicit operation that materializes an approved change. It is never implicit: not triggered by an AI hook, not by SDD archival, not by any automation. The tooling enforces the preconditions: status `approved`, otherwise `PRODUCT028`; the overlay revalidated; and the baseline unchanged since `base-revision` for every artifact the change modifies or removes, otherwise `PRODUCT027` and the change must be explicitly rebased first. Both preconditions are checked before anything is written, so a refusal leaves the working tree untouched. A `--dry-run` reports every action without performing any.
 
 Apply writes the operations into `docs/product/model`, computes the **product diff** between the baseline and the result and reports it in both a human-readable and a machine-readable form, moves the change to `changes/completed/` with status `applied`, and creates no Git commits. Applied means materialized and archived. It does not mean accepted.
 
 ### 8. Accept, by merging
 
-**Human approval point 3, acceptance.** The applied result is offered as a pull request. CI runs `prodshape validate`, a person reviews the resulting definition, and the merge is what makes it the accepted Product Definition. A tool that treated a successful apply as acceptance would be deciding product intent, which is the one thing it must never do.
+The applied result is offered as a pull request. CI runs `prodshape validate`, a person reviews the resulting definition, and the merge is what makes it the accepted Product Definition. A tool that treated a successful apply as acceptance would be deciding product intent, which is the one thing it must never do.
+
+Product-definition work and implementation work have independent cadence. A definition-only pull request may be merged before implementation starts, or the definition and implementation may share one pull request. In the combined case they remain separate review subjects: the Product Change records intent, the model diff records the resulting definition, and code plus delivery evidence record implementation. Apply and merge attest none of implementation, verification, release or deployment.
 
 The loop closes: the definition now says something new, citations into the artifacts that effectively changed report `stale`, and the next change starts from the new baseline.
 
@@ -76,8 +78,8 @@ An applied and accepted change is immutable. Any later correction is expressed a
 
 | Gate | Who decides | What tooling validates there |
 | --- | --- | --- |
-| Change approval (step 6) | Human | Overlay compiles and validates; overlaps with other live changes; open-question warning |
-| Apply (step 7) | Human | Status precondition, overlay revalidation, baseline-revision compatibility, resulting model validity |
-| Acceptance (step 8) | Human | Structural validation of the proposal as a CI gate |
+| Product approval (step 6) | Human | Overlay compiles and validates; overlaps with other live changes; open-question warning |
+| Explicit apply (step 7) | Human-authorized operation | Status precondition, overlay revalidation, baseline-revision compatibility, resulting model validity |
+| Baseline acceptance (step 8) | Human merge | Structural validation of the proposal as a CI gate |
 
-Everything between the gates, drafting, impact interpretation and context assembly, is where AI assists. Everything at the gates is a person's call, checked by a deterministic tool.
+Drafting and impact interpretation are where AI assists. Product approval and merge acceptance are human decisions; deterministic tooling checks every structural gate. Delivery follows its own evidence and cadence.

@@ -12,10 +12,12 @@ Use the `analyze-product-change` skill.
 3. **Propose** — set `status: proposed` once the change is worth reviewing
 4. **Approve** — a human sets `status: approved`. Never do this on their behalf.
 5. **Apply** — `prodshape change apply <chg-id> --dry-run`, then for real: writes the model, reports the product diff, archives the change
-6. **Accept** — a human merges the pull request carrying the result
+6. **Accept the resulting baseline** — a human reviews and merges the pull request carrying the applied result
+
+Product-definition work and implementation work have independent cadence. They may share a pull request or implementation may follow later, but apply, merge acceptance and delivery remain distinct.
 
 ## Stop conditions
 
 - `prodshape change validate` reports zero errors.
 - All open questions are resolved or explicitly accepted by the engineer.
-- The engineer confirms the change is ready to approve. Stop there: approving, applying and merging are theirs.
+- The engineer confirms the change is ready for product approval. Stop there: this skill does not approve, apply or merge.

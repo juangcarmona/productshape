@@ -2,7 +2,7 @@
 
 This guide is for repositories that already run OpenSpec. Product Definition as Code adds a product-definition layer above your existing workflow; OpenSpec keeps owning everything it owns today. This repository itself works exactly this way.
 
-Want to start typing? Jump to [the walkthrough](#the-walkthrough-first-rule-first-citation-first-drift-about-15-minutes): first rule, first citation, first drift, about 15 minutes, every step copy-paste with its expected output.
+Want to start typing? Jump to [the walkthrough](#the-walkthrough-first-rule-first-citation-first-drift): first rule, first citation and first detected drift.
 
 > The CLI ships as [`@prodshape/cli`](https://www.npmjs.com/package/@prodshape/cli) and includes the OpenSpec integration. The commands below use `prodshape`; the `product-definition` alias is equivalent through v0.x. The contracts are fixed in the [specification](https://github.com/product-definition-as-code/spec). See [Limitations](../limitations.md).
 
@@ -14,9 +14,11 @@ OpenSpec answers "how do we specify, design and verify this implementation incre
 - Product Changes: explicit, validated semantic deltas against that definition, each carrying the reason it exists.
 - Citations: machine-verifiable references from your OpenSpec documents to canonical product text, so drift between the two is detected rather than discovered.
 
-The flow becomes: Product Definition → Product Change → apply → accept by merge → **native OpenSpec workflow, citing the definition** → implementation → verification.
+The flow becomes: accepted Product Definition → proposed Product Change → overlay validation → product approval → apply on a working branch → accept the resulting baseline by merge → **native OpenSpec workflow, citing the definition** → implementation → verification.
 
 Note what is not in that list. Product Definition does not decompose your work, does not hand you a package, and does not gate on whether anything was built. Whether accepted product intent has been implemented is a fact about delivery, and delivery is yours.
+
+Product-definition work and implementation work have independent cadence. They may share a pull request, or OpenSpec implementation work may follow later, but the Product Change, the applied model and the implementation remain different things.
 
 ## What OpenSpec keeps owning
 
@@ -55,10 +57,10 @@ A citation carries exactly one of these statuses, in this precedence: `unresolve
 ## Where the boundary is enforced
 
 - **Consumers never write to the model.** An OpenSpec change that discovers a business rule is wrong reports it; it does not edit `docs/product/model`. The correction flows through a Product Change like any other evolution.
-- **Archiving never accepts anything.** Completing and archiving the OpenSpec change is OpenSpec's decision and only OpenSpec's. The Product Definition moves when a human applies an approved Product Change and merges the result, and at no other time.
-- **Applying is not accepting.** `prodshape change apply` materializes a change into the working tree and creates no commit. The pull request is where a human accepts it.
+- **Archiving never accepts anything.** Completing and archiving the OpenSpec change is OpenSpec's decision and only OpenSpec's. It cannot approve or apply a Product Change, accept a Product Definition or attest delivery.
+- **Applying is not accepting.** `prodshape change apply` materializes a change into the working tree and creates no commit. A pull-request merge accepts the resulting baseline.
 
-## The walkthrough: first rule, first citation, first drift (about 15 minutes)
+## The walkthrough: first rule, first citation, first drift
 
 You need: Node.js 22 or later, npm, and your OpenSpec repository, meaning a git repository with at least one commit (the change record pins a `base-revision`) and an `openspec/` directory. Every step is copy-paste, and the output under each command comes from a real run. The walkthrough models a refund window; where it says "the checkout spec", read "whichever of your specs restates the rule you pick", and expect your own paths in the output.
 
@@ -184,7 +186,7 @@ Product diff: 1 added, 0 modified, 0 removed
 Applied and archived. Nothing was committed: open a pull request so a human can accept it.
 ```
 
-The rule is now in the baseline and the change is archived under `completed/`. In a real adoption this is the moment to commit and open the pull request that accepts the baseline; the walkthrough keeps going in the working tree.
+The rule is now materialized in the model on this working branch and the change is archived under `completed/`. It is not yet in the accepted baseline. Commit the result, open a pull request and continue after a human merges it and you update your local canonical branch. The following steps assume `BR-REFUND-001` is accepted.
 
 ```bash
 prodshape validate
@@ -229,9 +231,19 @@ current	BR-REFUND-001	openspec/specs/checkout/spec.md:13
 1 citation(s): 1 current, 0 stale, 0 tampered, 0 unresolved
 ```
 
-### 5. See it catch drift (2 minutes)
+### 5. See it catch drift through another Product Change
 
-Narrow the refund window in the canonical rule: edit `docs/product/model/business-rules/br-refund-001.md` and change 30 days to 14. Then:
+Create `CHG-REFUND-WINDOW-001` against the accepted commit. Its `operations.modify` contains `BR-REFUND-001`, and its `proposed/business-rules/br-refund-001.md` is the complete future-state rule with 30 days changed to 14. Keep the accepted model untouched while drafting. The installed Product Change template contains every required body section.
+
+Validate the overlay, obtain human product approval, then dry-run and apply it on a working branch:
+
+```bash
+prodshape change validate CHG-REFUND-WINDOW-001
+prodshape change apply CHG-REFUND-WINDOW-001 --dry-run
+prodshape change apply CHG-REFUND-WINDOW-001
+```
+
+Apply materializes the proposed 14-day rule on the branch; it does not accept it. Now verify the existing citation:
 
 ```bash
 prodshape citations verify
@@ -243,7 +255,7 @@ warning PRODUCT061 openspec/specs/checkout/spec.md [BR-REFUND-001]: Citation of 
 1 citation(s): 0 current, 1 stale, 0 tampered, 0 unresolved
 ```
 
-Nobody had to remember that the checkout spec depends on that rule.
+Nobody had to remember that the checkout spec depends on that rule, and the drift is visible before the proposed definition is merged.
 
 ### 6. Gate it in CI (1 minute)
 
@@ -263,6 +275,6 @@ Add `prodshape citations verify` to CI and drift blocks the merge instead of wai
 
 ### Where to go next
 
-- Undo the demo drift: revert the edit to the rule, or run it forward as a real Product Change, which from now on is the only way the definition moves. The direct edit in step 5 was the last one the walkthrough allows itself.
+- Resolve the proposed drift on its branch: refresh the citation if the 14-day definition should proceed, then review and merge the applied result; otherwise close the branch without merging. Never rewrite the archived Product Change.
 - Model the rest of the product incrementally through [the brownfield guide](brownfield.md): your OpenSpec specs are unusually good evidence, because they already state behaviour in product terms. A partial but validated model beats a complete but unreviewed one.
 - Wire `prodshape citations verify` into the pipeline that runs `openspec validate`, and keep the two verdicts separate: one is about your specs, the other about their grounding.

@@ -116,7 +116,8 @@ Product Definition as Code.
 
 The definition changes through exactly one mechanism: a Product Change, validated as an overlay,
 approved by a human, applied with \`prodshape change apply\`, and accepted when a human merges the
-pull request carrying the result.
+pull request carrying the result. Product-definition work and implementation work may share that
+pull request or proceed at different times, but apply, acceptance and delivery remain distinct.
 
 Validate with \`prodshape validate\`. Authoring templates are under
 \`.product/templates/\`. The allowed frontmatter of every artifact kind is printed by
@@ -226,15 +227,19 @@ export async function planInit(options: InitOptions): Promise<InitPlan> {
     });
   }
 
-  const modelHint = flat
-    ? 'docs/product/model'
-    : 'docs/product/model (one directory per artifact kind)';
+  const proposedModelHint = flat
+    ? 'docs/product/changes/active/chg-initial/proposed'
+    : "docs/product/changes/active/chg-initial/proposed (using the model's per-kind layout)";
   const nextSteps = [
-    `Author your initial product model under ${modelHint} (templates: .product/templates/).`,
+    'Create CHG-INITIAL under docs/product/changes/active/chg-initial/ from .product/templates/product-change.md.',
+    `Author its complete proposed artifacts under ${proposedModelHint} (templates: .product/templates/).`,
     'Discover the allowed frontmatter for a kind with: prodshape schema <kind>',
-    'Validate with: prodshape validate',
+    'Validate the overlay with: prodshape change validate CHG-INITIAL',
+    'After human product approval, set CHG-INITIAL to approved and dry-run: prodshape change apply CHG-INITIAL --dry-run',
+    'Apply explicitly with: prodshape change apply CHG-INITIAL',
+    'Open a pull request with the applied result; its merge accepts the initial baseline. Apply does not.',
+    'Implementation may share that pull request or follow later; Product Change status never reports delivery.',
     'Ignore regenerable outputs: add .product/generated/ and .product/cache/ to your .gitignore.',
-    'Evolve the model through pull requests: every change is a reviewed merge into the baseline.',
     'Cite product artifacts from consumer docs with: prodshape cite',
     'Verify citations with: prodshape citations verify',
   ];

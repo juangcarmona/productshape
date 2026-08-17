@@ -1,6 +1,6 @@
 # Define
 
-Define is the greenfield operation: establishing a product definition where none exists. Its output is a set of draft artifacts that, once validated and approved by a human, become the product's initial baseline.
+Define is the greenfield operation: establishing a product definition where none exists. Its output is the complete proposed future state of `CHG-INITIAL`; overlay validation, human product approval, explicit apply and merge acceptance establish the initial baseline.
 
 Define is a way of thinking before it is a sequence of steps. The artifact families depend on each other conceptually — actors ground journeys, journeys yield use cases, use cases surface rules and language, requirements derive from all of it — but the model is a graph, not a waterfall. In practice you loop: a use case reveals a missing actor, a rule forces a term to be defined, a requirement sends you back to sharpen a journey. The flow below is the natural order of discovery, not a gate sequence.
 
@@ -22,9 +22,11 @@ Define is a way of thinking before it is a sequence of steps. The artifact famil
 
 8. **Preserve uncertainty.** Unresolved questions are recorded, visibly, where they arise. An open question in the definition is information; a silently invented answer is a defect. AI assisting with Define operates under this obligation explicitly: it drafts, it proposes, it flags — it never resolves a product decision on its own.
 
-9. **Draft, then validate.** Artifacts are authored as `draft`. Deterministic validation checks structure: frontmatter schemas, ID rules, relationship integrity, required body sections. See [Validation](../specification/validation.md). Validation says nothing about whether the product is right — that is the next step's job.
+9. **Draft, then validate the overlay.** Artifacts are authored as `draft` under `docs/product/changes/active/chg-initial/proposed/`, never directly in the model. `prodshape change validate CHG-INITIAL` checks frontmatter schemas, ID rules, relationship integrity and required body sections without writing the baseline. See [Validation](../specification/validation.md). Validation says nothing about whether the product is right — that is the next step's job.
 
-10. **Human approval.** A person reviews the drafts and accepts them. Only then do artifacts become `active` — part of the accepted product definition. Nothing becomes canonical without this step.
+10. **Human product approval.** A person reviews the proposed definition, resolves or explicitly accepts its open questions, marks the artifacts that should enter the definition `active`, and sets the change to `approved`. Approval authorizes apply; it does not accept the baseline or attest implementation.
+
+11. **Apply and offer for acceptance.** `prodshape change apply CHG-INITIAL` materializes the approved proposal on a working branch and archives the change. A pull request reviews that result, and a human merge accepts the initial Product Definition.
 
 ## Define produces CHG-INITIAL
 
@@ -36,4 +38,4 @@ Greenfield and brownfield both arrive here: authoring from intent and recovering
 
 ## What Define hands you
 
-A validated, human-approved baseline under `docs/product/model`: the reference point every future [Change](change.md) is a delta against, and the text every consumer document cites. The artifact contracts it must satisfy are in [Artifacts](https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md) for what each kind means, [Frontmatter reference](../specification/frontmatter-reference.md) for the exact fields each one accepts, and [Identifiers](https://github.com/product-definition-as-code/spec/blob/main/spec/identifiers.md) for how they are named. Frontmatter is a closed contract, so it is worth reading the field tables — or running `prodshape schema <kind>`, which prints the same contract and needs no repository — before authoring rather than discovering the boundaries from validation errors.
+A validated, approved `CHG-INITIAL` ready to apply, or, after pull-request merge, an accepted baseline under `docs/product/model`: the reference point every future [Change](change.md) is a delta against and the text every consumer document cites. The artifact contracts it must satisfy are in [Artifacts](https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md) for what each kind means, [Frontmatter reference](../specification/frontmatter-reference.md) for the exact fields each one accepts, and [Identifiers](https://github.com/product-definition-as-code/spec/blob/main/spec/identifiers.md) for how they are named. Frontmatter is a closed contract, so it is worth reading the field tables — or running `prodshape schema <kind>`, which prints the same contract and needs no repository — before authoring rather than discovering the boundaries from validation errors.

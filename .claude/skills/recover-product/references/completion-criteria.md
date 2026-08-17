@@ -34,6 +34,6 @@ The report is not the handover; you still present the result in the conversation
 3. Every contradiction and how it stands (decided, or deferred and why).
 4. Deferred questions the reviewer inherits.
 5. Evidence that was excluded or classified as carrying no product intent, so the reviewer can audit the negative claims too.
-6. The explicit statement: nothing is accepted. The human reviews the change, and acceptance happens through the normal pull request, not through this session.
+6. The explicit statement: nothing is approved, applied or accepted. A human reviews the change for product approval; explicit apply materializes it later, and a pull-request merge accepts the resulting baseline.
 
 Then stop. Applying the change, committing, merging and every later correction (an ordinary Product Change) are outside this skill's authority.

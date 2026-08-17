@@ -1243,7 +1243,7 @@ export function buildRecoveryReport(
   reportLine(lines);
   reportLine(
     lines,
-    `Nothing in this session is accepted product knowledge. Every candidate lives under \`${state.changeDir}/proposed/\` as part of \`${state.changeId}\`, carries status \`draft\`, and enters the model only when a human reviews the change and it is accepted through the normal pull request path. The accepted model was not modified: ${coverage.completion.criteria.modelUntouched ? 'verified' : 'VIOLATED, see issues'}.`,
+    `Nothing in this session is accepted product knowledge. Every candidate lives under \`${state.changeDir}/proposed/\` as part of \`${state.changeId}\`, carries status \`draft\`, and enters the model only after overlay validation, human product approval and explicit apply on a working branch; a human merge of the reviewed result then accepts the baseline. The accepted model was not modified: ${coverage.completion.criteria.modelUntouched ? 'verified' : 'VIOLATED, see issues'}.`,
   );
   reportLine(lines);
   reportLine(lines, '## Scope');

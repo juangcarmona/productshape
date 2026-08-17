@@ -39,14 +39,14 @@ export const PDAC_CONTEXT_BLOCK = `${PDAC_CONTEXT_BEGIN}
 This repository uses Product Definition as Code (PDaC). The canonical product definition lives in docs/product/model (actors, journeys, use cases, business rules, domain terms, requirements) and is the single source of truth for product behaviour. OpenSpec artifacts are downstream consumers of it, never a second source of truth.
 Consumers bind to canonical text through the PDaC Citation Contract: a citation records the target artifact id, a sha256 content digest, and an optional verification scenario anchor. Verification reports one status per citation: current, stale, tampered or unresolved.
 To cite: run \`npx prodshape inspect <ID>\` to read the current digest, then \`npx prodshape cite --id <ID> --digest <digest>\` to emit the citation record. Place inline citations on their own line directly under the text they ground.
-The product definition changes only through a Product Change under docs/product/changes/. OpenSpec changes never edit docs/product/model directly.
+The accepted Product Definition changes only through this lifecycle: propose a Product Change under docs/product/changes/, validate its overlay while the baseline remains untouched, obtain human product approval, apply explicitly on a working branch, review the applied result in a pull request, and accept the resulting baseline by human merge. A Product Change is not a pull request. Apply is not acceptance, and neither apply nor merge attests implementation, verification, release or deployment. OpenSpec changes never edit docs/product/model directly. Product-definition work and implementation work have independent cadence: an OpenSpec change may share a pull request with an applied Product Change or follow an accepted definition later, but it remains a downstream implementation concern and never supplies Product Change status.
 ${PDAC_CONTEXT_END}`;
 
 /** The PDaC citation rules injected per artifact into openspec/config.yaml `rules:`. */
 export const PDAC_RULES: Record<string, string[]> = {
   proposal: [
     'State which PDaC artifacts this change touches, each with an inline citation emitted by `npx prodshape cite --id <ID> --digest <digest>`. Never write a citation record by hand.',
-    'If the change alters product behaviour, name the Product Change (CHG id) it implements. If no Product Change exists yet, stop and ask for one instead of proceeding.',
+    'If the change implements altered product behaviour, name the Product Change (CHG id) whose applied or accepted artifacts it implements. If no overlay-validated and human-approved Product Change exists yet, stop and ask for one instead of proceeding. The OpenSpec change is not the Product Change.',
   ],
   specs: [
     'Every requirement derived from canonical product text MUST carry a citation to every PDaC artifact it derives from, one citation per line, placed after the requirement text and before the first scenario. A requirement often derives from more than one artifact; citing only the closest one silently hides the other derivations. Never place citations between the requirement heading and the requirement text; OpenSpec reads the first paragraph as the requirement.',
@@ -59,6 +59,7 @@ export const PDAC_RULES: Record<string, string[]> = {
   ],
   tasks: [
     'A task that changes cited behaviour must include a follow-up task to refresh the affected citations.',
+    'Never infer implementation, verification, release or deployment from Product Change status; record that evidence in the delivery workflow.',
   ],
 };
 
@@ -449,7 +450,7 @@ export function mergeConfig(
 
 /** Serialize config back to YAML with a trailing newline. */
 export function serializeConfig(config: Record<string, unknown>): string {
-  return `${stringify(config)}\n`;
+  return `${stringify(config).trimEnd()}\n`;
 }
 
 /** Read the ProductShape version from the integration-openspec package.json. */

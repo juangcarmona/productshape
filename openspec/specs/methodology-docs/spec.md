@@ -13,25 +13,25 @@ The documentation SHALL provide an overview (`docs/methodology/overview.md`) tha
 #### Scenario: A newcomer reads the overview
 
 - **WHEN** a reader with no prior context reads `docs/methodology/overview.md`
-- **THEN** they can name the artifact families, the three operations and the Product Change → Delivery Slice → Product Handoff flow without consulting other documents
+- **THEN** they can name the artifact families, the three operations and the lifecycle from accepted baseline through Product Change, overlay validation, product approval, apply and merge acceptance without consulting other documents
 
 ### Requirement: Each methodology operation has a dedicated document
 
-The documentation SHALL describe each part of the methodology in its own document: product graph, define, recover, change, delivery slicing, backlog projection and SDD handoff.
+The documentation SHALL describe each part of the methodology in its own document: product graph, define, recover and change. Change guidance SHALL distinguish Product Change intent, applied definition, pull-request acceptance and independently paced implementation work.
 
 #### Scenario: Locating operation guidance
 
 - **WHEN** a product engineer needs to run the Change operation
 - **THEN** `docs/methodology/change.md` describes the operation end to end, including where human approval is required
 
-### Requirement: The Define methodology documents the initial-baseline bootstrap exception
+### Requirement: The Define methodology uses the Product Change lifecycle for the initial baseline
 
-The Define documentation SHALL state that an initial product baseline MAY be established directly during initialization or the first Define operation, and that every subsequent semantic evolution MUST be represented through a Product Change.
+The Define documentation SHALL state that `CHG-INITIAL` proposes the complete first Product Definition against an empty baseline, validates as an overlay, receives human product approval, is applied explicitly on a working branch and is accepted only when a human merges the reviewed result. Every subsequent semantic evolution MUST use the same Product Change lifecycle.
 
-#### Scenario: Bootstrapping a new product model
+#### Scenario: Establishing a new product model
 
 - **WHEN** a reader consults `docs/methodology/define.md` for a greenfield product
-- **THEN** the document states the bootstrap exception and its boundary explicitly
+- **THEN** the document directs them through `CHG-INITIAL` without a direct-baseline exception
 
 ### Requirement: The manifesto states the founding position
 

@@ -12,7 +12,7 @@ description: Recover an initial ProductShape definition from a brownfield system
 
 Reconstruct candidate product knowledge (actors, journeys, use cases, business rules, domain terms, bounded contexts, functional requirements, quality requirements, constraints) from the evidence an existing system leaves behind: its repository, materials the user supplies, and online resources the user explicitly authorises. The work is split on a hard line. The deterministic CLI (`prodshape recover ...`) owns the bookkeeping: evidence inventory, content hashes, batches, coverage, checkpoints, validation, the final report. This skill owns the semantics: reading evidence, extracting candidates, reconciling duplicates and contradictions, and asking the user when meaning is uncertain. Neither side may do the other's job.
 
-Every candidate is proposed, never accepted: candidates live in the proposed overlay of `CHG-INITIAL` under `docs/product/changes/active/chg-initial/`, carry `status: draft` and `provenance` frontmatter, and enter the model only when a human reviews the change and accepts it through the normal pull request path.
+Every candidate is proposed, never accepted: candidates live in the proposed overlay of `CHG-INITIAL` under `docs/product/changes/active/chg-initial/`, carry `status: draft` and `provenance` frontmatter, and enter the model only after human product approval, explicit apply on a working branch and merge acceptance of the resulting baseline. This skill stops before those lifecycle steps.
 
 ## When to use
 
@@ -87,7 +87,7 @@ Structural facts come from these commands, never from your own reading of state 
 - The brief: scope, sources, exclusions and external access are the user's call. Confirm before the first batch.
 - Every external source: named, explained and authorised by the user before it is read.
 - Every question raised during processing: present evidence, options, consequences and your recommendation; record the answer verbatim.
-- The final gate: present the report, the candidate list with confidence, the contradictions and the deferred questions. The human reviews `CHG-INITIAL` and accepts or rejects it through the pull request; you stop at the handover.
+- The final gate: present the report, the candidate list with confidence, the contradictions and the deferred questions. The human reviews `CHG-INITIAL` and decides whether to reject it or grant product approval; you stop at the handover. Apply and merge acceptance happen later through the normal Product Change lifecycle.
 
 ## Expected outputs
 
