@@ -62,12 +62,19 @@ export function escalateWarnings(
   );
 }
 
+/** Compare strings lexicographically by UTF-16 code unit, independent of locale and ICU data. */
+function compareCodeUnits(left: string, right: string): number {
+  if (left < right) return -1;
+  if (left > right) return 1;
+  return 0;
+}
+
 /** Deterministic ordering: by file, then code, then target. */
 export function sortDiagnostics(diagnostics: Diagnostic[]): Diagnostic[] {
   return [...diagnostics].sort(
     (a, b) =>
-      a.file.localeCompare(b.file) ||
-      a.code.localeCompare(b.code) ||
-      (a.target ?? '').localeCompare(b.target ?? ''),
+      compareCodeUnits(a.file ?? '', b.file ?? '') ||
+      compareCodeUnits(a.code, b.code) ||
+      compareCodeUnits(a.target ?? '', b.target ?? ''),
   );
 }

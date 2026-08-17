@@ -79,9 +79,10 @@ All packages are published on npm under the [`@prodshape`](https://www.npmjs.com
 | [`@prodshape/cli`](https://www.npmjs.com/package/@prodshape/cli) | [![npm](https://img.shields.io/npm/v/@prodshape/cli)](https://www.npmjs.com/package/@prodshape/cli) | The `prodshape` command-line tool (bundles the rest) |
 | [`@prodshape/core`](https://www.npmjs.com/package/@prodshape/core) | [![npm](https://img.shields.io/npm/v/@prodshape/core)](https://www.npmjs.com/package/@prodshape/core) | Deterministic parsing, validation and graph |
 | [`@prodshape/distribution`](https://www.npmjs.com/package/@prodshape/distribution) | [![npm](https://img.shields.io/npm/v/@prodshape/distribution)](https://www.npmjs.com/package/@prodshape/distribution) | Init, provider-asset generation and doctor |
-| [`@prodshape/adapter-openspec`](https://www.npmjs.com/package/@prodshape/adapter-openspec) | [![npm](https://img.shields.io/npm/v/@prodshape/adapter-openspec)](https://www.npmjs.com/package/@prodshape/adapter-openspec) | OpenSpec adapter and coverage validation |
 | [`@prodshape/integration-claude`](https://www.npmjs.com/package/@prodshape/integration-claude) | [![npm](https://img.shields.io/npm/v/@prodshape/integration-claude)](https://www.npmjs.com/package/@prodshape/integration-claude) | Claude Code renderer for canonical assets |
+| [`@prodshape/integration-codex`](https://www.npmjs.com/package/@prodshape/integration-codex) | [![npm](https://img.shields.io/npm/v/@prodshape/integration-codex)](https://www.npmjs.com/package/@prodshape/integration-codex) | Codex renderer for canonical assets |
 | [`@prodshape/integration-copilot`](https://www.npmjs.com/package/@prodshape/integration-copilot) | [![npm](https://img.shields.io/npm/v/@prodshape/integration-copilot)](https://www.npmjs.com/package/@prodshape/integration-copilot) | GitHub Copilot renderer for canonical assets |
+| [`@prodshape/integration-openspec`](https://www.npmjs.com/package/@prodshape/integration-openspec) | [![npm](https://img.shields.io/npm/v/@prodshape/integration-openspec)](https://www.npmjs.com/package/@prodshape/integration-openspec) | OpenSpec configuration and citation-rule integration |
 
 ```bash
 npm install -g @prodshape/cli

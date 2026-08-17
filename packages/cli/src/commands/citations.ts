@@ -6,6 +6,7 @@ import {
   isOpenSpecCliAvailable,
   parseCitations,
   scanCitations,
+  sortDiagnostics,
   stableJson,
   verifyCitations,
   validateBaseline,
@@ -159,7 +160,7 @@ async function runRecursiveVerify(
   const verifications = verifyCitations(citations, artifacts);
 
   const allDiagnostics = verifications.flatMap((v) => v.diagnostics);
-  const diagnostics = escalateWarnings(allDiagnostics, warningsAsErrors);
+  const diagnostics = sortDiagnostics(escalateWarnings(allDiagnostics, warningsAsErrors));
 
   const errors = diagnostics.filter((d) => d.severity === 'error');
   const warnings = diagnostics.filter((d) => d.severity === 'warning');
@@ -266,13 +267,13 @@ async function runOpenSpecProviderVerify(
     });
   }
 
-  // Citation diagnostics.
+  // Collect every diagnostic before finalizing the public result. Citation status order remains
+  // untouched; only the complete diagnostic set is ordered at this boundary.
   const allDiagnostics = verifications.flatMap((v) => v.diagnostics);
-  const escalated = escalateWarnings(allDiagnostics, warningsAsErrors);
 
   // PRODUCT070: missing scope declaration for each undocumented document.
   for (const doc of population.undocumented) {
-    escalated.push({
+    allDiagnostics.push({
       severity: 'error',
       code: 'PRODUCT070',
       message: `Consumer document has no pdac-scope declaration and no citations; expected either 'pdac-scope: none' or at least one PDaC citation`,
@@ -282,7 +283,7 @@ async function runOpenSpecProviderVerify(
 
   // PRODUCT073: report when OpenSpec CLI is missing (we fell back to filesystem scanning).
   if (!cliAvailable) {
-    escalated.push({
+    allDiagnostics.push({
       severity: 'error',
       code: 'PRODUCT073',
       message: `OpenSpec CLI not found on PATH; fell back to filesystem scanning. Install with 'npm install -g openspec' for accurate population discovery.`,
@@ -290,8 +291,9 @@ async function runOpenSpecProviderVerify(
     });
   }
 
-  const errors = escalated.filter((d) => d.severity === 'error');
-  const warnings = escalated.filter((d) => d.severity === 'warning');
+  const diagnostics = sortDiagnostics(escalateWarnings(allDiagnostics, warningsAsErrors));
+  const errors = diagnostics.filter((d) => d.severity === 'error');
+  const warnings = diagnostics.filter((d) => d.severity === 'warning');
 
   if (options.format === 'json') {
     io.out(
@@ -310,7 +312,7 @@ async function runOpenSpecProviderVerify(
           form: v.citation.form,
           status: v.status,
         })),
-        diagnostics: escalated,
+        diagnostics,
         summary: {
           totalDocuments: population.documents.length,
           cited: population.cited.length,
@@ -338,7 +340,7 @@ async function runOpenSpecProviderVerify(
       const anchor = v.citation.anchor ? `#${v.citation.anchor}` : '';
       io.out(`${v.status}\t${v.citation.id}${anchor}\t${v.citation.source}:${v.citation.line}`);
     }
-    for (const diagnostic of escalated) {
+    for (const diagnostic of diagnostics) {
       io.out(formatDiagnosticLine(diagnostic));
     }
     io.out(

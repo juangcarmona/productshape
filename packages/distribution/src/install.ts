@@ -14,6 +14,13 @@ export interface IntegrationDiagnostic {
   file: string;
 }
 
+/** Compare strings lexicographically by UTF-16 code unit, independent of locale and ICU data. */
+function compareCodeUnits(left: string, right: string): number {
+  if (left < right) return -1;
+  if (left > right) return 1;
+  return 0;
+}
+
 /** Renderers consumed via structural typing; integrations never import distribution. */
 export const renderers: ProviderRenderer[] = [claudeRenderer, copilotRenderer, codexRenderer];
 
@@ -245,5 +252,7 @@ export async function checkIntegrations(root: string): Promise<IntegrationDiagno
       }
     }
   }
-  return diagnostics.sort((a, b) => a.file.localeCompare(b.file) || a.code.localeCompare(b.code));
+  return diagnostics.sort(
+    (a, b) => compareCodeUnits(a.file, b.file) || compareCodeUnits(a.code, b.code),
+  );
 }
