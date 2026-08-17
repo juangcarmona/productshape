@@ -13,6 +13,8 @@ interface RunResult {
   err: string[];
 }
 
+const VALID_DIGEST = 'sha256:0000000000000000000000000000000000000000000000000000000000000000';
+
 let workDir: string;
 
 async function run(argv: string[]): Promise<RunResult> {
@@ -62,5 +64,110 @@ This is not the canonical requirement text.
     expect(codes).not.toContain('PRODUCT061');
     expect(payload.citations[0].status).toBe('tampered');
     expect(result.code).toBe(1);
+  });
+
+  it('retains recursive directory verification', async () => {
+    await writeFile(
+      join(workDir, 'specs', 'consumer.md'),
+      `{pdac:cite id="FR-NOT-FOUND" digest="${VALID_DIGEST}"}\n`,
+      'utf8',
+    );
+
+    const result = await run(['citations', 'verify', 'specs', '--format', 'json']);
+    const payload = JSON.parse(result.out.join('\n'));
+
+    expect(result.code).toBe(1);
+    expect(payload.summary.total).toBe(1);
+    expect(payload.citations[0]).toMatchObject({
+      id: 'FR-NOT-FOUND',
+      source: 'specs/consumer.md',
+      status: 'unresolved',
+    });
+  });
+
+  it('verifies exactly one Markdown consumer when given a file target', async () => {
+    const target = join('specs', 'consumer.md');
+    await writeFile(
+      join(workDir, target),
+      `{pdac:cite id="FR-NOT-FOUND" digest="${VALID_DIGEST}"}\n`,
+      'utf8',
+    );
+
+    const result = await run(['citations', 'verify', target, '--format', 'json']);
+    const payload = JSON.parse(result.out.join('\n'));
+
+    expect(result.code).toBe(1);
+    expect(payload.summary.total).toBe(1);
+    expect(payload.citations[0].source).toBe('specs/consumer.md');
+    expect(result.err.join('\n')).not.toMatch(/ENOTDIR|internal error/i);
+  });
+
+  it.each(['yaml', 'yml'])(
+    'verifies exactly one .%s sidecar when given a file target',
+    async (ext) => {
+      const target = join('specs', `spec-fixture.citations.${ext}`);
+      await writeFile(
+        join(workDir, target),
+        `citations:\n  - id: FR-NOT-FOUND\n    digest: ${VALID_DIGEST}\n`,
+        'utf8',
+      );
+
+      const result = await run(['citations', 'verify', target, '--format', 'json']);
+      const payload = JSON.parse(result.out.join('\n'));
+
+      expect(result.code).toBe(1);
+      expect(payload.summary.total).toBe(1);
+      expect(payload.citations[0]).toMatchObject({
+        id: 'FR-NOT-FOUND',
+        source: `specs/spec-fixture.citations.${ext}`,
+        form: 'sidecar-ledger',
+        status: 'unresolved',
+      });
+      expect(result.err.join('\n')).not.toMatch(/ENOTDIR|internal error/i);
+    },
+  );
+
+  it('fails with exit 2 and a controlled message when the target is missing', async () => {
+    const target = join('specs', 'missing.md');
+    const result = await run(['citations', 'verify', target, '--format', 'json']);
+
+    expect(result.code).toBe(2);
+    expect(result.err.join('\n')).toContain(`Citation target not found: '${target}'`);
+    expect(result.err.join('\n')).not.toMatch(/ENOTDIR|internal error/i);
+  });
+
+  it('fails with exit 2 and a controlled message for an unsupported file type', async () => {
+    const target = join('specs', 'consumer.txt');
+    await writeFile(join(workDir, target), 'not a supported consumer document\n', 'utf8');
+
+    const result = await run(['citations', 'verify', target, '--format', 'json']);
+
+    expect(result.code).toBe(2);
+    expect(result.err.join('\n')).toContain("Unsupported citation target file type '.txt'");
+    expect(result.err.join('\n')).not.toMatch(/ENOTDIR|internal error/i);
+  });
+
+  it('discovers and checks a specification-shaped citations mapping', async () => {
+    await writeFile(
+      join(workDir, 'specs', 'spec-fixture.citations.yml'),
+      `citations:\n  - id: FR-NOT-FOUND\n    digest: ${VALID_DIGEST}\n    anchor: S1\n`,
+      'utf8',
+    );
+
+    const result = await run(['citations', 'verify', 'specs', '--format', 'json']);
+    const payload = JSON.parse(result.out.join('\n'));
+
+    expect(result.code).toBe(1);
+    expect(payload.summary.total).toBe(1);
+    expect(payload.summary.unresolved).toBe(1);
+    expect(payload.citations[0]).toMatchObject({
+      id: 'FR-NOT-FOUND',
+      source: 'specs/spec-fixture.citations.yml',
+      form: 'sidecar-ledger',
+      status: 'unresolved',
+    });
+    expect(payload.diagnostics).toEqual([
+      expect.objectContaining({ code: 'PRODUCT060', file: 'specs/spec-fixture.citations.yml' }),
+    ]);
   });
 });

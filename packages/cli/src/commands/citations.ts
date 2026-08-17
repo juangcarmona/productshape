@@ -1,3 +1,5 @@
+import { stat } from 'node:fs/promises';
+import { extname, isAbsolute, resolve as resolvePath } from 'node:path';
 import {
   discoverOpenSpecPopulation,
   escalateWarnings,
@@ -9,7 +11,13 @@ import {
   validateBaseline,
   type LoadedArtifact,
 } from '@prodshape/core';
-import { exitCodes, formatDiagnosticLine, resolveRepository, type CliIo } from '../context.js';
+import {
+  CliError,
+  exitCodes,
+  formatDiagnosticLine,
+  resolveRepository,
+  type CliIo,
+} from '../context.js';
 
 export interface CitationsVerifyOptions {
   format?: 'text' | 'json';
@@ -29,6 +37,61 @@ interface DocumentReport {
   artifactKind?: string;
   scope: ScopeStatus;
   citations: number;
+}
+
+const SUPPORTED_CONSUMER_EXTENSIONS = new Set(['.md', '.yaml', '.yml']);
+
+function filesystemErrorCode(error: unknown): string | undefined {
+  if (
+    error instanceof Error &&
+    'code' in error &&
+    typeof (error as { code?: unknown }).code === 'string'
+  ) {
+    return (error as { code: string }).code;
+  }
+  return undefined;
+}
+
+/**
+ * Classify the command target before invoking core discovery. Path validity belongs at the CLI
+ * boundary because it determines the documented invalid-invocation exit code; parsing and
+ * recursive discovery remain core responsibilities.
+ */
+async function scanCitationTarget(target: string, absolutePath: string, repoRoot: string) {
+  try {
+    const targetStat = await stat(absolutePath);
+    if (targetStat.isDirectory()) {
+      return await scanCitations(absolutePath, repoRoot);
+    }
+    if (targetStat.isFile()) {
+      const extension = extname(absolutePath);
+      if (!SUPPORTED_CONSUMER_EXTENSIONS.has(extension)) {
+        throw new CliError(
+          `Unsupported citation target file type '${extension || '(none)'}': '${target}'; expected .md, .yaml, or .yml`,
+          exitCodes.invalidInvocation,
+        );
+      }
+      return await parseCitations(absolutePath, repoRoot);
+    }
+    throw new CliError(
+      `Citation target must be a directory or supported consumer file: '${target}'`,
+      exitCodes.invalidInvocation,
+    );
+  } catch (error) {
+    if (error instanceof CliError) throw error;
+
+    const code = filesystemErrorCode(error);
+    if (code === 'ENOENT' || code === 'ENOTDIR') {
+      throw new CliError(`Citation target not found: '${target}'`, exitCodes.invalidInvocation);
+    }
+    if (code) {
+      throw new CliError(
+        `Cannot access citation target '${target}' (${code})`,
+        exitCodes.invalidInvocation,
+      );
+    }
+    throw error;
+  }
 }
 
 /**
@@ -90,12 +153,9 @@ async function runRecursiveVerify(
 ): Promise<number> {
   // The target is the consumer-documents root (default: openspec/).
   const targetDir = target ?? 'openspec';
-  const rootDir =
-    targetDir.startsWith('/') || /^[A-Za-z]:/.test(targetDir)
-      ? targetDir
-      : `${repoRoot}/${targetDir}`;
+  const rootDir = isAbsolute(targetDir) ? targetDir : resolvePath(repoRoot, targetDir);
 
-  const citations = await scanCitations(rootDir, repoRoot);
+  const citations = await scanCitationTarget(targetDir, rootDir, repoRoot);
   const verifications = verifyCitations(citations, artifacts);
 
   const allDiagnostics = verifications.flatMap((v) => v.diagnostics);

@@ -182,12 +182,25 @@ function extractInlineCitations(content: string, source: string): CitationRecord
 
 /**
  * Sidecar-ledger citations live in a YAML file (conventionally `citations.yaml`) alongside
- * the consumer document. The ledger is an array of citation records:
+ * the consumer document. Until the specification normalizes one serialization, the ledger may
+ * be either a bare array of citation records or a mapping whose `citations` property is that
+ * array:
+ *
+ * Bare array:
  *
  * ```yaml
  * - id: FR-X
  *   digest: sha256:...
  *   anchor: S1
+ * ```
+ *
+ * Mapping:
+ *
+ * ```yaml
+ * citations:
+ *   - id: FR-X
+ *     digest: sha256:...
+ *     anchor: S1
  * ```
  */
 function extractSidecarCitations(content: string, source: string): CitationRecord[] {
@@ -195,9 +208,18 @@ function extractSidecarCitations(content: string, source: string): CitationRecor
   const records: CitationRecord[] = [];
   for (const doc of docs) {
     const data = doc.toJS();
-    if (!Array.isArray(data)) continue;
-    for (let i = 0; i < data.length; i++) {
-      const entry = data[i];
+    let entries: unknown[];
+    if (Array.isArray(data)) {
+      entries = data;
+    } else if (typeof data === 'object' && data !== null) {
+      const mappedCitations = (data as Record<string, unknown>).citations;
+      if (!Array.isArray(mappedCitations)) continue;
+      entries = mappedCitations;
+    } else {
+      continue;
+    }
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
       if (typeof entry !== 'object' || entry === null) continue;
       const id = (entry as Record<string, unknown>).id;
       const digest = (entry as Record<string, unknown>).digest;
