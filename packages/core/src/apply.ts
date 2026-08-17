@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import { modelSubdirByType } from './artifact.js';
 import type { LoadedChange } from './changes.js';
 import { contentDigestBytes } from './digest.js';
-import type { Diagnostic } from './diagnostics.js';
+import { sortDiagnostics, type Diagnostic } from './diagnostics.js';
 import { gitShowBytes } from './git.js';
 import type { LoadedArtifact } from './model.js';
 
@@ -198,7 +198,9 @@ export async function planApply(options: PlanApplyOptions): Promise<ApplyPlan> {
     changeId: change.id ?? '',
     actions,
     diff: computeDiff(change, baselineById, writes),
-    diagnostics,
+    // Finalize only after overlay, status and drift diagnostics have all been collected. The
+    // returned plan is the public boundary: callers may filter this set, but nothing appends to it.
+    diagnostics: sortDiagnostics(diagnostics),
   };
 }
 

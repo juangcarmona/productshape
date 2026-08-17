@@ -428,6 +428,39 @@ describe('change apply', () => {
     expect(diagnostic).toMatchObject({ severity: 'error', field: 'status' });
   });
 
+  it('orders an appended PRODUCT028 before a later-file overlay diagnostic', async () => {
+    const dir = await writeChange({ status: 'draft' });
+    await proposeArtifact(
+      dir,
+      'business-rules',
+      'BR-PROBE-001',
+      businessRule('BR-PROBE-001', 'An unclaimed proposal', 'UC-SHORTEN-001'),
+    );
+    const before = await git('status', '--porcelain');
+
+    const result = await run(['change', 'apply', 'CHG-PROBE-001', '--format', 'json']);
+    const payload = JSON.parse(result.out.join('\n')) as {
+      applied: boolean;
+      diagnostics: { file: string; code: string; target?: string }[];
+    };
+
+    expect(result.code).toBe(1);
+    expect(payload.applied).toBe(false);
+    expect(payload.diagnostics.map(({ file, code, target }) => ({ file, code, target }))).toEqual([
+      {
+        file: 'docs/product/changes/active/chg-probe-001/change.md',
+        code: 'PRODUCT028',
+        target: undefined,
+      },
+      {
+        file: 'docs/product/changes/active/chg-probe-001/proposed/business-rules/br-probe-001.md',
+        code: 'PRODUCT026',
+        target: undefined,
+      },
+    ]);
+    expect(await git('status', '--porcelain')).toBe(before);
+  });
+
   it('--dry-run reports the plan and the diff without writing anything', async () => {
     await approvedChange();
     const before = await git('status', '--porcelain');
@@ -550,6 +583,65 @@ describe('change apply', () => {
     await expect(
       stat(join(workDir, 'docs', 'product', 'model', 'business-rules', 'br-probe-001.md')),
     ).rejects.toThrow();
+  });
+
+  it('orders PRODUCT027 before later-file overlay diagnostics on a dry-run refusal', async () => {
+    const dir = await writeChange({
+      status: 'approved',
+      modify: ['BR-VALID-URL-001'],
+      remove: ['ACT-VISITOR'],
+    });
+    await proposeArtifact(
+      dir,
+      'business-rules',
+      'BR-VALID-URL-001',
+      businessRule('BR-VALID-URL-001', 'Only valid absolute URLs are shortened', 'UC-SHORTEN-001'),
+    );
+
+    const target = join(
+      workDir,
+      'docs',
+      'product',
+      'model',
+      'business-rules',
+      'br-valid-url-001.md',
+    );
+    const current = await readFile(target, 'utf8');
+    await writeFile(
+      target,
+      current.replace('## Rationale', '## Rationale\n\nEdited upstream.\n'),
+      'utf8',
+    );
+    await git('add', '-A');
+    await git('commit', '-m', 'baseline and change diverge');
+    const before = await git('status', '--porcelain');
+
+    const result = await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run', '--format', 'json']);
+    const payload = JSON.parse(result.out.join('\n')) as {
+      applied: boolean;
+      diagnostics: { file: string; code: string; target?: string }[];
+    };
+
+    expect(result.code).toBe(1);
+    expect(payload.applied).toBe(false);
+    expect(payload.diagnostics.map(({ file, code, target }) => ({ file, code, target }))).toEqual([
+      {
+        file: 'docs/product/model/business-rules/br-valid-url-001.md',
+        code: 'PRODUCT027',
+        target: 'BR-VALID-URL-001',
+      },
+      {
+        file: 'docs/product/model/journeys/jrn-share-001.md',
+        code: 'PRODUCT024',
+        target: 'ACT-VISITOR',
+      },
+      {
+        file: 'docs/product/model/use-cases/uc-shorten-001.md',
+        code: 'PRODUCT024',
+        target: 'ACT-VISITOR',
+      },
+    ]);
+    expect(await git('status', '--porcelain')).toBe(before);
   });
 
   it('does not treat an addition as drift: an addition has nothing to compare against', async () => {
