@@ -1,0 +1,630 @@
+#!/usr/bin/env node
+
+// CI evidence harness only: pdac-lint owns case execution and diagnostic comparison.
+
+import { spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { basename, join, resolve } from 'node:path';
+
+const profile =
+  'full published v0.1-draft suite (kernel, reference profile and reference workflow)';
+const comparedDiagnosticFields = ['severity', 'code', 'file', 'artifact', 'field', 'target'];
+const citationDiagnosticCodes = new Set([
+  'PRODUCT042',
+  'PRODUCT060',
+  'PRODUCT061',
+  'PRODUCT062',
+  'PRODUCT063',
+]);
+
+function invariant(condition, message) {
+  if (!condition) throw new Error(message);
+}
+
+function parseOptions(argv) {
+  const allowed = new Set([
+    'spec',
+    'spec-sha',
+    'prodshape',
+    'productshape-package',
+    'tarball',
+    'pdac-lint',
+    'pdac-lint-version',
+    'reports',
+    'source-sha',
+    'evidence-url',
+  ]);
+  const options = {};
+  for (let index = 0; index < argv.length; index += 2) {
+    const flag = argv[index];
+    const value = argv[index + 1];
+    invariant(flag?.startsWith('--'), `Expected an option at ${flag ?? '(end of arguments)'}`);
+    const name = flag.slice(2);
+    invariant(allowed.has(name), `Unknown option --${name}`);
+    invariant(value !== undefined && !value.startsWith('--'), `Missing value for --${name}`);
+    invariant(options[name] === undefined, `Option --${name} was provided more than once`);
+    options[name] = value;
+  }
+
+  for (const name of [
+    'spec',
+    'spec-sha',
+    'prodshape',
+    'productshape-package',
+    'tarball',
+    'pdac-lint',
+    'pdac-lint-version',
+    'reports',
+    'source-sha',
+  ]) {
+    invariant(options[name], `Missing required option --${name}`);
+  }
+  invariant(/^[0-9a-f]{40}$/.test(options['spec-sha']), '--spec-sha must be a full commit SHA');
+  invariant(/^[0-9a-f]{40}$/.test(options['source-sha']), '--source-sha must be a full commit SHA');
+  return options;
+}
+
+function renderArg(value) {
+  return /^[A-Za-z0-9_./:@=+-]+$/.test(value) ? value : JSON.stringify(value);
+}
+
+function renderCommand(argv) {
+  return argv.map(renderArg).join(' ');
+}
+
+function runnerCommand(argv) {
+  for (const value of argv) {
+    invariant(!value.includes('"'), `Command argument contains an unsupported quote: ${value}`);
+  }
+  return argv.map((value) => (/\s/.test(value) ? `"${value}"` : value)).join(' ');
+}
+
+async function execute(file, args) {
+  return await new Promise((resolvePromise, rejectPromise) => {
+    const child = spawn(file, args, { stdio: ['ignore', 'pipe', 'pipe'] });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.setEncoding('utf8');
+    child.stderr.setEncoding('utf8');
+    child.stdout.on('data', (chunk) => (stdout += chunk));
+    child.stderr.on('data', (chunk) => (stderr += chunk));
+    child.on('error', rejectPromise);
+    child.on('close', (code, signal) => {
+      resolvePromise({ code: code ?? (signal ? 3 : 0), stdout, stderr });
+    });
+  });
+}
+
+function parseJson(text, source) {
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    throw new Error(`${source} is not valid JSON: ${error.message}`);
+  }
+}
+
+function diagnosticKey(diagnostic) {
+  return JSON.stringify(comparedDiagnosticFields.map((field) => diagnostic?.[field] ?? null));
+}
+
+function multiset(values) {
+  const result = new Map();
+  for (const value of values) result.set(value, (result.get(value) ?? 0) + 1);
+  return result;
+}
+
+function sameMultiset(left, right) {
+  if (left.size !== right.size) return false;
+  for (const [key, count] of left) {
+    if (right.get(key) !== count) return false;
+  }
+  return true;
+}
+
+function assertPinnedSpec(report, expectedSha, name) {
+  invariant(report?.spec?.revision === expectedSha, `${name} used spec ${report?.spec?.revision}`);
+  invariant(report.spec.dirty === false, `${name} used a dirty spec checkout`);
+}
+
+function assertRuns(report, expectedArgv, name) {
+  invariant(Array.isArray(report.cases), `${name} has no cases array`);
+  for (const testCase of report.cases) {
+    invariant(
+      testCase.runs?.length === expectedArgv.length,
+      `${name}/${testCase.name}: expected ${expectedArgv.length} command runs, got ${testCase.runs?.length ?? 0}`,
+    );
+    for (let index = 0; index < expectedArgv.length; index += 1) {
+      const actual = testCase.runs[index]?.argv;
+      const expected = [...expectedArgv[index], '--format', 'json'];
+      invariant(
+        JSON.stringify(actual) === JSON.stringify(expected),
+        `${name}/${testCase.name}: command ${index + 1} was not executed as configured`,
+      );
+    }
+  }
+}
+
+function assertPositive(report, result, specSha, expectedArgv) {
+  invariant(result.code === 0, `pdac-lint run exited ${result.code}`);
+  invariant(result.stderr.trim() === '', `pdac-lint run wrote to stderr: ${result.stderr.trim()}`);
+  assertPinnedSpec(report, specSha, 'conformance report');
+  const summary = report.summary;
+  invariant(summary?.total > 0, 'No conformance cases were reported');
+  invariant(
+    report.cases.length === summary.total,
+    'Conformance case total does not match the report',
+  );
+  invariant(summary.passed === summary.total, 'Not every conformance case passed');
+  invariant(summary.failed === 0, `${summary.failed} conformance case(s) failed`);
+  invariant(summary.errored === 0, `${summary.errored} conformance case(s) errored`);
+  invariant(summary.skipped === 0, `${summary.skipped} conformance case(s) were skipped`);
+  invariant(
+    report.cases.every((entry) => entry.status === 'pass'),
+    'A case was not executed to pass',
+  );
+  assertRuns(report, expectedArgv, 'conformance report');
+}
+
+function assertDigests(report, result, specSha, caseCount) {
+  invariant(result.code === 0, `pdac-lint digests exited ${result.code}`);
+  invariant(
+    result.stderr.trim() === '',
+    `pdac-lint digests wrote to stderr: ${result.stderr.trim()}`,
+  );
+  assertPinnedSpec(report, specSha, 'digest report');
+  invariant(report.summary?.total > 0, 'No pinned digests were verified');
+  invariant(
+    report.summary.verified === report.summary.total,
+    'Not every pinned digest was verified',
+  );
+  invariant(report.summary.failed === 0, `${report.summary.failed} pinned digest(s) failed`);
+  invariant(report.summary.cases === caseCount, 'Digest and conformance case totals differ');
+  invariant(
+    report.skipped?.length === 0,
+    `${report.skipped?.length ?? 0} digest case(s) were skipped`,
+  );
+}
+
+function citationRun(testCase, expectedArgv) {
+  const expected = [...expectedArgv, '--format', 'json'];
+  const matches = testCase.runs.filter(
+    (run) => JSON.stringify(run.argv) === JSON.stringify(expected),
+  );
+  invariant(
+    matches.length === 1,
+    `${testCase.name}: citation command did not execute exactly once`,
+  );
+  return matches[0];
+}
+
+async function assertCitationCoverage(report, digestReport, specDir, citationArgv) {
+  const payloads = new Map();
+  const citations = [];
+
+  for (const testCase of report.cases) {
+    const run = citationRun(testCase, citationArgv);
+    const payload = parseJson(run.stdout, `${testCase.name} citation output`);
+    invariant(
+      payload.schema === 'product-definition-as-code/citations/v1alpha1',
+      `${testCase.name}: unexpected citation schema ${payload.schema}`,
+    );
+    invariant(payload.target === '.', `${testCase.name}: citation target was not repository root`);
+    invariant(Array.isArray(payload.citations), `${testCase.name}: no citations array`);
+    invariant(
+      Array.isArray(payload.diagnostics),
+      `${testCase.name}: no citation diagnostics array`,
+    );
+    invariant(
+      payload.summary?.total === payload.citations.length,
+      `${testCase.name}: citation count does not match its summary`,
+    );
+    payloads.set(testCase.name, payload);
+    citations.push(...payload.citations.map((citation) => ({ case: testCase.name, ...citation })));
+  }
+
+  invariant(citations.length > 0, 'The citation command discovered zero citations');
+  invariant(
+    citations.length === digestReport.pins.length,
+    `ProductShape discovered ${citations.length} citations but pdac-lint found ${digestReport.pins.length} pins`,
+  );
+
+  const citationCounts = multiset(
+    citations.map((citation) =>
+      JSON.stringify([
+        citation.case,
+        citation.source,
+        citation.form,
+        citation.id,
+        citation.digest,
+        citation.anchor ?? null,
+      ]),
+    ),
+  );
+  const pinCounts = multiset(
+    digestReport.pins.map((pin) =>
+      JSON.stringify([
+        pin.case,
+        pin.source.startsWith('repo/') ? pin.source.slice(5) : pin.source,
+        pin.kind === 'ledger' ? 'sidecar-ledger' : 'marker-block',
+        pin.id,
+        pin.pinned,
+        pin.anchor ?? null,
+      ]),
+    ),
+  );
+  invariant(
+    sameMultiset(citationCounts, pinCounts),
+    'ProductShape citation discovery does not match the pins independently found by pdac-lint',
+  );
+
+  const mappedLedgerFiles = new Set();
+  let mappedLedgerPins = 0;
+  for (const pin of digestReport.pins.filter((entry) => entry.kind === 'ledger')) {
+    const ledger = resolve(specDir, 'conformance', 'cases', pin.case, pin.source);
+    const casesRoot = resolve(specDir, 'conformance', 'cases');
+    invariant(
+      ledger.startsWith(`${casesRoot}/`),
+      `Ledger escaped the conformance cases: ${pin.source}`,
+    );
+    const contents = await readFile(ledger, 'utf8');
+    if (/^citations:\s*(?:#.*)?$/m.test(contents)) {
+      mappedLedgerFiles.add(ledger);
+      mappedLedgerPins += 1;
+    }
+  }
+  invariant(
+    mappedLedgerFiles.size > 0,
+    'The pinned suite contains no mapping-shaped sidecar ledger',
+  );
+  invariant(mappedLedgerPins > 0, 'No citation from a mapping-shaped sidecar ledger was exercised');
+
+  return {
+    payloads,
+    total: citations.length,
+    cases: [...payloads.values()].filter((payload) => payload.summary.total > 0).length,
+    sidecars: citations.filter((citation) => citation.form === 'sidecar-ledger').length,
+    markers: citations.filter((citation) => citation.form === 'marker-block').length,
+    mappedLedgerFiles: mappedLedgerFiles.size,
+    mappedLedgerPins,
+  };
+}
+
+function assertNegativeControl(
+  report,
+  result,
+  positiveReport,
+  citationPayloads,
+  specSha,
+  expectedArgv,
+) {
+  invariant(result.code === 1, `Negative control must exit 1, got ${result.code}`);
+  invariant(
+    result.stderr.trim() === '',
+    `Negative control wrote to stderr: ${result.stderr.trim()}`,
+  );
+  assertPinnedSpec(report, specSha, 'negative-control report');
+  invariant(
+    report.summary?.total === positiveReport.summary.total,
+    'Negative control case total changed',
+  );
+  invariant(
+    report.cases.length === report.summary.total,
+    'Negative-control case total is inconsistent',
+  );
+  invariant(report.summary.skipped === 0, 'Negative control skipped a case');
+  invariant(report.summary.errored === 0, 'Negative control errored a case');
+  assertRuns(report, expectedArgv, 'negative-control report');
+
+  const positiveByName = new Map(positiveReport.cases.map((entry) => [entry.name, entry]));
+  let expectedFailures = 0;
+  let missingDiagnostics = 0;
+
+  for (const testCase of report.cases) {
+    invariant(positiveByName.has(testCase.name), `Negative control added case ${testCase.name}`);
+    const citationDiagnostics = (citationPayloads.get(testCase.name)?.diagnostics ?? []).filter(
+      (diagnostic) => citationDiagnosticCodes.has(diagnostic.code),
+    );
+    const expectedMissing = multiset(citationDiagnostics.map(diagnosticKey));
+    const actualMissing = multiset((testCase.missing ?? []).map(diagnosticKey));
+
+    if (expectedMissing.size > 0) {
+      expectedFailures += 1;
+      missingDiagnostics += testCase.missing.length;
+      invariant(testCase.status === 'fail', `${testCase.name}: omission did not fail the case`);
+      invariant(
+        sameMultiset(expectedMissing, actualMissing),
+        `${testCase.name}: failure was not the expected missing citation diagnostics`,
+      );
+      invariant(
+        testCase.missing.every((diagnostic) => citationDiagnosticCodes.has(diagnostic.code)),
+        `${testCase.name}: negative control failed for a non-citation diagnostic`,
+      );
+    } else {
+      invariant(testCase.status === 'pass', `${testCase.name}: unrelated negative-control failure`);
+      invariant(testCase.missing.length === 0, `${testCase.name}: unexpected missing diagnostics`);
+    }
+
+    invariant(
+      testCase.unexpected.length === 0,
+      `${testCase.name}: negative control emitted unexpected diagnostics`,
+    );
+    invariant(
+      testCase.ordering === undefined,
+      `${testCase.name}: negative control had an ordering failure`,
+    );
+    invariant(
+      testCase.reason === undefined,
+      `${testCase.name}: negative control had a command error`,
+    );
+  }
+
+  invariant(expectedFailures > 0, 'Negative control did not expose any citation-dependent case');
+  invariant(missingDiagnostics > 0, 'Negative control had no missing citation diagnostic');
+  invariant(report.summary.failed === expectedFailures, 'Negative control failed unrelated cases');
+  invariant(
+    report.summary.passed === report.summary.total - expectedFailures,
+    'Negative-control counts differ',
+  );
+
+  return { failedCases: expectedFailures, missingDiagnostics };
+}
+
+function renderConformanceText(metadata, report) {
+  const lines = [
+    'Pinned PDaC conformance',
+    `ProductShape: @prodshape/cli ${metadata.productshape.version} from ${metadata.productshape.sourceSha}`,
+    `Tarball: ${metadata.productshape.tarball} (sha256:${metadata.productshape.tarballSha256})`,
+    `Specification: ${metadata.spec.repository}@${metadata.spec.commit}`,
+    `Runner: pdac-lint ${metadata.runner.version}`,
+    `Profile: ${metadata.profile}`,
+    '',
+    'Commands:',
+    ...metadata.commands.implementation.map((command) => `  ${command}`),
+    '',
+    ...report.cases.map((entry) => `  ${entry.status.padEnd(5)} ${entry.name}`),
+    '',
+    `${report.summary.total} case(s): ${report.summary.passed} passed, ${report.summary.failed} failed, ${report.summary.skipped} skipped, ${report.summary.errored} errored`,
+  ];
+  return `${lines.join('\n')}\n`;
+}
+
+function renderDigestText(report) {
+  const lines = [
+    'Pinned digest verification',
+    '',
+    ...report.pins.map(
+      (pin) => `  ${pin.status.padEnd(20)} ${pin.case}: ${pin.source} [${pin.id ?? '?'}]`,
+    ),
+    '',
+    `${report.summary.verified} of ${report.summary.total} pinned digest(s) verified across ${report.summary.cases} case(s); ${report.skipped.length} skipped`,
+  ];
+  return `${lines.join('\n')}\n`;
+}
+
+function renderNegativeText(report, control) {
+  const lines = [
+    'Citation omission negative control',
+    'Expected result: pdac-lint exits 1 only because citation diagnostics are missing.',
+    '',
+  ];
+  for (const testCase of report.cases) {
+    lines.push(`  ${testCase.status.padEnd(5)} ${testCase.name}`);
+    for (const diagnostic of testCase.missing) {
+      lines.push(
+        `        missing ${diagnostic.severity ?? '?'} ${diagnostic.code ?? '?'} ${diagnostic.file ?? '?'}${diagnostic.artifact ? ` [${diagnostic.artifact}]` : ''}`,
+      );
+    }
+  }
+  lines.push(
+    '',
+    `${report.summary.total} case(s): ${report.summary.passed} passed, ${report.summary.failed} failed, ${report.summary.skipped} skipped, ${report.summary.errored} errored`,
+    `Expected citation-only failures: ${control.failedCases} case(s), ${control.missingDiagnostics} missing diagnostic(s)`,
+  );
+  return `${lines.join('\n')}\n`;
+}
+
+function renderSummary(metadata) {
+  const evidence = metadata.evidenceUrl
+    ? `\nEvidence: [workflow run](${metadata.evidenceUrl}) and the \`pdac-conformance-${metadata.productshape.sourceSha}\` artifact.\n`
+    : '';
+  return `## Pinned PDaC conformance
+
+| Input | Pin |
+| --- | --- |
+| ProductShape | \`@prodshape/cli ${metadata.productshape.version}\` built from \`${metadata.productshape.sourceSha}\` |
+| Packaged artifact | \`${metadata.productshape.tarball}\` (\`sha256:${metadata.productshape.tarballSha256}\`) |
+| PDaC specification | [\`${metadata.spec.commit}\`](https://github.com/${metadata.spec.repository}/commit/${metadata.spec.commit}) |
+| pdac-lint | \`${metadata.runner.version}\` |
+| Profile | ${metadata.profile} |
+
+Commands:
+
+\`\`\`text
+${metadata.commands.implementation.join('\n')}
+${metadata.commands.digests}
+\`\`\`
+
+| Check | Total | Passed/verified | Failed | Errored | Skipped |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Conformance cases | ${metadata.conformance.total} | ${metadata.conformance.passed} | ${metadata.conformance.failed} | ${metadata.conformance.errored} | ${metadata.conformance.skipped} |
+| Pinned digests | ${metadata.digests.total} | ${metadata.digests.verified} | ${metadata.digests.failed} | 0 | ${metadata.digests.skipped} |
+
+Citation coverage: ${metadata.citations.total} citation(s) across ${metadata.citations.cases} case(s), including ${metadata.citations.sidecars} sidecar-ledger record(s) from ${metadata.citations.mappedLedgerFiles} mapping-shaped ledger(s) and ${metadata.citations.markers} marker-block record(s).
+
+Negative control: removing \`prodshape citations verify .\` makes ${metadata.negativeControl.failedCases} case(s) fail with ${metadata.negativeControl.missingDiagnostics} expected missing citation diagnostic(s); 0 cases errored or skipped.
+${evidence}
+Limitation: the published tests are not yet a complete normative set. Repository-only clauses and currently unexpressed apply cases remain outside this executable profile.
+`;
+}
+
+async function sha256(path) {
+  return createHash('sha256')
+    .update(await readFile(path))
+    .digest('hex');
+}
+
+async function main() {
+  const options = parseOptions(process.argv.slice(2));
+  const specDir = resolve(options.spec);
+  const reportsDir = resolve(options.reports);
+  await mkdir(reportsDir, { recursive: true });
+  await Promise.all([
+    access(specDir),
+    access(options.prodshape),
+    access(options['productshape-package']),
+    access(options.tarball),
+    access(options['pdac-lint']),
+  ]);
+
+  const packageJson = parseJson(
+    await readFile(options['productshape-package'], 'utf8'),
+    'installed ProductShape package.json',
+  );
+  invariant(packageJson.name === '@prodshape/cli', `Installed package is ${packageJson.name}`);
+
+  const runnerVersionResult = await execute(options['pdac-lint'], ['--version']);
+  invariant(runnerVersionResult.code === 0, 'Cannot read pdac-lint version');
+  const runnerVersion = runnerVersionResult.stdout.trim();
+  invariant(
+    runnerVersion === options['pdac-lint-version'],
+    `Expected pdac-lint ${options['pdac-lint-version']}, got ${runnerVersion}`,
+  );
+
+  const specRevisionResult = await execute('git', ['-C', specDir, 'rev-parse', 'HEAD']);
+  invariant(
+    specRevisionResult.code === 0,
+    `Cannot read spec revision: ${specRevisionResult.stderr}`,
+  );
+  invariant(
+    specRevisionResult.stdout.trim() === options['spec-sha'],
+    `Expected spec ${options['spec-sha']}, got ${specRevisionResult.stdout.trim()}`,
+  );
+
+  const implementationArgv = [
+    [options.prodshape, 'validate'],
+    [options.prodshape, 'change', 'validate'],
+    [options.prodshape, 'citations', 'verify', '.'],
+  ];
+  const negativeArgv = implementationArgv.slice(0, 2);
+  const implementationCommands = implementationArgv.map(runnerCommand);
+  const negativeCommands = negativeArgv.map(runnerCommand);
+
+  const runArgs = ['run', '--spec', specDir];
+  for (const command of implementationCommands) runArgs.push('--command', command);
+  runArgs.push('--format', 'json');
+
+  const negativeArgs = ['run', '--spec', specDir];
+  for (const command of negativeCommands) negativeArgs.push('--command', command);
+  negativeArgs.push('--format', 'json');
+
+  const digestArgs = ['digests', '--spec', specDir, '--format', 'json'];
+
+  const digestResult = await execute(options['pdac-lint'], digestArgs);
+  await writeFile(join(reportsDir, 'digests.json'), digestResult.stdout);
+  const digestReport = parseJson(digestResult.stdout, 'digests.json');
+
+  const conformanceResult = await execute(options['pdac-lint'], runArgs);
+  await writeFile(join(reportsDir, 'conformance.json'), conformanceResult.stdout);
+  const conformanceReport = parseJson(conformanceResult.stdout, 'conformance.json');
+
+  const negativeResult = await execute(options['pdac-lint'], negativeArgs);
+  await writeFile(join(reportsDir, 'negative-control.json'), negativeResult.stdout);
+  const negativeReport = parseJson(negativeResult.stdout, 'negative-control.json');
+
+  assertPositive(conformanceReport, conformanceResult, options['spec-sha'], implementationArgv);
+  assertDigests(digestReport, digestResult, options['spec-sha'], conformanceReport.summary.total);
+  const citationCoverage = await assertCitationCoverage(
+    conformanceReport,
+    digestReport,
+    specDir,
+    implementationArgv[2],
+  );
+  const negativeControl = assertNegativeControl(
+    negativeReport,
+    negativeResult,
+    conformanceReport,
+    citationCoverage.payloads,
+    options['spec-sha'],
+    negativeArgv,
+  );
+
+  const metadata = {
+    schema: 'productshape/pdac-conformance-evidence/v1',
+    generatedAt: new Date().toISOString(),
+    profile,
+    productshape: {
+      package: packageJson.name,
+      version: packageJson.version,
+      sourceSha: options['source-sha'],
+      tarball: basename(options.tarball),
+      tarballSha256: await sha256(options.tarball),
+    },
+    spec: {
+      repository: 'product-definition-as-code/spec',
+      commit: options['spec-sha'],
+    },
+    runner: { package: 'pdac-lint', version: runnerVersion },
+    commands: {
+      implementation: implementationArgv.map((argv) =>
+        renderCommand(['prodshape', ...argv.slice(1)]),
+      ),
+      digests: 'pdac-lint digests --spec pdac-spec',
+      actual: {
+        conformance: renderCommand([options['pdac-lint'], ...runArgs]),
+        negativeControl: renderCommand([options['pdac-lint'], ...negativeArgs]),
+        digests: renderCommand([options['pdac-lint'], ...digestArgs]),
+      },
+    },
+    conformance: conformanceReport.summary,
+    digests: { ...digestReport.summary, skipped: digestReport.skipped.length },
+    citations: {
+      total: citationCoverage.total,
+      cases: citationCoverage.cases,
+      sidecars: citationCoverage.sidecars,
+      markers: citationCoverage.markers,
+      mappedLedgerFiles: citationCoverage.mappedLedgerFiles,
+      mappedLedgerPins: citationCoverage.mappedLedgerPins,
+    },
+    negativeControl: {
+      ...negativeReport.summary,
+      expectedExitCode: 1,
+      actualExitCode: negativeResult.code,
+      ...negativeControl,
+    },
+    evidenceUrl: options['evidence-url'],
+  };
+
+  await Promise.all([
+    writeFile(join(reportsDir, 'metadata.json'), `${JSON.stringify(metadata, null, 2)}\n`),
+    writeFile(
+      join(reportsDir, 'conformance.txt'),
+      renderConformanceText(metadata, conformanceReport),
+    ),
+    writeFile(join(reportsDir, 'digests.txt'), renderDigestText(digestReport)),
+    writeFile(
+      join(reportsDir, 'negative-control.txt'),
+      renderNegativeText(negativeReport, negativeControl),
+    ),
+    writeFile(join(reportsDir, 'summary.md'), renderSummary(metadata)),
+  ]);
+
+  process.stdout.write(renderSummary(metadata));
+}
+
+const reportsIndex = process.argv.indexOf('--reports');
+const fallbackReports = reportsIndex === -1 ? undefined : process.argv[reportsIndex + 1];
+
+main().catch(async (error) => {
+  const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
+  if (fallbackReports) {
+    try {
+      await mkdir(fallbackReports, { recursive: true });
+      await writeFile(join(fallbackReports, 'failure.txt'), `${message}\n`);
+    } catch {
+      // The original error is the useful failure.
+    }
+  }
+  process.stderr.write(`${message}\n`);
+  process.exitCode = 1;
+});
