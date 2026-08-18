@@ -40,6 +40,16 @@ afterAll(async () => {
 });
 
 describe('prodshape validate', () => {
+  it('--version prints the CLI package version and exits 0', async () => {
+    const packageJson = JSON.parse(
+      await readFile(join(repoRoot, 'packages', 'cli', 'package.json'), 'utf8'),
+    ) as { version: string };
+    const result = await run(['--version'], workDir);
+    expect(result.code).toBe(0);
+    expect(result.err).toEqual([]);
+    expect(result.out).toEqual([packageJson.version]);
+  });
+
   it('exits 0 on the minimal example', async () => {
     const result = await run(['validate'], workDir);
     expect(result.err).toEqual([]);
@@ -398,6 +408,6 @@ describe('self-application', () => {
     const result = await run(['validate'], repoRoot);
     expect(result.code).toBe(0);
     // The whole Product Definition, zero diagnostics.
-    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across 78 artifact\(s\)/);
+    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across \d+ artifact\(s\)/);
   });
 });

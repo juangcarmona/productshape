@@ -4,17 +4,19 @@
 
 ProductShape is to Product Definition as Code what OpenSpec is to Spec-Driven Development: the methodology is the long-lived concept; ProductShape is one implementation of it.
 
-> **Early.** The command surface and outputs are still settling; see [npm](https://www.npmjs.com/package/@prodshape/cli) for the current version. The schema and diagnostic contracts (`product-definition-as-code/…`, `PRODUCT###`) are intended to be stable.
+> **Supported published baseline:** `@prodshape/cli@0.9.0`. The command surface and outputs are still settling; the schema and diagnostic contracts (`product-definition-as-code/…`, `PRODUCT###`) are intended to be stable. Behaviour present only on the repository's `main` branch is unreleased until a newer package version appears on npm.
 
 ## Install
 
 ```bash
-npm install -g @prodshape/cli
+npm install -g @prodshape/cli@0.9.0
 # or run without installing:
-npx @prodshape/cli --help
+npx @prodshape/cli@0.9.0 --help
 ```
 
-The command is `prodshape`. Requires Node.js >= 22.
+The canonical command is `prodshape`; `product-definition` remains an identical v0.x compatibility alias. Requires Node.js >= 22.
+
+`prodshape --version` and SDD-aware `prodshape init --sdd openspec` are implemented and tested on `main` for the next release, but they are not commands supported by the published `0.9.0` package.
 
 ## What it does
 
@@ -42,7 +44,7 @@ Exit codes: `0` success (warnings allowed), `1` validation errors, `2` invalid i
 
 ## Status
 
-The CLI bundles `@prodshape/core`, `@prodshape/distribution`, `@prodshape/integration-openspec` and the provider integrations at build time, so installing it is all you need. Each of those is also published separately, for programmatic use. See the [repository](https://github.com/juangcarmona/productshape) for the methodology, the normative specification and the self-hosted product model.
+The CLI bundles `@prodshape/core`, `@prodshape/distribution`, `@prodshape/integration-openspec` and the provider integrations at build time, so installing it is all you need. Each is also published separately for programmatic use. `@prodshape/integration-openspec` is the current OpenSpec package; `@prodshape/adapter-openspec` is a legacy package name from older releases. See the [repository](https://github.com/juangcarmona/productshape) for the executable quickstart, methodology, normative specification and self-hosted product model.
 
 ## License
 

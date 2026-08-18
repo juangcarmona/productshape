@@ -16,6 +16,8 @@ The `@prodshape/*` packages are published to npm **only from GitHub Actions** ([
 
 Each sets `publishConfig.access: "public"` and `publishConfig.provenance: true`. Only packages that receive a changeset are versioned and published, in dependency order.
 
+`@prodshape/integration-openspec` is the current OpenSpec package. `@prodshape/adapter-openspec` was published by older releases and remains only for those consumers; do not add it to the current package set or new documentation.
+
 ## Required repository configuration
 
 **Secrets**
@@ -39,7 +41,8 @@ Each sets `publishConfig.access: "public"` and `publishConfig.provenance: true`.
 
 1. Land feature PRs, each including a `pnpm changeset` describing its bump.
 2. On merge to `main`, the workflow opens/updates a **"Version Packages"** PR that applies the bumps and writes `CHANGELOG.md` entries.
-3. Review and merge that PR. The resulting release commit triggers the `publish-stable` job, which (after environment approval) builds, tests and runs `pnpm changeset publish` — publishing only the changed packages to the `latest` dist-tag, with provenance, and pushing git tags.
+3. In the Version Packages PR, update the exact supported CLI version in the primary README, package README and limitations file. The release-contract check must agree with `packages/cli/package.json`; it does not follow an npm dist-tag.
+4. Review and merge that PR. The resulting release commit triggers the `publish-stable` job, which (after environment approval) builds, tests, runs the packed release-contract smoke test and then runs `pnpm changeset publish` — publishing only the changed packages to the `latest` dist-tag, with provenance, and pushing git tags.
 
 Merging the Version Packages PR **is** the release decision: never merge it while a release-blocking defect is open, even if CI is green — the PR regenerates automatically as more changesets land, so waiting costs nothing.
 
@@ -63,11 +66,8 @@ npm deprecate @prodshape/<pkg>@<bad-version> "Broken release — use <last-good-
 
 Only `npm unpublish` within the 72h window, and only for a genuinely broken or unsafe artifact. For a workflow/tooling regression, revert the offending config change and re-run via `workflow_dispatch`; the `NPM_TOKEN` fallback remains available for emergency recovery **from CI** (never from a laptop).
 
-## Migration from manual publishing
+## Package-name compatibility
 
-1. **Changesets in place** — `.changeset/config.json`, root `version`/`release` scripts and the `@changesets/cli` dev dependency (done in this change).
-2. **Release workflow in token mode** — with `NPM_TOKEN` set, validate the release-PR → publish flow on a low-risk package.
-3. **Bootstrap each new package once** — because npm has no pending-publisher support, first-publish every not-yet-published `@prodshape/*` package a single time (token, public access) so its name and trusted-publisher configuration can be created. `@prodshape/cli` is already published.
-4. **Configure Trusted Publishing** for every package on npmjs.com (repo + `release.yml` + `npm-publish` environment) and confirm provenance appears on the next publish.
-5. **Switch to OIDC** — with trusted publishers configured, publishes use OIDC automatically; the `NODE_AUTH_TOKEN` fallback is ignored.
-6. **Retire the token** — scope the granular `NPM_TOKEN` down to fallback-only and shorten its expiry once OIDC covers all packages.
+- `@prodshape/integration-openspec` is the supported library name and the one bundled by the CLI.
+- `@prodshape/adapter-openspec` is a legacy published package from the earlier delivery-pipeline design. Existing consumers may remain pinned to it, but it receives no current features and must not appear as the current package in quickstarts or package tables.
+- `prodshape` is the canonical binary. `product-definition` remains byte-identical through v0.x and is removed before v1; release smoke tests exercise both names.

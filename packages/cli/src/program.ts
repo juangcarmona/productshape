@@ -1,4 +1,5 @@
 import { Command, CommanderError } from 'commander';
+import { createRequire } from 'node:module';
 import {
   runChangeApply,
   runChangeArchive,
@@ -48,10 +49,13 @@ import { runSchema } from './commands/schema.js';
 import { runValidate } from './commands/validate.js';
 import { CliError, exitCodes, type CliIo } from './context.js';
 
+const cliPackage = createRequire(import.meta.url)('../package.json') as { version: string };
+
 export function buildProgram(io: CliIo, capture: { code: number }): Command {
   const program = new Command('prodshape');
   program
     .description('ProductShape - the reference implementation of Product Definition as Code')
+    .version(cliPackage.version)
     .exitOverride()
     .configureOutput({
       writeOut: (str) => io.out(str.trimEnd()),

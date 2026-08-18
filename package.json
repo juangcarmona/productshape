@@ -19,6 +19,7 @@
     "typecheck": "pnpm -r run typecheck",
     "test": "vitest run",
     "build": "pnpm -r run build",
+    "release-contract:smoke": "node --import tsx scripts/release-contract-smoke.mts",
     "version": "changeset version && pnpm build && node packages/cli/dist/bin.js integration update",
     "release": "changeset publish",
     "measure:snapshot": "tsx scripts/measure-snapshot.mts",

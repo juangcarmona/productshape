@@ -63,7 +63,7 @@ const shots: Shot[] = [
     route: '#/artifacts/BC-PRODUCT-DEFINITION',
     ...TALL,
     caption:
-      'The most connected artifact (27 relationships): groups carry exact counts and the large ones start collapsed.',
+      'The most connected artifact: groups derive exact counts and the large ones start collapsed.',
   },
   {
     name: '04-relationship-groups-expanded',
@@ -108,7 +108,7 @@ const shots: Shot[] = [
     route: '#/graph/focus/BC-PRODUCT-DEFINITION',
     ...DESKTOP,
     caption:
-      'The hardest artifact in the model: 27 relationships become 5 satellites, the large ones closed with exact counts.',
+      'The hardest artifact in the model: relationships become counted satellites, with large groups closed.',
   },
   {
     name: '19-focus-expanded',
@@ -116,7 +116,7 @@ const shots: Shot[] = [
     ...DESKTOP,
     caption:
       'One satellite opened: its members fan out beside it and every other satellite stays exactly where it was.',
-    prepare: `var s=document.querySelectorAll('#graph-host circle[data-group]');for(var i=0;i<s.length;i++){if((s[i].getAttribute('aria-label')||'').indexOf('· 12')>0){s[i].dispatchEvent(new MouseEvent('click',{bubbles:true}));break}}`,
+    prepare: `var s=document.querySelectorAll('#graph-host circle[data-group]');for(var i=0;i<s.length;i++){if(s[i].getAttribute('aria-expanded')==='false'){s[i].dispatchEvent(new MouseEvent('click',{bubbles:true}));break}}`,
   },
   {
     name: '20-focus-isolated',
@@ -144,7 +144,7 @@ const shots: Shot[] = [
     route: '#/artifacts',
     ...TALL,
     caption:
-      'Ranked search for "product": 73 matches, top 25 shown, identifier and title matches above body-only ones.',
+      'Ranked search for "product": the derived total and display limit are visible, with identifier and title matches above body-only ones.',
     prepare: `var q=document.getElementById('q-body');q.value='product';q.dispatchEvent(new Event('input'))`,
   },
   {

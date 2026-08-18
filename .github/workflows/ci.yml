@@ -63,6 +63,19 @@ jobs:
       - run: pnpm format:check
       - run: pnpm lifecycle:check
 
+  release-contract:
+    name: packed release contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm release-contract:smoke
+
   # Warn when a PR touches package source but adds no changeset. Deliberately never fails during
   # v0.x — it only emits an annotation.
   changesets:
