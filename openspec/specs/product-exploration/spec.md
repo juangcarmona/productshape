@@ -1,6 +1,6 @@
 ## Purpose
 
-Specify the `ps:explore` skill: a product-graph-aware thinking partner that helps engineers clarify a fuzzy product idea before committing to a `ps:change`. The skill reads the full product model upfront, reasons from a high-altitude structural view, and ends with an explicit handoff offer to `ps:change`.
+Specify the `ps:explore` skill: a product-graph-aware thinking partner that helps engineers clarify a fuzzy product idea before committing to a `ps:change`. The skill reads the full product model upfront, reasons from a high-altitude structural view, and ends with an explicit offer to create a Product Change.
 
 ## Requirements
 
@@ -74,7 +74,7 @@ The skill SHALL use business language by default — avoiding internal artifact 
 - **WHEN** a developer uses artifact identifiers or technical language
 - **THEN** the skill accepts and uses that vocabulary naturally without forcing translation to business language
 
-### Requirement: Explicit handoff to ps:change
+### Requirement: Explicit transition to ps:change
 
 The skill SHALL end every meaningful exploration session by explicitly offering to continue to `ps:change`. The offer SHALL be phrased to confirm readiness while leaving the decision to the user.
 
@@ -83,14 +83,14 @@ The skill SHALL end every meaningful exploration session by explicitly offering 
 - **WHEN** the explored idea has reached sufficient clarity that a Product Change could be written from it
 - **THEN** the skill offers: "I'd say we now have a clear enough idea of what should change and why — want me to turn this into a Product Change, or is there anything you'd like to refine first?"
 
-#### Scenario: User declines the handoff
+#### Scenario: User declines the transition
 
 - **WHEN** the user wants to continue refining rather than proceed to ps:change
 - **THEN** the skill continues the exploration session without pressure
 
 ### Requirement: README and docs reflect the new entry point
 
-The project README and methodology documentation SHALL document `ps:explore` as the recommended first step before `ps:change` when starting from a fuzzy idea. The documented workflow SHALL show the full path: `ps:explore` → `ps:change` → `ps:slice` → `ps:handoff`.
+The project README and methodology documentation SHALL document `ps:explore` as the recommended first step before `ps:change` when starting from a fuzzy idea. The documented workflow SHALL show the full path from exploration to a proposed Product Change, overlay validation, human product approval, explicit apply, pull-request review and merge acceptance. It SHALL state that implementation may share the pull request or follow later but remains separate.
 
 #### Scenario: New user reads the README
 

@@ -91,7 +91,7 @@ Explicitly forbidden in v0.1: NestJS, Nx, Turborepo, dependency-injection framew
 Everything the toolkit computes is derived and rebuildable (ADRs 0001 and 0002):
 
 - Graph outputs (`product-graph.json`, indexes, Mermaid diagrams, traceability reports) are written under `.product/generated/`. They are regenerable and non-canonical, so adopters are advised to ignore them in Git; `init` does not modify a repository's ignore rules on its behalf.
-- Product Handoffs and Product Context documents are generated into their change's sidecar locations and are non-canonical.
+- Product diffs, citation-verification reports and Product Snapshots are derived views or reports. They are non-canonical and can be reproduced from canonical artifacts and consumer citations.
 - Provider assets under `.claude/` and `.github/` are generated with managed-file headers and tracked in `installation.lock.json` (ADR 0008).
 
 No command requires a generated file as input to rebuild it.

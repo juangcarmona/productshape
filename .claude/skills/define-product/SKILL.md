@@ -15,7 +15,7 @@ Establish or extend a product definition from stated intent. Produce a coherent 
 ## When to use
 
 - A repository has adopted Product Definition as Code and no Product Definition exists yet (`docs/product/model` is empty or absent): the output becomes `CHG-INITIAL`.
-- New product intent must be expressed as artifacts after a baseline already exists: author the drafts on a branch, recorded by a change draft, never directly on the baseline.
+- New product intent must be expressed as proposed artifacts inside a Product Change, whether establishing `CHG-INITIAL` or extending an existing baseline. Never author directly in the model.
 - An existing draft definition is incomplete and needs additional artifact families derived from intent already captured.
 
 Do not use this skill to reconstruct knowledge from an existing system (use `recover-product`) or to review an existing model (use `audit-product-model`).
@@ -34,8 +34,8 @@ Do not use this skill to reconstruct knowledge from an existing system (use `rec
 
 ## Deterministic commands
 
-- `prodshape validate --format json` — structural validation of the model.
-- `prodshape change validate` — full-tree validation of the working tree as a proposed change (takes no argument).
+- `prodshape validate --format json` — structural validation of the accepted baseline before drafting against it.
+- `prodshape change validate <chg-id>` — compile and validate the proposed overlay without modifying the baseline.
 - `prodshape graph --format json` — the compiled product graph, for reuse checks.
 - `prodshape inspect <ID>` — details of an existing artifact before referencing it.
 - `prodshape impact <ID>` — what an existing artifact touches, before extending near it.
@@ -54,8 +54,8 @@ Never substitute your own judgement for these commands. If the CLI reports a str
 6. Establish domain terms and bounded contexts. Define every word two people could read differently; when one word carries two meanings, create two terms in two contexts.
 7. Derive requirements with traceability. Every functional requirement, quality requirement and constraint names what it derives from (`derived-from`) and carries verification scenarios.
 8. Preserve uncertainty. Record every unresolved question visibly in the change's `## Open Questions`. Never invent an answer.
-9. Generate draft artifacts from the templates, `status: draft`, one file per artifact named by lowercase ID, in the correct location for the mode (see Allowed modifications).
-10. Run deterministic validation (`validate` or `change validate`) and fix every reported error.
+9. Generate draft artifacts from the templates, `status: draft`, one file per artifact named by lowercase ID, under the Product Change's `proposed/` directory.
+10. Run `prodshape change validate <chg-id>` and fix every reported error without touching the baseline.
 11. Present the drafts, open questions and validation result to a human for review. Artifacts become `active` only on explicit human approval — never mark them yourself.
 
 The order above is the natural order of discovery, not a gate sequence: loop back freely when a use case reveals a missing actor or a rule forces a term. See `references/authoring-order.md`.
@@ -63,7 +63,7 @@ The order above is the natural order of discovery, not a gate sequence: loop bac
 ## Allowed modifications
 
 - Author the artifacts under the change's `proposed/` directory and record their IDs in its `operations`. Never edit a baseline file under `docs/product/model`: apply is what writes the model, and a human runs it.
-- Editing existing draft artifacts you created in this session, in either location.
+- Edit proposed draft artifacts created in this session inside the Product Change directory.
 
 ## Forbidden actions
 
@@ -85,7 +85,7 @@ The order above is the natural order of discovery, not a gate sequence: loop bac
 
 - Draft artifact files, one per artifact, created from templates, valid against their schemas, in the correct location for the mode.
 - A `change.md` at `docs/product/changes/active/<chg-id>/` whose `operations` name every proposed artifact.
-- A clean run of `prodshape validate` (or `change validate`) — zero errors; remaining warnings explained to the human.
+- A clean run of `prodshape change validate <chg-id>` — zero errors; remaining warnings explained to the human.
 - A summary for the human: what was drafted, the traceability chain, and every open question.
 
 ## Completion checks
@@ -93,5 +93,5 @@ The order above is the natural order of discovery, not a gate sequence: loop bac
 - Every requirement has a non-empty `derived-from` tracing to use cases, rules or constraints.
 - Every use case names an existing `primary-actor`; every journey's steps reference existing use cases.
 - Every unresolved question appears explicitly as an open question; none were silently answered.
-- `prodshape validate` (or `change validate`) was run after the last edit and reports no errors.
+- `prodshape change validate <chg-id>` was run after the last edit and reports no errors.
 - No artifact was marked `active`; the human review request was issued.

@@ -2,7 +2,7 @@
   "name": "productshape",
   "version": "0.1.0",
   "private": true,
-  "description": "Define products as a versioned graph of Markdown artifacts. Evolve the model through validated pull requests and cite product artifacts from consumer documents via the citation contract.",
+  "description": "Define products as a versioned graph of Markdown artifacts. Evolve the model through validated Product Changes and cite accepted artifacts from consumer documents.",
   "license": "Apache-2.0",
   "type": "module",
   "engines": {
@@ -13,6 +13,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "lifecycle:check": "node scripts/check-current-lifecycle-language.mjs",
     "docs:frontmatter": "tsx scripts/generate-frontmatter-reference.mts && prettier --write docs/specification/frontmatter-reference.md",
     "schemas:sync": "tsx scripts/sync-schemas.mts",
     "typecheck": "pnpm -r run typecheck",

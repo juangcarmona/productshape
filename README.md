@@ -31,12 +31,18 @@ Two assertions carry the whole design:
 Evolution is explicit end to end:
 
 ```text
-Product Definition → Pull Request (validated, human-merged) → Baseline
-  → Consumer docs cite artifacts by ID + digest → citations verify detects drift
-  → native SDD workflow → Implementation → Verification
+Accepted baseline
+  → proposed Product Change
+  → overlay validation
+  → human product approval
+  → explicit apply on a working branch
+  → pull-request review
+  → merge accepts the resulting baseline
+  → consumer docs cite artifacts by ID + digest → citations verify detects drift
+  → native SDD workflow → implementation → verification
 ```
 
-Nothing modifies the product model silently: changes are pull requests that must pass `prodshape validate` before merge (CI gate). Consumer documents cite product artifacts rather than re-stating them, so drift is machine-detectable. The five-minute explanation is [the methodology overview](docs/methodology/overview.md).
+Nothing modifies the product model silently. A Product Change records semantic intent before the baseline moves; `prodshape change validate` checks its overlay without writing; a human grants product approval; and `prodshape change apply` materializes the approved result on a working branch. Apply is not acceptance. A human merge accepts the resulting baseline, and `prodshape validate` is the CI gate. Consumer documents cite product artifacts rather than re-stating them, so drift is machine-detectable. The five-minute explanation is [the methodology overview](docs/methodology/overview.md).
 
 ## The artifacts
 
@@ -66,9 +72,11 @@ Each relationship is authored exactly once, in one direction, on one artifact (`
 
 When the idea is fuzzy, `/ps:explore` is the entry point: it reads the product graph, reasons from a structural high-altitude view (surfacing gaps, inconsistencies and affected artifacts), and helps clarify the request before committing to a change. When the model is new or minimal it explains the artifact vocabulary instead.
 
-A modification request is a pull request: direct edits to `docs/product/model/`, validated by `prodshape validate` as a full tree (CI gate). Merging is a human decision; tools MUST NOT merge, auto-approve or self-merge model changes. The merged model is the new canonical baseline.
+A modification request becomes a Product Change under `docs/product/changes/active/<chg-id>/`, with complete proposed future-state artifacts under `proposed/`. Validate the overlay, obtain human product approval, and apply it explicitly. The pull request reviews the applied result; it is not the Product Change. Merging accepts the resulting baseline. Tools MUST NOT approve, merge, auto-approve or self-merge model changes.
 
-Consumer documents (SDD specs, tasks, agent prompts, design docs) cite product artifacts by ID + content digest + optional scenario anchor, so drift between a consumer document and the canonical model is machine-detectable rather than silent. `prodshape citations verify` recomputes digests and reports one status per citation: `current`, `stale`, `tampered` or `unresolved`. Details: [change-as-PR and the citation contract](docs/methodology/overview.md).
+Product-definition work and implementation work have independent cadence. They may share a pull request, or implementation may follow later, but they remain different things. Product Change status never attests implementation, verification, release or deployment.
+
+Consumer documents (SDD specs, tasks, agent prompts, design docs) cite product artifacts by ID + content digest + optional scenario anchor, so drift between a consumer document and the canonical model is machine-detectable rather than silent. `prodshape citations verify` recomputes digests and reports one status per citation: `current`, `stale`, `tampered` or `unresolved`. Details: [the Product Change lifecycle and citation contract](docs/methodology/overview.md).
 
 ## Packages
 
@@ -100,7 +108,7 @@ cd productshape
 pnpm install && pnpm build
 ```
 
-This repository defines itself with its own methodology, so the built CLI has a real product model to run against — 64 artifacts, zero diagnostics:
+This repository defines itself with its own methodology, so the built CLI has a real product model to run against with zero diagnostics:
 
 ```bash
 node packages/cli/dist/bin.js validate
@@ -154,7 +162,7 @@ v0.1 established the whole loop: the methodology and normative specification, th
 
 v0.2 is the first round of improvements driven by adoption outside this repository. That adoption tried to record provenance on recovered artifacts, discovered the schema had nowhere to put it, and could not find out from anywhere what the schema _did_ accept. So v0.2 makes the authoring contract discoverable — an optional `provenance` object on every artifact kind, a [frontmatter reference](docs/specification/frontmatter-reference.md) generated from the schemas, and `prodshape schema <kind>` — and makes two reported problems fixable: `prodshape fix --filenames` for filename drift that was unfixable by hand on Windows, and `prodshape init --dry-run` for the "what will this do to my repository?" question that has to be answered before running anything.
 
-The loop is not a diagram here; the repository runs on it. This repository defines itself with its own methodology — the model the CLI validates above is the product definition of ProductShape itself, evolved through pull requests and verified by citations.
+The loop is not a diagram here; the repository runs on it. This repository defines itself with its own methodology — the model the CLI validates above is the product definition of ProductShape itself, evolved through Product Changes, accepted through pull-request merges and verified by citations.
 
 Remaining open decisions are in [OPEN-DECISIONS.md](OPEN-DECISIONS.md), and what is deliberately not built is below.
 

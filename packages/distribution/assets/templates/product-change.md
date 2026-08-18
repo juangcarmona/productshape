@@ -16,6 +16,8 @@ Schema reference: docs/specification/frontmatter-reference.md#product-change
 
 Every ID under `operations.add` and `operations.modify` needs a complete proposed artifact under `proposed/`, laid out exactly as it will live in the model. Set `base-revision` to the baseline commit this change was created against, quoted so YAML reads an all-digit revision as a string.
 
+Validate the overlay before product approval. `status: approved` authorizes explicit apply; apply materializes the proposal on a working branch but does not accept it. A pull-request merge accepts the resulting baseline. Product-definition work and implementation work may share that pull request or proceed at different times, but Product Change status never records implementation, verification, release or deployment.
+
 ## Problem
 
 What is wrong or missing in the current Product Definition? State the problem, not the solution.

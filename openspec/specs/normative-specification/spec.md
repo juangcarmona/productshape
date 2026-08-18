@@ -17,7 +17,7 @@ The specification SHALL define, using RFC-style normative language (MUST, MUST N
 
 ### Requirement: Identifier rules are fixed
 
-The specification SHALL define stable immutable IDs with the fixed prefixes ACT-, JRN-, UC-, BR-, TERM-, BC-, FR-, QR- and CON-, state that IDs become immutable after first acceptance into the current model, are never reused, and are never inferred from file paths, and that file-name alignment is a warning, not an identity mechanism. Retired prefixes (CHG-, SLI-, HOF-) are never reused.
+The specification SHALL define stable immutable IDs with the fixed artifact prefixes ACT-, JRN-, UC-, BR-, TERM-, BC-, FR-, QR- and CON-, and the Product Change prefix CHG-. It SHALL state that artifact IDs become immutable after first acceptance into the current model, are never reused, and are never inferred from file paths, and that file-name alignment is a warning, not an identity mechanism. Retired prefixes SLI- and HOF- are never reused.
 
 #### Scenario: Renaming an artifact file
 
@@ -35,30 +35,30 @@ The specification SHALL define the canonical relationship fields per source arti
 
 ### Requirement: Canonical authority inside docs/product is explicit
 
-The specification SHALL distinguish canonical current semantics (`docs/product/model/**/*.md`) from generated non-canonical outputs (graph files, indexes, diagrams, traceability reports). `docs/product/model/index.md` SHALL be defined as a human navigation document that never duplicates relationships. The baseline changes through exactly one operation: a human merging a validated proposed revision (a pull request).
+The specification SHALL distinguish accepted current semantics (`docs/product/model/**/*.md` on the canonical branch) from a Product Change overlay and from generated non-canonical outputs (graph files, indexes, diagrams, traceability reports). `docs/product/model/index.md` SHALL be defined as a human navigation document that never duplicates relationships. Apply MAY write the approved proposal into `docs/product/model` on a working branch, but only a human merge of the reviewed result changes the accepted baseline.
 
 #### Scenario: Determining whether a file may be edited by hand
 
 - **WHEN** a contributor asks whether a generated graph file may be edited
 - **THEN** the specification identifies it as generated and non-canonical
 
-### Requirement: Lifecycle states are artifact-specific
+### Requirement: Lifecycle states are document-specific
 
-The specification SHALL define artifact status (draft, active, deprecated, retired) as the only lifecycle enum. Retired lifecycles (Product Change status, Delivery Slice status) are never reused.
+The specification SHALL define artifact status (draft, active, deprecated, retired) and Product Change status (draft, proposed, approved, applied, rejected, superseded) as separate lifecycle enums. Product Change status MUST NOT carry implementation, verification, release or deployment state, and no delivery lifecycle is part of the product model.
 
 #### Scenario: Validating an artifact status value
 
 - **WHEN** an artifact declares `status: published`
 - **THEN** the specification defines this as invalid because `published` is not in the artifact lifecycle enum
 
-### Requirement: Change-as-PR replaces the push pipeline
+### Requirement: Product Changes follow the independent lifecycle
 
-The specification SHALL define the baseline as the canonical product model on the repository's canonical branch, changes as native pull requests validated by full-tree structural validation (CI gate), and merging as a human decision. Tools MUST NOT merge, auto-approve or self-merge model changes. The bootstrap exception is deleted; the initial baseline enters through the same mechanism as every later change.
+The specification SHALL define the lifecycle as accepted baseline → proposed Product Change → overlay validation → human product approval → explicit apply on a working branch → pull-request review → human merge accepting the resulting baseline. It SHALL state that a Product Change is not a pull request, apply is not acceptance, and neither apply nor merge attests implementation, verification, release or deployment. Product-definition work and implementation work MAY share a pull request or proceed at different times, but they remain independent. Tools MUST NOT grant product approval, merge, auto-approve or self-merge model changes. `CHG-INITIAL` establishes the first baseline through the same lifecycle as every later change.
 
 #### Scenario: Requesting a change
 
 - **WHEN** a stakeholder requests a product modification
-- **THEN** the specification requires a pull request and forbids silent modification of `docs/product/model`
+- **THEN** the specification requires a Product Change and overlay validation before product approval and apply, followed by pull-request review before merge acceptance
 
 ### Requirement: The citation contract is the delivery boundary
 

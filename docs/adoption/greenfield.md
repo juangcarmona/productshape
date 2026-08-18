@@ -77,7 +77,7 @@ Author only canonical relationships (for example `Domain Term.defined-in`); reve
 
 ## 3. Establish the first definition through CHG-INITIAL
 
-There is no bootstrap exception: the first Product Definition enters the same way every later change does. Author the artifacts you drafted above as the proposed future state of a change with the reserved identifier `CHG-INITIAL`, listing every one of them under `operations.add`:
+The first Product Definition follows the same lifecycle as every later change; no direct-authoring path exists. Author the artifacts you drafted above as the proposed future state of a change with the reserved identifier `CHG-INITIAL`, listing every one of them under `operations.add`:
 
 ```text
 docs/product/changes/active/chg-initial/
@@ -85,7 +85,7 @@ docs/product/changes/active/chg-initial/
 └── proposed/      # the artifacts, laid out as they will live in the model
 ```
 
-Validate it, approve it, and apply it. Apply writes the model and archives the change under `changes/completed/chg-initial/`, which is where the record of how this definition came to exist stays. A product MUST NOT have more than one `CHG-INITIAL`, and every semantic evolution after it is another Product Change. The rule is normative: see [Product Changes](https://github.com/product-definition-as-code/spec/blob/main/spec/product-changes.md).
+Validate it as an overlay, obtain human product approval, and apply it explicitly on a working branch. Apply writes the proposed model and archives the change under `changes/completed/chg-initial/`, which is where the record of how this definition came to exist stays. A pull-request merge accepts the resulting initial baseline. A product MUST NOT have more than one `CHG-INITIAL`, and every semantic evolution after it is another Product Change. The rule is normative: see [Product Changes](https://github.com/product-definition-as-code/spec/blob/main/spec/product-changes.md).
 
 ## 4. Validate the baseline
 
@@ -112,6 +112,8 @@ From now on, evolution is explicit. To change the product:
 2. Validate the change as an overlay on the baseline: `prodshape change validate CHG-EXAMPLE-001`. Nothing in the baseline is touched, so elaborate until the overlay is clean and the open questions are answered.
 3. A human sets `status: approved`. No tool takes this step.
 4. Apply it: `prodshape change apply CHG-EXAMPLE-001 --dry-run`, then without `--dry-run`. Apply writes the operations into the model, reports the product diff and archives the change under `changes/completed/`. It creates no commit and is never triggered implicitly.
-5. Open a pull request with the result. The merge is what accepts the change.
+5. Open a pull request with the result. The merge accepts the resulting baseline, not the Product Change as a delivery state.
+
+Product-definition work and implementation work have independent cadence. They may share this pull request, or implementation may follow later, but the Product Change remains semantic intent and neither apply nor merge proves implementation, verification, release or deployment.
 
 The end-to-end walkthrough is [Change](../methodology/change.md).

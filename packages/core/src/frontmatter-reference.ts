@@ -138,7 +138,7 @@ function describeField(
       describeField(`${name}.${key}`, value, nestedRequired.has(key), schemas),
     );
   }
-  // A map keyed by pattern rather than by fixed names — product-coverage's `requirements` is one.
+  // A map keyed by pattern rather than by fixed names needs its entry shape documented too.
   // Without this the entry contract is invisible and the reference silently describes an opaque
   // object, which is the opposite of what the schema enforces. The pattern constrains the *key*,
   // so it is recorded on the map itself and the entries are named `<key>` to stay readable.

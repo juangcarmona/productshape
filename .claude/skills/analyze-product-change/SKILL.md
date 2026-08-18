@@ -10,7 +10,9 @@ description: Convert a requested product modification into a Product Change and 
 
 Turn a raw change request into a Product Change (`change.md`) and the complete proposed future-state artifacts it needs, under `docs/product/changes/active/<chg-id>/`.
 
-**This skill writes only inside the change directory.** It never edits a baseline file under `docs/product/model/`: while a change is live, the baseline artifacts it touches stay authoritative and unchanged, and the proposed future state lives under the change's `proposed/`. Applying the change is what moves the model, and a human runs that.
+**This skill writes only inside the change directory.** It never edits a baseline file under `docs/product/model/`: while a change is live, the baseline artifacts it touches stay authoritative and unchanged, and the proposed future state lives under the change's `proposed/`. Apply later materializes an approved change on a working branch; merge acceptance is separate, and both are outside this skill.
+
+Product-definition work and implementation work have independent cadence. They may share a pull request or implementation may follow later, but the Product Change carries semantic intent and never implementation, verification, release or deployment state.
 
 ## Purpose
 
@@ -81,7 +83,7 @@ prodshape schema product-change     # The frontmatter contract for a change
 
 - The engineer reviews the change and its proposed artifacts.
 - The engineer resolves the open questions, then sets `status: approved`.
-- The engineer runs apply, and merges the pull request that accepts the change.
+- After product approval, the engineer explicitly runs apply and opens a pull request whose merge accepts the resulting baseline.
 
 ## Expected outputs
 

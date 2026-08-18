@@ -286,6 +286,7 @@ describe('integration-openspec serializeConfig', () => {
   it('produces valid YAML with a trailing newline', () => {
     const yaml = serializeConfig({ schema: 'spec-driven', context: 'test' });
     expect(yaml.endsWith('\n')).toBe(true);
+    expect(yaml.endsWith('\n\n')).toBe(false);
     expect(yaml).toContain('schema: spec-driven');
     expect(yaml).toContain('context: test');
   });

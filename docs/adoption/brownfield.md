@@ -67,7 +67,7 @@ The `recover-product` skill drives this loop: it reads evidence you point it at,
 
 ## 3. Establish the baseline
 
-Recovery is an input activity to `CHG-INITIAL`, not a separate lifecycle: the candidates become the proposed future state of the reserved initialisation change, which is applied and accepted exactly as in the greenfield path. Provenance and confidence live on the proposed artifacts, never on the change itself. While the session runs, `prodshape recover check` revalidates the whole overlay; once the change is applied, validate the accepted model:
+Recovery is an input activity to `CHG-INITIAL`, not a separate lifecycle: the candidates become the proposed future state of the reserved initialisation change, which is validated, receives human product approval, is applied on a working branch and is accepted by merge exactly as in the greenfield path. Provenance and confidence live on the proposed artifacts, never on the change itself. While the session runs, `prodshape recover check` revalidates the whole overlay; after apply, validate the proposed resulting model before opening the pull request:
 
 ```bash
 prodshape validate
@@ -93,4 +93,4 @@ This works on Windows and macOS, where a casing-only rename is otherwise a silen
 
 ## 5. Operate through Product Changes
 
-Once `CHG-INITIAL` is accepted, every subsequent semantic evolution, including corrections to recovered artifacts, goes through a Product Change: overlay validation, human approval, explicit apply, and acceptance by merge. From this point the workflow is identical to the greenfield path; follow [Adopting in a greenfield product](greenfield.md#5-run-your-first-product-change) and [Change](../methodology/change.md).
+Once the applied `CHG-INITIAL` result is accepted by merge, every subsequent semantic evolution, including corrections to recovered artifacts, goes through a Product Change: overlay validation, human product approval, explicit apply, and acceptance of the resulting baseline by merge. From this point the workflow is identical to the greenfield path; follow [Adopting in a greenfield product](greenfield.md#5-run-your-first-product-change) and [Change](../methodology/change.md).

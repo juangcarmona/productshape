@@ -1,5 +1,5 @@
 /**
- * The layout `init` scaffolds and the layout `change promote` writes into must be the same one.
+ * The layout `init` scaffolds and the layout `change apply` writes into must be the same one.
  * Nothing linked them before: distribution hardcoded a directory list and core hardcoded a
  * type-to-subdirectory map, so a change to either would have silently split the two.
  */

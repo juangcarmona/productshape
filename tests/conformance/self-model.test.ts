@@ -26,7 +26,7 @@ const expectedIds: Record<string, string[]> = {
     // Added by RFC #4 (citation contract).
     'UC-CITE-001',
     'UC-CITATIONS-VERIFY-001',
-    // Recovered: change drafting (adapted to change-as-PR).
+    // Recovered: Product Change elaboration.
     'UC-CHANGE-001',
     // Added by CHG-CLI-POLISH-001 (adoption improvements).
     'UC-SCHEMA-001',
@@ -50,7 +50,7 @@ const expectedIds: Record<string, string[]> = {
   'domain-term': [
     'TERM-PRODUCT-ARTIFACT',
     'TERM-PRODUCT-GRAPH',
-    'TERM-PRODUCT-CONTEXT',
+    'TERM-CITATION',
     'TERM-CURRENT-PRODUCT-MODEL',
     // Added by CHG-BRAND-001 (ProductShape brand adoption).
     'TERM-METHODOLOGY',
@@ -76,7 +76,7 @@ const expectedIds: Record<string, string[]> = {
     // Added by RFC #4 (citation contract).
     'FR-CITE-001',
     'FR-CITATIONS-VERIFY-001',
-    // Recovered: change drafting (adapted to change-as-PR).
+    // Recovered: Product Change elaboration.
     'FR-CHANGE-001',
     // Apply materializes an approved change without accepting it (BR-CHANGE-001).
     'FR-CHANGE-002',

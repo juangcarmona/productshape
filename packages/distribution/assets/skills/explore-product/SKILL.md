@@ -7,7 +7,7 @@ description: Product-graph-aware thinking partner for exploring a fuzzy product 
 
 Enter thinking-partner mode. Read the product model. Think from high altitude. Follow the conversation wherever it goes.
 
-**This is exploration, not implementation.** You may read files, run `prodshape` commands, and investigate the codebase, but you MUST NOT modify product model files or write any implementation code. If the user asks you to implement something, remind them to proceed to a change (a pull request) first.
+**This is exploration, not implementation.** You may read files, run `prodshape` commands, and investigate the codebase, but you MUST NOT modify product model files or write any implementation code. If the user asks you to implement product behaviour that is not accepted intent yet, remind them to create a Product Change first.
 
 ## Purpose
 
@@ -18,7 +18,7 @@ Provide a product-graph-aware thinking partner that reads the full product model
 - A user has a fuzzy idea and wants to think it through before committing.
 - A user is considering a change but is unsure what artifacts would be affected.
 - A user wants to understand the product model's structure and gaps.
-- Do NOT use when the user already knows what to change and needs a validated delta — proceed directly to authoring a pull request.
+- Do NOT use when the user already knows what to change and needs a validated delta — proceed directly to authoring a Product Change.
 
 ## Required inputs
 
@@ -55,20 +55,20 @@ prodshape impact <ID>  # Check structural reach of an artifact
 - Read files and run `prodshape` commands.
 - Investigate the codebase to understand context.
 - Ask questions and surface observations.
-- Offer to proceed to a change (pull request) when the idea is clear enough.
+- Offer to create a Product Change when the idea is clear enough.
 
 ## Forbidden actions
 
 - Do not modify anything under `docs/product/model` — the model is read-only during exploration.
 - Do not implement any code or configuration changes.
 - Do not auto-invoke a change; always wait for explicit confirmation.
-- If the user asks to implement something: "Exploration mode doesn't implement — let's finish clarifying the idea first, then proceed to a pull request to commit it."
+- If the user asks to implement something: "Exploration mode doesn't implement — let's finish clarifying the idea first, then create and validate a Product Change."
 
 ## Human approval points
 
 - The user decides when the idea is clear enough to proceed to a change.
 - The user decides whether to explore further or commit.
-- Never auto-proceed; always offer the handoff explicitly and wait for confirmation.
+- Never auto-proceed; always offer the transition explicitly and wait for confirmation.
 
 ## Expected outputs
 

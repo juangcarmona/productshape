@@ -18,7 +18,7 @@ The command is `prodshape`. Requires Node.js >= 22.
 
 ## What it does
 
-A product definition is a set of Markdown artifacts with stable IDs — actors, journeys, use cases, business rules, domain terms, bounded contexts and requirements — whose typed frontmatter relationships compile into a product graph. The definition evolves through pull requests: the proposed artifacts are edited in the working tree, validated in full, reviewed and merged, so the Git merge is the acceptance and the history is the record.
+A product definition is a set of Markdown artifacts with stable IDs — actors, journeys, use cases, business rules, domain terms, bounded contexts and requirements — whose typed frontmatter relationships compile into a product graph. It evolves through Product Changes: complete proposed future-state artifacts are validated as an overlay, approved by a human and explicitly applied on a working branch. A pull request reviews the applied result, and its merge accepts the resulting baseline; apply is not acceptance, and neither apply nor merge attests delivery. Product-definition work and implementation work may share that pull request or proceed at different times, but they remain distinct.
 
 ```bash
 prodshape init --ai claude                  # scaffold a product definition in a repository

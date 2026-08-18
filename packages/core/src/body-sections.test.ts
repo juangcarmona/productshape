@@ -27,6 +27,6 @@ describe('checkRequiredBodySections', () => {
   });
 
   it('ignores kinds without a body contract', () => {
-    expect(checkRequiredBodySections('delivery-slice', '', 'x.yaml')).toHaveLength(0);
+    expect(checkRequiredBodySections('unsupported-kind', '', 'x.yaml')).toHaveLength(0);
   });
 });

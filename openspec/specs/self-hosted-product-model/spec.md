@@ -8,7 +8,7 @@ This repository's own product model, keeping the reference implementation define
 
 ### Requirement: The repository defines itself with its own methodology
 
-The repository SHALL contain a current product model under `docs/product/model` covering the adoption, validation and citation workflow, evolved through pull requests (change-as-PR), with at minimum: actors ACT-PRODUCT-ENGINEER, ACT-REPOSITORY-MAINTAINER, ACT-AI-ASSISTANT, ACT-PRODUCT-EXPLORER; journeys JRN-ADOPT-001, JRN-SNAPSHOT-001; use cases UC-INIT-001, UC-DEFINE-001, UC-VALIDATE-001, UC-INSPECT-001, UC-IMPACT-001, UC-CITE-001, UC-CITATIONS-VERIFY-001, UC-SCHEMA-001, UC-FIX-001, UC-EXPLORE-001, UC-SNAPSHOT-001, UC-SNAPSHOT-EXPLORE-001; business rules BR-CANONICAL-001, BR-IDENTITY-001, BR-RELATIONSHIPS-001, BR-CHANGE-001, BR-SDD-001, BR-AI-001; domain terms TERM-PRODUCT-ARTIFACT, TERM-PRODUCT-GRAPH, TERM-PRODUCT-CONTEXT, TERM-CURRENT-PRODUCT-MODEL; bounded contexts BC-PRODUCT-DEFINITION, BC-DELIVERY-INTEGRATION; functional requirements FR-INIT-001, FR-PARSE-001, FR-VALIDATE-001, FR-VALIDATE-002, FR-GRAPH-001, FR-INSPECT-001, FR-IMPACT-001, FR-CITE-001, FR-CITATIONS-VERIFY-001, FR-DISTRIBUTION-001, FR-OPENSPEC-001, FR-SCHEMA-001, FR-FIX-001, FR-DOCTOR-001, FR-EXPLORE-001, FR-SNAPSHOT-001 through FR-SNAPSHOT-009; quality requirements QR-PORTABILITY-001, QR-DETERMINISM-001, QR-EXPLAINABILITY-001, QR-EXTENSIBILITY-001, QR-ACCESSIBILITY-001, QR-PRESENTATION-001, QR-SCALABILITY-001; and constraints CON-MARKDOWN-001, CON-NO-GRAPH-DATABASE, CON-NO-WEB-UI, CON-SDD-AGNOSTIC, CON-PUBLIC-GENERIC, CON-BRAND-001.
+The repository SHALL contain a current product model under `docs/product/model` covering the adoption, Product Change, validation and citation workflows, evolved through overlay-validated and human-approved Product Changes whose applied results are accepted by pull-request merge, with at minimum: actors ACT-PRODUCT-ENGINEER, ACT-REPOSITORY-MAINTAINER, ACT-AI-ASSISTANT, ACT-PRODUCT-EXPLORER; journeys JRN-ADOPT-001, JRN-SNAPSHOT-001; use cases UC-INIT-001, UC-DEFINE-001, UC-VALIDATE-001, UC-INSPECT-001, UC-IMPACT-001, UC-CITE-001, UC-CITATIONS-VERIFY-001, UC-SCHEMA-001, UC-FIX-001, UC-EXPLORE-001, UC-SNAPSHOT-001, UC-SNAPSHOT-EXPLORE-001; business rules BR-CANONICAL-001, BR-IDENTITY-001, BR-RELATIONSHIPS-001, BR-CHANGE-001, BR-SDD-001, BR-AI-001; domain terms TERM-PRODUCT-ARTIFACT, TERM-PRODUCT-GRAPH, TERM-CITATION, TERM-CURRENT-PRODUCT-MODEL; bounded contexts BC-PRODUCT-DEFINITION, BC-DELIVERY-INTEGRATION; functional requirements FR-INIT-001, FR-PARSE-001, FR-VALIDATE-001, FR-VALIDATE-002, FR-GRAPH-001, FR-INSPECT-001, FR-IMPACT-001, FR-CHANGE-001, FR-CHANGE-002, FR-CITE-001, FR-CITATIONS-VERIFY-001, FR-DISTRIBUTION-001, FR-OPENSPEC-001, FR-SCHEMA-001, FR-FIX-001, FR-DOCTOR-001, FR-EXPLORE-001, FR-SNAPSHOT-001 through FR-SNAPSHOT-009; quality requirements QR-PORTABILITY-001, QR-DETERMINISM-001, QR-EXPLAINABILITY-001, QR-EXTENSIBILITY-001, QR-ACCESSIBILITY-001, QR-PRESENTATION-001, QR-SCALABILITY-001; and constraints CON-MARKDOWN-001, CON-NO-GRAPH-DATABASE, CON-NO-WEB-UI, CON-SDD-AGNOSTIC, CON-PUBLIC-GENERIC, CON-BRAND-001.
 
 #### Scenario: Model completeness check
 
@@ -48,7 +48,7 @@ The self-hosted product model SHALL describe the behaviour the shipped toolkit e
 
 A requirement clause SHALL NOT be falsifiable by a configuration surface the product ships: where output depends on repository configuration, the obligation SHALL name configuration among its inputs.
 
-Correcting the baseline against shipped behaviour SHALL itself go through a Product Change, because the direction of the correction does not exempt it from the rule that the baseline changes only by explicit promotion.
+Correcting the baseline against shipped behaviour SHALL itself go through a Product Change, because the direction of the correction does not exempt it from overlay validation, human product approval, explicit apply on a working branch and acceptance by merge.
 
 #### Scenario: A destructive capability is discoverable from the model
 
@@ -60,7 +60,7 @@ Correcting the baseline against shipped behaviour SHALL itself go through a Prod
 - **WHEN** a rendering choice changes which files are produced from the same assets and target
 - **THEN** the reproducibility obligation accounts for configuration rather than being contradicted by it
 
-#### Scenario: Corrections are promoted, not edited in
+#### Scenario: Corrections are applied and reviewed, not edited in
 
 - **WHEN** the baseline is found to disagree with shipped behaviour
-- **THEN** the correction is proposed as a Product Change, validated as an overlay, and reaches the baseline only by explicit promotion
+- **THEN** the correction is proposed as a Product Change, validated as an overlay, approved, applied on a working branch and accepted only by human merge
