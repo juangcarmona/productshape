@@ -1316,7 +1316,7 @@ const script = String.raw`
   /**
    * Plain text from one rendered body. The generator emits a small, known tag vocabulary and escapes
    * exactly four entities, so stripping tags textually is both exact and far cheaper than parsing
-   * every body through the DOM — which cost 849 ms on the first keystroke at 730 artifacts, since it
+   * every body through the DOM — which dominated the first keystroke on the largest representative model, since it
    * is a full HTML parse of the entire model before a single result can be shown.
    */
   var stripTags = function (html) {
@@ -1434,7 +1434,7 @@ const script = String.raw`
       }
       shown = hits.slice(0, RESULT_LIMIT);
       if (status) {
-        /* Truncation is never silent: a reader who sees 25 of 73 must be told there are 73. */
+        /* Truncation is never silent: a reader shown only a limited subset must see the total. */
         status.textContent =
           hits.length > shown.length
             ? hits.length + ' matches · showing the top ' + shown.length

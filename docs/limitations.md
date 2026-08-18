@@ -2,11 +2,13 @@
 
 An honest account of what the toolkit does not do: where the implemented scope has operational limits, what is deliberately excluded, and where the design has known limits. Genuinely open decisions are tracked separately in [OPEN-DECISIONS.md](../OPEN-DECISIONS.md).
 
-> Current as of 0.2. This file is deliberately unversioned: a limitations document named after one release stops describing the product at the next one.
+> Supported published baseline: `@prodshape/cli@0.9.0`. This file is deliberately unversioned: a limitations document named after one release stops describing the product at the next one. Items explicitly labelled **Unreleased** describe the next release candidate on `main`, not the published baseline.
 
 ## Implementation status
 
-Everything the methodology describes is implemented: the `prodshape` CLI (with its `product-definition` alias), the graph compiler, change overlays, apply with its product diff, citation emission and verification, and the AI and SDD integrations. The `@prodshape/*` packages are published to npm and the CLI can also be built from the repository. The loop is not theoretical here — this repository defines itself with its own methodology and has taken several Product Changes through it end to end.
+The supported `0.9.0` baseline includes the `prodshape` CLI (with its `product-definition` v0.x alias), graph compilation, Product Change overlay validation and apply, citation emission and verification, Product Snapshot generation, deterministic brownfield recovery sessions, and generated AI and OpenSpec integrations. The current packages are published under `@prodshape/*`; the current OpenSpec library is `@prodshape/integration-openspec`, while `@prodshape/adapter-openspec` is a legacy name retained only for older consumers.
+
+**Unreleased:** the next CLI release adds `prodshape --version`, SDD-aware `prodshape init --sdd openspec`, the corrected lifecycle guidance from issue #93, and the packed release-contract smoke gate. Public guidance must not present those as `0.9.0` behaviour. Until the newer package is published, OpenSpec adoption uses `prodshape init` followed by `prodshape integration add openspec`.
 
 Honest operational limitations within that scope:
 

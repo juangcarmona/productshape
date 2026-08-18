@@ -92,54 +92,101 @@ All packages are published on npm under the [`@prodshape`](https://www.npmjs.com
 | [`@prodshape/integration-copilot`](https://www.npmjs.com/package/@prodshape/integration-copilot) | [![npm](https://img.shields.io/npm/v/@prodshape/integration-copilot)](https://www.npmjs.com/package/@prodshape/integration-copilot) | GitHub Copilot renderer for canonical assets |
 | [`@prodshape/integration-openspec`](https://www.npmjs.com/package/@prodshape/integration-openspec) | [![npm](https://img.shields.io/npm/v/@prodshape/integration-openspec)](https://www.npmjs.com/package/@prodshape/integration-openspec) | OpenSpec configuration and citation-rule integration |
 
+`@prodshape/integration-openspec` is the current OpenSpec package. The previously published `@prodshape/adapter-openspec` name belongs to older releases and is not part of the current package set.
+
 ```bash
-npm install -g @prodshape/cli
+npm install -g @prodshape/cli@0.9.0
 # or run it once, without installing
-pnpm dlx @prodshape/cli --help
+pnpm dlx @prodshape/cli@0.9.0 --help
 ```
 
-## Try it in five minutes
+## Quickstart
 
-The `prodshape` CLI is published on npm (see [Packages](#packages)). To try it against this repository's own product model, build from source:
+The supported published baseline is **`@prodshape/cli@0.9.0`**. The following block is the primary quickstart and release-contract test source: CI runs this exact block against the packed release candidate, substituting only `PRODSHAPE_PACKAGE` with the tarball path.
+
+<!-- release-contract-quickstart:start -->
 
 ```bash
-git clone git@github.com:juangcarmona/productshape.git
-cd productshape
-pnpm install && pnpm build
+set -eu
+PRODSHAPE_PACKAGE="${PRODSHAPE_PACKAGE:-@prodshape/cli@0.9.0}"
+
+mkdir productshape-quickstart
+cd productshape-quickstart
+npm init -y >/dev/null
+npm install --save-dev --save-exact "$PRODSHAPE_PACKAGE"
+
+npx --no-install prodshape init
+npx --no-install prodshape validate
+
+mkdir -p docs/product/model/business-rules openspec
+cat > docs/product/model/business-rules/br-refund-001.md <<'EOF'
+---
+id: BR-REFUND-001
+type: business-rule
+title: Refund window
+status: active
+---
+
+## Rule
+
+Refunds are accepted within 30 days of delivery.
+
+## Rationale
+
+Customers need a predictable window; finance needs a bounded liability.
+
+## Examples
+
+A delivery on March 1 may be refunded through March 31.
+
+## Exceptions
+
+None.
+EOF
+
+npx --no-install prodshape cite \
+  --id BR-REFUND-001 \
+  --file docs/product/model/business-rules/br-refund-001.md \
+  --form sidecar-ledger > openspec/refund.citations.yaml
+npx --no-install prodshape citations verify
+
+node --input-type=module -e "
+  import { readFileSync, writeFileSync } from 'node:fs';
+  const path = '.product/config.yaml';
+  writeFileSync(path, readFileSync(path, 'utf8').replace('warnings-as-errors: false', 'warnings-as-errors: true'));
+"
+node --input-type=module -e "
+  import { readFileSync, writeFileSync } from 'node:fs';
+  const path = 'docs/product/model/business-rules/br-refund-001.md';
+  writeFileSync(path, readFileSync(path, 'utf8').replace('30 days', '14 days'));
+"
+
+set +e
+stale_output="$(npx --no-install prodshape citations verify 2>&1)"
+stale_exit=$?
+set -e
+printf '%s\n' "$stale_output"
+test "$stale_exit" -eq 1
+printf '%s\n' "$stale_output" | grep -q 'PRODUCT061'
 ```
 
-This repository defines itself with its own methodology, so the built CLI has a real product model to run against with zero diagnostics:
+<!-- release-contract-quickstart:end -->
+
+The first verification reports `current`. The second is expected to fail with `PRODUCT061` because the cited rule changed and this quickstart enables `warnings-as-errors` before the stale check.
+
+The release candidate on `main` adds `prodshape --version` and includes the tested SDD-aware `prodshape init --sdd openspec` workflow. Both are **unreleased** and must not be treated as part of `0.9.0`; they become current only when a newer CLI version is published.
+
+The authoring contract is queryable without a repository:
 
 ```bash
-node packages/cli/dist/bin.js validate
-node packages/cli/dist/bin.js graph --format mermaid
-node packages/cli/dist/bin.js inspect FR-CITE-001
-node packages/cli/dist/bin.js impact BR-SDD-001 --direction incoming
-```
-
-The authoring contract is queryable, and needs no repository — useful before you have one:
-
-```bash
-prodshape schema                              # every document kind, with its ID prefix
-prodshape schema use-case                     # the allowed frontmatter, straight from the schemas
-prodshape schema use-case --format json       # the same contract, machine-readable
-prodshape fix --filenames --dry-run           # what would be renamed to match its ID; exits 1 if any
-prodshape fix --filenames                     # rename them (resolves PRODUCT101)
-```
-
-For a new repository, scaffold the model plus the AI integrations with:
-
-```bash
-prodshape init --ai claude --dry-run           # report every path, write nothing
-prodshape init --ai claude                     # then apply it
-prodshape doctor                               # check the result is healthy
+prodshape schema
+prodshape schema use-case
+prodshape schema use-case --format json
 ```
 
 `--ai` takes a comma-separated list (`--ai claude,copilot`). `--dry-run` reports what would be created, preserved, regenerated or overwritten and exits non-zero on a conflict, so it is worth running first in a repository that already has content — and it works as a CI precheck.
 
-`init` also detects SDD frameworks in the repository (OpenSpec, Kiro, Spec Kit) and can pair one from the same command: `prodshape init --sdd openspec` sets up an OpenSpec workspace when none exists and wires the citation integration end to end; frameworks that install through their own tooling get setup guidance instead. Without a terminal it never prompts, so scripts and CI stay deterministic.
-
-`prodshape` is the installed CLI (`npm install -g @prodshape/cli`); from a source checkout, run it as `node packages/cli/dist/bin.js`. The package installs `product-definition` alongside it — a v0.x compatibility alias with identical output, removed before v1. The `/product:*` commands stay canonical and are always generated; `/ps:*` is an opt-in shorthand (`/ps:explore`, `/ps:impact`), enabled with `init --shorthand` or by setting `integrations.shorthand-commands: true`. This repository has it enabled.
+`prodshape` is the canonical binary. The package also installs `product-definition` as a v0.x compatibility alias with identical output; it is scheduled for removal before v1. The `/product:*` commands stay canonical and `/ps:*` is an opt-in shorthand enabled with `init --shorthand` or `integrations.shorthand-commands: true`.
 
 What you can read alongside:
 
@@ -158,9 +205,9 @@ The gate retains JSON and human-readable reports, verifies every pinned digest, 
 
 ## Current status
 
-v0.1 established the whole loop: the methodology and normative specification, the graph core with deterministic validation, the citation contract with `cite` and `citations verify`, the AI skills with generated Claude Code and GitHub Copilot integrations, and the OpenSpec adapter. It is published to npm under the `@prodshape/*` scope, and the public brand is settled — ProductShape, the reference implementation of the Product Definition as Code methodology.
+`@prodshape/cli@0.9.0` is the supported published baseline. It includes deterministic brownfield recovery sessions, Product Change overlay validation and apply, citation emission and verification, snapshot generation, schema discovery, filename repair, and generated AI/OpenSpec integrations. The [root changelog](CHANGELOG.md) records every stable CLI release from `0.1.0` through `0.9.0`.
 
-v0.2 is the first round of improvements driven by adoption outside this repository. That adoption tried to record provenance on recovered artifacts, discovered the schema had nowhere to put it, and could not find out from anywhere what the schema _did_ accept. So v0.2 makes the authoring contract discoverable — an optional `provenance` object on every artifact kind, a [frontmatter reference](docs/specification/frontmatter-reference.md) generated from the schemas, and `prodshape schema <kind>` — and makes two reported problems fixable: `prodshape fix --filenames` for filename drift that was unfixable by hand on Windows, and `prodshape init --dry-run` for the "what will this do to my repository?" question that has to be answered before running anything.
+The next release candidate adds SDD-aware initialization, `prodshape --version`, the corrected Product Change lifecycle guidance from issue #93, and the executable release-contract gate from issue #94. None is claimed as published until the package version advances on npm.
 
 The loop is not a diagram here; the repository runs on it. This repository defines itself with its own methodology — the model the CLI validates above is the product definition of ProductShape itself, evolved through Product Changes, accepted through pull-request merges and verified by citations.
 

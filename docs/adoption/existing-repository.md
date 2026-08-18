@@ -2,12 +2,12 @@
 
 This guide covers what Product Definition as Code physically adds to any existing repository, who owns each path, and how to configure it. For how to build the model itself, follow the [greenfield](greenfield.md) or [brownfield](brownfield.md) guide; if the repository already uses OpenSpec, also read [Adopting in an existing OpenSpec repository](existing-openspec-repository.md).
 
-> The CLI ships as [`@prodshape/cli`](https://www.npmjs.com/package/@prodshape/cli). The commands below use `prodshape`; the `product-definition` alias is equivalent through v0.x. The layout and configuration below are a fixed contract and can also be created by hand. See [Limitations](../limitations.md).
+> These commands target the supported published baseline, [`@prodshape/cli@0.9.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.9.0). They use `prodshape`; the `product-definition` alias is equivalent through v0.x. The layout and configuration below are a fixed contract and can also be created by hand. See [Limitations](../limitations.md).
 
 ## What init touches
 
 ```bash
-prodshape init [--ai claude|copilot|codex] [--sdd openspec|kiro|speckit|none] [--flat] [--shorthand] [--dry-run]
+prodshape init [--ai claude|copilot|codex] [--flat] [--shorthand] [--dry-run]
 ```
 
 `init` adds exactly three areas and modifies nothing else:
@@ -19,15 +19,17 @@ docs/product/                    # canonical product definition
 .product/                        # tool home
 ├── config.yaml
 ├── installation.lock.json       # only with --ai; commit it
-├── integrations/openspec.json   # only with --sdd openspec; commit it
+├── integrations/openspec.json   # only after integration add openspec; commit it
 └── templates/
 .claude/, .github/, .agents/     # optional, only with --ai: generated AI integrations
-openspec/config.yaml             # only with --sdd openspec: PDaC guidance merged additively
+openspec/config.yaml             # after integration add openspec: PDaC guidance merged additively
 ```
 
 Your source code, build configuration, CI and existing documentation are untouched — including your `.gitignore`, which `init` does not modify (see below). `.product/generated/` and `.product/cache/` are not created by `init`; they appear when a command writes them.
 
-`init` also detects SDD frameworks already present in the repository (OpenSpec via `openspec/`, Kiro via `.kiro/`, Spec Kit via `.specify/`) and reports what it found; detection is a passive inspection that runs no framework tooling. `--sdd openspec` wires the OpenSpec integration in the same run, creating the workspace first (`openspec init --tools none`, through `npx` when the CLI is not installed) if none exists. Kiro and Spec Kit install through their own tooling, so `--sdd kiro` and `--sdd speckit` print setup guidance instead. In an interactive terminal a bare `init` asks, informed by the detection; with an explicit `--sdd` value, with `--sdd none`, or without a terminal it never prompts. The merge into `openspec/config.yaml` is additive and reversible with `prodshape integration remove openspec`.
+In `0.9.0`, OpenSpec is wired separately with `prodshape integration add openspec` after an OpenSpec workspace exists. The merge into `openspec/config.yaml` is additive and reversible with `prodshape integration remove openspec`.
+
+SDD detection, interactive selection and `prodshape init --sdd openspec|kiro|speckit|none` are implemented on `main` for the next release. They are not part of the supported published baseline and are documented here only as unreleased behaviour.
 
 `init` in a repository that already has these paths **preserves** every existing file and reports it as skipped; `--force` overwrites. The exception is generated integration files: if one exists that the installation lock does not own, `init` refuses the whole provider install rather than claiming a file that might be yours.
 

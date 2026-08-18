@@ -95,6 +95,7 @@ jobs:
       - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm test
+      - run: pnpm release-contract:smoke
       # `changeset publish` tags each published package with `git tag <name> -m <name>` — an
       # ANNOTATED tag, which git refuses to create without a committer identity. This job has its
       # own checkout and configures none, so every tag creation failed; `tagPublish` discards the
@@ -201,6 +202,7 @@ jobs:
           pnpm build
           pnpm typecheck
           pnpm test
+          pnpm release-contract:smoke
           pnpm run version
           git add -A
           git commit -m "chore: version prerelease packages" || echo "nothing to version"

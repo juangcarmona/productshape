@@ -4,11 +4,79 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+The supported published CLI baseline is `@prodshape/cli@0.9.0`. Every stable public CLI release from `0.1.0` through that baseline is recorded below; package-specific dependency changes remain in each package's changelog.
+
 ## [Unreleased]
+
+### Added
+
+- `prodshape --version`, sourced directly from the CLI package manifest and verified from the packed tarball.
+- A release-contract smoke gate that packs the CLI, installs the tarball without workspace links, and executes the primary documented init, validation, citation, current-verification and stale-verification workflow in a clean repository.
+- SDD-aware initialization on `main`: `prodshape init --sdd openspec` can create or detect an OpenSpec workspace and wire the integration in the same run. This remains explicitly unreleased until the next CLI package is published.
+
+### Changed
+
+- Product Change guidance now follows the normative lifecycle: overlay validation, human product approval, explicit apply on a working branch, pull-request review, and merge acceptance of the resulting baseline. Apply is not acceptance, and neither apply nor merge attests implementation, verification, release or deployment.
+- Public documentation identifies `@prodshape/cli@0.9.0` as the supported baseline, uses current package names, marks next-release behaviour explicitly, and derives or omits model counts instead of maintaining them by hand.
 
 ### Fixed
 
 - The stable publish job now configures a git identity before `changeset publish`. Without one, the annotated tags changesets creates (`git tag <name> -m <name>`) failed for every package, and the failure was silent because `tagPublish` discards what `git.tag` returns. The v0.2.0 release published six packages and pushed zero tags without failing. The push step now also verifies that every published version has a tag on the remote, rather than trusting a push that reports `Everything up-to-date` whether or not there was anything to push.
+
+## [0.9.0]
+
+### Added
+
+- Deterministic, resumable brownfield recovery sessions under `.product/generated/recovery/<session-id>/`, including evidence hashes, bounded batches, classifications, leads, questions, checkpoints, staleness detection, `CHG-INITIAL` overlay validation and a final report. Semantic extraction remains human/AI-assisted and never becomes canonical automatically.
+
+## [0.8.1]
+
+### Fixed
+
+- Content digests now hash file bytes rather than a lossy decoded string, keeping ProductShape and `pdac-lint` aligned even for invalid UTF-8 input without changing valid UTF-8 digests.
+
+## [0.8.0]
+
+### Changed
+
+- Functional and quality requirement acceptance criteria live in `verification[]`; the old body-section restatements are no longer required.
+- Citation status precedence is deterministic: invalid digest, unresolved target, unresolved anchor, tampered, stale, current. JSON citation output now includes diagnostics.
+
+## [0.7.0]
+
+### Added
+
+- `PRODUCT028` for apply attempts on changes that are not approved, a distinct `changes/superseded/` archive, and product-diff entries carrying impact kind and resulting digest.
+
+### Changed
+
+- `PRODUCT108` and baseline-drift behaviour were aligned with the refined Product Change contract.
+
+## [0.6.0]
+
+### Changed
+
+- Replaced the delivery-slice, handoff, coverage and promotion pipeline with the Product Change and Citation contracts. Product Changes are overlay-validated, human-approved, explicitly applied and accepted only when the resulting baseline is merged.
+- Removed `handoff`, `coverage` and `change promote`; added `cite`, `citations verify`, `change validate`, `change apply`, `change list` and `change archive`.
+- The OpenSpec library still used the legacy `@prodshape/adapter-openspec` name in this release. Current releases use `@prodshape/integration-openspec`.
+
+## [0.5.0]
+
+### Added
+
+- A navigable offline Product Snapshot with bidirectional relationship links, graph visualization and client-side search over IDs, titles and content.
+
+## [0.4.0]
+
+### Added
+
+- `prodshape graph --format html`, generating a static, self-contained, read-only and byte-deterministic Product Snapshot.
+
+## [0.3.0]
+
+### Added
+
+- The `explore-product` skill and `/product:explore` command, with opt-in `/ps:explore` shorthand, for graph-aware clarification before drafting a Product Change.
 
 ## [0.2.0]
 
@@ -62,6 +130,14 @@ Published as `@prodshape/cli` 0.2.0, `core` and `distribution` 0.3.0, `integrati
 - Promotion applies its plan in two phases (preflight, then execute with the change-directory move last), so a failed promotion no longer leaves a partially promoted baseline.
 - `validation.warnings-as-errors` is enforced uniformly across baseline validate, change validate, handoff generation, graph generation and promotion.
 
-[unreleased]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.2.0...HEAD
+[unreleased]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.9.0...HEAD
+[0.9.0]: https://github.com/juangcarmona/productshape/releases/tag/@prodshape/cli@0.9.0
+[0.8.1]: https://github.com/juangcarmona/productshape/releases/tag/@prodshape/cli@0.8.1
+[0.8.0]: https://github.com/juangcarmona/productshape/releases/tag/@prodshape/cli@0.8.0
+[0.7.0]: https://github.com/juangcarmona/productshape/releases/tag/@prodshape/cli@0.7.0
+[0.6.0]: https://github.com/juangcarmona/productshape/releases/tag/@prodshape/cli@0.6.0
+[0.5.0]: https://github.com/juangcarmona/productshape/releases/tag/@prodshape/cli@0.5.0
+[0.4.0]: https://github.com/juangcarmona/productshape/releases/tag/@prodshape/cli@0.4.0
+[0.3.0]: https://github.com/juangcarmona/productshape/releases/tag/@prodshape/cli@0.3.0
 [0.2.0]: https://github.com/juangcarmona/productshape/releases/tag/@prodshape/cli@0.2.0
 [0.1.0]: https://github.com/juangcarmona/productshape/releases/tag/v0.1.0

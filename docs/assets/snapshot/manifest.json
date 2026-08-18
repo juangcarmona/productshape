@@ -17,7 +17,7 @@
       "name": "03-relationship-groups-collapsed",
       "route": "#/artifacts/BC-PRODUCT-DEFINITION",
       "viewport": "1440x2400",
-      "caption": "The most connected artifact (27 relationships): groups carry exact counts and the large ones start collapsed."
+      "caption": "The most connected artifact: groups derive exact counts and the large ones start collapsed."
     },
     {
       "name": "04-relationship-groups-expanded",
@@ -59,7 +59,7 @@
       "name": "18-focus-hardest",
       "route": "#/graph/focus/BC-PRODUCT-DEFINITION",
       "viewport": "1440x900",
-      "caption": "The hardest artifact in the model: 27 relationships become 5 satellites, the large ones closed with exact counts."
+      "caption": "The hardest artifact in the model: relationships become counted satellites, with large groups closed."
     },
     {
       "name": "19-focus-expanded",
@@ -89,7 +89,7 @@
       "name": "12-search-ranked",
       "route": "#/artifacts",
       "viewport": "1440x2400",
-      "caption": "Ranked search for \"product\": 73 matches, top 25 shown, identifier and title matches above body-only ones."
+      "caption": "Ranked search for \"product\": the derived total and display limit are visible, with identifier and title matches above body-only ones."
     },
     {
       "name": "13-search-snippet",

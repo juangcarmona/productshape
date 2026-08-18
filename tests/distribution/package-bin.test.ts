@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdtemp, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -70,6 +70,15 @@ afterAll(async () => {
 });
 
 describe('packed tarball binaries', () => {
+  it('--version reports the packed CLI package version', async () => {
+    const packageJson = JSON.parse(
+      await readFile(join(repoRoot, 'packages', 'cli', 'package.json'), 'utf8'),
+    ) as { version: string };
+    const result = await runBin('prodshape', ['--version']);
+    expect(result.code, result.stderr).toBe(0);
+    expect(result.stdout.trim()).toBe(packageJson.version);
+  });
+
   it('installs both prodshape and product-definition', async () => {
     const entries = await readdir(join(scratch, 'node_modules', '.bin'));
     expect(entries.some((e) => e.startsWith('prodshape'))).toBe(true);

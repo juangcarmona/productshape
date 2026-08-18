@@ -4,7 +4,7 @@ This guide covers adopting Product Definition as Code for an existing system: so
 
 Read this first: **no tool will scan your codebase and emit a product model.** Semantic extraction stays with you and the AI assistant executing the `recover-product` skill, and a human validates everything before it becomes canonical. What is deterministic is the session around that work: `prodshape recover` manages the evidence inventory, content hashes, bounded batches, coverage, leads, user questions, checkpoints and the final report, so a recovery that spans days and many assistant conversations never loses track of what was examined, what changed and what remains. Plan for recovery to be real analytical work; the tooling structures it, it does not eliminate it.
 
-> The CLI ships as [`@prodshape/cli`](https://www.npmjs.com/package/@prodshape/cli). The commands below use `prodshape`; the `product-definition` alias is equivalent through v0.x. See [Limitations](../limitations.md).
+> These commands target the supported published baseline, [`@prodshape/cli@0.9.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.9.0). They use `prodshape`; the `product-definition` alias is equivalent through v0.x. See [Limitations](../limitations.md).
 
 ## 1. Initialize
 
@@ -14,7 +14,7 @@ A brownfield repository usually already has a populated `docs/`, so check what `
 prodshape init --ai claude --dry-run
 ```
 
-The dry run writes nothing and reports every path it would create, preserve, regenerate or overwrite, plus any conflict — a file that already exists and is not managed by the installation lock. Nothing is overwritten without `--force`, and existing files are reported as preserved. The report also names any SDD framework detected in the repository and, for `--sdd openspec`, describes the integration actions a real run would take without executing anything.
+The dry run writes nothing and reports every path it would create, preserve, regenerate or overwrite, plus any conflict — a file that already exists and is not managed by the installation lock. Nothing is overwritten without `--force`, and existing files are reported as preserved.
 
 ```bash
 prodshape init --ai claude
@@ -22,7 +22,7 @@ prodshape init --ai claude
 
 This creates `docs/product/` and `.product/` and touches nothing else — your source code, build and existing documentation are untouched. Details of what `init` creates and the authority rules are in [Installing into an existing repository](existing-repository.md).
 
-A brownfield repository that already runs OpenSpec should pass `--sdd openspec` so the citation integration is wired in the same run; `init` then recommends this guide's recovery workflow as the next step. See [Adopting in an existing OpenSpec repository](existing-openspec-repository.md).
+A brownfield repository that already runs OpenSpec should then run `prodshape integration add openspec`; see [Adopting in an existing OpenSpec repository](existing-openspec-repository.md). Same-command `prodshape init --sdd openspec` and SDD-aware next-step guidance are implemented on `main` for the next release but are not available in `0.9.0`.
 
 `init` scaffolds one directory per artifact kind under `docs/product/model/`. The layout is a recommendation, not a rule — discovery walks the model directory recursively and keys on the frontmatter `type` — but taking it means not having to invent a taxonomy. Use `--flat` to opt out.
 
