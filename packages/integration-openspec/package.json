@@ -28,6 +28,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@prodshape/core": "workspace:*",
+    "fast-glob": "^3.3.0",
     "yaml": "^2.5.0"
   },
   "devDependencies": {

@@ -12,6 +12,8 @@ import {
   addOpenSpecIntegration,
   checkOpenSpecIntegration,
   isOpenSpecIntegrationInstalled,
+  OPENSPEC_CI_EXAMPLE_RELATIVE,
+  OPENSPEC_VERIFY_COMMAND,
   removeOpenSpecIntegration,
   updateOpenSpecIntegration,
 } from '@prodshape/integration-openspec';
@@ -37,6 +39,7 @@ export async function runIntegrationAdd(
       const result = await addOpenSpecIntegration(repo.root, {
         force: options?.force,
         dryRun: options?.dryRun,
+        warningsAsErrors: repo.config.validation['warnings-as-errors'],
       });
       if (options?.dryRun) {
         io.out('Dry run — no files written.');
@@ -46,11 +49,16 @@ export async function runIntegrationAdd(
       }
       if (result.written.length === 0) {
         io.out('OpenSpec integration is already up to date.');
+        io.out(`Verify: ${OPENSPEC_VERIFY_COMMAND}`);
         return exitCodes.success;
       }
       io.out(`Installed OpenSpec integration (${result.written.length} file(s) written):`);
       for (const path of result.written) io.out(`  ${path}`);
       io.out(`  OpenSpec CLI: ${result.meta.openspecVersion}`);
+      io.out(`Verify: ${OPENSPEC_VERIFY_COMMAND}`);
+      io.out(
+        `CI: copy ${OPENSPEC_CI_EXAMPLE_RELATIVE} into your pipeline; it states how the repository's stale-citation policy applies.`,
+      );
     } catch (error) {
       throw new CliError(
         error instanceof Error ? error.message : String(error),
@@ -124,7 +132,10 @@ export async function runIntegrationUpdate(
   const openspecInstalled = await isOpenSpecIntegrationInstalled(repo.root);
   if (openspecInstalled) {
     try {
-      const osResult = await updateOpenSpecIntegration(repo.root, { force: options.force });
+      const osResult = await updateOpenSpecIntegration(repo.root, {
+        force: options.force,
+        warningsAsErrors: repo.config.validation['warnings-as-errors'],
+      });
       if (osResult.written.length > 0) {
         io.out(`Updated OpenSpec integration (${osResult.written.length} file(s) written):`);
         for (const path of osResult.written) io.out(`  ${path}`);

@@ -11,6 +11,8 @@ context: >-
   
   To cite: run `npx prodshape inspect <ID>` to read the current digest, then `npx prodshape cite --id <ID> --digest <digest>` to emit the citation record. Place inline citations on their own line directly under the text they ground.
   
+  Every current OpenSpec document (proposal, specs, design, tasks and openspec/specs/) has exactly one effective scope state: bound (it carries at least one citation, or declares `pdac-scope: cited`), exempt (a human declared `pdac-scope: none` because the document has no product-semantic dependency), or unclassified (neither declared — a verification failure). Binding and exemption are human declarations: never declare `pdac-scope: none` merely because citations are missing, and a document declared `pdac-scope: cited` with zero citations fails. Verify with `npx prodshape citations verify --provider openspec`: it enumerates the expected current document population (archived changes excluded by default), so zero discovered citations is a set of failures, never a pass.
+  
   The accepted Product Definition changes only through this lifecycle: propose a Product Change under docs/product/changes/, validate its overlay while the baseline remains untouched, obtain human product approval, apply explicitly on a working branch, review the applied result in a pull request, and accept the resulting baseline by human merge. A Product Change is not a pull request. Apply is not acceptance, and neither apply nor merge attests implementation, verification, release or deployment. OpenSpec changes never edit docs/product/model directly. Product-definition work and implementation work have independent cadence: an OpenSpec change may share a pull request with an applied Product Change or follow an accepted definition later, but it remains a downstream implementation concern and never supplies Product Change status.
   
   <!-- pdac:context end -->
@@ -18,6 +20,7 @@ rules:
   proposal:
     - State which PDaC artifacts this change touches, each with an inline citation emitted by `npx prodshape cite --id <ID> --digest <digest>`. Never write a citation record by hand.
     - If the change implements altered product behaviour, name the Product Change (CHG id) whose applied or accepted artifacts it implements. If no overlay-validated and human-approved Product Change exists yet, stop and ask for one instead of proceeding. The OpenSpec change is not the Product Change.
+    - 'Every document of this change must end up bound or exempt: bind by citing the canonical text it depends on, or declare `pdac-scope: none` on a line of its own (frontmatter or `<!-- pdac-scope: none -->`) when a human judges the document has no product-semantic dependency. Never declare an exemption just because citations are missing.'
   specs:
     - Every requirement derived from canonical product text MUST carry a citation to every PDaC artifact it derives from, one citation per line, placed after the requirement text and before the first scenario. A requirement often derives from more than one artifact; citing only the closest one silently hides the other derivations. Never place citations between the requirement heading and the requirement text; OpenSpec reads the first paragraph as the requirement.
     - Cite a specific verification scenario with an anchor when the requirement maps to one (anchor="<scenario id>").
@@ -31,7 +34,7 @@ rules:
 operations:
   apply:
     guidance:
-      - Before finishing, run `npx prodshape citations verify` and fix every stale, tampered or unresolved citation. Refresh a stale digest by re-running `npx prodshape inspect <ID>`; never delete a citation to silence a diagnostic.
+      - 'Before finishing, run `npx prodshape citations verify --provider openspec` and fix every stale, tampered or unresolved citation, every unclassified document and every bound document without citations. Refresh a stale digest by re-running `npx prodshape inspect <ID>`; never delete a citation or declare `pdac-scope: none` to silence a diagnostic.'
   archive:
     guidance:
-      - Run `npx prodshape citations verify` one final time. Archive only when every citation is current.
+      - Run `npx prodshape citations verify --provider openspec` one final time. Archive only when every document is bound or exempt and every citation is current.

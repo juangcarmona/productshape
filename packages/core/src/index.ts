@@ -29,10 +29,7 @@ export type { Diagnostic, DiagnosticSeverity } from './diagnostics.js';
 export {
   buildArtifactIndex,
   discoverConsumerDocs,
-  discoverOpenSpecPopulation,
   emitCitation,
-  extractScopeDeclaration,
-  isOpenSpecCliAvailable,
   parseCitations,
   scanCitations,
   verifyCitation,
@@ -43,11 +40,22 @@ export type {
   CitationStatus,
   CitationVerification,
   CiteOptions,
-  ConsumerDocument,
-  DiscoverOpenSpecPopulationOptions,
-  OpenSpecPopulation,
-  ScopeDeclaration,
 } from './citations.js';
+export {
+  classifyConsumerDocument,
+  classifyConsumerDocuments,
+  extractScopeDeclaration,
+} from './consumers.js';
+export type {
+  ClassifiedConsumerDocument,
+  ConsumerDocument,
+  ConsumerDocumentEnumeration,
+  ConsumerScopeState,
+  EnumerateConsumerDocumentsOptions,
+  ScopeDeclaration,
+  ScopeDeclarationValue,
+  SddIntegrationProvider,
+} from './consumers.js';
 export { contentDigest, contentDigestBytes, normalizeToLf } from './digest.js';
 export {
   applyFilenameFixes,

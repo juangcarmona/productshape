@@ -13,9 +13,17 @@
  * guidance, deduplicating identical entries so the operation is idempotent.
  */
 import { execFile } from 'node:child_process';
-import { access, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { parse, stringify } from 'yaml';
+import { envWithLocalBin, isOpenSpecWorkspace, pathExists } from './workspace.js';
+
+export { isOpenSpecWorkspace } from './workspace.js';
+export {
+  enumerateOpenSpecDocuments,
+  isOpenSpecCliAvailable,
+  openSpecProvider,
+} from './population.js';
 
 /** The minimum supported OpenSpec CLI version. */
 export const MIN_SUPPORTED_OPENSPEC = '1.0.0';
@@ -39,6 +47,7 @@ export const PDAC_CONTEXT_BLOCK = `${PDAC_CONTEXT_BEGIN}
 This repository uses Product Definition as Code (PDaC). The canonical product definition lives in docs/product/model (actors, journeys, use cases, business rules, domain terms, requirements) and is the single source of truth for product behaviour. OpenSpec artifacts are downstream consumers of it, never a second source of truth.
 Consumers bind to canonical text through the PDaC Citation Contract: a citation records the target artifact id, a sha256 content digest, and an optional verification scenario anchor. Verification reports one status per citation: current, stale, tampered or unresolved.
 To cite: run \`npx prodshape inspect <ID>\` to read the current digest, then \`npx prodshape cite --id <ID> --digest <digest>\` to emit the citation record. Place inline citations on their own line directly under the text they ground.
+Every current OpenSpec document (proposal, specs, design, tasks and openspec/specs/) has exactly one effective scope state: bound (it carries at least one citation, or declares \`pdac-scope: cited\`), exempt (a human declared \`pdac-scope: none\` because the document has no product-semantic dependency), or unclassified (neither declared — a verification failure). Binding and exemption are human declarations: never declare \`pdac-scope: none\` merely because citations are missing, and a document declared \`pdac-scope: cited\` with zero citations fails. Verify with \`npx prodshape citations verify --provider openspec\`: it enumerates the expected current document population (archived changes excluded by default), so zero discovered citations is a set of failures, never a pass.
 The accepted Product Definition changes only through this lifecycle: propose a Product Change under docs/product/changes/, validate its overlay while the baseline remains untouched, obtain human product approval, apply explicitly on a working branch, review the applied result in a pull request, and accept the resulting baseline by human merge. A Product Change is not a pull request. Apply is not acceptance, and neither apply nor merge attests implementation, verification, release or deployment. OpenSpec changes never edit docs/product/model directly. Product-definition work and implementation work have independent cadence: an OpenSpec change may share a pull request with an applied Product Change or follow an accepted definition later, but it remains a downstream implementation concern and never supplies Product Change status.
 ${PDAC_CONTEXT_END}`;
 
@@ -47,6 +56,7 @@ export const PDAC_RULES: Record<string, string[]> = {
   proposal: [
     'State which PDaC artifacts this change touches, each with an inline citation emitted by `npx prodshape cite --id <ID> --digest <digest>`. Never write a citation record by hand.',
     'If the change implements altered product behaviour, name the Product Change (CHG id) whose applied or accepted artifacts it implements. If no overlay-validated and human-approved Product Change exists yet, stop and ask for one instead of proceeding. The OpenSpec change is not the Product Change.',
+    'Every document of this change must end up bound or exempt: bind by citing the canonical text it depends on, or declare `pdac-scope: none` on a line of its own (frontmatter or `<!-- pdac-scope: none -->`) when a human judges the document has no product-semantic dependency. Never declare an exemption just because citations are missing.',
   ],
   specs: [
     'Every requirement derived from canonical product text MUST carry a citation to every PDaC artifact it derives from, one citation per line, placed after the requirement text and before the first scenario. A requirement often derives from more than one artifact; citing only the closest one silently hides the other derivations. Never place citations between the requirement heading and the requirement text; OpenSpec reads the first paragraph as the requirement.',
@@ -70,12 +80,12 @@ export const PDAC_OPERATIONS: {
 } = {
   apply: {
     guidance: [
-      'Before finishing, run `npx prodshape citations verify` and fix every stale, tampered or unresolved citation. Refresh a stale digest by re-running `npx prodshape inspect <ID>`; never delete a citation to silence a diagnostic.',
+      'Before finishing, run `npx prodshape citations verify --provider openspec` and fix every stale, tampered or unresolved citation, every unclassified document and every bound document without citations. Refresh a stale digest by re-running `npx prodshape inspect <ID>`; never delete a citation or declare `pdac-scope: none` to silence a diagnostic.',
     ],
   },
   archive: {
     guidance: [
-      'Run `npx prodshape citations verify` one final time. Archive only when every citation is current.',
+      'Run `npx prodshape citations verify --provider openspec` one final time. Archive only when every document is bound or exempt and every citation is current.',
     ],
   },
 };
@@ -107,6 +117,8 @@ export interface OpenSpecIntegrationMeta {
   openspecVersion: string;
   installedAt: string;
   configPath: string;
+  /** Absent in metadata written before the CI example existed; `integration update` adds it. */
+  ciExamplePath?: string;
   /** Absent in metadata written before the field existed; treated as the current guidance. */
   managed?: ManagedStrings;
 }
@@ -114,9 +126,71 @@ export interface OpenSpecIntegrationMeta {
 /** Repository-relative paths used by this integration. */
 const CONFIG_RELATIVE = 'openspec/config.yaml';
 const META_RELATIVE = '.product/integrations/openspec.json';
+const CI_EXAMPLE_RELATIVE = '.product/integrations/openspec.ci.yml';
 
 /** The repository-relative path of the integration metadata file, for callers that probe it. */
 export const OPENSPEC_META_RELATIVE = META_RELATIVE;
+
+/** The repository-relative path of the installed CI-ready example workflow. */
+export const OPENSPEC_CI_EXAMPLE_RELATIVE = CI_EXAMPLE_RELATIVE;
+
+/** The exact provider-aware verification command the integration stands behind. */
+export const OPENSPEC_VERIFY_COMMAND = 'npx prodshape citations verify --provider openspec';
+
+/**
+ * Render the CI-ready example workflow installed at {@link OPENSPEC_CI_EXAMPLE_RELATIVE}.
+ *
+ * The gate always blocks unresolved citations, tampered embedded projections, unclassified
+ * current documents and bound documents with zero citations. Stale citations follow the
+ * repository's configured warning policy (`validation.warnings-as-errors` in
+ * `.product/config.yaml`); the example never changes that policy, but it states explicitly what
+ * the repository's current choice means and how to escalate it, so the blocking behaviour is a
+ * deliberate decision rather than a silent default.
+ */
+export function renderCiExample(options: { warningsAsErrors: boolean }): string {
+  const stalePolicy = options.warningsAsErrors
+    ? [
+        '# - stale citations BLOCK this gate: .product/config.yaml sets',
+        '#   `validation.warnings-as-errors: true`, escalating the PRODUCT061 warning to an error.',
+        '#   The integration never changes that policy; relax it by setting the key to false.',
+      ]
+    : [
+        '# - stale citations DO NOT block this gate: .product/config.yaml sets',
+        '#   `validation.warnings-as-errors: false`, so PRODUCT061 stays a warning. To make stale',
+        '#   citations block the merge, set `validation.warnings-as-errors: true` in',
+        '#   .product/config.yaml. The integration never changes that policy for you.',
+      ];
+  return [
+    '# PDaC citation gate for OpenSpec consumer documents (CI-ready example).',
+    '# Managed by `prodshape integration add openspec`; copy it into your pipeline',
+    '# (e.g. .github/workflows/) and adapt the triggers.',
+    '#',
+    '# The gate runs ProductShape citation and scope verification only. It never invokes',
+    "# `openspec validate`; keep OpenSpec's own verdict a separate step so a native-spec defect",
+    '# and a grounding defect stay distinguishable.',
+    '#',
+    '# Blocking behaviour:',
+    '# - unresolved citations, tampered embedded projections, unclassified current documents',
+    '#   and bound documents with zero citations always fail the gate;',
+    ...stalePolicy,
+    'name: pdac-citations',
+    'on:',
+    '  pull_request:',
+    'jobs:',
+    '  verify:',
+    '    runs-on: ubuntu-latest',
+    '    steps:',
+    '      - uses: actions/checkout@v4',
+    '      - uses: actions/setup-node@v4',
+    '        with:',
+    "          node-version: '22'",
+    '      # The OpenSpec CLI ships as @fission-ai/openspec; population discovery runs',
+    '      # `openspec list`, so the gate needs it installed.',
+    `      - run: npm install -g ${OPENSPEC_NPX_SPEC}`,
+    `      - run: ${OPENSPEC_VERIFY_COMMAND}`,
+    '',
+  ].join('\n');
+}
 
 function configPath(root: string): string {
   return join(root, ...CONFIG_RELATIVE.split('/'));
@@ -126,13 +200,8 @@ function metaPath(root: string): string {
   return join(root, ...META_RELATIVE.split('/'));
 }
 
-async function exists(path: string): Promise<boolean> {
-  try {
-    await access(path);
-    return true;
-  } catch {
-    return false;
-  }
+function ciExamplePath(root: string): string {
+  return join(root, ...CI_EXAMPLE_RELATIVE.split('/'));
 }
 
 /**
@@ -150,27 +219,6 @@ function compareVersions(a: string, b: string): number {
   if (aMaj !== bMaj) return aMaj - bMaj;
   if (aMin !== bMin) return aMin - bMin;
   return aPatch - bPatch;
-}
-
-/**
- * Build a child-process environment whose PATH starts with the repository's node_modules/.bin,
- * so an OpenSpec installed as a devDependency counts as installed. Windows spells the variable
- * `Path` (and env objects lose the case-insensitive lookup once spread), so every casing is
- * collapsed into a single `PATH` entry.
- */
-function envWithLocalBin(root: string): NodeJS.ProcessEnv {
-  const env: NodeJS.ProcessEnv = { ...process.env };
-  const separator = process.platform === 'win32' ? ';' : ':';
-  let existing = '';
-  for (const key of Object.keys(env)) {
-    if (key.toUpperCase() === 'PATH') {
-      existing = env[key] ?? '';
-      delete env[key];
-    }
-  }
-  const localBin = join(root, 'node_modules', '.bin');
-  env['PATH'] = existing ? `${localBin}${separator}${existing}` : localBin;
-  return env;
 }
 
 /** Run a command at the repository root, resolving stdout+stderr or rejecting on failure. */
@@ -265,20 +313,15 @@ export async function bootstrapOpenSpecWorkspace(
   return { version: match[1], viaNpx: true, command };
 }
 
-/** Check if an OpenSpec workspace exists at the given root (openspec/ directory present). */
-export async function isOpenSpecWorkspace(root: string): Promise<boolean> {
-  return exists(join(root, 'openspec'));
-}
-
 /** Check if the OpenSpec integration is installed (its metadata file is present). */
 export async function isOpenSpecIntegrationInstalled(root: string): Promise<boolean> {
-  return exists(metaPath(root));
+  return pathExists(metaPath(root));
 }
 
 /** Read and parse the existing openspec/config.yaml, or null if it does not exist. */
 export async function readOpenSpecConfig(root: string): Promise<Record<string, unknown> | null> {
   const path = configPath(root);
-  if (!(await exists(path))) return null;
+  if (!(await pathExists(path))) return null;
   const text = await readFile(path, 'utf8');
   const parsed = parse(text);
   if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
@@ -477,9 +520,18 @@ async function productshapeVersion(): Promise<string> {
  */
 export async function addOpenSpecIntegration(
   root: string,
-  options: { force?: boolean; dryRun?: boolean; cliVersion?: string } = {},
+  options: {
+    force?: boolean;
+    dryRun?: boolean;
+    cliVersion?: string;
+    /**
+     * The repository's configured `validation.warnings-as-errors` policy, reflected verbatim in
+     * the installed CI example so its blocking behaviour is stated, never silently changed.
+     */
+    warningsAsErrors?: boolean;
+  } = {},
 ): Promise<{ written: string[]; changes: string[]; meta: OpenSpecIntegrationMeta }> {
-  const { force = false, dryRun = false } = options;
+  const { force = false, dryRun = false, warningsAsErrors = false } = options;
 
   let openspecVersion = options.cliVersion;
   if (!openspecVersion) {
@@ -502,7 +554,21 @@ export async function addOpenSpecIntegration(
   const existing = await readOpenSpecConfig(root);
   const previousMeta = await readMeta(root);
 
-  const { config, changes } = mergeConfig(existing, previousMeta?.managed);
+  const { config, changes: configChanges } = mergeConfig(existing, previousMeta?.managed);
+
+  const ciDesired = renderCiExample({ warningsAsErrors });
+  const ciAbsolute = ciExamplePath(root);
+  const ciExisting = (await pathExists(ciAbsolute)) ? await readFile(ciAbsolute, 'utf8') : null;
+  const ciChanged = ciExisting !== ciDesired;
+
+  const changes = [...configChanges];
+  if (ciChanged) {
+    changes.push(
+      ciExisting === null
+        ? `Installed CI-ready verification example at ${CI_EXAMPLE_RELATIVE}.`
+        : `Updated CI-ready verification example at ${CI_EXAMPLE_RELATIVE}.`,
+    );
+  }
 
   const meta: OpenSpecIntegrationMeta = {
     provider: 'openspec',
@@ -510,6 +576,7 @@ export async function addOpenSpecIntegration(
     openspecVersion,
     installedAt: new Date().toISOString(),
     configPath: CONFIG_RELATIVE,
+    ciExamplePath: CI_EXAMPLE_RELATIVE,
     managed: currentManagedStrings(),
   };
 
@@ -523,10 +590,17 @@ export async function addOpenSpecIntegration(
 
   const written: string[] = [];
   if (!dryRun) {
-    const serialized = serializeConfig(config);
-    await mkdir(dirname(configPath(root)), { recursive: true });
-    await writeFile(configPath(root), serialized, 'utf8');
-    written.push(CONFIG_RELATIVE);
+    if (configChanges.length > 0 || force) {
+      const serialized = serializeConfig(config);
+      await mkdir(dirname(configPath(root)), { recursive: true });
+      await writeFile(configPath(root), serialized, 'utf8');
+      written.push(CONFIG_RELATIVE);
+    }
+    if (ciChanged || force) {
+      await mkdir(dirname(ciAbsolute), { recursive: true });
+      await writeFile(ciAbsolute, ciDesired, 'utf8');
+      written.push(CI_EXAMPLE_RELATIVE);
+    }
     await writeMeta(root, meta);
     written.push(META_RELATIVE);
   }
@@ -544,7 +618,7 @@ async function writeMeta(root: string, meta: OpenSpecIntegrationMeta): Promise<v
 /** Read the integration metadata file, or null if absent. */
 async function readMeta(root: string): Promise<OpenSpecIntegrationMeta | null> {
   const path = metaPath(root);
-  if (!(await exists(path))) return null;
+  if (!(await pathExists(path))) return null;
   return JSON.parse(await readFile(path, 'utf8')) as OpenSpecIntegrationMeta;
 }
 
@@ -554,11 +628,15 @@ async function readMeta(root: string): Promise<OpenSpecIntegrationMeta | null> {
  */
 export async function updateOpenSpecIntegration(
   root: string,
-  options: { force?: boolean; dryRun?: boolean } = {},
+  options: { force?: boolean; dryRun?: boolean; warningsAsErrors?: boolean } = {},
 ): Promise<{ written: string[]; changes: string[] }> {
   // `add` already re-merges idempotently; `force` ensures the metadata is refreshed even when
   // the config content did not change.
-  const result = await addOpenSpecIntegration(root, { force: true, dryRun: options.dryRun });
+  const result = await addOpenSpecIntegration(root, {
+    force: true,
+    dryRun: options.dryRun,
+    warningsAsErrors: options.warningsAsErrors,
+  });
   return { written: result.written, changes: result.changes };
 }
 
@@ -642,6 +720,21 @@ export async function checkOpenSpecIntegration(root: string): Promise<{
       name: 'metadata',
       ok: true,
       detail: `Integration recorded (OpenSpec ${meta.openspecVersion}, installed ${meta.installedAt}).`,
+    });
+  }
+
+  // 3b. CI-ready verification example present.
+  if (await pathExists(ciExamplePath(root))) {
+    checks.push({
+      name: 'ci example',
+      ok: true,
+      detail: `CI-ready verification example present at ${CI_EXAMPLE_RELATIVE}.`,
+    });
+  } else {
+    checks.push({
+      name: 'ci example',
+      ok: false,
+      detail: `CI-ready verification example missing (${CI_EXAMPLE_RELATIVE}). Run: prodshape integration update`,
     });
   }
 
@@ -814,8 +907,16 @@ export async function removeOpenSpecIntegration(
     }
   }
 
+  // Remove the installed CI example.
+  if (await pathExists(ciExamplePath(root))) {
+    if (!dryRun) {
+      await rm(ciExamplePath(root), { force: true });
+    }
+    removed.push(CI_EXAMPLE_RELATIVE);
+  }
+
   // Remove metadata file.
-  if (await exists(metaPath(root))) {
+  if (await pathExists(metaPath(root))) {
     if (!dryRun) {
       await rm(metaPath(root), { force: true });
     }

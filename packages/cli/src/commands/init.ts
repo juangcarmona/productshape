@@ -18,6 +18,7 @@ import {
   isOpenSpecIntegrationInstalled,
   isOpenSpecWorkspace,
   OPENSPEC_NPX_SPEC,
+  OPENSPEC_VERIFY_COMMAND,
 } from '@prodshape/integration-openspec';
 import { CliError, exitCodes, type CliIo } from '../context.js';
 
@@ -186,9 +187,11 @@ async function executeSddChoice(
       viaNpx = bootstrap.viaNpx;
       io.out(`Created OpenSpec workspace (${bootstrap.command}; OpenSpec ${bootstrap.version}).`);
     }
+    const config = await loadConfig(join(io.cwd, '.product', 'config.yaml'), io.cwd);
     const result = await addOpenSpecIntegration(io.cwd, {
       ...(options.force !== undefined ? { force: options.force } : {}),
       ...(cliVersion ? { cliVersion } : {}),
+      warningsAsErrors: config.config.validation['warnings-as-errors'],
     });
     if (result.written.length === 0) {
       io.out('OpenSpec integration is already up to date.');
@@ -197,6 +200,7 @@ async function executeSddChoice(
       for (const path of result.written) io.out(`  ${path}`);
       io.out(`  OpenSpec CLI: ${result.meta.openspecVersion}`);
     }
+    io.out(`Verify: ${OPENSPEC_VERIFY_COMMAND}`);
     if (viaNpx) {
       io.out(
         `OpenSpec ran through npx; make it permanent with: npm install -g ${OPENSPEC_NPX_SPEC} (or add it as a devDependency)`,

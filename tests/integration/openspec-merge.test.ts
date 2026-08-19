@@ -270,6 +270,37 @@ describe('integration-openspec managed lifecycle on disk (no OpenSpec CLI needed
     }
   });
 
+  it('installs, refreshes and removes the CI-ready verification example', async () => {
+    const dir = await scratchWorkspace();
+    try {
+      const first = await addOpenSpecIntegration(dir, { cliVersion: '1.2.3' });
+      expect(first.written).toContain('.product/integrations/openspec.ci.yml');
+      const ciPath = join(dir, '.product', 'integrations', 'openspec.ci.yml');
+      const relaxed = await readFile(ciPath, 'utf8');
+      expect(relaxed).toContain('npx prodshape citations verify --provider openspec');
+      expect(relaxed).toContain('stale citations DO NOT block');
+      expect(relaxed).not.toContain('openspec validate --all');
+
+      // Idempotent: a second add with the same policy writes nothing.
+      const second = await addOpenSpecIntegration(dir, { cliVersion: '1.2.3' });
+      expect(second.written).toEqual([]);
+
+      // The example reflects the repository's chosen stale-citation policy explicitly.
+      const escalated = await addOpenSpecIntegration(dir, {
+        cliVersion: '1.2.3',
+        warningsAsErrors: true,
+      });
+      expect(escalated.written).toContain('.product/integrations/openspec.ci.yml');
+      expect(await readFile(ciPath, 'utf8')).toContain('stale citations BLOCK this gate');
+
+      const removed = await removeOpenSpecIntegration(dir);
+      expect(removed.removed).toContain('.product/integrations/openspec.ci.yml');
+      await expect(readFile(ciPath, 'utf8')).rejects.toThrow();
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it('bootstrap refuses when a workspace already exists', async () => {
     const dir = await scratchWorkspace();
     try {
