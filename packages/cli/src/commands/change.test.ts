@@ -700,6 +700,27 @@ describe('change apply', () => {
     expect(result.code).toBe(0);
   });
 
+  it('--dry-run runs the full preflight (issue #61): an occupied archive destination fails instead of reporting "Would apply"', async () => {
+    await approvedChange();
+    // Simulate the archive destination already being occupied (e.g. a prior partial apply left it
+    // behind). A real apply would refuse at the preflight, before writing anything; a dry run must
+    // report the identical refusal rather than a clean "Would apply".
+    await mkdir(join(workDir, 'docs', 'product', 'changes', 'completed', 'chg-probe-001'), {
+      recursive: true,
+    });
+    const before = await git('status', '--porcelain');
+
+    const dryRun = await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run']);
+    expect(dryRun.code).not.toBe(0);
+    expect(dryRun.out.join('\n')).not.toContain('Would apply');
+    expect(await git('status', '--porcelain')).toBe(before);
+
+    // A real apply against the same repository state fails the same way.
+    const real = await run(['change', 'apply', 'CHG-PROBE-001']);
+    expect(real.code).toBe(dryRun.code);
+    expect(await git('status', '--porcelain')).toBe(before);
+  });
+
   it('reports a declared modification that changes nothing as no diff entry', async () => {
     // Intent and effective change may legitimately disagree: a modification whose proposed text
     // is byte-identical to the baseline changes nothing, and must not send citations stale.
