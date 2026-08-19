@@ -38,8 +38,20 @@ Three forms are available through `--form`: `inline` (the default, a single line
 Verify them at any time, and in CI:
 
 ```bash
-prodshape citations verify openspec
+prodshape citations verify --provider openspec
 ```
+
+Provider-aware verification enumerates the expected current OpenSpec consumer documents (each change's `proposal.md`, `design.md`, `tasks.md` and spec deltas, plus `openspec/specs/`; archived changes excluded unless you pass `--include-archived`) and gives each exactly one effective scope state:
+
+| State | Meaning | Gate |
+| --- | --- | --- |
+| `bound` | The document carries at least one citation, or declares `pdac-scope: cited`. | Every citation is verified; a bound document with zero citations fails (`PRODUCT074`). |
+| `exempt` | A human declared `pdac-scope: none` because the document has no product-semantic dependency. | Passes, but stays visible in the results. |
+| `unclassified` | Neither binding nor exemption is declared. | Fails (`PRODUCT070`). |
+
+Binding and exemption are human declarations — never declare `pdac-scope: none` just because citations are missing (an exemption contradicted by citations in the same document fails with `PRODUCT075`). Because the population is enumerated, discovering zero citations over current documents is a set of failures, never a vacuous pass. This establishes citation grounding and population coverage; it does not prove semantic completeness or implementation correctness — those remain review questions.
+
+The bare form `prodshape citations verify [target]` remains available as a plain recursive scan of whatever citations a directory happens to contain, without population or scope enforcement.
 
 Every citation resolves to exactly one status:
 
@@ -274,10 +286,10 @@ error PRODUCT061 openspec/specs/checkout/spec.md [BR-REFUND-001]: Citation of 'B
 1 citation(s): 0 current, 1 stale, 0 tampered, 0 unresolved
 ```
 
-Add `prodshape citations verify` to CI and drift blocks the merge instead of waiting to be noticed.
+Add `prodshape citations verify --provider openspec` to CI and drift blocks the merge instead of waiting to be noticed. `prodshape integration add openspec` installs a CI-ready example at `.product/integrations/openspec.ci.yml` that states explicitly how your repository's chosen stale-citation policy applies — the integration never changes that policy for you.
 
 ### Where to go next
 
 - Resolve the proposed drift on its branch: refresh the citation if the 14-day definition should proceed, then review and merge the applied result; otherwise close the branch without merging. Never rewrite the archived Product Change.
 - Model the rest of the product incrementally through [the brownfield guide](brownfield.md): your OpenSpec specs are unusually good evidence, because they already state behaviour in product terms. A partial but validated model beats a complete but unreviewed one.
-- Wire `prodshape citations verify` into the pipeline that runs `openspec validate`, and keep the two verdicts separate: one is about your specs, the other about their grounding.
+- Wire `prodshape citations verify --provider openspec` into the pipeline that runs `openspec validate`, and keep the two verdicts separate: one is about your specs, the other about their grounding. The ProductShape gate never invokes `openspec validate` and never fails because of a native-spec defect.

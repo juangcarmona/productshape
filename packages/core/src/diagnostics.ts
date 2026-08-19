@@ -43,6 +43,8 @@ export const codes = {
   unsupportedOpenSpecStore: 'PRODUCT071',
   openSpecRootUnresolved: 'PRODUCT072',
   openSpecCliMissing: 'PRODUCT073',
+  emptyBoundDocument: 'PRODUCT074',
+  invalidScopeDeclaration: 'PRODUCT075',
   approvedWithOpenQuestions: 'PRODUCT108',
   lowConfidenceDraft: 'PRODUCT111',
 } as const;

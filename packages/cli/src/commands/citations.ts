@@ -1,17 +1,21 @@
 import { stat } from 'node:fs/promises';
 import { extname, isAbsolute, resolve as resolvePath } from 'node:path';
 import {
-  discoverOpenSpecPopulation,
+  classifyConsumerDocuments,
+  codes,
   escalateWarnings,
-  isOpenSpecCliAvailable,
   parseCitations,
   scanCitations,
   sortDiagnostics,
   stableJson,
   verifyCitations,
   validateBaseline,
+  type ConsumerScopeState,
+  type Diagnostic,
   type LoadedArtifact,
+  type SddIntegrationProvider,
 } from '@prodshape/core';
+import { openSpecProvider } from '@prodshape/integration-openspec';
 import {
   CliError,
   exitCodes,
@@ -27,16 +31,22 @@ export interface CitationsVerifyOptions {
   includeArchived?: boolean;
 }
 
-/** Per-document scope status for OpenSpec-aware verification. */
-type ScopeStatus = 'cited' | 'excluded' | 'undocumented';
+/**
+ * The SDD integration providers this CLI ships. The provider contract is framework-neutral
+ * (@prodshape/core); each entry supplies one framework's population enumeration.
+ */
+const SDD_PROVIDERS: Record<string, SddIntegrationProvider> = {
+  [openSpecProvider.name]: openSpecProvider,
+};
 
-/** A document's scope classification with its citation count. */
+/** A document's effective scope state with its citation count, for reporting. */
 interface DocumentReport {
   path: string;
   change?: string;
   archived: boolean;
   artifactKind?: string;
-  scope: ScopeStatus;
+  state: ConsumerScopeState;
+  declaration: string | null;
   citations: number;
 }
 
@@ -102,15 +112,19 @@ async function scanCitationTarget(target: string, absolutePath: string, repoRoot
  * Without `--provider`: recursively scans the target directory (default `openspec/`) for
  * citations. This is the backward-compatible mode.
  *
- * With `--provider openspec`: uses `discoverOpenSpecPopulation` to find the actual current
- * consumer documents via the OpenSpec CLI, distinguishes current from archived material, and
- * enforces scope declarations. Every expected current document MUST declare `pdac-scope: none`
- * OR carry at least one citation; an undocumented document is a FAILURE.
+ * With `--provider <name>`: uses that SDD integration provider to enumerate the expected
+ * current native consumer documents, distinguishes current from archived material, and enforces
+ * the bound/exempt/unclassified scope model. Every enumerated current document has exactly one
+ * effective state: `bound` (declares Product Definition dependency and carries citations),
+ * `exempt` (a human declared `pdac-scope: none`), or `unclassified` (neither — a FAILURE). A
+ * bound document with zero citations also fails, so a workspace can never pass vacuously
+ * because no citations were discovered.
  *
  * Diagnostics: PRODUCT042 (invalid digest), PRODUCT060 (unresolved), PRODUCT061 (stale),
- * PRODUCT062 (tampered), PRODUCT063 (anchor not found), PRODUCT070 (missing scope declaration),
- * PRODUCT073 (OpenSpec CLI missing). PRODUCT061 is a warning; the repository's
- * `warnings-as-errors` configuration escalates it.
+ * PRODUCT062 (tampered), PRODUCT063 (anchor not found), PRODUCT070 (unclassified document),
+ * PRODUCT072 (provider workspace missing), PRODUCT073 (OpenSpec CLI missing), PRODUCT074
+ * (bound document with zero citations), PRODUCT075 (invalid scope declaration). PRODUCT061 is a
+ * warning; the repository's `warnings-as-errors` configuration escalates it.
  */
 export async function runCitationsVerify(
   io: CliIo,
@@ -120,9 +134,17 @@ export async function runCitationsVerify(
   const repo = await resolveRepository(io);
   const { artifacts } = await validateBaseline(repo);
 
-  if (options.provider === 'openspec') {
-    return runOpenSpecProviderVerify(
+  if (options.provider !== undefined) {
+    const provider = SDD_PROVIDERS[options.provider];
+    if (!provider) {
+      throw new CliError(
+        `Unknown provider '${options.provider}' (supported: ${Object.keys(SDD_PROVIDERS).sort().join(', ')})`,
+        exitCodes.invalidInvocation,
+      );
+    }
+    return runProviderVerify(
       io,
+      provider,
       repo.root,
       artifacts,
       repo.config.validation['warnings-as-errors'],
@@ -211,97 +233,79 @@ async function runRecursiveVerify(
 }
 
 /**
- * OpenSpec-aware verification. Discovers the actual consumer population via the OpenSpec CLI,
- * verifies citations, and enforces scope declarations.
+ * Provider-aware verification. The SDD integration provider enumerates the expected current
+ * native consumer-document population; framework-neutral core classification assigns each
+ * document exactly one effective scope state (bound, exempt or unclassified); every discovered
+ * citation is verified against the loaded product model.
+ *
+ * The gate is ProductShape citation and scope verification only; a provider's native validation
+ * (e.g. `openspec validate`) is never invoked, so its verdict stays separate.
  */
-async function runOpenSpecProviderVerify(
+async function runProviderVerify(
   io: CliIo,
+  provider: SddIntegrationProvider,
   repoRoot: string,
   artifacts: LoadedArtifact[],
   warningsAsErrors: boolean,
   options: CitationsVerifyOptions,
 ): Promise<number> {
-  const cliAvailable = await isOpenSpecCliAvailable();
+  const allDiagnostics: Diagnostic[] = [];
+  let root = provider.name;
+  let includeArchived = options.includeArchived ?? false;
+  let classified: Awaited<ReturnType<typeof classifyConsumerDocuments>> = [];
 
-  const population = await discoverOpenSpecPopulation(repoRoot, {
-    includeArchived: options.includeArchived ?? false,
-    change: options.change,
-  });
-
-  // Collect all citations across the population.
-  const allCitations = [];
-  for (const doc of population.documents) {
-    const citations = await parseCitations(doc.absolutePath, repoRoot);
-    allCitations.push(...citations);
-  }
-
-  const verifications = verifyCitations(allCitations, artifacts);
-
-  // Build per-document reports.
-  const citationCountByPath = new Map<string, number>();
-  for (const v of verifications) {
-    citationCountByPath.set(
-      v.citation.source,
-      (citationCountByPath.get(v.citation.source) ?? 0) + 1,
-    );
-  }
-
-  const documentReports: DocumentReport[] = [];
-  for (const doc of population.documents) {
-    const citations = citationCountByPath.get(doc.path) ?? 0;
-    let scope: ScopeStatus;
-    if (population.excluded.includes(doc)) {
-      scope = 'excluded';
-    } else if (population.cited.includes(doc)) {
-      scope = 'cited';
-    } else {
-      scope = 'undocumented';
-    }
-    documentReports.push({
-      path: doc.path,
-      change: doc.change,
-      archived: doc.archived,
-      artifactKind: doc.artifactKind,
-      scope,
-      citations,
+  if (await provider.detectWorkspace(repoRoot)) {
+    const enumeration = await provider.enumerateDocuments(repoRoot, {
+      includeArchived: options.includeArchived ?? false,
+      change: options.change,
+    });
+    root = enumeration.root;
+    includeArchived = enumeration.includeArchived;
+    allDiagnostics.push(...enumeration.diagnostics);
+    classified = await classifyConsumerDocuments(enumeration.documents, repoRoot);
+  } else {
+    allDiagnostics.push({
+      severity: 'error',
+      code: codes.openSpecRootUnresolved,
+      message: `No ${provider.name} workspace found at the repository root; the expected consumer-document population cannot be enumerated`,
+      file: `${provider.name}/`,
     });
   }
+
+  const verifications = verifyCitations(
+    classified.flatMap((c) => c.citations),
+    artifacts,
+  );
+
+  const documentReports: DocumentReport[] = classified.map((c) => ({
+    path: c.document.path,
+    change: c.document.change,
+    archived: c.document.archived,
+    artifactKind: c.document.artifactKind,
+    state: c.state,
+    declaration: c.declaration?.raw ?? null,
+    citations: c.citations.length,
+  }));
 
   // Collect every diagnostic before finalizing the public result. Citation status order remains
   // untouched; only the complete diagnostic set is ordered at this boundary.
-  const allDiagnostics = verifications.flatMap((v) => v.diagnostics);
-
-  // PRODUCT070: missing scope declaration for each undocumented document.
-  for (const doc of population.undocumented) {
-    allDiagnostics.push({
-      severity: 'error',
-      code: 'PRODUCT070',
-      message: `Consumer document has no pdac-scope declaration and no citations; expected either 'pdac-scope: none' or at least one PDaC citation`,
-      file: doc.path,
-    });
-  }
-
-  // PRODUCT073: report when OpenSpec CLI is missing (we fell back to filesystem scanning).
-  if (!cliAvailable) {
-    allDiagnostics.push({
-      severity: 'error',
-      code: 'PRODUCT073',
-      message: `OpenSpec CLI not found on PATH; fell back to filesystem scanning. Install with 'npm install -g openspec' for accurate population discovery.`,
-      file: 'openspec/',
-    });
-  }
+  allDiagnostics.push(...classified.flatMap((c) => c.diagnostics));
+  allDiagnostics.push(...verifications.flatMap((v) => v.diagnostics));
 
   const diagnostics = sortDiagnostics(escalateWarnings(allDiagnostics, warningsAsErrors));
   const errors = diagnostics.filter((d) => d.severity === 'error');
   const warnings = diagnostics.filter((d) => d.severity === 'warning');
 
+  const countState = (state: ConsumerScopeState) =>
+    documentReports.filter((d) => d.state === state).length;
+
   if (options.format === 'json') {
     io.out(
       stableJson({
-        schema: 'product-definition-as-code/citations-openspec/v1alpha1',
-        provider: 'openspec',
-        root: population.root,
-        includeArchived: population.includeArchived,
+        schema: 'product-definition-as-code/citations-provider/v1alpha1',
+        provider: provider.name,
+        root,
+        includeArchived,
         documents: documentReports,
         citations: verifications.map((v) => ({
           id: v.citation.id,
@@ -314,10 +318,10 @@ async function runOpenSpecProviderVerify(
         })),
         diagnostics,
         summary: {
-          totalDocuments: population.documents.length,
-          cited: population.cited.length,
-          excluded: population.excluded.length,
-          undocumented: population.undocumented.length,
+          totalDocuments: documentReports.length,
+          bound: countState('bound'),
+          exempt: countState('exempt'),
+          unclassified: countState('unclassified'),
           totalCitations: verifications.length,
           current: verifications.filter((v) => v.status === 'current').length,
           stale: verifications.filter((v) => v.status === 'stale').length,
@@ -329,11 +333,11 @@ async function runOpenSpecProviderVerify(
       }).trimEnd(),
     );
   } else {
-    // Per-document scope status.
+    // Per-document effective scope state.
     for (const doc of documentReports) {
       const archiveTag = doc.archived ? ' (archived)' : '';
       const changeTag = doc.change ? ` [${doc.change}]` : '';
-      io.out(`${doc.scope}\t${doc.path}${archiveTag}${changeTag}\t${doc.citations} citation(s)`);
+      io.out(`${doc.state}\t${doc.path}${archiveTag}${changeTag}\t${doc.citations} citation(s)`);
     }
     // Per-citation statuses.
     for (const v of verifications) {
@@ -344,7 +348,7 @@ async function runOpenSpecProviderVerify(
       io.out(formatDiagnosticLine(diagnostic));
     }
     io.out(
-      `${population.documents.length} document(s): ${population.cited.length} cited, ${population.excluded.length} excluded, ${population.undocumented.length} undocumented`,
+      `${documentReports.length} document(s): ${countState('bound')} bound, ${countState('exempt')} exempt, ${countState('unclassified')} unclassified`,
     );
     io.out(
       `${verifications.length} citation(s): ${verifications.filter((v) => v.status === 'current').length} current, ${verifications.filter((v) => v.status === 'stale').length} stale, ${verifications.filter((v) => v.status === 'tampered').length} tampered, ${verifications.filter((v) => v.status === 'unresolved').length} unresolved`,

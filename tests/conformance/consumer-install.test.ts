@@ -9,7 +9,7 @@
  */
 import { execFile } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { access, mkdtemp, readFile, readdir, rm, writeFile, mkdir } from 'node:fs/promises';
+import { access, cp, mkdtemp, readFile, readdir, rm, writeFile, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { delimiter, join } from 'node:path';
 import { promisify } from 'node:util';
@@ -761,6 +761,138 @@ describe('brownfield recovery session (packed binary)', () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+});
+
+describe.skipIf(!hasOpenspec)('OpenSpec citation enforcement (packed binary)', () => {
+  let dir: string;
+  let bin: string;
+
+  interface BinaryResult {
+    code: number;
+    stdout: string;
+    stderr: string;
+  }
+
+  async function prodshape(args: string[]): Promise<BinaryResult> {
+    try {
+      const { stdout, stderr } = await execFileAsync(bin, args, {
+        cwd: dir,
+        encoding: 'utf8',
+        shell: isWindows,
+      });
+      return { code: 0, stdout, stderr };
+    } catch (error) {
+      const failed = error as { code?: number; stdout?: string; stderr?: string };
+      return { code: failed.code ?? 1, stdout: failed.stdout ?? '', stderr: failed.stderr ?? '' };
+    }
+  }
+
+  beforeAll(async () => {
+    dir = await mkdtemp(join(tmpdir(), 'prodshape-openspec-e2e-'));
+    bin = join(scratch, 'node_modules', '.bin', isWindows ? 'prodshape.cmd' : 'prodshape');
+    const init = await prodshape(['init']);
+    expect(init.code, init.stderr).toBe(0);
+    // A minimal accepted Product Definition to cite.
+    await rm(join(dir, 'docs', 'product', 'model'), { recursive: true, force: true });
+    await cp(
+      join(repoRoot, 'examples', 'minimal', 'model'),
+      join(dir, 'docs', 'product', 'model'),
+      {
+        recursive: true,
+      },
+    );
+    await execFileAsync('openspec', ['init', '--tools', 'none'], {
+      cwd: dir,
+      encoding: 'utf8',
+      shell: isWindows,
+    });
+  }, 120_000);
+
+  afterAll(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it('drives add integration → current citation → drift → blocking verification', async () => {
+    // 1. Add the integration: it installs the guidance, states the exact provider-aware
+    //    verification command, and installs the CI-ready example.
+    const add = await prodshape(['integration', 'add', 'openspec']);
+    expect(add.code, add.stderr).toBe(0);
+    expect(add.stdout).toContain('npx prodshape citations verify --provider openspec');
+    const ciExample = await readFile(
+      join(dir, '.product', 'integrations', 'openspec.ci.yml'),
+      'utf8',
+    );
+    expect(ciExample).toContain('citations verify --provider openspec');
+
+    // 2. A current change with an unclassified document fails before anything is declared.
+    const changeDir = join(dir, 'openspec', 'changes', 'add-shortening');
+    await mkdir(changeDir, { recursive: true });
+    const inspect = await prodshape(['inspect', 'FR-SHORTEN-001', '--format', 'json']);
+    expect(inspect.code, inspect.stderr).toBe(0);
+    const digest = (JSON.parse(inspect.stdout) as { digest: string }).digest;
+    await writeFile(
+      join(changeDir, 'proposal.md'),
+      `## Why\n\nImplements link shortening.\n\n{pdac:cite id="FR-SHORTEN-001" digest="${digest}"}\n`,
+      'utf8',
+    );
+    await writeFile(join(changeDir, 'tasks.md'), '## Tasks\n\n- [ ] Implement\n', 'utf8');
+    const unclassified = await prodshape(['citations', 'verify', '--provider', 'openspec']);
+    expect(unclassified.code).toBe(1);
+    expect(unclassified.stdout).toContain('PRODUCT070');
+
+    // 3. A human declares the exemption; the population is fully bound or exempt and passes.
+    await writeFile(
+      join(changeDir, 'tasks.md'),
+      '<!-- pdac-scope: none -->\n## Tasks\n\n- [ ] Implement\n',
+      'utf8',
+    );
+    const green = await prodshape(['citations', 'verify', '--provider', 'openspec']);
+    expect(green.code, green.stdout).toBe(0);
+    expect(green.stdout).toContain('1 bound, 1 exempt, 0 unclassified');
+    expect(green.stdout).toContain('1 current, 0 stale');
+
+    // 4. The canonical product text changes (as an applied Product Change would): the recorded
+    //    dependency becomes visible as stale, governed by the configured warning policy.
+    const artifact = join(
+      dir,
+      'docs',
+      'product',
+      'model',
+      'requirements',
+      'functional',
+      'fr-shorten-001.md',
+    );
+    await writeFile(
+      artifact,
+      `${await readFile(artifact, 'utf8')}\nThe accepted requirement text moved.\n`,
+      'utf8',
+    );
+    const stale = await prodshape(['citations', 'verify', '--provider', 'openspec']);
+    expect(stale.code, stale.stdout).toBe(0);
+    expect(stale.stdout).toContain('PRODUCT061');
+
+    // 5. With the repository's stale policy escalated, verification blocks.
+    await writeFile(
+      join(dir, '.product', 'config.yaml'),
+      'validation:\n  warnings-as-errors: true\n',
+      'utf8',
+    );
+    const blocking = await prodshape(['citations', 'verify', '--provider', 'openspec']);
+    expect(blocking.code).toBe(1);
+    expect(blocking.stdout).toContain('PRODUCT061');
+
+    // 6. The review loop: the definition remains correct, so the consumer's citation is
+    //    renewed deliberately against the current digest, and the gate goes green again.
+    const renewed = await prodshape(['inspect', 'FR-SHORTEN-001', '--format', 'json']);
+    const renewedDigest = (JSON.parse(renewed.stdout) as { digest: string }).digest;
+    await writeFile(
+      join(changeDir, 'proposal.md'),
+      `## Why\n\nImplements link shortening.\n\n{pdac:cite id="FR-SHORTEN-001" digest="${renewedDigest}"}\n`,
+      'utf8',
+    );
+    const recovered = await prodshape(['citations', 'verify', '--provider', 'openspec']);
+    expect(recovered.code, recovered.stdout).toBe(0);
+  }, 120_000);
 });
 
 describe.skipIf(!hasOpenspec)('doctor detects broken integrations', () => {

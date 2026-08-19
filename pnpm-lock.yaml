@@ -131,6 +131,12 @@ importers:
 
   packages/integration-openspec:
     dependencies:
+      '@prodshape/core':
+        specifier: workspace:*
+        version: link:../core
+      fast-glob:
+        specifier: ^3.3.0
+        version: 3.3.3
       yaml:
         specifier: ^2.5.0
         version: 2.9.0

@@ -2,13 +2,15 @@
   "provider": "openspec",
   "version": "0.9.0",
   "openspecVersion": "1.3.0",
-  "installedAt": "2026-08-17T09:19:33.888Z",
+  "installedAt": "2026-08-19T09:02:05.012Z",
   "configPath": "openspec/config.yaml",
+  "ciExamplePath": ".product/integrations/openspec.ci.yml",
   "managed": {
     "rules": {
       "proposal": [
         "State which PDaC artifacts this change touches, each with an inline citation emitted by `npx prodshape cite --id <ID> --digest <digest>`. Never write a citation record by hand.",
-        "If the change implements altered product behaviour, name the Product Change (CHG id) whose applied or accepted artifacts it implements. If no overlay-validated and human-approved Product Change exists yet, stop and ask for one instead of proceeding. The OpenSpec change is not the Product Change."
+        "If the change implements altered product behaviour, name the Product Change (CHG id) whose applied or accepted artifacts it implements. If no overlay-validated and human-approved Product Change exists yet, stop and ask for one instead of proceeding. The OpenSpec change is not the Product Change.",
+        "Every document of this change must end up bound or exempt: bind by citing the canonical text it depends on, or declare `pdac-scope: none` on a line of its own (frontmatter or `<!-- pdac-scope: none -->`) when a human judges the document has no product-semantic dependency. Never declare an exemption just because citations are missing."
       ],
       "specs": [
         "Every requirement derived from canonical product text MUST carry a citation to every PDaC artifact it derives from, one citation per line, placed after the requirement text and before the first scenario. A requirement often derives from more than one artifact; citing only the closest one silently hides the other derivations. Never place citations between the requirement heading and the requirement text; OpenSpec reads the first paragraph as the requirement.",
@@ -26,10 +28,10 @@
     },
     "operations": {
       "apply": [
-        "Before finishing, run `npx prodshape citations verify` and fix every stale, tampered or unresolved citation. Refresh a stale digest by re-running `npx prodshape inspect <ID>`; never delete a citation to silence a diagnostic."
+        "Before finishing, run `npx prodshape citations verify --provider openspec` and fix every stale, tampered or unresolved citation, every unclassified document and every bound document without citations. Refresh a stale digest by re-running `npx prodshape inspect <ID>`; never delete a citation or declare `pdac-scope: none` to silence a diagnostic."
       ],
       "archive": [
-        "Run `npx prodshape citations verify` one final time. Archive only when every citation is current."
+        "Run `npx prodshape citations verify --provider openspec` one final time. Archive only when every document is bound or exempt and every citation is current."
       ]
     }
   }
