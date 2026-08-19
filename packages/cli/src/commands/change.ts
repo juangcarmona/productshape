@@ -6,6 +6,7 @@ import {
   executeApply,
   loadChange,
   planApply,
+  preflightApply,
   sortDiagnostics,
   stableJson,
   validateBaseline,
@@ -238,7 +239,14 @@ export async function runChangeApply(
     return exitCodes.validationErrors;
   }
 
-  if (!options.dryRun) await executeApply(repo.root, plan);
+  // A dry run still preflights: it reads every write source, confirms every delete target and
+  // verifies the archive destination is absent, so it fails the same way a real apply would
+  // instead of reporting "Would apply" for a plan that cannot execute.
+  if (options.dryRun) {
+    await preflightApply(repo.root, plan);
+  } else {
+    await executeApply(repo.root, plan);
+  }
 
   if (options.format === 'json') {
     io.out(

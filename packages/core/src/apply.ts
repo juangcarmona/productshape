@@ -214,13 +214,20 @@ async function pathExists(path: string): Promise<boolean> {
 }
 
 /**
- * Execute an apply plan. Never runs implicitly and never creates Git commits.
+ * Preflight an apply plan: read every write source, confirm every delete target and verify the
+ * archive destination is absent. Touches nothing; throws on the first failure.
  *
- * Two-phase: a preflight that reads every write source, confirms every delete target and verifies
- * the archive destination is absent, touching nothing on failure, then execution ordered so the
- * change-directory move happens last.
+ * Runs identically whether the caller intends to execute the plan or only report it (`--dry-run`
+ * per product-changes.md, Apply rule 8): a dry run that skipped this would report "Would apply"
+ * for a plan that fails immediately for real, defeating its use as a gate.
+ *
+ * Returns the write-action content staged for {@link executeApply}, so a real execution reads
+ * every source exactly once.
  */
-export async function executeApply(repoRoot: string, plan: ApplyPlan): Promise<void> {
+export async function preflightApply(
+  repoRoot: string,
+  plan: ApplyPlan,
+): Promise<Map<string, string>> {
   // Both apply preconditions arrive as error diagnostics, so one guard covers the status gate,
   // baseline drift and every overlay error alike.
   if (plan.diagnostics.some((d) => d.severity === 'error')) {
@@ -246,6 +253,18 @@ export async function executeApply(repoRoot: string, plan: ApplyPlan): Promise<v
       }
     }
   }
+
+  return staged;
+}
+
+/**
+ * Execute an apply plan. Never runs implicitly and never creates Git commits.
+ *
+ * Two-phase: {@link preflightApply} first, touching nothing on failure, then execution ordered so
+ * the change-directory move happens last.
+ */
+export async function executeApply(repoRoot: string, plan: ApplyPlan): Promise<void> {
+  const staged = await preflightApply(repoRoot, plan);
 
   try {
     for (const action of plan.actions) {

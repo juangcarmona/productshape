@@ -10,7 +10,7 @@ export {
   isProductArtifactType,
 } from './artifact.js';
 export type { ProductArtifactType, MarkdownDocumentType, ParsedArtifact } from './artifact.js';
-export { executeApply, planApply, withStatus } from './apply.js';
+export { executeApply, planApply, preflightApply, withStatus } from './apply.js';
 export type {
   ApplyAction,
   ApplyPlan,
