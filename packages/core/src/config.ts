@@ -30,6 +30,17 @@ export interface ProductConfig {
     'require-journey-for-use-case': boolean;
     'require-requirement-reachability': boolean;
   };
+  citations: {
+    /**
+     * Repository-relative directories `citations verify` scans when no target is given.
+     *
+     * Configurable because where consumer documents live is a repository's decision, not the
+     * kernel's: an OpenSpec repository keeps them under `openspec/`, another keeps them under
+     * `specs/`, and a hardcoded default silently verifies nothing in the second case. The default
+     * stays `openspec` so existing repositories are unaffected.
+     */
+    'consumer-roots': string[];
+  };
 }
 
 export const configSchemaId = 'product-definition-as-code/config/v1alpha1';
@@ -55,10 +66,20 @@ export function defaultConfig(): ProductConfig {
       'require-journey-for-use-case': false,
       'require-requirement-reachability': true,
     },
+    citations: {
+      'consumer-roots': ['openspec'],
+    },
   };
 }
 
-const knownTopLevelKeys = new Set(['schema', 'product', 'generated', 'integrations', 'validation']);
+const knownTopLevelKeys = new Set([
+  'schema',
+  'product',
+  'generated',
+  'integrations',
+  'validation',
+  'citations',
+]);
 
 export interface ConfigResult {
   config: ProductConfig;
@@ -174,6 +195,31 @@ export function parseConfig(content: string, file: string): ConfigResult {
       'require-requirement-reachability',
     ] as const) {
       readBoolean(validation, 'validation', key, (v) => (config.validation[key] = v));
+    }
+  }
+
+  const citations = section('citations');
+  if (citations) {
+    const roots = citations['consumer-roots'];
+    if (roots !== undefined) {
+      if (
+        !Array.isArray(roots) ||
+        roots.some((entry) => typeof entry !== 'string' || entry.length === 0)
+      ) {
+        error(
+          `'citations.consumer-roots' must be a list of non-empty strings`,
+          'citations.consumer-roots',
+        );
+      } else if (roots.length === 0) {
+        // An empty list would make `citations verify` scan nothing and report success, which is
+        // exactly the false green the configuration exists to prevent.
+        error(
+          `'citations.consumer-roots' must name at least one directory`,
+          'citations.consumer-roots',
+        );
+      } else {
+        config.citations['consumer-roots'] = roots as string[];
+      }
     }
   }
 

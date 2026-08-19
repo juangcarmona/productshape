@@ -51,7 +51,7 @@ Provider-aware verification enumerates the expected current OpenSpec consumer do
 
 Binding and exemption are human declarations — never declare `pdac-scope: none` just because citations are missing (an exemption contradicted by citations in the same document fails with `PRODUCT075`). Because the population is enumerated, discovering zero citations over current documents is a set of failures, never a vacuous pass. This establishes citation grounding and population coverage; it does not prove semantic completeness or implementation correctness — those remain review questions.
 
-The bare form `prodshape citations verify [target]` remains available as a plain recursive scan of whatever citations a directory happens to contain, without population or scope enforcement.
+The bare form `prodshape citations verify [target]` remains available as a plain recursive scan of whatever citations a directory happens to contain, without population or scope enforcement. Without a target it scans the repository's configured `citations.consumer-roots` (default `openspec`).
 
 Every citation resolves to exactly one status:
 
@@ -235,7 +235,7 @@ In the spec that restates the rule, let the citation replace the restated number
 +{pdac:cite id="BR-REFUND-001" digest="sha256:b5c5806732cb3e3f32a6b7da97fd3e712a1bb733b4bb50e2840874ae64713228"}
 ```
 
-Verify; `citations verify` scans `openspec/` by default:
+Verify; `citations verify` scans the configured consumer roots, `openspec/` by default:
 
 ```bash
 prodshape citations verify

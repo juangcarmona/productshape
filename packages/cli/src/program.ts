@@ -66,7 +66,8 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .command('validate')
     .description('Validate the current product model')
     .option('--format <format>', 'output format: text or json', 'text')
-    .action(async (options: { format: 'text' | 'json' }) => {
+    .option('--write-generated', 'refresh the generated outputs from this run')
+    .action(async (options: { format: 'text' | 'json'; writeGenerated?: boolean }) => {
       capture.code = await runValidate(io, options);
     });
 
@@ -148,7 +149,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
   change
     .command('list')
     .description('List live Product Changes')
-    .option('--all', 'include the completed and rejected change history')
+    .option('--all', 'include the completed, rejected and superseded change history')
     .option('--format <format>', 'output format: text or json', 'text')
     .action(async (options: { all?: boolean; format: 'text' | 'json' }) => {
       capture.code = await runChangeList(io, options);
@@ -205,7 +206,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
   citations
     .command('verify')
     .description('Scan consumer documents and report citation statuses')
-    .argument('[target]', 'consumer documents root (default: openspec)')
+    .argument('[target]', 'consumer documents root (default: citations.consumer-roots)')
     .option('--format <format>', 'output format: text or json', 'text')
     .option('--provider <provider>', 'provider-aware verification (openspec)')
     .option('--change <name>', 'limit to one OpenSpec change (with --provider openspec)')

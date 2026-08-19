@@ -80,14 +80,64 @@ async function emissions(): Promise<{ emissions: Emission[]; severityFields: num
   return { emissions: found, severityFields };
 }
 
-/** Codes listed in one `## <heading>` section's table. */
+/**
+ * The normative registry, vendored from the pinned spec revision by `pnpm registry:sync`.
+ *
+ * The tables in this repository's `docs/specification/validation.md` are a local copy of a
+ * registry the spec repository owns. Checking them against themselves proves nothing about the
+ * spec, so they are checked against this extract instead: bump `ref` in
+ * `docs/specification/.source.json`, re-sync, and the diff shows exactly what moved.
+ */
+interface SpecRegistry {
+  source: { repo: string; path: string; ref: string };
+  codes: Record<string, 'error' | 'warning'>;
+}
+
+async function specRegistry(): Promise<SpecRegistry> {
+  return JSON.parse(
+    await readFile(join(repoRoot, 'docs', 'specification', '.spec-registry.json'), 'utf8'),
+  ) as SpecRegistry;
+}
+
+/**
+ * Codes this implementation issues that the pinned spec does not define. Each is a ProductShape
+ * diagnostic for a concern the kernel leaves to implementations — provider-aware consumer scope
+ * (see the `bound`/`exempt`/`unclassified` model) and OpenSpec workspace resolution.
+ *
+ * The list is explicit so adding a code outside the normative registry is a deliberate act with a
+ * reviewer, not a silent divergence. Note that the pinned spec reserves `PRODUCT070`-`PRODUCT079`
+ * for model-repository resolution and states no code in that band is issued in v0.1; ProductShape
+ * occupies part of it. That is a question for the normative contract (spec#41), not something this
+ * test can settle, so it is recorded here rather than hidden.
+ */
+const implementationSpecificCodes: Record<string, 'error' | 'warning'> = {
+  PRODUCT070: 'error',
+  PRODUCT071: 'error',
+  PRODUCT072: 'error',
+  PRODUCT073: 'error',
+  PRODUCT074: 'error',
+  PRODUCT075: 'error',
+};
+
+/**
+ * Codes defined by one `## <heading>` section's table.
+ *
+ * Only table rows define a code. The prose under each table references codes to explain them —
+ * the Error codes section names `PRODUCT061` while explaining precedence — so scanning the whole
+ * section would read those mentions as definitions and place the same code in both tables.
+ */
 function documentedCodes(doc: string, heading: string): Set<string> {
   const start = doc.indexOf(`## ${heading}`);
   if (start === -1) throw new Error(`validation.md has no '## ${heading}' section`);
   const rest = doc.slice(start + heading.length);
   const end = rest.indexOf('\n## ');
   const section = end === -1 ? rest : rest.slice(0, end);
-  return new Set([...section.matchAll(CODE)].map((m) => m[0]));
+  const codes = new Set<string>();
+  for (const line of section.split('\n')) {
+    const row = /^\|\s*`(PRODUCT\d{3})`\s*\|/.exec(line);
+    if (row?.[1]) codes.add(row[1]);
+  }
+  return codes;
 }
 
 describe('diagnostic codes', () => {
@@ -141,6 +191,68 @@ describe('diagnostic codes', () => {
           `${emission.code} in ${emission.file} must be emitted as '${expected}'`,
         )
         .toBe(expected);
+    }
+  });
+
+  it('documents every code the pinned spec defines, in the table its severity requires', async () => {
+    const { codes: normative, source } = await specRegistry();
+    const doc = await readFile(join(repoRoot, 'docs', 'specification', 'validation.md'), 'utf8');
+    const local = {
+      error: documentedCodes(doc, 'Error codes'),
+      warning: documentedCodes(doc, 'Warning codes'),
+    };
+
+    for (const [code, severity] of Object.entries(normative).sort(([a], [b]) => (a < b ? -1 : 1))) {
+      const other = severity === 'error' ? 'warning' : 'error';
+      expect
+        .soft(
+          [...local[severity]],
+          `${code} is '${severity}' in ${source.repo}@${source.ref.slice(0, 8)}, so it belongs under '## ${severity === 'error' ? 'Error' : 'Warning'} codes'`,
+        )
+        .toContain(code);
+      expect
+        .soft([...local[other]], `${code} must not also be documented as '${other}'`)
+        .not.toContain(code);
+    }
+  });
+
+  it('emits every spec-defined code at the severity the pinned spec assigns', async () => {
+    const { codes: normative, source } = await specRegistry();
+    const { emissions: found } = await emissions();
+
+    for (const emission of found) {
+      const severity = normative[emission.code];
+      if (severity === undefined) continue; // Implementation-specific; checked below.
+      expect
+        .soft(
+          emission.severity,
+          `${emission.code} in ${emission.file} must be emitted as '${severity}' (${source.repo}@${source.ref.slice(0, 8)})`,
+        )
+        .toBe(severity);
+    }
+  });
+
+  it('adds codes outside the normative registry only from the declared set', async () => {
+    const { codes: normative } = await specRegistry();
+    const doc = await readFile(join(repoRoot, 'docs', 'specification', 'validation.md'), 'utf8');
+    const documented = [
+      ...documentedCodes(doc, 'Error codes'),
+      ...documentedCodes(doc, 'Warning codes'),
+    ];
+
+    const extra = [...new Set([...documented, ...(await emittedCodes())])]
+      .filter((code) => normative[code] === undefined)
+      .sort();
+    expect(extra).toEqual(Object.keys(implementationSpecificCodes).sort());
+
+    // Each declared code carries the severity the declaration promises, wherever it is emitted.
+    const { emissions: found } = await emissions();
+    for (const emission of found) {
+      const declared = implementationSpecificCodes[emission.code];
+      if (declared === undefined) continue;
+      expect
+        .soft(emission.severity, `${emission.code} in ${emission.file} is declared '${declared}'`)
+        .toBe(declared);
     }
   });
 
