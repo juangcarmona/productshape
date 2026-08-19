@@ -18,7 +18,7 @@ import fg from 'fast-glob';
 import { parseAllDocuments } from 'yaml';
 import { contentDigest, normalizeToLf } from './digest.js';
 import type { Diagnostic } from './diagnostics.js';
-import { codes } from './diagnostics.js';
+import { codes, compareCodeUnits } from './diagnostics.js';
 import type { LoadedArtifact } from './model.js';
 
 /** The four citation statuses, per the citation contract. */
@@ -396,6 +396,72 @@ export function verifyCitation(
   }
 
   return { citation, status: 'current', diagnostics };
+}
+
+// --- Citation index and the affected citation set -----------------------------
+
+/**
+ * Group citation records by target artifact ID: the citation index of Change impact
+ * (product-changes.md), which apply intersects with the product diff (RFC 0048).
+ * Records keep their scan order within each group.
+ */
+export function buildCitationIndex(citations: CitationRecord[]): Map<string, CitationRecord[]> {
+  const index = new Map<string, CitationRecord[]>();
+  for (const citation of citations) {
+    const group = index.get(citation.id);
+    if (group) group.push(citation);
+    else index.set(citation.id, [citation]);
+  }
+  return index;
+}
+
+/** One citation whose target artifact the product diff reports as changed. */
+export interface AffectedCitation {
+  citation: CitationRecord;
+  /**
+   * The status the citation will hold against the applied result, under the same precedence
+   * verification applies. A forecast of the consumer's state, not a diagnostic: at apply time
+   * nothing is wrong yet, so no diagnostic accompanies it (RFC 0048).
+   */
+  prospectiveStatus: CitationStatus;
+}
+
+/**
+ * The affected citation set (RFC 0048): every citation whose target artifact appears in the
+ * product diff, with the status it will hold against the applied result.
+ *
+ * `changedIds` are the artifact IDs the diff reports as added, modified or removed; the impact
+ * is derived from the effective change, never from declared operations, so a declared operation
+ * that changes nothing affects nothing. `appliedArtifacts` is the applied result the prospective
+ * status is computed against — a citation of a removed artifact forecasts `unresolved`, of a
+ * modified one typically `stale`.
+ *
+ * Ordered by consumer path, point of use, target ID and anchor, with the locale-independent
+ * comparator diagnostic ordering uses, so the report is byte-identical across platforms.
+ */
+export function computeAffectedCitations(
+  citations: CitationRecord[],
+  changedIds: Iterable<string>,
+  appliedArtifacts: LoadedArtifact[],
+): AffectedCitation[] {
+  const index = buildCitationIndex(citations);
+  const appliedIndex = buildArtifactIndex(appliedArtifacts);
+  const affected: AffectedCitation[] = [];
+  for (const id of new Set(changedIds)) {
+    for (const citation of index.get(id) ?? []) {
+      affected.push({
+        citation,
+        prospectiveStatus: verifyCitation(citation, appliedIndex).status,
+      });
+    }
+  }
+  return affected.sort(
+    (a, b) =>
+      compareCodeUnits(a.citation.source, b.citation.source) ||
+      a.citation.line - b.citation.line ||
+      compareCodeUnits(a.citation.id, b.citation.id) ||
+      compareCodeUnits(a.citation.anchor ?? '', b.citation.anchor ?? ''),
+  );
 }
 
 /** Verify a set of citations against the loaded model. */

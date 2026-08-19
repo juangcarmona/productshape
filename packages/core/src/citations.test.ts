@@ -2,7 +2,14 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { parseCitations } from './citations.js';
+import {
+  buildCitationIndex,
+  computeAffectedCitations,
+  parseCitations,
+  type CitationRecord,
+} from './citations.js';
+import { contentDigest } from './digest.js';
+import type { LoadedArtifact } from './model.js';
 
 const DIGEST_A = 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const DIGEST_B = 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
@@ -69,5 +76,97 @@ describe('YAML sidecar citation parsing', () => {
     );
 
     await expect(parseCitations(unrelated, workDir)).resolves.toEqual([]);
+  });
+});
+
+describe('citation index and the affected citation set (RFC 0048)', () => {
+  function record(overrides: Partial<CitationRecord> & Pick<CitationRecord, 'id'>): CitationRecord {
+    return { digest: DIGEST_A, source: 'specs/one.md', line: 1, form: 'inline', ...overrides };
+  }
+
+  function artifact(id: string, body: string): LoadedArtifact {
+    return {
+      file: `model/${id.toLowerCase()}.md`,
+      absolutePath: `/model/${id.toLowerCase()}.md`,
+      frontmatter: {},
+      body,
+      digest: contentDigest(body),
+      id,
+    };
+  }
+
+  it('groups records by target artifact ID, keeping scan order within a group', () => {
+    const first = record({ id: 'FR-ONE', line: 3 });
+    const second = record({ id: 'FR-ONE', line: 1, source: 'specs/two.md' });
+    const other = record({ id: 'FR-TWO' });
+    const index = buildCitationIndex([first, second, other]);
+
+    expect([...index.keys()]).toEqual(['FR-ONE', 'FR-TWO']);
+    expect(index.get('FR-ONE')).toEqual([first, second]);
+  });
+
+  it('intersects the index with the changed IDs and forecasts against the applied result', () => {
+    const applied = artifact('FR-CHANGED', 'the new canonical text');
+    const untouched = artifact('FR-UNTOUCHED', 'unchanged text');
+    const citations = [
+      record({ id: 'FR-CHANGED', digest: contentDigest('the old canonical text') }),
+      record({ id: 'FR-UNTOUCHED', digest: untouched.digest, line: 2 }),
+      record({ id: 'FR-REMOVED', line: 3 }),
+    ];
+
+    const affected = computeAffectedCitations(
+      citations,
+      ['FR-CHANGED', 'FR-REMOVED'],
+      [applied, untouched],
+    );
+
+    // The untouched target is not in the diff, so its citation is not affected. A citation of a
+    // modified artifact forecasts stale; of a removed artifact, unresolved.
+    expect(
+      affected.map(({ citation, prospectiveStatus }) => ({ id: citation.id, prospectiveStatus })),
+    ).toEqual([
+      { id: 'FR-CHANGED', prospectiveStatus: 'stale' },
+      { id: 'FR-REMOVED', prospectiveStatus: 'unresolved' },
+    ]);
+  });
+
+  it('forecasts current for a citation already recorded against the proposed content', () => {
+    const applied = artifact('FR-CHANGED', 'the new canonical text');
+    const affected = computeAffectedCitations(
+      [record({ id: 'FR-CHANGED', digest: applied.digest })],
+      ['FR-CHANGED'],
+      [applied],
+    );
+    expect(affected.map((a) => a.prospectiveStatus)).toEqual(['current']);
+  });
+
+  it('orders the set by consumer path, point of use, target ID and anchor', () => {
+    const applied = artifact('FR-A', 'moved');
+    const citations = [
+      record({ id: 'FR-B', source: 'specs/two.md', line: 9 }),
+      record({ id: 'FR-B', source: 'specs/one.md', line: 12 }),
+      record({ id: 'FR-A', source: 'specs/one.md', line: 12, anchor: 'S2' }),
+      record({ id: 'FR-A', source: 'specs/one.md', line: 12, anchor: 'S1' }),
+      record({ id: 'FR-A', source: 'specs/one.md', line: 2 }),
+    ];
+
+    const affected = computeAffectedCitations(citations, ['FR-B', 'FR-A'], [applied]);
+
+    expect(
+      affected.map(
+        ({ citation }) =>
+          `${citation.source}:${citation.line} ${citation.id}#${citation.anchor ?? ''}`,
+      ),
+    ).toEqual([
+      'specs/one.md:2 FR-A#',
+      'specs/one.md:12 FR-A#S1',
+      'specs/one.md:12 FR-A#S2',
+      'specs/one.md:12 FR-B#',
+      'specs/two.md:9 FR-B#',
+    ]);
+  });
+
+  it('reports an empty set for a diff nothing cites', () => {
+    expect(computeAffectedCitations([record({ id: 'FR-ONE' })], ['FR-OTHER'], [])).toEqual([]);
   });
 });

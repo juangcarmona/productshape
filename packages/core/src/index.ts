@@ -10,7 +10,7 @@ export {
   isProductArtifactType,
 } from './artifact.js';
 export type { ProductArtifactType, MarkdownDocumentType, ParsedArtifact } from './artifact.js';
-export { executeApply, planApply, preflightApply, withStatus } from './apply.js';
+export { appliedArtifacts, executeApply, planApply, preflightApply, withStatus } from './apply.js';
 export type {
   ApplyAction,
   ApplyPlan,
@@ -24,10 +24,12 @@ export { discoverChanges, loadChange } from './changes.js';
 export type { ChangeOperations, LoadedChange } from './changes.js';
 export { configSchemaId, defaultConfig, loadConfig, parseConfig } from './config.js';
 export type { ConfigResult, ProductConfig } from './config.js';
-export { codes, escalateWarnings, sortDiagnostics } from './diagnostics.js';
+export { codes, compareCodeUnits, escalateWarnings, sortDiagnostics } from './diagnostics.js';
 export type { Diagnostic, DiagnosticSeverity } from './diagnostics.js';
 export {
   buildArtifactIndex,
+  buildCitationIndex,
+  computeAffectedCitations,
   discoverConsumerDocs,
   emitCitation,
   parseCitations,
@@ -36,6 +38,7 @@ export {
   verifyCitations,
 } from './citations.js';
 export type {
+  AffectedCitation,
   CitationRecord,
   CitationStatus,
   CitationVerification,
