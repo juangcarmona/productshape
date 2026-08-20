@@ -46,6 +46,10 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # `pnpm run version` ends in `integration update`, which regenerates every configured
+      # integration of the self-hosted model; the OpenSpec adapter shells out to the `openspec`
+      # CLI, which the runner does not carry. Same major the adapter's own error message names.
+      - run: npm install -g @fission-ai/openspec@1
       # `version` only: this job manages the release PR and never publishes.
       # changesets/action runs the `version:` command via @actions/exec, not a shell — it does
       # NOT support `&&` chaining (the string is naively tokenized and any extra words are
@@ -163,6 +167,10 @@ jobs:
           cache: pnpm
           registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
+      # `pnpm run version` ends in `integration update`, which regenerates every configured
+      # integration of the self-hosted model; the OpenSpec adapter shells out to the `openspec`
+      # CLI, which the runner does not carry. Same major the adapter's own error message names.
+      - run: npm install -g @fission-ai/openspec@1
       - name: configure git identity
         run: |
           git config user.name "github-actions[bot]"
