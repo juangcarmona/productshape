@@ -105,18 +105,18 @@ async function specRegistry(): Promise<SpecRegistry> {
  * (see the `bound`/`exempt`/`unclassified` model) and OpenSpec workspace resolution.
  *
  * The list is explicit so adding a code outside the normative registry is a deliberate act with a
- * reviewer, not a silent divergence. Note that the pinned spec reserves `PRODUCT070`-`PRODUCT079`
- * for model-repository resolution and states no code in that band is issued in v0.1; ProductShape
- * occupies part of it. That is a question for the normative contract (spec#41), not something this
- * test can settle, so it is recorded here rather than hidden.
+ * reviewer, not a silent divergence. `PRODUCT064`-`PRODUCT066` implement the numbering spec RFC
+ * 0042 (draft) allocates for consumer binding and leave this list when that RFC's registry lands
+ * in the pinned spec; `PRODUCT067`-`PRODUCT069` are OpenSpec adapter mechanics the kernel leaves
+ * to implementations. The reserved `PRODUCT070`-`PRODUCT079` band is not occupied.
  */
 const implementationSpecificCodes: Record<string, 'error' | 'warning'> = {
-  PRODUCT070: 'error',
-  PRODUCT071: 'error',
-  PRODUCT072: 'error',
-  PRODUCT073: 'error',
-  PRODUCT074: 'error',
-  PRODUCT075: 'error',
+  PRODUCT064: 'error',
+  PRODUCT065: 'error',
+  PRODUCT066: 'error',
+  PRODUCT067: 'error',
+  PRODUCT068: 'error',
+  PRODUCT069: 'error',
 };
 
 /**
