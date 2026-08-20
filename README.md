@@ -95,20 +95,20 @@ All packages are published on npm under the [`@prodshape`](https://www.npmjs.com
 `@prodshape/integration-openspec` is the current OpenSpec package. The previously published `@prodshape/adapter-openspec` name belongs to older releases and is not part of the current package set.
 
 ```bash
-npm install -g @prodshape/cli@0.11.0
+npm install -g @prodshape/cli@0.12.0
 # or run it once, without installing
-pnpm dlx @prodshape/cli@0.11.0 --help
+pnpm dlx @prodshape/cli@0.12.0 --help
 ```
 
 ## Quickstart
 
-The supported published baseline is **`@prodshape/cli@0.11.0`**. The following block is the primary quickstart and release-contract test source: CI runs this exact block against the packed release candidate, substituting only `PRODSHAPE_PACKAGE` with the tarball path.
+The supported published baseline is **`@prodshape/cli@0.12.0`**. The following block is the primary quickstart and release-contract test source: CI runs this exact block against the packed release candidate, substituting only `PRODSHAPE_PACKAGE` with the tarball path.
 
 <!-- release-contract-quickstart:start -->
 
 ```bash
 set -eu
-PRODSHAPE_PACKAGE="${PRODSHAPE_PACKAGE:-@prodshape/cli@0.11.0}"
+PRODSHAPE_PACKAGE="${PRODSHAPE_PACKAGE:-@prodshape/cli@0.12.0}"
 
 mkdir productshape-quickstart
 cd productshape-quickstart
@@ -205,7 +205,7 @@ The gate retains JSON and human-readable reports, verifies every pinned digest, 
 
 ## Current status
 
-`@prodshape/cli@0.11.0` is the supported published baseline. It includes deterministic brownfield recovery sessions, Product Change overlay validation and apply with the affected-citation report, citation emission and verification (including provider-aware OpenSpec population verification), snapshot generation, schema discovery, filename repair, SDD-aware initialization, `prodshape --version`, and generated AI/OpenSpec integrations. The [root changelog](CHANGELOG.md) records every stable CLI release from `0.1.0` through `0.10.0`.
+`@prodshape/cli@0.12.0` is the supported published baseline. It includes deterministic brownfield recovery sessions, Product Change overlay validation and apply with the affected-citation report, citation emission and verification (including provider-aware OpenSpec population verification), snapshot generation, schema discovery, filename repair, SDD-aware initialization, `prodshape --version`, and generated AI/OpenSpec integrations. The [root changelog](CHANGELOG.md) records every stable CLI release from `0.1.0` through `0.10.0`.
 
 The next release candidate adds the issue #106 paper cuts: `prodshape change create <CHG-ID>` scaffolds a valid draft Product Change, `-v` joins `--version`, `PRODUCT002` names the offending field, the OpenSpec upsell tip prints only where it applies, and `validate`/`citations verify` accept `--root <dir>` (so `prodshape validate --root examples/minimal` runs the example directly). None is claimed as published until the package version advances on npm.
 

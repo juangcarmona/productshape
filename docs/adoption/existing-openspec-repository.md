@@ -4,7 +4,7 @@ This guide is for repositories that already run OpenSpec. Product Definition as 
 
 Want to start typing? Jump to [the walkthrough](#the-walkthrough-first-rule-first-citation-first-drift): first rule, first citation and first detected drift.
 
-> These commands target the supported published baseline, [`@prodshape/cli@0.11.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.11.0), which includes the OpenSpec integration. They use `prodshape`; the `product-definition` alias is equivalent through v0.x. The contracts are fixed in the [specification](https://github.com/product-definition-as-code/spec). See [Limitations](../limitations.md).
+> These commands target the supported published baseline, [`@prodshape/cli@0.12.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.12.0), which includes the OpenSpec integration. They use `prodshape`; the `product-definition` alias is equivalent through v0.x. The contracts are fixed in the [specification](https://github.com/product-definition-as-code/spec). See [Limitations](../limitations.md).
 
 ## What Product Definition adds
 
@@ -79,7 +79,7 @@ You need: Node.js 22 or later, npm, and your OpenSpec repository, meaning a git 
 ### 1. Install the layer and wire the integration (2 minutes)
 
 ```bash
-npm install -g @prodshape/cli@0.11.0
+npm install -g @prodshape/cli@0.12.0
 prodshape init
 prodshape integration add openspec
 ```
