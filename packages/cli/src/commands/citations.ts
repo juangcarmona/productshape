@@ -15,7 +15,11 @@ import {
   type LoadedArtifact,
   type SddIntegrationProvider,
 } from '@prodshape/core';
-import { openSpecProvider } from '@prodshape/integration-openspec';
+import {
+  isOpenSpecIntegrationInstalled,
+  isOpenSpecWorkspace,
+  openSpecProvider,
+} from '@prodshape/integration-openspec';
 import {
   CliError,
   exitCodes,
@@ -26,6 +30,8 @@ import {
 
 export interface CitationsVerifyOptions {
   format?: 'text' | 'json';
+  /** Explicit repository root; replaces upward discovery from the working directory. */
+  root?: string;
   provider?: string;
   change?: string;
   includeArchived?: boolean;
@@ -131,7 +137,7 @@ export async function runCitationsVerify(
   target: string | undefined,
   options: CitationsVerifyOptions,
 ): Promise<number> {
-  const repo = await resolveRepository(io);
+  const repo = await resolveRepository(io, options.root);
   const { artifacts } = await validateBaseline(repo);
 
   if (options.provider !== undefined) {
@@ -224,9 +230,17 @@ async function runRecursiveVerify(
     io.out(
       `${verifications.length} citation(s): ${verifications.filter((v) => v.status === 'current').length} current, ${verifications.filter((v) => v.status === 'stale').length} stale, ${verifications.filter((v) => v.status === 'tampered').length} tampered, ${verifications.filter((v) => v.status === 'unresolved').length} unresolved`,
     );
-    io.out(
-      'Tip: use --provider openspec for OpenSpec-aware verification that distinguishes current from archived material and enforces scope declarations.',
-    );
+    // The provider upsell only helps where it applies: an OpenSpec workspace exists and the
+    // ProductShape integration has not been wired yet. Anywhere else — an unrelated repository,
+    // or one that already runs provider-aware verification — it is noise (issue #106).
+    if (
+      (await isOpenSpecWorkspace(repoRoot)) &&
+      !(await isOpenSpecIntegrationInstalled(repoRoot))
+    ) {
+      io.out(
+        'Tip: use --provider openspec for OpenSpec-aware verification that distinguishes current from archived material and enforces scope declarations.',
+      );
+    }
   }
 
   return errors.length > 0 ? exitCodes.validationErrors : exitCodes.success;

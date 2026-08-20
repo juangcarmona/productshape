@@ -893,6 +893,77 @@ describe('change apply', () => {
   });
 });
 
+describe('change create', () => {
+  it('scaffolds a draft that change validate accepts, based on the repository HEAD', async () => {
+    const created = await run(['change', 'create', 'CHG-SCAFFOLD-001']);
+    expect(created.err).toEqual([]);
+    expect(created.code).toBe(0);
+    expect(created.out[0]).toBe(
+      `Created docs/product/changes/active/chg-scaffold-001/change.md (status draft, base-revision ${await git('rev-parse', 'HEAD')})`,
+    );
+
+    const content = await readFile(
+      join(workDir, 'docs', 'product', 'changes', 'active', 'chg-scaffold-001', 'change.md'),
+      'utf8',
+    );
+    expect(content).toContain('id: CHG-SCAFFOLD-001');
+    expect(content).toContain('status: draft');
+    expect(content).toContain(`base-revision: '${await git('rev-parse', 'HEAD')}'`);
+    expect(content).toContain("title: 'Scaffold 001'");
+
+    const validated = await run(['change', 'validate', 'CHG-SCAFFOLD-001']);
+    expect(validated.code).toBe(0);
+    expect(validated.out.join('\n')).toContain('0 error(s), 0 warning(s)');
+  });
+
+  it('emits the created record with --format json and honours --title', async () => {
+    const result = await run([
+      'change',
+      'create',
+      'CHG-SCAFFOLD-002',
+      '--title',
+      'Rename the probe',
+      '--format',
+      'json',
+    ]);
+    expect(result.code).toBe(0);
+    const parsed = JSON.parse(result.out.join('\n')) as {
+      created: { id: string; title: string; status: string; baseRevision: string; path: string };
+    };
+    expect(parsed.created).toEqual({
+      id: 'CHG-SCAFFOLD-002',
+      title: 'Rename the probe',
+      status: 'draft',
+      baseRevision: await git('rev-parse', 'HEAD'),
+      path: 'docs/product/changes/active/chg-scaffold-002/change.md',
+    });
+  });
+
+  it('falls back to the CHG-INITIAL sentinel base-revision outside Git history', async () => {
+    await rm(join(workDir, '.git'), { recursive: true, force: true });
+    const result = await run(['change', 'create', 'CHG-SCAFFOLD-003']);
+    expect(result.code).toBe(0);
+    const content = await readFile(
+      join(workDir, 'docs', 'product', 'changes', 'active', 'chg-scaffold-003', 'change.md'),
+      'utf8',
+    );
+    expect(content).toContain("base-revision: '0000000'");
+  });
+
+  it('refuses to overwrite an existing change with exit 2', async () => {
+    await writeChange({ id: 'CHG-PROBE-001' });
+    const result = await run(['change', 'create', 'CHG-PROBE-001']);
+    expect(result.code).toBe(2);
+    expect(result.err.join('\n')).toContain("change 'CHG-PROBE-001' already exists");
+  });
+
+  it('refuses an ID that does not match the change ID grammar with exit 2', async () => {
+    const result = await run(['change', 'create', 'chg-lowercase-001']);
+    expect(result.code).toBe(2);
+    expect(result.err.join('\n')).toContain("invalid change ID 'chg-lowercase-001'");
+  });
+});
+
 describe('change list and archive', () => {
   it('lists live changes with their operation counts', async () => {
     await writeChange({ add: ['BR-PROBE-001'], modify: ['BR-VALID-URL-001'] });

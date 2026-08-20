@@ -1,4 +1,4 @@
-import { mkdir, rename, stat } from 'node:fs/promises';
+import { mkdir, rename, stat, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import {
   appliedArtifacts,
@@ -6,9 +6,11 @@ import {
   discoverChanges,
   escalateWarnings,
   executeApply,
+  gitHead,
   loadChange,
   planApply,
   preflightApply,
+  requiredBodySections,
   scanCitations,
   sortDiagnostics,
   stableJson,
@@ -103,6 +105,154 @@ export async function runChangeValidate(
   }
 
   return errors.length > 0 ? exitCodes.validationErrors : exitCodes.success;
+}
+
+export interface ChangeCreateOptions extends ChangeFormatOptions {
+  title?: string;
+}
+
+/** The change ID grammar (schemas/common.schema.json `productChangeId`), checked up front so an
+ * invalid ID is refused before anything is written. */
+const changeIdPattern = /^CHG-[A-Z0-9]+(-[A-Z0-9]+)*$/;
+
+/**
+ * The sentinel base-revision of a change created where no Git history exists yet, matching the
+ * CHG-INITIAL convention: seven zeros satisfy the `gitRevision` schema pattern while naming no
+ * real commit, so drift detection (PRODUCT027) has nothing to compare against.
+ */
+const noBaselineRevision = '0000000';
+
+/**
+ * Per-section starter prose, condensed from the authoring template
+ * (assets/templates/product-change.md) so a scaffolded change explains itself. `Open Questions`
+ * starts at `None.` because a placeholder list item would read as an unresolved question once the
+ * change reaches `approved` (PRODUCT108).
+ */
+const sectionGuidance: Record<string, string> = {
+  Problem:
+    'What is wrong or missing in the current Product Definition? State the problem, not the solution.',
+  'Intended Product Outcome':
+    'What the Product Definition says once this change is accepted. Describe the destination, not the steps.',
+  Rationale: 'Why this outcome, and why now.',
+  'Affected Product Areas':
+    'Which parts of the product this change touches, in product language rather than file paths.',
+  'Open Questions': 'None.',
+  'Product Acceptance':
+    'How a human recognises that the accepted definition expresses the intended outcome.',
+  'Out of Scope':
+    'What this change explicitly does not touch, including delivery, technical design and implementation.',
+};
+
+/** 'CHG-ADD-CITE-001' -> 'Add cite 001': a real title is expected to replace it, but the default
+ * must satisfy the schema's non-empty `title` and read as something a human would recognise. */
+function defaultTitle(id: string): string {
+  const words = id
+    .split('-')
+    .slice(1)
+    .map((word) => word.toLowerCase());
+  const first = words[0] ?? '';
+  return [first.charAt(0).toUpperCase() + first.slice(1), ...words.slice(1)].join(' ');
+}
+
+/** A YAML single-quoted scalar: total escaping, so any single-line title round-trips. */
+function yamlSingleQuoted(value: string): string {
+  return `'${value.replaceAll("'", "''")}'`;
+}
+
+function scaffoldChangeDocument(id: string, title: string, baseRevision: string): string {
+  const body = requiredBodySections['product-change'].flatMap((section) => [
+    `## ${section}`,
+    '',
+    sectionGuidance[section] ?? 'TODO.',
+    '',
+  ]);
+  return [
+    '---',
+    `id: ${id}`,
+    'type: product-change',
+    `title: ${yamlSingleQuoted(title)}`,
+    'status: draft',
+    // Quoted so YAML reads an all-digit revision as a string (see the authoring template).
+    `base-revision: '${baseRevision}'`,
+    'operations:',
+    '  add: []',
+    '  modify: []',
+    '  remove: []',
+    '---',
+    '',
+    ...body,
+  ].join('\n');
+}
+
+/**
+ * `prodshape change create <id>`: scaffold a draft Product Change under changes/active/.
+ *
+ * Deterministic and prompt-free, so it is safe to run from scripts and CI. The result is a valid
+ * draft with intentionally empty operations: `base-revision` is the repository HEAD (or the
+ * CHG-INITIAL sentinel where no Git history exists), and every required body section is present,
+ * so `prodshape change validate` accepts the scaffold as-is. An existing change with the same ID
+ * or directory is never overwritten.
+ */
+export async function runChangeCreate(
+  io: CliIo,
+  id: string,
+  options: ChangeCreateOptions,
+): Promise<number> {
+  if (!changeIdPattern.test(id)) {
+    io.err(
+      `error: invalid change ID '${id}': expected CHG- followed by uppercase A-Z/0-9 words separated by hyphens (e.g. CHG-ADD-CITE-001)`,
+    );
+    return exitCodes.invalidInvocation;
+  }
+  const title = options.title ?? defaultTitle(id);
+  if (title.includes('\n')) {
+    io.err('error: --title must be a single line');
+    return exitCodes.invalidInvocation;
+  }
+
+  const repo = await resolveRepository(io);
+  const changes = await loadActiveChanges(repo);
+  const existing = findChange(changes, id);
+  if (existing) {
+    io.err(`error: change '${id}' already exists at ${existing.file}`);
+    return exitCodes.invalidInvocation;
+  }
+  const dirName = id.toLowerCase();
+  const dir = join(repo.changesDir, 'active', dirName);
+  const relativeDir = `${repo.config.product.changes}/active/${dirName}`;
+  try {
+    await stat(dir);
+    io.err(`error: ${relativeDir}/ already exists`);
+    return exitCodes.invalidInvocation;
+  } catch {
+    // Destination is absent, which is what we need.
+  }
+
+  const baseRevision = (await gitHead(repo.root)) ?? noBaselineRevision;
+  await mkdir(join(dir, 'proposed'), { recursive: true });
+  await writeFile(join(dir, 'change.md'), `${scaffoldChangeDocument(id, title, baseRevision)}\n`, {
+    encoding: 'utf8',
+    // Belt and braces alongside the stat probe: never clobber a concurrently created change.
+    flag: 'wx',
+  });
+
+  const path = `${relativeDir}/change.md`;
+  if (options.format === 'json') {
+    io.out(
+      stableJson({
+        created: { id, title, status: 'draft', baseRevision, path },
+      }).trimEnd(),
+    );
+  } else {
+    io.out(`Created ${path} (status draft, base-revision ${baseRevision})`);
+    io.out('Next steps:');
+    io.out('  - Describe the problem and the intended product outcome in change.md.');
+    io.out(
+      `  - Declare operations and author complete proposed artifacts under ${relativeDir}/proposed/.`,
+    );
+    io.out(`  - Validate the overlay: prodshape change validate ${id}`);
+  }
+  return exitCodes.success;
 }
 
 export interface ChangeListOptions extends ChangeFormatOptions {

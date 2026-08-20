@@ -4,19 +4,19 @@
 
 ProductShape is to Product Definition as Code what OpenSpec is to Spec-Driven Development: the methodology is the long-lived concept; ProductShape is one implementation of it.
 
-> **Supported published baseline:** `@prodshape/cli@0.9.0`. The command surface and outputs are still settling; the schema and diagnostic contracts (`product-definition-as-code/…`, `PRODUCT###`) are intended to be stable. Behaviour present only on the repository's `main` branch is unreleased until a newer package version appears on npm.
+> **Supported published baseline:** `@prodshape/cli@0.10.0`. The command surface and outputs are still settling; the schema and diagnostic contracts (`product-definition-as-code/…`, `PRODUCT###`) are intended to be stable. Behaviour present only on the repository's `main` branch is unreleased until a newer package version appears on npm.
 
 ## Install
 
 ```bash
-npm install -g @prodshape/cli@0.9.0
+npm install -g @prodshape/cli@0.10.0
 # or run without installing:
-npx @prodshape/cli@0.9.0 --help
+npx @prodshape/cli@0.10.0 --help
 ```
 
 The canonical command is `prodshape`; `product-definition` remains an identical v0.x compatibility alias. Requires Node.js >= 22.
 
-`prodshape --version` and SDD-aware `prodshape init --sdd openspec` are implemented and tested on `main` for the next release, but they are not commands supported by the published `0.9.0` package.
+`prodshape change create <CHG-ID>`, `-v`, `PRODUCT002` field naming, the gated OpenSpec tip and `--root` on `validate`/`citations verify` are implemented on `main` for the next release, but they are not behaviour of the published `0.10.0` package.
 
 ## What it does
 
