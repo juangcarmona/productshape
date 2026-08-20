@@ -57,10 +57,7 @@ if (!version.includes('-')) {
     }
     // The unreleased section's content becomes this release's content; a fresh empty
     // Unreleased section stays above it for the next cycle.
-    changelog = changelog.replace(
-      unreleasedHeading,
-      `${unreleasedHeading}\n\n## [${version}]`,
-    );
+    changelog = changelog.replace(unreleasedHeading, `${unreleasedHeading}\n\n## [${version}]`);
 
     const linkPattern = new RegExp(
       String.raw`^\[unreleased\]: (https://github\.com/\S+/compare)/@prodshape/cli@(${SEMVER})\.\.\.HEAD$`,
