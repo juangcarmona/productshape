@@ -49,12 +49,12 @@ Warnings are not errors. `validation.warnings-as-errors` in `.product/config.yam
 | `PRODUCT060` | Unresolved citation: target id or anchor does not resolve |
 | `PRODUCT062` | Tampered embedded projection: the embedded block differs from canonical content at the recorded digest |
 | `PRODUCT063` | Anchor not found: the target resolves but the named anchor does not exist within it |
-| `PRODUCT070` | Unclassified consumer document: an expected current SDD consumer document declares neither binding (`pdac-scope: cited` or at least one PDaC citation) nor exemption (`pdac-scope: none`) |
-| `PRODUCT071` | Unsupported external OpenSpec store: the OpenSpec workspace points to a store ProductShape cannot verify locally |
-| `PRODUCT072` | Provider workspace cannot be resolved: no `openspec/` directory found and no alternative root configured |
-| `PRODUCT073` | OpenSpec CLI missing or unsupported version: `openspec` is not on PATH or reports an unparseable version |
-| `PRODUCT074` | Bound consumer document with zero citations: the document declares `pdac-scope: cited` but carries no citation records |
-| `PRODUCT075` | Invalid scope declaration: an unrecognized `pdac-scope` value, or a `pdac-scope: none` exemption contradicted by citations in the same document |
+| `PRODUCT064` | Unclassified consumer document: an expected current SDD consumer document declares neither binding (`pdac-scope: cited` or at least one PDaC citation) nor exemption (`pdac-scope: none`) |
+| `PRODUCT065` | Bound consumer document with zero citations: the document declares `pdac-scope: cited` but carries no citation records |
+| `PRODUCT066` | Invalid scope declaration: an unrecognized `pdac-scope` value, or a `pdac-scope: none` exemption contradicted by citations in the same document |
+| `PRODUCT067` | Unsupported external OpenSpec store: the OpenSpec workspace points to a store ProductShape cannot verify locally |
+| `PRODUCT068` | Provider workspace cannot be resolved: no `openspec/` directory found and no alternative root configured |
+| `PRODUCT069` | OpenSpec CLI missing or unsupported version: `openspec` is not on PATH or reports an unparseable version |
 
 `PRODUCT020` to `PRODUCT028` apply to Product Changes and their overlays. They are reported when a change is validated or applied, never when validating the baseline alone, and never against the inert archives under `changes/completed/`, `changes/rejected/` and `changes/superseded/`.
 
@@ -62,7 +62,7 @@ Warnings are not errors. `validation.warnings-as-errors` in `.product/config.yam
 
 `PRODUCT050`–`PRODUCT052` are reported by `doctor` and integration commands; product-model validation does not inspect managed files.
 
-`PRODUCT070`, `PRODUCT074` and `PRODUCT075` are reported only by provider-aware verification (`citations verify --provider <name>`). The SDD integration provider enumerates the expected current consumer-document population — archived material excluded unless requested — and every enumerated document receives exactly one effective scope state: `bound` (it carries at least one citation or declares `pdac-scope: cited`), `exempt` (a human declared `pdac-scope: none`), or `unclassified` (neither, which fails). Binding and exemption are human declarations; exemption is never inferred from missing citations. Enumerating the population is what makes a zero-citation result over current documents a set of failures instead of a vacuous pass. This establishes citation grounding and population coverage only: it never proves semantic completeness, semantic correctness or implementation conformance, which remain review questions.
+`PRODUCT064`, `PRODUCT065` and `PRODUCT066` are reported only by provider-aware verification (`citations verify --provider <name>`). The SDD integration provider enumerates the expected current consumer-document population — archived material excluded unless requested — and every enumerated document receives exactly one effective scope state: `bound` (it carries at least one citation or declares `pdac-scope: cited`), `exempt` (a human declared `pdac-scope: none`), or `unclassified` (neither, which fails). Binding and exemption are human declarations; exemption is never inferred from missing citations. Enumerating the population is what makes a zero-citation result over current documents a set of failures instead of a vacuous pass. This establishes citation grounding and population coverage only: it never proves semantic completeness, semantic correctness or implementation conformance, which remain review questions.
 
 A citation's status is evaluated in a fixed order: invalid digest, unresolved target, unresolved anchor, tampered, stale, current; the first match wins. A citation carries the diagnostic of its status and no other, so `PRODUCT062` (tampered) and `PRODUCT061` (stale) are never both reported for the same citation. An embedded projection's faithfulness is judged against its recorded digest alone, never against the target's current content, so a tampered embedding is reported as `PRODUCT062` even when the cited target has also changed since the citation was recorded.
 

@@ -101,7 +101,7 @@ describe('classifyConsumerDocument', () => {
     const empty = classifyConsumerDocument(doc, declaration, []);
     expect(empty.state).toBe('bound');
     expect(empty.diagnostics).toEqual([
-      expect.objectContaining({ severity: 'error', code: 'PRODUCT074', file: doc.path }),
+      expect.objectContaining({ severity: 'error', code: 'PRODUCT065', file: doc.path }),
     ]);
   });
 
@@ -117,7 +117,7 @@ describe('classifyConsumerDocument', () => {
     const result = classifyConsumerDocument(doc, declaration, [citation]);
     expect(result.state).toBe('exempt');
     expect(result.diagnostics).toEqual([
-      expect.objectContaining({ severity: 'error', code: 'PRODUCT075', file: doc.path }),
+      expect.objectContaining({ severity: 'error', code: 'PRODUCT066', file: doc.path }),
     ]);
   });
 
@@ -125,7 +125,7 @@ describe('classifyConsumerDocument', () => {
     const result = classifyConsumerDocument(doc, null, []);
     expect(result.state).toBe('unclassified');
     expect(result.diagnostics).toEqual([
-      expect.objectContaining({ severity: 'error', code: 'PRODUCT070', file: doc.path }),
+      expect.objectContaining({ severity: 'error', code: 'PRODUCT064', file: doc.path }),
     ]);
   });
 
@@ -134,7 +134,7 @@ describe('classifyConsumerDocument', () => {
     const result = classifyConsumerDocument(doc, declaration, []);
     expect(result.state).toBe('unclassified');
     expect(result.diagnostics).toEqual([
-      expect.objectContaining({ severity: 'error', code: 'PRODUCT075', file: doc.path }),
+      expect.objectContaining({ severity: 'error', code: 'PRODUCT066', file: doc.path }),
     ]);
   });
 });
@@ -262,12 +262,12 @@ describe('enumerateOpenSpecDocuments + classifyConsumerDocuments', () => {
     expect(exempt).toContain('openspec/changes/add-feature-y/proposal.md');
     expect(exempt).toContain('openspec/changes/add-feature-y/tasks.md');
 
-    // unclassified: add-feature-x/tasks.md, specs/baz/spec.md — each carries PRODUCT070.
+    // unclassified: add-feature-x/tasks.md, specs/baz/spec.md — each carries PRODUCT064.
     const unclassified = byState('unclassified');
     expect(unclassified).toContain('openspec/changes/add-feature-x/tasks.md');
     expect(unclassified).toContain('openspec/specs/baz/spec.md');
     for (const c of classified.filter((c) => c.state === 'unclassified')) {
-      expect(c.diagnostics).toEqual([expect.objectContaining({ code: 'PRODUCT070' })]);
+      expect(c.diagnostics).toEqual([expect.objectContaining({ code: 'PRODUCT064' })]);
     }
   });
 
