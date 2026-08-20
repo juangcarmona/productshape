@@ -74,7 +74,12 @@ function filesystemErrorCode(error: unknown): string | undefined {
  * boundary because it determines the documented invalid-invocation exit code; parsing and
  * recursive discovery remain core responsibilities.
  */
-async function scanCitationTarget(target: string, absolutePath: string, repoRoot: string) {
+async function scanCitationTarget(
+  target: string,
+  absolutePath: string,
+  repoRoot: string,
+  fromConfiguredRoots = false,
+) {
   try {
     const targetStat = await stat(absolutePath);
     if (targetStat.isDirectory()) {
@@ -99,7 +104,15 @@ async function scanCitationTarget(target: string, absolutePath: string, repoRoot
 
     const code = filesystemErrorCode(error);
     if (code === 'ENOENT' || code === 'ENOTDIR') {
-      throw new CliError(`Citation target not found: '${target}'`, exitCodes.invalidInvocation);
+      // A configured root that does not exist is a setup defect, not an empty result: reporting
+      // "0 citations" for it would be the false green the configuration exists to prevent. Name
+      // the key so the fix is obvious in a repository whose consumers live somewhere else.
+      throw new CliError(
+        fromConfiguredRoots
+          ? `Configured citation consumer root not found: '${target}'; set 'citations.consumer-roots' in .product/config.yaml to the directories that hold your consumer documents, or pass a target explicitly`
+          : `Citation target not found: '${target}'`,
+        exitCodes.invalidInvocation,
+      );
     }
     if (code) {
       throw new CliError(
@@ -165,12 +178,18 @@ export async function runCitationsVerify(
     artifacts,
     repo.config.validation['warnings-as-errors'],
     options,
+    repo.config.citations['consumer-roots'],
   );
 }
 
 /**
- * Backward-compatible recursive scan. Scans the target directory (default `openspec/`) for
- * citations and verifies them. Does not enforce scope declarations.
+ * Backward-compatible recursive scan: parse the citations the targets happen to contain and
+ * verify them. Does not enforce scope declarations — that is what `--provider` is for.
+ *
+ * With an explicit target, exactly that directory or file is scanned. Without one, the
+ * repository's configured `citations.consumer-roots` are scanned (default `openspec`), because
+ * where consumer documents live is the repository's decision: a hardcoded root verifies nothing in
+ * a repository that keeps its consumers elsewhere, and reports success for having done so.
  */
 async function runRecursiveVerify(
   io: CliIo,
@@ -179,12 +198,17 @@ async function runRecursiveVerify(
   artifacts: LoadedArtifact[],
   warningsAsErrors: boolean,
   options: CitationsVerifyOptions,
+  consumerRoots: string[],
 ): Promise<number> {
-  // The target is the consumer-documents root (default: openspec/).
-  const targetDir = target ?? 'openspec';
-  const rootDir = isAbsolute(targetDir) ? targetDir : resolvePath(repoRoot, targetDir);
+  const targets = target !== undefined ? [target] : consumerRoots;
 
-  const citations = await scanCitationTarget(targetDir, rootDir, repoRoot);
+  const citations = [];
+  for (const targetDir of targets) {
+    const rootDir = isAbsolute(targetDir) ? targetDir : resolvePath(repoRoot, targetDir);
+    citations.push(
+      ...(await scanCitationTarget(targetDir, rootDir, repoRoot, target === undefined)),
+    );
+  }
   const verifications = verifyCitations(citations, artifacts);
 
   const allDiagnostics = verifications.flatMap((v) => v.diagnostics);
@@ -197,7 +221,7 @@ async function runRecursiveVerify(
     io.out(
       stableJson({
         schema: 'product-definition-as-code/citations/v1alpha1',
-        target: targetDir,
+        targets,
         citations: verifications.map((v) => ({
           id: v.citation.id,
           digest: v.citation.digest,

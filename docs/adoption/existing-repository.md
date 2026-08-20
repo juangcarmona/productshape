@@ -80,11 +80,16 @@ validation:
   warnings-as-errors: false # escalate validation warnings to errors for this repository
   require-journey-for-use-case: false
   require-requirement-reachability: true
+citations:
+  consumer-roots: # directories `citations verify` scans when no target is given
+    - openspec
 ```
 
 `product.model` and `product.changes` are **repository-relative paths, not relative to `product.root`** — they are resolved from the repository root.
 
 Unknown top-level keys are a configuration error (`PRODUCT050`). Unknown _nested_ keys are not rejected, so a misspelling inside `integrations` or `validation` is silently ignored: check spelling against this list. Defaults match the values shown; a minimal config declaring only `schema` is valid.
+
+`citations.consumer-roots` names the directories `prodshape citations verify` scans when you do not pass a target. Where consumer documents live is your repository's decision: the default is `openspec`, and a repository that keeps its consumers under `specs/` sets that instead. A configured root that does not exist is an error rather than an empty result, so a misconfigured gate cannot report success for having verified nothing.
 
 `integrations.shorthand-commands` must be set in configuration rather than passed per command, because `integration update` re-renders from configuration; `init --shorthand` writes it for you. Turning it off removes the aliases the previous setting generated, provided they are unmodified — a hand-edited one is left in place and reported.
 

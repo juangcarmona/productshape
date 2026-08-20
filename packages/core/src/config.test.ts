@@ -45,5 +45,30 @@ describe('parseConfig', () => {
     expect(config.product.root).toBe('docs/product');
     expect(config.generated.commit).toBe(false);
     expect(config.validation['require-requirement-reachability']).toBe(true);
+    // Where consumer documents live is the repository's decision; openspec is only the default.
+    expect(config.citations['consumer-roots']).toEqual(['openspec']);
+  });
+
+  it('reads citations.consumer-roots as a list of directories', () => {
+    const { config, diagnostics } = parseConfig(
+      'citations:\n  consumer-roots:\n    - specs\n    - docs/consumers\n',
+      '.product/config.yaml',
+    );
+    expect(diagnostics).toEqual([]);
+    expect(config.citations['consumer-roots']).toEqual(['specs', 'docs/consumers']);
+  });
+
+  it.each([
+    ['a bare string', 'citations:\n  consumer-roots: specs\n'],
+    ['a list with a non-string', 'citations:\n  consumer-roots:\n    - specs\n    - 7\n'],
+    ['a list with an empty entry', "citations:\n  consumer-roots:\n    - ''\n"],
+    // An empty list would scan nothing and report success: the false green the key prevents.
+    ['an empty list', 'citations:\n  consumer-roots: []\n'],
+  ])('rejects %s with PRODUCT050', (_label, content) => {
+    const { config, diagnostics } = parseConfig(content, '.product/config.yaml');
+    expect(diagnostics).toEqual([
+      expect.objectContaining({ code: 'PRODUCT050', field: 'citations.consumer-roots' }),
+    ]);
+    expect(config.citations['consumer-roots']).toEqual(['openspec']);
   });
 });

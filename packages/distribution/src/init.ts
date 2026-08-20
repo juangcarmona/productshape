@@ -100,6 +100,10 @@ export function configContent(ai: string[], shorthand = false): string {
     '  warnings-as-errors: false',
     '  require-journey-for-use-case: false',
     '  require-requirement-reachability: true',
+    'citations:',
+    '  # Directories `prodshape citations verify` scans when no target is given.',
+    '  consumer-roots:',
+    '    - openspec',
     '',
   ].join('\n');
 }

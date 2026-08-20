@@ -209,7 +209,12 @@ async function assertCitationCoverage(report, digestReport, specDir, citationArg
       payload.schema === 'product-definition-as-code/citations/v1alpha1',
       `${testCase.name}: unexpected citation schema ${payload.schema}`,
     );
-    invariant(payload.target === '.', `${testCase.name}: citation target was not repository root`);
+    // `citations verify` reports `targets` (the list actually scanned) since consumer roots
+    // became configurable; this harness passes `.` explicitly, so the list is exactly that.
+    invariant(
+      Array.isArray(payload.targets) && payload.targets.length === 1 && payload.targets[0] === '.',
+      `${testCase.name}: citation targets were not exactly the repository root`,
+    );
     invariant(Array.isArray(payload.citations), `${testCase.name}: no citations array`);
     invariant(
       Array.isArray(payload.diagnostics),

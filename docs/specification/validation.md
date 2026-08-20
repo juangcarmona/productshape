@@ -70,6 +70,7 @@ A citation's status is evaluated in a fixed order: invalid digest, unresolved ta
 
 | Code | Condition |
 | --- | --- |
+| `PRODUCT061` | Stale citation: the target resolves but its canonical content changed since the citation was recorded |
 | `PRODUCT101` | Artifact file name not aligned with its ID |
 | `PRODUCT102` | Active use case not present in any journey |
 | `PRODUCT103` | Requirement not reachable from any actor (see [Relationships → Reachability](https://github.com/product-definition-as-code/spec/blob/main/spec/relationships.md#reachability)); product-wide constraints are reachable by definition |

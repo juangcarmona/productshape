@@ -147,6 +147,36 @@ describe('prodshape validate', () => {
     expect(result.code).toBe(2);
   });
 
+  it('writes nothing: generation is opt-in', async () => {
+    // A read-only verdict must not mutate the tree to produce it. Writing generated files as a
+    // side effect left untracked `.product/` directories wherever validate ran, including inside
+    // other repositories' conformance fixtures.
+    const cleanDir = await mkdtemp(join(tmpdir(), 'product-definition-readonly-'));
+    try {
+      await mkdir(join(cleanDir, 'docs', 'product'), { recursive: true });
+      await cp(
+        join(repoRoot, 'examples', 'minimal', 'model'),
+        join(cleanDir, 'docs', 'product', 'model'),
+        { recursive: true },
+      );
+
+      const result = await run(['validate'], cleanDir);
+      expect(result.code).toBe(0);
+      await expect(access(join(cleanDir, '.product', 'generated'))).rejects.toThrow();
+
+      // --write-generated refreshes them on request.
+      const written = await run(['validate', '--write-generated'], cleanDir);
+      expect(written.code).toBe(0);
+      const diagnostics = await readFile(
+        join(cleanDir, '.product', 'generated', 'diagnostics.json'),
+        'utf8',
+      );
+      expect(JSON.parse(diagnostics)).toMatchObject({ diagnostics: [] });
+    } finally {
+      await rm(cleanDir, { recursive: true, force: true });
+    }
+  });
+
   it('exits 2 on invalid configuration', async () => {
     const badDir = await mkdtemp(join(tmpdir(), 'product-definition-badcfg-'));
     await mkdir(join(badDir, '.product'), { recursive: true });

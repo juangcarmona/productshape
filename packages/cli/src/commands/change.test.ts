@@ -266,6 +266,38 @@ describe('change validate', () => {
     expect(result.out.join('\n')).toContain('PRODUCT025');
   });
 
+  it('reports overlapping changes that are both missing an id as PRODUCT025', async () => {
+    // Self-exclusion used to compare `id`, so two id-less changes skipped each other
+    // (undefined === undefined) and a real overlap disappeared behind the missing-id defect.
+    // Identity is the change document, so both are now compared.
+    const first = await writeChange({
+      id: undefined,
+      dir: 'chg-first',
+      modify: ['BR-VALID-URL-001'],
+    });
+    const second = await writeChange({
+      id: undefined,
+      dir: 'chg-second',
+      modify: ['BR-VALID-URL-001'],
+    });
+    for (const dir of [first, second]) {
+      const changePath = join(workDir, 'docs', 'product', 'changes', 'active', dir, 'change.md');
+      // Drop the id line: the frontmatter is otherwise complete.
+      const document = await readFile(changePath, 'utf8');
+      await writeFile(changePath, document.replace(/^id: .*\n/m, ''), 'utf8');
+      await proposeArtifact(
+        dir,
+        'business-rules',
+        'BR-VALID-URL-001',
+        businessRule('BR-VALID-URL-001', `Changed by ${dir}`, 'UC-SHORTEN-001'),
+      );
+    }
+
+    const result = await run(['change', 'validate']);
+    expect(result.code).toBe(1);
+    expect(result.out.join('\n')).toContain('PRODUCT025');
+  });
+
   it('reports an operation with no proposed artifact as PRODUCT026', async () => {
     await writeChange({ add: ['BR-PROBE-001'] });
     const result = await run(['change', 'validate']);
@@ -330,6 +362,50 @@ describe('change validate', () => {
   ])('stays silent on %s: prose is not a question', async (_label, openQuestions) => {
     const result = await validateWithOpenQuestions(openQuestions);
     expect(result.code).toBe(0);
+    expect(result.out.join('\n')).not.toContain('PRODUCT108');
+  });
+
+  it('ignores a list item inside a fenced code block: an example is not a question', async () => {
+    // A change documenting `- [ ] item` in a code sample has not thereby left a question open.
+    const result = await validateWithOpenQuestions(
+      ['None.', '', '```markdown', '- [ ] An example task, not a question.', '```'].join('\n'),
+    );
+    expect(result.code).toBe(0);
+    expect(result.out.join('\n')).not.toContain('PRODUCT108');
+  });
+
+  it('still reports a real question alongside a fenced code block', async () => {
+    const result = await validateWithOpenQuestions(
+      ['- Should the rule cover relative URLs?', '', '```', '- not a question', '```'].join('\n'),
+    );
+    expect(result.out.join('\n')).toContain('PRODUCT108');
+  });
+
+  it('does not read a "### Open Questions" subsection of an earlier section', async () => {
+    // The section heading must anchor to a line start and to exactly two hashes. A `###`
+    // subsection of an earlier section is not this change's Open Questions section, and its list
+    // items are not its questions — matching it reported a question the change had answered.
+    const dir = await writeChange({ status: 'approved', add: ['BR-PROBE-001'] });
+    await proposeArtifact(
+      dir,
+      'business-rules',
+      'BR-PROBE-001',
+      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN-001'),
+    );
+    const changePath = join(workDir, 'docs', 'product', 'changes', 'active', dir, 'change.md');
+    const document = await readFile(changePath, 'utf8');
+    // The subsection lands under `## Problem`, ahead of the real `## Open Questions` (which says
+    // `None.`), so a loose match reaches it first.
+    await writeFile(
+      changePath,
+      document.replace(
+        '## Problem\n\nProbe.\n',
+        '## Problem\n\nProbe.\n\n### Open Questions\n\n- Belongs to the subsection, not the section.\n',
+      ),
+      'utf8',
+    );
+
+    const result = await run(['change', 'validate']);
     expect(result.out.join('\n')).not.toContain('PRODUCT108');
   });
 

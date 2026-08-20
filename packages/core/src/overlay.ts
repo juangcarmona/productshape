@@ -105,7 +105,11 @@ export function validateConcurrency(
   const diagnostics: Diagnostic[] = [];
   const touched = new Set([...change.operations.modify, ...change.operations.remove]);
   for (const other of otherChanges) {
-    if (other.id === change.id) continue;
+    // Identity is the change document, not its `id`: a change whose frontmatter is missing an `id`
+    // still has to be compared against every other change. Excluding by `id` made two id-less
+    // changes skip each other (undefined === undefined), hiding a real overlap behind a separate
+    // defect. `file` is unique per change, so it excludes exactly the change under validation.
+    if (other.file === change.file) continue;
     const overlap = [...other.operations.modify, ...other.operations.remove].filter((id) =>
       touched.has(id),
     );
@@ -133,6 +137,45 @@ export function validateConcurrency(
 const LIST_ITEM = /^[ \t]*(?:[-*+]|\d+[.)])(?=[ \t]|$)/m;
 
 /**
+ * The `## Open Questions` section body, up to the next `##` heading or the end of the document.
+ *
+ * The heading is anchored to a line start and to exactly two hashes: `### Open Questions` is a
+ * subsection of something else, and matching it would attribute its questions to a section the
+ * change does not have. The terminator is a `##` heading for the same reason — a `###` subsection
+ * inside Open Questions is part of it, not the start of the next section.
+ */
+const OPEN_QUESTIONS_SECTION = /(?:^|\n)##[ \t]+Open Questions[ \t]*\r?\n([\s\S]*?)(?=\n##[ \t]|$)/;
+
+/**
+ * Drop fenced code blocks (``` or ~~~) from a Markdown body.
+ *
+ * A list-looking line inside a fence is a code sample, not a question: a change that documents
+ * `- [ ] item` in an example block has not thereby left a question open. A fence closes on a fence
+ * of the same character, at least as long, carrying no info string; an unterminated fence runs to
+ * the end of the body.
+ */
+function withoutFencedCode(body: string): string {
+  const kept: string[] = [];
+  let open: { char: string; length: number } | undefined;
+  for (const line of body.split('\n')) {
+    const fence = /^[ \t]*(`{3,}|~{3,})[ \t]*(\S*)/.exec(line);
+    const marker = fence?.[1];
+    if (open === undefined) {
+      if (marker) {
+        open = { char: marker[0] as string, length: marker.length };
+        continue;
+      }
+      kept.push(line);
+      continue;
+    }
+    if (marker && marker[0] === open.char && marker.length >= open.length && !fence?.[2]) {
+      open = undefined;
+    }
+  }
+  return kept.join('\n');
+}
+
+/**
  * PRODUCT108: a change in status `approved` carrying unresolved open questions.
  *
  * Approval is the human product decision that authorizes apply, so it is the point at which an
@@ -146,8 +189,8 @@ const LIST_ITEM = /^[ \t]*(?:[-*+]|\d+[.)])(?=[ \t]|$)/m;
  */
 export function validateOpenQuestions(change: LoadedChange): Diagnostic[] {
   if (change.status !== 'approved') return [];
-  const section = /##\s+Open Questions\s*\n([\s\S]*?)(?=\n##\s|$)/.exec(change.body);
-  const sectionBody = section?.[1] ?? '';
+  const section = OPEN_QUESTIONS_SECTION.exec(change.body);
+  const sectionBody = withoutFencedCode(section?.[1] ?? '');
   if (!LIST_ITEM.test(sectionBody)) return [];
   return [
     {

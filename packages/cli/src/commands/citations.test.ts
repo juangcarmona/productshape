@@ -241,6 +241,75 @@ This is not the canonical requirement text.
     expect(textOrder).toEqual(expectedOrder);
   });
 
+  it('scans the configured consumer roots when no target is given', async () => {
+    // Where consumer documents live is the repository's decision. A repository that keeps them
+    // under specs/ used to have to name the directory on every invocation, because the default
+    // was hardcoded to openspec/.
+    await mkdir(join(workDir, '.product'), { recursive: true });
+    await writeFile(
+      join(workDir, '.product', 'config.yaml'),
+      'citations:\n  consumer-roots:\n    - specs\n    - docs/consumers\n',
+      'utf8',
+    );
+    await writeFile(
+      join(workDir, 'specs', 'consumer.md'),
+      `{pdac:cite id="FR-NOT-FOUND" digest="${VALID_DIGEST}"}\n`,
+      'utf8',
+    );
+    await mkdir(join(workDir, 'docs', 'consumers'), { recursive: true });
+    await writeFile(
+      join(workDir, 'docs', 'consumers', 'other.md'),
+      `{pdac:cite id="FR-ALSO-MISSING" digest="${VALID_DIGEST}"}\n`,
+      'utf8',
+    );
+
+    const result = await run(['citations', 'verify', '--format', 'json']);
+    const payload = JSON.parse(result.out.join('\n')) as {
+      targets: string[];
+      citations: { id: string; source: string }[];
+      summary: Record<string, number>;
+    };
+
+    expect(result.code).toBe(1);
+    expect(payload.targets).toEqual(['specs', 'docs/consumers']);
+    expect(payload.summary.total).toBe(2);
+    expect(payload.citations.map((c) => c.source).sort()).toEqual([
+      'docs/consumers/other.md',
+      'specs/consumer.md',
+    ]);
+  });
+
+  it('defaults to openspec when nothing is configured', async () => {
+    await mkdir(join(workDir, 'openspec'), { recursive: true });
+    await writeFile(
+      join(workDir, 'openspec', 'consumer.md'),
+      `{pdac:cite id="FR-NOT-FOUND" digest="${VALID_DIGEST}"}\n`,
+      'utf8',
+    );
+
+    const result = await run(['citations', 'verify', '--format', 'json']);
+    const payload = JSON.parse(result.out.join('\n')) as { targets: string[] };
+    expect(payload.targets).toEqual(['openspec']);
+    expect(result.code).toBe(1);
+  });
+
+  it('fails with exit 2 and names the config key when a configured root is missing', async () => {
+    // Reporting "0 citations" for a root that does not exist would be a false green: nothing was
+    // verified, and the run would say everything is fine.
+    await mkdir(join(workDir, '.product'), { recursive: true });
+    await writeFile(
+      join(workDir, '.product', 'config.yaml'),
+      'citations:\n  consumer-roots:\n    - nowhere\n',
+      'utf8',
+    );
+
+    const result = await run(['citations', 'verify']);
+    expect(result.code).toBe(2);
+    const err = result.err.join('\n');
+    expect(err).toContain("Configured citation consumer root not found: 'nowhere'");
+    expect(err).toContain('citations.consumer-roots');
+  });
+
   it('sorts OpenSpec scope and CLI diagnostics after the complete set is collected', async () => {
     const noExecutables = join(workDir, 'no-executables');
     await mkdir(noExecutables, { recursive: true });
