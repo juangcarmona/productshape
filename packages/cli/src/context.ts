@@ -47,7 +47,10 @@ async function exists(path: string): Promise<boolean> {
  * carry the same markers discovery looks for: without the check a typo would open an empty
  * repository and validate zero artifacts with zero errors, which reads as a pass.
  */
-export async function resolveRepository(io: CliIo, explicitRoot?: string): Promise<ProductRepository> {
+export async function resolveRepository(
+  io: CliIo,
+  explicitRoot?: string,
+): Promise<ProductRepository> {
   let root: string | undefined;
   if (explicitRoot === undefined) {
     root = await findRepositoryRoot(io.cwd);

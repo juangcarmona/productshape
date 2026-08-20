@@ -82,7 +82,10 @@ describe('prodshape validate', () => {
   });
 
   it('--root keeps examples/minimal directly runnable as a self-contained repository', async () => {
-    const result = await run(['validate', '--root', join(repoRoot, 'examples', 'minimal')], workDir);
+    const result = await run(
+      ['validate', '--root', join(repoRoot, 'examples', 'minimal')],
+      workDir,
+    );
     expect(result.err).toEqual([]);
     expect(result.code).toBe(0);
     expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across 9 artifact\(s\)/);

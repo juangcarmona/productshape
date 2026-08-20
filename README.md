@@ -95,20 +95,20 @@ All packages are published on npm under the [`@prodshape`](https://www.npmjs.com
 `@prodshape/integration-openspec` is the current OpenSpec package. The previously published `@prodshape/adapter-openspec` name belongs to older releases and is not part of the current package set.
 
 ```bash
-npm install -g @prodshape/cli@0.9.0
+npm install -g @prodshape/cli@0.10.0
 # or run it once, without installing
-pnpm dlx @prodshape/cli@0.9.0 --help
+pnpm dlx @prodshape/cli@0.10.0 --help
 ```
 
 ## Quickstart
 
-The supported published baseline is **`@prodshape/cli@0.9.0`**. The following block is the primary quickstart and release-contract test source: CI runs this exact block against the packed release candidate, substituting only `PRODSHAPE_PACKAGE` with the tarball path.
+The supported published baseline is **`@prodshape/cli@0.10.0`**. The following block is the primary quickstart and release-contract test source: CI runs this exact block against the packed release candidate, substituting only `PRODSHAPE_PACKAGE` with the tarball path.
 
 <!-- release-contract-quickstart:start -->
 
 ```bash
 set -eu
-PRODSHAPE_PACKAGE="${PRODSHAPE_PACKAGE:-@prodshape/cli@0.9.0}"
+PRODSHAPE_PACKAGE="${PRODSHAPE_PACKAGE:-@prodshape/cli@0.10.0}"
 
 mkdir productshape-quickstart
 cd productshape-quickstart
@@ -174,7 +174,7 @@ printf '%s\n' "$stale_output" | grep -q 'PRODUCT061'
 
 The first verification reports `current`. The second is expected to fail with `PRODUCT061` because the cited rule changed and this quickstart enables `warnings-as-errors` before the stale check.
 
-The release candidate on `main` adds `prodshape --version` and includes the tested SDD-aware `prodshape init --sdd openspec` workflow. Both are **unreleased** and must not be treated as part of `0.9.0`; they become current only when a newer CLI version is published.
+Features on `main` newer than the pinned baseline are **unreleased** until a newer CLI version is published; the Current status section below lists them.
 
 The authoring contract is queryable without a repository:
 
@@ -205,9 +205,9 @@ The gate retains JSON and human-readable reports, verifies every pinned digest, 
 
 ## Current status
 
-`@prodshape/cli@0.9.0` is the supported published baseline. It includes deterministic brownfield recovery sessions, Product Change overlay validation and apply, citation emission and verification, snapshot generation, schema discovery, filename repair, and generated AI/OpenSpec integrations. The [root changelog](CHANGELOG.md) records every stable CLI release from `0.1.0` through `0.9.0`.
+`@prodshape/cli@0.10.0` is the supported published baseline. It includes deterministic brownfield recovery sessions, Product Change overlay validation and apply with the affected-citation report, citation emission and verification (including provider-aware OpenSpec population verification), snapshot generation, schema discovery, filename repair, SDD-aware initialization, `prodshape --version`, and generated AI/OpenSpec integrations. The [root changelog](CHANGELOG.md) records every stable CLI release from `0.1.0` through `0.10.0`.
 
-The next release candidate adds SDD-aware initialization, `prodshape --version` (with `-v`), the corrected Product Change lifecycle guidance from issue #93, the executable release-contract gate from issue #94, and the issue #106 paper cuts: `prodshape change create <CHG-ID>` scaffolds a valid draft Product Change, `PRODUCT002` names the offending field, the OpenSpec upsell tip prints only where it applies, and `validate`/`citations verify` accept `--root <dir>` (so `prodshape validate --root examples/minimal` runs the example directly). None is claimed as published until the package version advances on npm.
+The next release candidate adds the issue #106 paper cuts: `prodshape change create <CHG-ID>` scaffolds a valid draft Product Change, `-v` joins `--version`, `PRODUCT002` names the offending field, the OpenSpec upsell tip prints only where it applies, and `validate`/`citations verify` accept `--root <dir>` (so `prodshape validate --root examples/minimal` runs the example directly). None is claimed as published until the package version advances on npm.
 
 The loop is not a diagram here; the repository runs on it. This repository defines itself with its own methodology — the model the CLI validates above is the product definition of ProductShape itself, evolved through Product Changes, accepted through pull-request merges and verified by citations.
 

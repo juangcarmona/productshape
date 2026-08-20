@@ -129,7 +129,8 @@ const noBaselineRevision = '0000000';
  * change reaches `approved` (PRODUCT108).
  */
 const sectionGuidance: Record<string, string> = {
-  Problem: 'What is wrong or missing in the current Product Definition? State the problem, not the solution.',
+  Problem:
+    'What is wrong or missing in the current Product Definition? State the problem, not the solution.',
   'Intended Product Outcome':
     'What the Product Definition says once this change is accepted. Describe the destination, not the steps.',
   Rationale: 'Why this outcome, and why now.',
@@ -145,7 +146,10 @@ const sectionGuidance: Record<string, string> = {
 /** 'CHG-ADD-CITE-001' -> 'Add cite 001': a real title is expected to replace it, but the default
  * must satisfy the schema's non-empty `title` and read as something a human would recognise. */
 function defaultTitle(id: string): string {
-  const words = id.split('-').slice(1).map((word) => word.toLowerCase());
+  const words = id
+    .split('-')
+    .slice(1)
+    .map((word) => word.toLowerCase());
   const first = words[0] ?? '';
   return [first.charAt(0).toUpperCase() + first.slice(1), ...words.slice(1)].join(' ');
 }

@@ -2,7 +2,7 @@
 
 This guide covers adopting Product Definition as Code for a new product: a fresh repository, or a repository that has code scaffolding but no accumulated product behaviour to recover. You will initialize the layout, author the initial product baseline with the Define operation, validate it, and then run your first Product Change.
 
-> These commands target the supported published baseline, [`@prodshape/cli@0.9.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.9.0). `prodshape` is canonical; `product-definition` is an identical v0.x compatibility alias, removed before v1. Every step marked "by hand" also works without the CLI: the layout, schemas and templates are plain files. See [Limitations](../limitations.md).
+> These commands target the supported published baseline, [`@prodshape/cli@0.10.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.10.0). `prodshape` is canonical; `product-definition` is an identical v0.x compatibility alias, removed before v1. Every step marked "by hand" also works without the CLI: the layout, schemas and templates are plain files. See [Limitations](../limitations.md).
 
 ## 1. Initialize the repository
 
@@ -12,7 +12,7 @@ prodshape init --ai claude
 
 `--ai` accepts a comma-separated list of `claude`, `copilot` and `codex` (`--ai claude,copilot`). It is optional: you can add integrations later with `prodshape integration add`.
 
-For `0.9.0`, initialize the product definition first and add an existing OpenSpec workspace with `prodshape integration add openspec`. SDD detection and same-command `prodshape init --sdd openspec` are implemented on `main` for the next release but are not available in the supported published baseline.
+Initialize the product definition and wire OpenSpec in one command with `prodshape init --sdd openspec`, or initialize first and add an existing OpenSpec workspace with `prodshape integration add openspec`.
 
 `init` creates:
 
