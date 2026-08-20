@@ -7,9 +7,10 @@
 import { execFile } from 'node:child_process';
 import { cp, mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
+import { contentDigestBytes } from '@prodshape/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runCli } from '../program.js';
 
@@ -474,6 +475,34 @@ describe('change apply', () => {
     );
   }
 
+  /** A consumer document, placed outside the product definition. */
+  async function writeConsumer(relPath: string, content: string): Promise<void> {
+    const path = join(workDir, ...relPath.split('/'));
+    await mkdir(dirname(path), { recursive: true });
+    await writeFile(path, content, 'utf8');
+  }
+
+  /** The current digest of a baseline model artifact, as a recorded citation would carry it. */
+  async function modelDigest(relPath: string): Promise<string> {
+    return contentDigestBytes(
+      await readFile(join(workDir, 'docs', 'product', 'model', ...relPath.split('/'))),
+    );
+  }
+
+  /** One consumer citing the artifact approvedChange modifies and the one it removes. */
+  async function citingConsumer(): Promise<void> {
+    await writeConsumer(
+      'specs/shortening.md',
+      [
+        '# Shortening',
+        '',
+        `{pdac:cite id="BR-VALID-URL-001" digest="${await modelDigest('business-rules/br-valid-url-001.md')}"}`,
+        `{pdac:cite id="CON-NO-TRACKING" digest="${await modelDigest('requirements/constraints/con-no-tracking.md')}"}`,
+        '',
+      ].join('\n'),
+    );
+  }
+
   it.each(['draft', 'proposed', 'applied', 'rejected', 'superseded'])(
     'refuses a change in status %s with PRODUCT028, exit 1 and the tree untouched',
     async (status) => {
@@ -809,6 +838,134 @@ describe('change apply', () => {
     const result = await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run']);
     expect(result.code).toBe(0);
     expect(result.out.join('\n')).toContain('Product diff: 0 added, 0 modified, 0 removed');
+  });
+
+  it('--dry-run reports the affected citation set with location and prospective status', async () => {
+    await approvedChange();
+    await citingConsumer();
+    const before = await git('status', '--porcelain');
+
+    const result = await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run']);
+    expect(result.code).toBe(0);
+    const text = result.out.join('\n');
+    expect(text).toContain('Affected citations: 2');
+    // A citation of a modified artifact forecasts stale; of a removed artifact, unresolved.
+    expect(text).toContain('specs/shortening.md:3\tBR-VALID-URL-001\tstale');
+    expect(text).toContain('specs/shortening.md:4\tCON-NO-TRACKING\tunresolved');
+    // The report is recomputed output: reporting it writes nothing (RFC 0048).
+    expect(await git('status', '--porcelain')).toBe(before);
+  });
+
+  it('--dry-run carries the affected citation set in the JSON form', async () => {
+    await approvedChange();
+    await citingConsumer();
+
+    const result = await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run', '--format', 'json']);
+    expect(result.code).toBe(0);
+    const payload = JSON.parse(result.out.join('\n')) as {
+      affectedCitations: {
+        id: string;
+        source: string;
+        line: number;
+        form: string;
+        prospectiveStatus: string;
+      }[];
+    };
+    expect(payload.affectedCitations).toEqual([
+      {
+        id: 'BR-VALID-URL-001',
+        source: 'specs/shortening.md',
+        line: 3,
+        form: 'inline',
+        prospectiveStatus: 'stale',
+      },
+      {
+        id: 'CON-NO-TRACKING',
+        source: 'specs/shortening.md',
+        line: 4,
+        form: 'inline',
+        prospectiveStatus: 'unresolved',
+      },
+    ]);
+  });
+
+  it('apply reports the affected citation set identically to its dry run', async () => {
+    await approvedChange();
+    await citingConsumer();
+
+    // Everything from the count line onward, minus the closing dry-run/applied sentence.
+    const affectedBlock = (lines: string[]): string[] =>
+      lines.slice(
+        lines.findIndex((line) => line.startsWith('Affected citations:')),
+        -1,
+      );
+
+    const dryRun = await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run']);
+    const applied = await run(['change', 'apply', 'CHG-PROBE-001']);
+    expect(applied.code).toBe(0);
+    expect(affectedBlock(applied.out)).toEqual(affectedBlock(dryRun.out));
+    expect(affectedBlock(applied.out)[0]).toBe('Affected citations: 2');
+  });
+
+  it('states an explicit zero when no citations are affected', async () => {
+    // Absence of impact is a claim the reviewer relies on; silence is not (RFC 0048).
+    await approvedChange();
+    const text = await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run']);
+    expect(text.code).toBe(0);
+    expect(text.out).toContain('Affected citations: 0');
+
+    const json = await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run', '--format', 'json']);
+    const payload = JSON.parse(json.out.join('\n')) as { affectedCitations: unknown[] };
+    expect(payload.affectedCitations).toEqual([]);
+  });
+
+  it('does not affect citations of a declared modification that changes nothing', async () => {
+    // Impact derives from the effective change: a byte-identical modify is absent from the diff,
+    // so a current citation of the declared target must not be reported as affected.
+    const dir = await writeChange({ status: 'approved', modify: ['BR-VALID-URL-001'] });
+    const unchanged = await readFile(
+      join(workDir, 'docs', 'product', 'model', 'business-rules', 'br-valid-url-001.md'),
+      'utf8',
+    );
+    await proposeArtifact(dir, 'business-rules', 'BR-VALID-URL-001', unchanged);
+    await writeConsumer(
+      'specs/still-current.md',
+      `{pdac:cite id="BR-VALID-URL-001" digest="${await modelDigest('business-rules/br-valid-url-001.md')}"}\n`,
+    );
+
+    const result = await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run']);
+    expect(result.code).toBe(0);
+    expect(result.out).toContain('Affected citations: 0');
+  });
+
+  it('orders affected citations deterministically across consumers and forms', async () => {
+    await approvedChange();
+    const digest = await modelDigest('business-rules/br-valid-url-001.md');
+    // Written in reverse of the expected order, so the order below is sorted, not incidental.
+    await writeConsumer('specs/citations.yaml', `- id: BR-VALID-URL-001\n  digest: ${digest}\n`);
+    await writeConsumer(
+      'specs/b.md',
+      `{pdac:cite id="BR-VALID-URL-001" digest="${digest}"}\n\n{pdac:cite id="BR-VALID-URL-001" digest="${digest}"}\n`,
+    );
+    await writeConsumer('specs/a.md', `{pdac:cite id="BR-VALID-URL-001" digest="${digest}"}\n`);
+
+    const result = await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run', '--format', 'json']);
+    expect(result.code).toBe(0);
+    const payload = JSON.parse(result.out.join('\n')) as {
+      affectedCitations: { source: string; line: number; form: string }[];
+    };
+    expect(
+      payload.affectedCitations.map(({ source, line, form }) => ({ source, line, form })),
+    ).toEqual([
+      { source: 'specs/a.md', line: 1, form: 'inline' },
+      { source: 'specs/b.md', line: 1, form: 'inline' },
+      { source: 'specs/b.md', line: 3, form: 'inline' },
+      { source: 'specs/citations.yaml', line: 1, form: 'sidecar-ledger' },
+    ]);
+
+    // The sidecar's point of use is its ledger entry, not a file line.
+    const text = (await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run'])).out.join('\n');
+    expect(text).toContain('specs/citations.yaml entry 1\tBR-VALID-URL-001\tstale');
   });
 });
 

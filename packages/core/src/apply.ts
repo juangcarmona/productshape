@@ -204,6 +204,30 @@ export async function planApply(options: PlanApplyOptions): Promise<ApplyPlan> {
   };
 }
 
+/**
+ * The artifact set of the applied result: the baseline with removals dropped and every proposed
+ * artifact standing in for (or added beside) its baseline counterpart.
+ *
+ * This is the model the affected citation set forecasts against (RFC 0048): a prospective
+ * citation status is a state the consumer will hold after the apply, so it must be computed
+ * against the result, never against the baseline.
+ */
+export function appliedArtifacts(
+  baseline: LoadedArtifact[],
+  change: LoadedChange,
+): LoadedArtifact[] {
+  const removed = new Set(change.operations.remove);
+  const proposed = change.proposed.filter((artifact) => artifact.id !== undefined);
+  const replaced = new Set(proposed.map((artifact) => artifact.id));
+  return [
+    ...baseline.filter(
+      (artifact) =>
+        artifact.id === undefined || (!removed.has(artifact.id) && !replaced.has(artifact.id)),
+    ),
+    ...proposed,
+  ];
+}
+
 async function pathExists(path: string): Promise<boolean> {
   try {
     await access(path);

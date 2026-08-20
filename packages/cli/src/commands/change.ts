@@ -1,16 +1,20 @@
 import { mkdir, rename, stat } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import {
+  appliedArtifacts,
+  computeAffectedCitations,
   discoverChanges,
   escalateWarnings,
   executeApply,
   loadChange,
   planApply,
   preflightApply,
+  scanCitations,
   sortDiagnostics,
   stableJson,
   validateBaseline,
   validateChange,
+  type AffectedCitation,
   type ApplyPlan,
   type Diagnostic,
   type LoadedChange,
@@ -174,7 +178,22 @@ export interface ChangeApplyOptions extends ChangeFormatOptions {
   dryRun?: boolean;
 }
 
-function reportPlan(io: CliIo, plan: ApplyPlan, dryRun: boolean): void {
+/**
+ * A citation's point of use: file and line for a payload-carried citation, ledger file and entry
+ * for a sidecar citation, whose `line` is the 1-based entry ordinal rather than a file line.
+ */
+function citationLocation(citation: AffectedCitation['citation']): string {
+  return citation.form === 'sidecar-ledger'
+    ? `${citation.source} entry ${citation.line}`
+    : `${citation.source}:${citation.line}`;
+}
+
+function reportPlan(
+  io: CliIo,
+  plan: ApplyPlan,
+  affected: AffectedCitation[],
+  dryRun: boolean,
+): void {
   io.out(`${dryRun ? 'Would apply' : 'Applied'} ${plan.changeId}:`);
   for (const action of plan.actions) io.out(`  ${action.description}`);
   const { added, modified, removed } = plan.diff;
@@ -186,14 +205,22 @@ function reportPlan(io: CliIo, plan: ApplyPlan, dryRun: boolean): void {
   for (const entry of [...added, ...modified, ...removed]) {
     io.out(`  ${entry.id}\t${entry.kind}\t${entry.digest ?? '-'}`);
   }
+  // The count is stated even at zero: absence of impact is a claim the reviewer relies on,
+  // silence is not (RFC 0048).
+  io.out(`Affected citations: ${affected.length}`);
+  for (const { citation, prospectiveStatus } of affected) {
+    const anchor = citation.anchor ? `#${citation.anchor}` : '';
+    io.out(`  ${citationLocation(citation)}\t${citation.id}${anchor}\t${prospectiveStatus}`);
+  }
 }
 
 /**
  * `prodshape change apply <id>`: materialize an approved Product Change into the working tree.
  *
  * Apply is not acceptance. It writes the change's operations into the proposal's model files,
- * computes the product diff, revalidates the result and archives the change. It creates no commit
- * and merges nothing: only a human merging the pull request accepts the change.
+ * computes the product diff and the affected citation set, revalidates the result and archives
+ * the change. It creates no commit and merges nothing: only a human merging the pull request
+ * accepts the change.
  */
 export async function runChangeApply(
   io: CliIo,
@@ -239,6 +266,21 @@ export async function runChangeApply(
     return exitCodes.validationErrors;
   }
 
+  // The affected citation set (RFC 0048): every citation whose target artifact appears in the
+  // product diff, with the status it will hold against the applied result. Citations resolve
+  // within one repository, so the index is scanned from the repository root. Like the product
+  // diff it is recomputed output — never persisted into the archived change — and never a veto:
+  // breaking consumers is frequently a change's purpose, so apply proceeds however many
+  // citations go stale. Scanned before execution moves the change directory.
+  const changedIds = [...plan.diff.added, ...plan.diff.modified, ...plan.diff.removed].map(
+    (entry) => entry.id,
+  );
+  const affected = computeAffectedCitations(
+    await scanCitations(repo.root, repo.root),
+    changedIds,
+    appliedArtifacts(baseline.artifacts, change),
+  );
+
   // A dry run still preflights: it reads every write source, confirms every delete target and
   // verifies the archive destination is absent, so it fails the same way a real apply would
   // instead of reporting "Would apply" for a plan that cannot execute.
@@ -255,10 +297,18 @@ export async function runChangeApply(
         change: plan.changeId,
         actions: plan.actions,
         diff: plan.diff,
+        affectedCitations: affected.map(({ citation, prospectiveStatus }) => ({
+          id: citation.id,
+          anchor: citation.anchor,
+          source: citation.source,
+          line: citation.line,
+          form: citation.form,
+          prospectiveStatus,
+        })),
       }).trimEnd(),
     );
   } else {
-    reportPlan(io, plan, options.dryRun ?? false);
+    reportPlan(io, plan, affected, options.dryRun ?? false);
     io.out(
       options.dryRun
         ? 'Dry run: nothing was written.'
