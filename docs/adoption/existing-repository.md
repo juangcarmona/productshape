@@ -2,7 +2,7 @@
 
 This guide covers what Product Definition as Code physically adds to any existing repository, who owns each path, and how to configure it. For how to build the model itself, follow the [greenfield](greenfield.md) or [brownfield](brownfield.md) guide; if the repository already uses OpenSpec, also read [Adopting in an existing OpenSpec repository](existing-openspec-repository.md).
 
-> These commands target the supported published baseline, [`@prodshape/cli@0.10.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.10.0). They use `prodshape`; the `product-definition` alias is equivalent through v0.x. The layout and configuration below are a fixed contract and can also be created by hand. See [Limitations](../limitations.md).
+> These commands target the supported published baseline, [`@prodshape/cli@0.11.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.11.0). They use `prodshape`; the `product-definition` alias is equivalent through v0.x. The layout and configuration below are a fixed contract and can also be created by hand. See [Limitations](../limitations.md).
 
 ## What init touches
 

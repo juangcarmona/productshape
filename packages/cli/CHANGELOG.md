@@ -1,5 +1,12 @@
 # @prodshape/cli
 
+## 0.11.0
+
+### Minor Changes
+
+- 376afcd: Five CLI paper cuts from issue #106. `-v` joins `--version`. `prodshape change create <CHG-ID>` scaffolds a draft Product Change under `changes/active/<id>/` — prompt-free and CI-safe, with `base-revision` resolved from the repository HEAD (or the `0000000` CHG-INITIAL sentinel outside Git history), every required body section present so `prodshape change validate` accepts the scaffold as-is, an optional `--title`, `--format json`, and a refusal (exit 2) to overwrite an existing change. `PRODUCT002` now names the offending field: an additional-properties violation appends the property (`document must NOT have additional properties ('bogus-field')`) and property-level failures fill the diagnostic's `field` with the dotted path. The `--provider openspec` upsell tip after `citations verify` prints only where an OpenSpec workspace exists and the ProductShape integration is not wired yet, so unrelated repositories and already-integrated ones stay quiet. `validate` and `citations verify` gain `--root <dir>` to name the product repository explicitly instead of discovering upward from the working directory — a directory without repository markers is refused with exit 2 — and `examples/minimal` ships its own `.product/config.yaml`, making it directly runnable with `prodshape validate --root examples/minimal`.
+- df69fb8: Consumer-verification diagnostics leave the reserved band: `PRODUCT070`/`PRODUCT074`/`PRODUCT075` become `PRODUCT064`/`PRODUCT065`/`PRODUCT066`, matching the numbering spec RFC 0042 allocates for unclassified documents, bound documents without citations and invalid scope declarations, and the OpenSpec adapter mechanics `PRODUCT071`/`PRODUCT072`/`PRODUCT073` become `PRODUCT067`/`PRODUCT068`/`PRODUCT069` beside them. `PRODUCT070`-`PRODUCT079` returns fully to the reservation RFC 0021 states for model-repository resolution. The conditions, severities and precedence are unchanged; only the numbers move, while they are hours old and nothing external depends on them.
+
 ## 0.10.0
 
 ### Minor Changes
