@@ -45,11 +45,11 @@ Provider-aware verification enumerates the expected current OpenSpec consumer do
 
 | State | Meaning | Gate |
 | --- | --- | --- |
-| `bound` | The document carries at least one citation, or declares `pdac-scope: cited`. | Every citation is verified; a bound document with zero citations fails (`PRODUCT074`). |
+| `bound` | The document carries at least one citation, or declares `pdac-scope: cited`. | Every citation is verified; a bound document with zero citations fails (`PRODUCT065`). |
 | `exempt` | A human declared `pdac-scope: none` because the document has no product-semantic dependency. | Passes, but stays visible in the results. |
-| `unclassified` | Neither binding nor exemption is declared. | Fails (`PRODUCT070`). |
+| `unclassified` | Neither binding nor exemption is declared. | Fails (`PRODUCT064`). |
 
-Binding and exemption are human declarations — never declare `pdac-scope: none` just because citations are missing (an exemption contradicted by citations in the same document fails with `PRODUCT075`). Because the population is enumerated, discovering zero citations over current documents is a set of failures, never a vacuous pass. This establishes citation grounding and population coverage; it does not prove semantic completeness or implementation correctness — those remain review questions.
+Binding and exemption are human declarations — never declare `pdac-scope: none` just because citations are missing (an exemption contradicted by citations in the same document fails with `PRODUCT066`). Because the population is enumerated, discovering zero citations over current documents is a set of failures, never a vacuous pass. This establishes citation grounding and population coverage; it does not prove semantic completeness or implementation correctness — those remain review questions.
 
 The bare form `prodshape citations verify [target]` remains available as a plain recursive scan of whatever citations a directory happens to contain, without population or scope enforcement.
 

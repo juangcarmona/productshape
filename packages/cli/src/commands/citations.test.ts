@@ -272,8 +272,8 @@ This is not the canonical requirement text.
     };
     expect(result.code).toBe(1);
     expect(payload.diagnostics.map(({ file, code }) => ({ file, code }))).toEqual([
-      { file: 'openspec/', code: 'PRODUCT073' },
-      { file: 'openspec/changes/a-change/proposal.md', code: 'PRODUCT070' },
+      { file: 'openspec/', code: 'PRODUCT069' },
+      { file: 'openspec/changes/a-change/proposal.md', code: 'PRODUCT064' },
       { file: 'openspec/changes/z-change/proposal.md', code: 'PRODUCT060' },
     ]);
     expect(payload.summary).toMatchObject({
@@ -518,7 +518,7 @@ describe('citations verify --provider openspec (scope model)', () => {
     ]);
   });
 
-  it('fails a document declared bound that carries no citations (PRODUCT074)', async () => {
+  it('fails a document declared bound that carries no citations (PRODUCT065)', async () => {
     await installFakeOpenSpec();
     await writeChangeDoc('add-x', 'proposal.md', `---\npdac-scope: cited\n---\n\n## Why\n`);
 
@@ -527,13 +527,13 @@ describe('citations verify --provider openspec (scope model)', () => {
     expect(payload.documents[0]).toMatchObject({ state: 'bound', citations: 0 });
     expect(payload.diagnostics).toEqual([
       expect.objectContaining({
-        code: 'PRODUCT074',
+        code: 'PRODUCT065',
         file: 'openspec/changes/add-x/proposal.md',
       }),
     ]);
   });
 
-  it('fails an invalid scope declaration (PRODUCT075) and an exemption contradicted by citations', async () => {
+  it('fails an invalid scope declaration (PRODUCT066) and an exemption contradicted by citations', async () => {
     await installFakeOpenSpec();
     await writeChangeDoc('add-x', 'proposal.md', `---\npdac-scope: maybe\n---\n\n## Why\n`);
     await writeChangeDoc(
@@ -544,7 +544,7 @@ describe('citations verify --provider openspec (scope model)', () => {
 
     const { code, payload } = await verifyJson();
     expect(code).toBe(1);
-    const codes075 = payload.diagnostics.filter((d) => d.code === 'PRODUCT075');
+    const codes075 = payload.diagnostics.filter((d) => d.code === 'PRODUCT066');
     expect(codes075.map((d) => d.file).sort()).toEqual([
       'openspec/changes/add-x/design.md',
       'openspec/changes/add-x/proposal.md',
@@ -566,7 +566,7 @@ describe('citations verify --provider openspec (scope model)', () => {
       totalCitations: 0,
       unclassified: 2,
     });
-    expect(payload.diagnostics.every((d) => d.code === 'PRODUCT070')).toBe(true);
+    expect(payload.diagnostics.every((d) => d.code === 'PRODUCT064')).toBe(true);
   });
 
   it('passes a workspace with no current documents, reporting zero totals', async () => {
@@ -615,12 +615,12 @@ describe('citations verify --provider openspec (scope model)', () => {
     expect(result.err.join('\n')).toContain("Unknown provider 'speckit'");
   });
 
-  it('fails with PRODUCT072 when no OpenSpec workspace exists', async () => {
+  it('fails with PRODUCT068 when no OpenSpec workspace exists', async () => {
     const { code, payload } = await verifyJson();
     expect(code).toBe(1);
     expect(payload.summary).toMatchObject({ totalDocuments: 0, totalCitations: 0 });
     expect(payload.diagnostics).toEqual([
-      expect.objectContaining({ code: 'PRODUCT072', file: 'openspec/' }),
+      expect.objectContaining({ code: 'PRODUCT068', file: 'openspec/' }),
     ]);
   });
 });

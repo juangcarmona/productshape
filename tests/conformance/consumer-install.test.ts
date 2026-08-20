@@ -838,7 +838,7 @@ describe.skipIf(!hasOpenspec)('OpenSpec citation enforcement (packed binary)', (
     await writeFile(join(changeDir, 'tasks.md'), '## Tasks\n\n- [ ] Implement\n', 'utf8');
     const unclassified = await prodshape(['citations', 'verify', '--provider', 'openspec']);
     expect(unclassified.code).toBe(1);
-    expect(unclassified.stdout).toContain('PRODUCT070');
+    expect(unclassified.stdout).toContain('PRODUCT064');
 
     // 3. A human declares the exemption; the population is fully bound or exempt and passes.
     await writeFile(
