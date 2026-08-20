@@ -140,9 +140,9 @@ async function scanCitationTarget(
  * because no citations were discovered.
  *
  * Diagnostics: PRODUCT042 (invalid digest), PRODUCT060 (unresolved), PRODUCT061 (stale),
- * PRODUCT062 (tampered), PRODUCT063 (anchor not found), PRODUCT070 (unclassified document),
- * PRODUCT072 (provider workspace missing), PRODUCT073 (OpenSpec CLI missing), PRODUCT074
- * (bound document with zero citations), PRODUCT075 (invalid scope declaration). PRODUCT061 is a
+ * PRODUCT062 (tampered), PRODUCT063 (anchor not found), PRODUCT064 (unclassified document),
+ * PRODUCT068 (provider workspace missing), PRODUCT069 (OpenSpec CLI missing), PRODUCT065
+ * (bound document with zero citations), PRODUCT066 (invalid scope declaration). PRODUCT061 is a
  * warning; the repository's `warnings-as-errors` configuration escalates it.
  */
 export async function runCitationsVerify(

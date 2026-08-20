@@ -195,7 +195,7 @@ async function discoverArchivedChanges(archiveDir: string): Promise<string[]> {
  * For `openspec/specs/` (the current specs, not changes), all `.md` files are discovered.
  *
  * If the OpenSpec CLI is not runnable, enumeration falls back to filesystem scanning of
- * `openspec/changes/` (excluding `archive/` unless `includeArchived`) and reports PRODUCT073:
+ * `openspec/changes/` (excluding `archive/` unless `includeArchived`) and reports PRODUCT069:
  * the population then rests on layout convention alone, which the gate must surface rather than
  * silently trust.
  */

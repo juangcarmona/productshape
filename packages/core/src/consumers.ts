@@ -15,8 +15,8 @@
  * what stops a verifier from passing vacuously: zero discovered citations over enumerated
  * documents is a set of failures, not a success.
  *
- * Diagnostics: PRODUCT070 (unclassified document), PRODUCT074 (bound document with zero
- * citations), PRODUCT075 (invalid scope declaration).
+ * Diagnostics: PRODUCT064 (unclassified document), PRODUCT065 (bound document with zero
+ * citations), PRODUCT066 (invalid scope declaration).
  */
 import { readFile } from 'node:fs/promises';
 import { parseCitations } from './citations.js';
@@ -104,7 +104,7 @@ const SCOPE_COMMENT_PATTERN = /<!--\s*pdac-scope:\s*(\S+)\s*-->/;
  * (`pdac-scope: none`) or as an HTML comment (`<!-- pdac-scope: none -->`).
  *
  * Returns `null` when no declaration is present. A declaration with an unrecognized value is
- * returned with `value: null` so classification can report it (PRODUCT075) instead of silently
+ * returned with `value: null` so classification can report it (PRODUCT066) instead of silently
  * treating the document as undeclared.
  */
 export function extractScopeDeclaration(content: string, source: string): ScopeDeclaration | null {
@@ -144,12 +144,12 @@ export interface ClassifiedConsumerDocument {
  * Classify one consumer document from its declaration and parsed citations.
  *
  * - An explicit `pdac-scope: none` makes the document `exempt`; if it nevertheless carries
- *   citations the exemption is invalid (PRODUCT075) — a human must resolve the contradiction.
+ *   citations the exemption is invalid (PRODUCT066) — a human must resolve the contradiction.
  * - An explicit `pdac-scope: cited` makes the document `bound`; with zero citations it fails
- *   (PRODUCT074) rather than passing as if nothing were expected.
+ *   (PRODUCT065) rather than passing as if nothing were expected.
  * - Without a declaration, at least one citation binds the document (the citation itself is the
- *   human's dependency declaration); zero citations leave it `unclassified` (PRODUCT070).
- * - An unrecognized `pdac-scope` value is reported (PRODUCT075) and classifies nothing.
+ *   human's dependency declaration); zero citations leave it `unclassified` (PRODUCT064).
+ * - An unrecognized `pdac-scope` value is reported (PRODUCT066) and classifies nothing.
  */
 export function classifyConsumerDocument(
   document: ConsumerDocument,
