@@ -69,9 +69,11 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .option('--format <format>', 'output format: text or json', 'text')
     .option('--write-generated', 'refresh the generated outputs from this run')
     .option('--root <dir>', 'product repository root (default: discovered upward from cwd)')
-    .action(async (options: { format: 'text' | 'json'; writeGenerated?: boolean; root?: string }) => {
-      capture.code = await runValidate(io, options);
-    });
+    .action(
+      async (options: { format: 'text' | 'json'; writeGenerated?: boolean; root?: string }) => {
+        capture.code = await runValidate(io, options);
+      },
+    );
 
   program
     .command('init')
