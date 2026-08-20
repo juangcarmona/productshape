@@ -4,9 +4,11 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-The supported published CLI baseline is `@prodshape/cli@0.11.0`. Every stable public CLI release from `0.1.0` through that baseline is recorded below; package-specific dependency changes remain in each package's changelog.
+The supported published CLI baseline is `@prodshape/cli@0.12.0`. Every stable public CLI release from `0.1.0` through that baseline is recorded below; package-specific dependency changes remain in each package's changelog.
 
 ## [Unreleased]
+
+## [0.12.0]
 
 ## [0.11.0]
 
@@ -35,7 +37,7 @@ The supported published CLI baseline is `@prodshape/cli@0.11.0`. Every stable pu
 ### Changed
 
 - Product Change guidance now follows the normative lifecycle: overlay validation, human product approval, explicit apply on a working branch, pull-request review, and merge acceptance of the resulting baseline. Apply is not acceptance, and neither apply nor merge attests implementation, verification, release or deployment.
-- Public documentation identifies `@prodshape/cli@0.11.0` as the supported baseline, uses current package names, marks next-release behaviour explicitly, and derives or omits model counts instead of maintaining them by hand.
+- Public documentation identifies `@prodshape/cli@0.12.0` as the supported baseline, uses current package names, marks next-release behaviour explicitly, and derives or omits model counts instead of maintaining them by hand.
 
 - The sidecar citation ledger is accepted in both the bare-array and the `citations:` mapping form, and `citations verify` can check a supported consumer file directly.
 
@@ -153,7 +155,8 @@ Published as `@prodshape/cli` 0.2.0, `core` and `distribution` 0.3.0, `integrati
 - Promotion applies its plan in two phases (preflight, then execute with the change-directory move last), so a failed promotion no longer leaves a partially promoted baseline.
 - `validation.warnings-as-errors` is enforced uniformly across baseline validate, change validate, handoff generation, graph generation and promotion.
 
-[unreleased]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.11.0...HEAD
+[unreleased]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.12.0...HEAD
+[0.12.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.11.0...@prodshape/cli@0.12.0
 [0.11.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.10.0...@prodshape/cli@0.11.0
 [0.10.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.9.0...@prodshape/cli@0.10.0
 [0.9.0]: https://github.com/juangcarmona/productshape/releases/tag/@prodshape/cli@0.9.0
