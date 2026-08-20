@@ -4,12 +4,28 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-The supported published CLI baseline is `@prodshape/cli@0.9.0`. Every stable public CLI release from `0.1.0` through that baseline is recorded below; package-specific dependency changes remain in each package's changelog.
+The supported published CLI baseline is `@prodshape/cli@0.10.0`. Every stable public CLI release from `0.1.0` through that baseline is recorded below; package-specific dependency changes remain in each package's changelog.
 
 ## [Unreleased]
 
 ### Added
 
+- `prodshape change create <CHG-ID>` scaffolds a valid draft Product Change: frontmatter with `status: draft` and a `base-revision` resolved from the repository head (or the `CHG-INITIAL` sentinel outside git history), every required body section, and a `proposed/` directory. It validates the ID before writing and refuses to overwrite an existing change.
+- `-v` as the short form of `--version`.
+- `--root <dir>` on `validate` and `citations verify`: an explicit root replaces upward discovery but must carry the discovery markers, so a mistyped path cannot open an empty repository and read as a pass. `examples/minimal` carries its own `.product/config.yaml` and runs directly via `prodshape validate --root examples/minimal`.
+
+### Changed
+
+- `PRODUCT002` names the offending field: JSON Schema violations for additional and missing properties carry the dotted property path in the message and the diagnostic `field`.
+- The OpenSpec integration tip after `citations verify` prints only in an OpenSpec workspace without the integration installed, and never in JSON output.
+
+## [0.10.0]
+
+### Added
+
+- `change apply` and `change apply --dry-run` report the affected citation set before the change is accepted: every citation whose target the product diff reports as changed, with consumer path, point of use, target id and the prospective status under the existing precedence. An empty set is stated explicitly. The report is recomputed output, never persisted, and never a veto.
+- Provider-aware OpenSpec citation enforcement: `citations verify --provider openspec` verifies the enumerated consumer-document population (`bound` / `exempt` / `unclassified`) instead of globbing for citation syntax, so a workspace with current documents can never pass vacuously through zero discovered citations (`PRODUCT070`, `PRODUCT074`, `PRODUCT075`).
+- SDD-aware initialization: `prodshape init` detects OpenSpec, Kiro and Spec Kit; `--sdd openspec` wires the OpenSpec integration in the same run.
 - `prodshape --version`, sourced directly from the CLI package manifest and verified from the packed tarball.
 - A release-contract smoke gate that packs the CLI, installs the tarball without workspace links, and executes the primary documented init, validation, citation, current-verification and stale-verification workflow in a clean repository.
 - SDD-aware initialization on `main`: `prodshape init --sdd openspec` can create or detect an OpenSpec workspace and wire the integration in the same run. This remains explicitly unreleased until the next CLI package is published.
@@ -17,10 +33,15 @@ The supported published CLI baseline is `@prodshape/cli@0.9.0`. Every stable pub
 ### Changed
 
 - Product Change guidance now follows the normative lifecycle: overlay validation, human product approval, explicit apply on a working branch, pull-request review, and merge acceptance of the resulting baseline. Apply is not acceptance, and neither apply nor merge attests implementation, verification, release or deployment.
-- Public documentation identifies `@prodshape/cli@0.9.0` as the supported baseline, uses current package names, marks next-release behaviour explicitly, and derives or omits model counts instead of maintaining them by hand.
+- Public documentation identifies `@prodshape/cli@0.10.0` as the supported baseline, uses current package names, marks next-release behaviour explicitly, and derives or omits model counts instead of maintaining them by hand.
+
+- The sidecar citation ledger is accepted in both the bare-array and the `citations:` mapping form, and `citations verify` can check a supported consumer file directly.
 
 ### Fixed
 
+- `change apply --dry-run` runs the full preflight, so a dry run reports the identical refusal a real apply would instead of "Would apply" for a plan that cannot execute.
+- Diagnostics are ordered by file, code and target with locale-independent UTF-16 code-unit comparison across citation verification, Product Change apply and managed-integration results.
+- The Release workflow installs the OpenSpec CLI before `pnpm run version`, whose `integration update` step shells out to it; without it every version-PR run failed and no release could be prepared.
 - The stable publish job now configures a git identity before `changeset publish`. Without one, the annotated tags changesets creates (`git tag <name> -m <name>`) failed for every package, and the failure was silent because `tagPublish` discards what `git.tag` returns. The v0.2.0 release published six packages and pushed zero tags without failing. The push step now also verifies that every published version has a tag on the remote, rather than trusting a push that reports `Everything up-to-date` whether or not there was anything to push.
 
 ## [0.9.0]
@@ -130,7 +151,8 @@ Published as `@prodshape/cli` 0.2.0, `core` and `distribution` 0.3.0, `integrati
 - Promotion applies its plan in two phases (preflight, then execute with the change-directory move last), so a failed promotion no longer leaves a partially promoted baseline.
 - `validation.warnings-as-errors` is enforced uniformly across baseline validate, change validate, handoff generation, graph generation and promotion.
 
-[unreleased]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.9.0...HEAD
+[unreleased]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.10.0...HEAD
+[0.10.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.9.0...@prodshape/cli@0.10.0
 [0.9.0]: https://github.com/juangcarmona/productshape/releases/tag/@prodshape/cli@0.9.0
 [0.8.1]: https://github.com/juangcarmona/productshape/releases/tag/@prodshape/cli@0.8.1
 [0.8.0]: https://github.com/juangcarmona/productshape/releases/tag/@prodshape/cli@0.8.0

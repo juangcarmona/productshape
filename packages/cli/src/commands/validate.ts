@@ -14,10 +14,12 @@ export interface ValidateOptions {
    * must not mutate the working tree to do it. `graph` is the command that generates outputs.
    */
   writeGenerated?: boolean;
+  /** Explicit repository root; replaces upward discovery from the working directory. */
+  root?: string;
 }
 
 export async function runValidate(io: CliIo, options: ValidateOptions): Promise<number> {
-  const repo = await resolveRepository(io);
+  const repo = await resolveRepository(io, options.root);
   const { graph, diagnostics: reported } = await validateBaseline(repo);
   const diagnostics = escalateWarnings(reported, repo.config.validation['warnings-as-errors']);
 

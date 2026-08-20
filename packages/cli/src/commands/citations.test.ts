@@ -357,6 +357,65 @@ This is not the canonical requirement text.
   });
 });
 
+describe('citations verify provider tip', () => {
+  const citation = `{pdac:cite id="FR-NOT-FOUND" digest="${VALID_DIGEST}"}\n`;
+  const tipPattern = /^Tip: use --provider openspec/;
+
+  it('stays silent where no OpenSpec workspace exists', async () => {
+    await writeFile(join(workDir, 'specs', 'consumer.md'), citation, 'utf8');
+    const result = await run(['citations', 'verify', 'specs']);
+    expect(result.out.some((line) => tipPattern.test(line))).toBe(false);
+  });
+
+  it('prints where an OpenSpec workspace exists and the integration is not wired', async () => {
+    await mkdir(join(workDir, 'openspec'), { recursive: true });
+    await writeFile(join(workDir, 'specs', 'consumer.md'), citation, 'utf8');
+    const result = await run(['citations', 'verify', 'specs']);
+    expect(result.out.some((line) => tipPattern.test(line))).toBe(true);
+  });
+
+  it('stays silent once the OpenSpec integration is installed', async () => {
+    await mkdir(join(workDir, 'openspec'), { recursive: true });
+    await mkdir(join(workDir, '.product', 'integrations'), { recursive: true });
+    await writeFile(join(workDir, '.product', 'integrations', 'openspec.json'), '{}\n', 'utf8');
+    await writeFile(join(workDir, 'specs', 'consumer.md'), citation, 'utf8');
+    const result = await run(['citations', 'verify', 'specs']);
+    expect(result.out.some((line) => tipPattern.test(line))).toBe(false);
+  });
+
+  it('never reaches --format json output', async () => {
+    await mkdir(join(workDir, 'openspec'), { recursive: true });
+    await writeFile(join(workDir, 'specs', 'consumer.md'), citation, 'utf8');
+    const result = await run(['citations', 'verify', 'specs', '--format', 'json']);
+    expect(() => JSON.parse(result.out.join('\n'))).not.toThrow();
+    expect(result.out.join('\n')).not.toContain('Tip:');
+  });
+});
+
+describe('citations verify --root', () => {
+  it('verifies the named repository from an unrelated working directory', async () => {
+    await writeFile(
+      join(workDir, 'specs', 'consumer.md'),
+      `{pdac:cite id="FR-NOT-FOUND" digest="${VALID_DIGEST}"}\n`,
+      'utf8',
+    );
+    const elsewhere = await mkdtemp(join(tmpdir(), 'prodshape-elsewhere-'));
+    try {
+      const out: string[] = [];
+      const err: string[] = [];
+      const code = await runCli(
+        ['citations', 'verify', 'specs', '--root', workDir, '--format', 'json'],
+        { cwd: elsewhere, out: (l) => out.push(l), err: (l) => err.push(l) },
+      );
+      const payload = JSON.parse(out.join('\n')) as { summary: { total: number } };
+      expect(code).toBe(1);
+      expect(payload.summary.total).toBe(1);
+    } finally {
+      await rm(elsewhere, { recursive: true, force: true });
+    }
+  });
+});
+
 describe('citations verify --provider openspec (scope model)', () => {
   interface ProviderPayload {
     schema: string;

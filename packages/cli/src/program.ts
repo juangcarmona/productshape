@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 import {
   runChangeApply,
   runChangeArchive,
+  runChangeCreate,
   runChangeList,
   runChangeValidate,
 } from './commands/change.js';
@@ -55,7 +56,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
   const program = new Command('prodshape');
   program
     .description('ProductShape - the reference implementation of Product Definition as Code')
-    .version(cliPackage.version)
+    .version(cliPackage.version, '-v, --version', 'output the version number')
     .exitOverride()
     .configureOutput({
       writeOut: (str) => io.out(str.trimEnd()),
@@ -67,7 +68,8 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .description('Validate the current product model')
     .option('--format <format>', 'output format: text or json', 'text')
     .option('--write-generated', 'refresh the generated outputs from this run')
-    .action(async (options: { format: 'text' | 'json'; writeGenerated?: boolean }) => {
+    .option('--root <dir>', 'product repository root (default: discovered upward from cwd)')
+    .action(async (options: { format: 'text' | 'json'; writeGenerated?: boolean; root?: string }) => {
       capture.code = await runValidate(io, options);
     });
 
@@ -139,6 +141,15 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .command('change')
     .description('Elaborate, validate and apply Product Changes');
   change
+    .command('create')
+    .description('Scaffold a draft Product Change under changes/active/')
+    .argument('<id>', 'change ID (e.g. CHG-ADD-CITE-001)')
+    .option('--title <title>', 'change title (default: derived from the ID)')
+    .option('--format <format>', 'output format: text or json', 'text')
+    .action(async (id: string, options: { title?: string; format: 'text' | 'json' }) => {
+      capture.code = await runChangeCreate(io, id, options);
+    });
+  change
     .command('validate')
     .description('Validate live Product Changes as overlays on the baseline')
     .argument('[id]', 'change ID (e.g. CHG-ADD-CITE-001); omit to validate every live change')
@@ -208,6 +219,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .description('Scan consumer documents and report citation statuses')
     .argument('[target]', 'consumer documents root (default: citations.consumer-roots)')
     .option('--format <format>', 'output format: text or json', 'text')
+    .option('--root <dir>', 'product repository root (default: discovered upward from cwd)')
     .option('--provider <provider>', 'provider-aware verification (openspec)')
     .option('--change <name>', 'limit to one OpenSpec change (with --provider openspec)')
     .option('--include-archived', 'include archived OpenSpec changes (with --provider openspec)')
@@ -216,6 +228,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
         target: string | undefined,
         options: {
           format: 'text' | 'json';
+          root?: string;
           provider?: string;
           change?: string;
           includeArchived?: boolean;

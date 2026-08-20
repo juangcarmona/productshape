@@ -4,7 +4,7 @@ This guide is for repositories that already run OpenSpec. Product Definition as 
 
 Want to start typing? Jump to [the walkthrough](#the-walkthrough-first-rule-first-citation-first-drift): first rule, first citation and first detected drift.
 
-> These commands target the supported published baseline, [`@prodshape/cli@0.9.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.9.0), which includes the OpenSpec integration. They use `prodshape`; the `product-definition` alias is equivalent through v0.x. The contracts are fixed in the [specification](https://github.com/product-definition-as-code/spec). See [Limitations](../limitations.md).
+> These commands target the supported published baseline, [`@prodshape/cli@0.10.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.10.0), which includes the OpenSpec integration. They use `prodshape`; the `product-definition` alias is equivalent through v0.x. The contracts are fixed in the [specification](https://github.com/product-definition-as-code/spec). See [Limitations](../limitations.md).
 
 ## What Product Definition adds
 
@@ -79,14 +79,14 @@ You need: Node.js 22 or later, npm, and your OpenSpec repository, meaning a git 
 ### 1. Install the layer and wire the integration (2 minutes)
 
 ```bash
-npm install -g @prodshape/cli@0.9.0
+npm install -g @prodshape/cli@0.10.0
 prodshape init
 prodshape integration add openspec
 ```
 
 `init` creates `docs/product/` and `.product/`; `integration add openspec` then merges PDaC citation rules additively into `openspec/config.yaml` (reversible with `prodshape integration remove openspec`) and records the integration under `.product/integrations/`. Nothing else in `openspec/` is touched, and your configuration entries survive the merge. Add `--ai claude`, `--ai copilot` or `--ai claude,copilot` to `init` if you also want the generated skills and agent files.
 
-Same-command `prodshape init --sdd openspec` is implemented and tested on `main` for the next release, but it is not available in `0.9.0` and is therefore not used by this walkthrough.
+Same-command `prodshape init --sdd openspec` is also available; this walkthrough wires the integration separately so it also fits a repository whose product definition was initialized earlier.
 
 ### 2. Author CHG-INITIAL, the first Product Change (5 minutes)
 

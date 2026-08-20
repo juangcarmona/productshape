@@ -7,6 +7,10 @@ tests/conformance/cases/
 pnpm-lock.yaml
 # Generated, managed AI-integration files are produced by the renderers, not hand-formatted;
 # formatting them would break the installation-lock hashes (managed-file drift).
+# openspec/config.yaml and .product/integrations/ are the OpenSpec renderer's managed outputs,
+# reshaped by whatever openspec CLI version the release runner regenerates them with.
+openspec/config.yaml
+.product/integrations/
 .claude/
 .github/skills/
 .github/prompts/
