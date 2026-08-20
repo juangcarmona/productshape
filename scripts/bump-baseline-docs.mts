@@ -43,7 +43,12 @@ let promoted = false;
 if (!version.includes('-')) {
   const changelogPath = join(repoRoot, 'CHANGELOG.md');
   const before = await readFile(changelogPath, 'utf8');
-  let changelog = before.replace(PIN, `@prodshape/cli@${version}`);
+  // Repin prose only. Link-definition lines (`[x.y.z]: ...`) encode the release history -
+  // rewriting the versions inside them would corrupt every past compare and tag link.
+  let changelog = before
+    .split('\n')
+    .map((line) => (line.startsWith('[') ? line : line.replace(PIN, `@prodshape/cli@${version}`)))
+    .join('\n');
 
   if (!changelog.includes(`## [${version}]`)) {
     const unreleasedHeading = '## [Unreleased]';
