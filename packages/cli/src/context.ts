@@ -1,3 +1,5 @@
+import { access } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
 import { findRepositoryRoot, openRepository, type ProductRepository } from '@prodshape/core';
 
 /** Documented exit codes (docs/specification/validation.md). */
@@ -29,14 +31,44 @@ export interface CliIo {
   prompt?: (question: string) => Promise<string>;
 }
 
-/** Resolve the repository from the working directory or fail with exit code 2. */
-export async function resolveRepository(io: CliIo): Promise<ProductRepository> {
-  const root = await findRepositoryRoot(io.cwd);
-  if (!root) {
-    throw new CliError(
-      'No product repository found: expected .product/config.yaml or docs/product upward from the working directory',
-      exitCodes.invalidInvocation,
-    );
+async function exists(path: string): Promise<boolean> {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Resolve the repository from the working directory or fail with exit code 2.
+ *
+ * An explicit root (`--root <dir>`) replaces upward discovery entirely, but the directory must
+ * carry the same markers discovery looks for: without the check a typo would open an empty
+ * repository and validate zero artifacts with zero errors, which reads as a pass.
+ */
+export async function resolveRepository(io: CliIo, explicitRoot?: string): Promise<ProductRepository> {
+  let root: string | undefined;
+  if (explicitRoot === undefined) {
+    root = await findRepositoryRoot(io.cwd);
+    if (!root) {
+      throw new CliError(
+        'No product repository found: expected .product/config.yaml or docs/product upward from the working directory',
+        exitCodes.invalidInvocation,
+      );
+    }
+  } else {
+    const candidate = resolve(io.cwd, explicitRoot);
+    const marked =
+      (await exists(join(candidate, '.product', 'config.yaml'))) ||
+      (await exists(join(candidate, 'docs', 'product')));
+    if (!marked) {
+      throw new CliError(
+        `No product repository at '${explicitRoot}': expected .product/config.yaml or docs/product in that directory`,
+        exitCodes.invalidInvocation,
+      );
+    }
+    root = candidate;
   }
   const repo = await openRepository(root);
   if (repo.configDiagnostics.some((d) => d.severity === 'error')) {

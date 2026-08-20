@@ -8,9 +8,9 @@ dist/
 # Test output
 coverage/
 
-# Derived, regenerable outputs (never canonical)
-.product/generated/
-.product/cache/
+# Derived, regenerable outputs (never canonical) — at the root and in runnable examples.
+**/.product/generated/
+**/.product/cache/
 
 # Archived change drafts: the PR is the record, not the draft.
 docs/product/changes/archive/

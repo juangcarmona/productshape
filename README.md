@@ -207,7 +207,7 @@ The gate retains JSON and human-readable reports, verifies every pinned digest, 
 
 `@prodshape/cli@0.9.0` is the supported published baseline. It includes deterministic brownfield recovery sessions, Product Change overlay validation and apply, citation emission and verification, snapshot generation, schema discovery, filename repair, and generated AI/OpenSpec integrations. The [root changelog](CHANGELOG.md) records every stable CLI release from `0.1.0` through `0.9.0`.
 
-The next release candidate adds SDD-aware initialization, `prodshape --version`, the corrected Product Change lifecycle guidance from issue #93, and the executable release-contract gate from issue #94. None is claimed as published until the package version advances on npm.
+The next release candidate adds SDD-aware initialization, `prodshape --version` (with `-v`), the corrected Product Change lifecycle guidance from issue #93, the executable release-contract gate from issue #94, and the issue #106 paper cuts: `prodshape change create <CHG-ID>` scaffolds a valid draft Product Change, `PRODUCT002` names the offending field, the OpenSpec upsell tip prints only where it applies, and `validate`/`citations verify` accept `--root <dir>` (so `prodshape validate --root examples/minimal` runs the example directly). None is claimed as published until the package version advances on npm.
 
 The loop is not a diagram here; the repository runs on it. This repository defines itself with its own methodology — the model the CLI validates above is the product definition of ProductShape itself, evolved through Product Changes, accepted through pull-request merges and verified by citations.
 

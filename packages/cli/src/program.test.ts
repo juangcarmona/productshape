@@ -48,6 +48,10 @@ describe('prodshape validate', () => {
     expect(result.code).toBe(0);
     expect(result.err).toEqual([]);
     expect(result.out).toEqual([packageJson.version]);
+
+    const short = await run(['-v'], workDir);
+    expect(short.code).toBe(0);
+    expect(short.out).toEqual([packageJson.version]);
   });
 
   it('exits 0 on the minimal example', async () => {
@@ -62,6 +66,37 @@ describe('prodshape validate', () => {
     expect(result.code).toBe(0);
     const parsed = JSON.parse(result.out.join('\n')) as { diagnostics: unknown[] };
     expect(parsed.diagnostics).toEqual([]);
+  });
+
+  it('--root validates the named repository instead of discovering upward', async () => {
+    // The working directory is unrelated: only the explicit root decides what is validated.
+    const elsewhere = await mkdtemp(join(tmpdir(), 'product-definition-elsewhere-'));
+    try {
+      const result = await run(['validate', '--root', workDir], elsewhere);
+      expect(result.err).toEqual([]);
+      expect(result.code).toBe(0);
+      expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\)/);
+    } finally {
+      await rm(elsewhere, { recursive: true, force: true });
+    }
+  });
+
+  it('--root keeps examples/minimal directly runnable as a self-contained repository', async () => {
+    const result = await run(['validate', '--root', join(repoRoot, 'examples', 'minimal')], workDir);
+    expect(result.err).toEqual([]);
+    expect(result.code).toBe(0);
+    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across 9 artifact\(s\)/);
+  });
+
+  it('--root refuses a directory that is not a product repository with exit 2', async () => {
+    const empty = await mkdtemp(join(tmpdir(), 'product-definition-empty-'));
+    try {
+      const result = await run(['validate', '--root', empty], workDir);
+      expect(result.code).toBe(2);
+      expect(result.err.join('\n')).toContain('No product repository at');
+    } finally {
+      await rm(empty, { recursive: true, force: true });
+    }
   });
 
   it('exits 1 on validation errors', async () => {

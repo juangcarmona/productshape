@@ -114,11 +114,25 @@ export class SchemaRegistry {
     if (!validator(data)) {
       for (const error of validator.errors ?? []) {
         if (prefixMismatch && error.instancePath === '/id') continue;
-        const field = error.instancePath.replace(/^\//, '').replaceAll('/', '.') || undefined;
+        const path = error.instancePath.replace(/^\//, '').replaceAll('/', '.');
+        // Property-level failures name their property only in `params`: without it, ajv's
+        // "must NOT have additional properties" never says which field broke the closed
+        // contract. Appended for additionalProperties; a required-property message already
+        // carries its property name. Either way the offending property completes `field`.
+        const params: Record<string, unknown> = error.params;
+        const offending =
+          typeof params.additionalProperty === 'string'
+            ? params.additionalProperty
+            : typeof params.missingProperty === 'string'
+              ? params.missingProperty
+              : undefined;
+        const detail =
+          typeof params.additionalProperty === 'string' ? ` ('${params.additionalProperty}')` : '';
+        const field = offending ? (path ? `${path}.${offending}` : offending) : path || undefined;
         diagnostics.push({
           severity: 'error',
           code: codes.schemaViolation,
-          message: `${error.instancePath || 'document'} ${error.message ?? 'is invalid'}`,
+          message: `${error.instancePath || 'document'} ${error.message ?? 'is invalid'}${detail}`,
           file,
           artifact,
           field,
