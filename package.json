@@ -20,7 +20,7 @@
     "test": "vitest run",
     "build": "pnpm -r run build",
     "release-contract:smoke": "node --import tsx scripts/release-contract-smoke.mts",
-    "version": "changeset version && pnpm build && node packages/cli/dist/bin.js integration update",
+    "version": "changeset version && pnpm build && node packages/cli/dist/bin.js integration update && node --import tsx scripts/bump-baseline-docs.mts",
     "release": "changeset publish",
     "measure:snapshot": "tsx scripts/measure-snapshot.mts",
     "shots:snapshot": "tsx scripts/screenshot-snapshot.mts"

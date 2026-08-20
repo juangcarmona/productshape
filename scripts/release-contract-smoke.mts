@@ -2,6 +2,7 @@ import { execFile } from 'node:child_process';
 import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { baselineDocs } from './baseline-docs.mts';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
@@ -63,14 +64,6 @@ if (/(@prodshape\/cli@latest|workspace:|pnpm\s+link|npm\s+link)/.test(quickstart
   );
 }
 
-const baselineDocs = [
-  'packages/cli/README.md',
-  'docs/limitations.md',
-  'docs/adoption/greenfield.md',
-  'docs/adoption/brownfield.md',
-  'docs/adoption/existing-repository.md',
-  'docs/adoption/existing-openspec-repository.md',
-];
 for (const path of baselineDocs) {
   requireText(await readFile(join(repoRoot, path), 'utf8'), documentedSpec, path);
 }
