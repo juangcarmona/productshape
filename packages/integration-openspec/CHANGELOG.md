@@ -1,0 +1,19 @@
+# @prodshape/integration-openspec
+
+## 0.2.0
+
+### Minor Changes
+
+- 3f591ca: Provider-aware OpenSpec citation enforcement. A reusable, framework-neutral SDD integration-provider contract now lives in core (`SddIntegrationProvider`): a provider enumerates the expected current native consumer documents of its workspace, and core classifies each enumerated document into exactly one effective scope state — `bound` (carries citations or declares `pdac-scope: cited`), `exempt` (a human declared `pdac-scope: none`), or `unclassified` (neither, which fails). OpenSpec enumeration (the `openspec/` layout, changes/archive lifecycle split and the `openspec` CLI) moved out of core into `@prodshape/integration-openspec`, which implements the contract as the first adapter; core no longer exports `discoverOpenSpecPopulation`. `prodshape citations verify --provider openspec` verifies the enumerated population instead of globbing for citation syntax: an unclassified current document fails (`PRODUCT070`), a bound document with zero citations fails (new `PRODUCT074`), an invalid or contradicted scope declaration fails (new `PRODUCT075`), a valid exemption passes but stays visible in text and JSON results, archived changes stay excluded unless `--include-archived`, and a workspace with current documents can never pass vacuously because zero citations were discovered. The provider JSON result uses the `citations-provider/v1alpha1` schema with document states and per-state totals. `integration add openspec` now also teaches the scope model through `openspec/config.yaml` guidance, states the exact provider-aware verification command, and installs a CI-ready example at `.product/integrations/openspec.ci.yml` that makes the repository's configured stale-citation policy explicit without ever changing it; `update`, `check` and `remove` manage that file alongside the rest. The gate never invokes `openspec validate`, and it establishes citation grounding and population coverage only — not semantic completeness or implementation conformance.
+- 3b331a5: SDD-aware initialization. `prodshape init` detects SDD frameworks present in the repository (OpenSpec via `openspec/`, Kiro via `.kiro/`, Spec Kit via `.specify/`) and reports them; `--sdd openspec` wires the OpenSpec integration in the same run, bootstrapping the workspace first (`openspec init --tools none`, through `npx -y @fission-ai/openspec@1` when the CLI is not installed) when none exists. Kiro and Spec Kit receive printed setup guidance because they install through their own tooling. In an interactive terminal a bare `init` asks, informed by the detection; with an explicit `--sdd` value, `--sdd none`, or no terminal it never prompts, and `--dry-run` describes the SDD actions without executing anything. `doctor` now points at `prodshape integration add openspec` when a workspace exists without the integration. The OpenSpec integration records the exact strings it injects into `openspec/config.yaml`, so a later update replaces outdated PDaC entries instead of accumulating duplicates, `detectOpenSpecVersion` consults the repository's `node_modules/.bin` so a devDependency install counts, and the CLI-not-found message names the real package (`@fission-ai/openspec`).
+
+### Patch Changes
+
+- 0170f81: Align generated initialization, recovery and OpenSpec guidance with the independent Product Change lifecycle: overlay validation, human product approval, explicit apply, pull-request review and merge acceptance remain distinct from implementation and delivery evidence.
+- Updated dependencies [885e4b0]
+- Updated dependencies [0170f81]
+- Updated dependencies [de5e199]
+- Updated dependencies [213d2e1]
+- Updated dependencies [d4c2ba8]
+- Updated dependencies [3f591ca]
+  - @prodshape/core@0.13.0
