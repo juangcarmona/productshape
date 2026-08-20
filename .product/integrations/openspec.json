@@ -1,8 +1,8 @@
 {
   "provider": "openspec",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "openspecVersion": "1.10.0",
-  "installedAt": "2026-08-20T21:00:43.192Z",
+  "installedAt": "2026-08-20T21:52:54.150Z",
   "configPath": "openspec/config.yaml",
   "ciExamplePath": ".product/integrations/openspec.ci.yml",
   "managed": {
