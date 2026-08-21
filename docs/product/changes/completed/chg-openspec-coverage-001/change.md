@@ -29,9 +29,9 @@ Default verification enumerates archived historical changes alongside current do
 
 Citing what you derived from is necessary but not sufficient: completeness of the impacted set is a property of the product graph, not of any one document, so the integration must direct the consumer through the graph before the consumer starts writing. Making the pass a dedicated propose-phase step, with exclusions recorded, turns "cite every artifact it derives from" from an aspiration into a checkable procedure.
 
-Archived history is immutable — the workflow forbids rewriting it — so a defect found there is not a defect anyone can fix in place; it is information about how far the canonical model has moved since that change shipped. Warnings are exactly the severity for information: visible by default, non-blocking by default, and escalatable through the repository's existing `warnings-as-errors` policy where a repository wants history drift to block. Excluding history entirely withheld the information; gating it as errors would make an immutable document a permanent build failure. Neither serves the reader.
+Archived history cannot be edited — the workflow forbids rewriting it — so a problem found there is not something anyone can fix in place; it is information about how far the canonical model has moved since that change shipped. Warnings are exactly the right severity for information: visible by default, non-blocking by default, and a repository that wants history drift to block can escalate them with `warnings-as-errors`. Leaving history out hid the information; failing on it would turn an uneditable document into a permanent build failure. Neither serves the reader.
 
-The scope gate stays current-only because binding and exemption are declarations made while a document is being authored; demanding them retroactively from documents that predate the mechanism, or that closed before it applied, would manufacture failures no one can honestly resolve.
+The scope gate stays current-only because binding and exemption are declared while a document is being written; demanding them from documents that predate the mechanism, or that were finished before it applied, would create failures no one can honestly resolve.
 
 ## Affected Product Areas
 

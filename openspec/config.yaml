@@ -21,13 +21,12 @@ context: >-
   `npx prodshape cite --id <ID> --digest <digest>` to emit the citation record.
   Place inline citations on their own line directly under the text they ground.
 
-  Mapping a change's intent to its impacted artifacts is semantic work: compare
-  the intent against the entire product definition first, then expand the
-  identified set structurally with `npx prodshape impact <ID>`. When the intent
-  contradicts or exceeds the accepted definition, record that drift in the
-  proposal as an explicit warning carrying the marker `<!-- pdac-drift ids="..."
-  summary="..." -->` (enumerable with `npx prodshape drift`) for humans to
-  resolve — never resolve it silently.
+  Finding which artifacts a change impacts is understanding work: compare the
+  change's intent with the whole product definition first, then widen the result
+  with `npx prodshape impact <ID>`. When the intent contradicts or goes beyond
+  the definition, record that drift in the proposal with the marker `<!--
+  pdac-drift ids="..." summary="..." -->` (listed by `npx prodshape drift`) and
+  let humans decide — never fix it quietly.
 
   Every current OpenSpec document (proposal, specs, design, tasks and
   openspec/specs/) has exactly one effective scope state: bound (it carries at
@@ -39,9 +38,9 @@ context: >-
   with zero citations fails. Verify with `npx prodshape citations verify
   --provider openspec`: it enumerates the expected document population, so zero
   discovered citations is a set of failures, never a pass. The scope gate
-  applies to current documents; archived changes' citations are still verified,
-  with their defects reported as warnings because history is immutable and its
-  drift is information.
+  applies to current documents; citations in archived changes are still checked,
+  but their problems are reported as warnings, because archived history cannot
+  be edited and its drift is information for the reader.
 
   The accepted Product Definition changes only through this lifecycle: propose a
   Product Change under docs/product/changes/, validate its overlay while the
@@ -71,28 +70,25 @@ rules:
       of its own (frontmatter or `<!-- pdac-scope: none -->`) when a human
       judges the document has no product-semantic dependency. Never declare an
       exemption just because citations are missing."
-    - "Identifying the impacted artifacts is a dedicated step before proposal
-      content is written, and it is semantic first: read the entire product
-      definition under the model root (docs/product/model by default), compare
-      this change's motivating intent and goals — the backlog item that started
-      it, if one exists — against it, and identify every artifact this change
-      depends on, alters or contradicts. Then expand the set structurally: run
-      `npx prodshape impact <ID>` on each identified artifact and walk the
-      reported direct and transitive neighbours. Record the impacted set in the
-      proposal, cite every impacted artifact from each document that derives
-      from it (proposal, specs, design, tasks), and list any
-      examined-but-excluded neighbour so the exclusion is visible, never
-      silent."
-    - "If this change's goals contradict the accepted product definition, or
-      require behaviour it does not carry, that is product-definition drift:
-      record it in the proposal as an explicit warning under a 'Product
-      definition drift' note naming the artifacts involved, carried by the
-      marker `<!-- pdac-drift ids=\"<ID>[, <ID>...]\" summary=\"<one line>\"
-      -->` on a line of its own so `npx prodshape drift` can enumerate it, and
-      leave the resolution to humans — the developer and the product owner agree
-      whether to propose a Product Change or adapt this change. Never resolve
-      drift silently, drop or weaken a citation to hide it, or paraphrase around
-      the conflict."
+    - "Find the impacted artifacts as a separate step before writing any
+      proposal content. This is understanding work, not lookup: read the whole
+      product definition (docs/product/model by default), compare it with what
+      this change wants — the backlog item behind it, if there is one — and list
+      every artifact the change depends on, alters or contradicts. Then widen
+      the list with the graph: run `npx prodshape impact <ID>` on each artifact
+      you found and check its direct and indirect neighbours. Put the resulting
+      list in the proposal, cite every impacted artifact from each document that
+      uses it (proposal, specs, design, tasks), and name any neighbour you
+      checked and left out, so nothing is dropped silently."
+    - "If this change's goals contradict the product definition, or need
+      behaviour it does not describe, that is product-definition drift. Record
+      it in the proposal under a 'Product definition drift' note naming the
+      artifacts involved, with the marker `<!-- pdac-drift ids=\"<ID>[,
+      <ID>...]\" summary=\"<one line>\" -->` on its own line so `npx prodshape
+      drift` can list it. The decision is human: the developer and the product
+      owner agree whether to propose a Product Change or adjust this change.
+      Never fix drift quietly, drop or weaken a citation to hide it, or write
+      around the conflict."
   specs:
     - Every requirement derived from canonical product text MUST carry a
       citation to every PDaC artifact it derives from, one citation per line,

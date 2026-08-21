@@ -23,7 +23,7 @@ A recorded drift warning carries a machine-readable marker naming the artifacts 
 
 The drift note serves two readers with different needs: the reviewer of one change reads the prose in place, and the product owner sweeping the whole workspace needs a listing. A marker satisfies the second reader without changing anything for the first, and it reuses the mechanism this integration already trusts — machine-readable records authored inside consumer documents, like citations and scope declarations, discovered by deterministic scanning.
 
-Enumeration stays a report and never a gate because the underlying position is unchanged from `CHG-OPENSPEC-COVERAGE-002`: drift is a disagreement between two human-owned statements of intent, the consumer detects it, and humans resolve it. A gate would make recording drift punishable, which teaches agents and developers not to record it; a report makes recorded drift visible, which is the entire point.
+The listing stays a report and never a gate because the position from `CHG-OPENSPEC-COVERAGE-002` is unchanged: drift is a disagreement between two human-owned statements of intent, the consumer detects it, and humans resolve it. A failing check would punish recording drift, which teaches agents and developers not to record it; a report makes recorded drift visible, which is the entire point.
 
 ## Affected Product Areas
 
