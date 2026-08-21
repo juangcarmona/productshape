@@ -45,6 +45,11 @@ jobs:
         run: node packages/cli/dist/bin.js graph
       - name: prodshape doctor
         run: node packages/cli/dist/bin.js doctor
+      # The citation gate this repository tells adopters to run (.product/integrations/
+      # openspec.ci.yml): every current OpenSpec consumer document must be bound or exempt,
+      # and every citation must verify against the self-hosted model.
+      - name: prodshape citations verify
+        run: node packages/cli/dist/bin.js citations verify --provider openspec
       - name: managed integrations up to date
         run: node packages/cli/dist/bin.js integration update --check
 

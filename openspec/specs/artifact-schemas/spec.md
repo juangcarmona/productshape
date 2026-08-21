@@ -10,6 +10,10 @@ The JSON Schema contracts every product artifact kind and Product Change documen
 
 The repository SHALL provide JSON Schemas (draft 2020-12) for: common definitions, actor, journey, use-case, business-rule, domain-term, bounded-context, functional-requirement, quality-requirement, constraint and product-change.
 
+{pdac:cite id="FR-SCHEMA-001" digest="sha256:b091aca938a4eb8ee8a5bd85bcd3191abec079eb07b9ac386f60aefacc61f7f8"}
+
+{pdac:cite id="TERM-PRODUCT-ARTIFACT" digest="sha256:dfd8386de66abfef0e0384b8a81ef8bb1fb0b0756133e5cc588d382c8b179a46"}
+
 #### Scenario: Validating an actor frontmatter
 
 - **WHEN** an actor artifact's frontmatter is validated against `schemas/actor.schema.json`
@@ -19,6 +23,8 @@ The repository SHALL provide JSON Schemas (draft 2020-12) for: common definition
 
 `schemas/common.schema.json` SHALL expose `artifactStatus` and `productChangeStatus` as separate reusable definitions, and each schema SHALL reference only its own lifecycle definition. Product Change status SHALL contain no implementation, verification, release or deployment state.
 
+{pdac:cite id="BR-CHANGE-001" digest="sha256:e6ce08a14e1aecd91000659eb9b6642354f19ba3df3b2261324fc520b951f013"}
+
 #### Scenario: A product change declares an artifact status
 
 - **WHEN** a product-change document declares `status: active`
@@ -27,6 +33,8 @@ The repository SHALL provide JSON Schemas (draft 2020-12) for: common definition
 ### Requirement: The bounded-context schema does not accept owns-terms
 
 The bounded-context schema SHALL NOT define an `owns-terms` property; term ownership derives from `Domain Term.defined-in`.
+
+{pdac:cite id="BR-RELATIONSHIPS-001" digest="sha256:a6f9d40c2c1ac926149fe171660e5715b66b4e82ce8129f128eab0e6c1c7de8c"}
 
 #### Scenario: Authoring owns-terms manually
 

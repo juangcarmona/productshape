@@ -10,6 +10,10 @@ The ProductShape public brand for the reference implementation, kept distinct fr
 
 The reference implementation SHALL present ProductShape as its public identity across the repository name, the npm scope `@prodshape/*`, the primary binary `prodshape`, the documentation title and every public reference, while the methodology keeps the name "Product Definition as Code" and the two read as distinct layers. The `product-definition` binary SHALL remain a working v0.x compatibility alias producing identical output, and the `.product/` configuration directory, the `product-definition-as-code/...` schema identifiers (and their URN form) and the `PRODUCT###` diagnostic codes SHALL be unchanged. Implements product requirement CON-BRAND-001 (CHG-BRAND-001 / SLI-BRAND-001).
 
+{pdac:cite id="CON-BRAND-001" digest="sha256:888e80751e04d389d5cee683c18fb47e1795a39dd8213454b16e09aa426be9cc"}
+
+{pdac:cite id="TERM-REFERENCE-IMPLEMENTATION" digest="sha256:8ed9a9b4cf41ffa5bbe04f05c16a4176615bf7c0fbc7f4259216fecbd7fd7f7d"}
+
 #### Scenario: Public surfaces present ProductShape while the methodology name is retained
 
 - **WHEN** a newcomer reads the repository, npm scope `@prodshape/*`, the `prodshape` binary, the documentation title or any public reference

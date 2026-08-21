@@ -8,6 +8,10 @@ Specify the `ps:explore` skill: a product-graph-aware thinking partner that help
 
 The system SHALL provide a `ps:explore` skill that enters a thinking-partner mode for exploring product ideas. The skill SHALL NOT write code, modify product model files, or create Product Change artifacts during a session. The skill SHALL function as a thinking partner, not a workflow executor.
 
+{pdac:cite id="FR-EXPLORE-001" digest="sha256:19bf23034666903a1336236cce5b8eaa79d00ed53cdc5cfaaa9eb746f17da4c8"}
+
+{pdac:cite id="UC-EXPLORE-001" digest="sha256:b98a63d37d3e6f8e4c37299898245f850f407a1e6a4aea40808b766f5592c691"}
+
 #### Scenario: User invokes ps:explore with an idea
 
 - **WHEN** a user invokes `ps:explore` with a description of an idea

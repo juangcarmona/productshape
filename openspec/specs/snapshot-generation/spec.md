@@ -8,6 +8,10 @@ Specify the generation of the Product Snapshot: a static, self-contained, read-o
 
 The system SHALL generate a Product Snapshot when the graph command is invoked with the HTML format (`prodshape graph --format html`). Generation SHALL produce exactly one self-contained HTML file under the generated-output area and SHALL report the output path. Generation SHALL never modify any authored file.
 
+{pdac:cite id="FR-SNAPSHOT-001" digest="sha256:4b516c17b1b0895996d48135fa1729bd2cc20913f98a8d820d5a5c82a0310a5d"}
+
+{pdac:cite id="UC-SNAPSHOT-001" digest="sha256:c0ccfa6c37694a43bfad609bc70cada84a512aa0d77db1611051f55bfc97bf58"}
+
 #### Scenario: Engineer generates a snapshot
 
 - **WHEN** an engineer runs `prodshape graph --format html` in a repository with a valid product model
@@ -21,6 +25,10 @@ The system SHALL generate a Product Snapshot when the graph command is invoked w
 ### Requirement: The snapshot is one self-contained file
 
 The generated page SHALL function completely when opened from local disk with no server and no network access: no external scripts, styles, fonts, images or data are referenced. All CSS and any data the page needs SHALL be embedded in the single file.
+
+{pdac:cite id="FR-SNAPSHOT-001" digest="sha256:4b516c17b1b0895996d48135fa1729bd2cc20913f98a8d820d5a5c82a0310a5d"}
+
+{pdac:cite id="CON-NO-WEB-UI" digest="sha256:467b7a87238629673c45dac7b72e85e4cb17a969cbcdbf6f4bf5d1711209ddbf"}
 
 #### Scenario: Offline open from local disk
 
@@ -71,6 +79,8 @@ The page SHALL display the source revision of the model it was generated from, p
 
 Identical model content SHALL yield a byte-identical HTML file across runs and platforms. Output SHALL NOT embed timestamps, random values, or environment-dependent content; artifact ordering SHALL be stable; line endings SHALL be normalized.
 
+{pdac:cite id="QR-DETERMINISM-001" digest="sha256:994d01951d76adfe83a6a7a48ae331172c59ece2a0cec7c045df73597ffc38fe"}
+
 #### Scenario: Double generation is byte-identical
 
 - **WHEN** the snapshot is generated twice from the same commit
@@ -94,6 +104,8 @@ When artifacts cannot be parsed, generation SHALL report diagnostics naming each
 
 The page SHALL offer no capability to create, edit, annotate or approve anything: no forms, no editable fields, no controls that mutate state beyond client-side presentation. The page SHALL NOT persist anything outside the address of the current view: no browser storage, no cookies, no session, no durable store of any kind. Accepting a filter selection or a selected artifact is presentation state, not input that becomes product knowledge.
 
+{pdac:cite id="CON-NO-WEB-UI" digest="sha256:467b7a87238629673c45dac7b72e85e4cb17a969cbcdbf6f4bf5d1711209ddbf"}
+
 #### Scenario: No mutating controls
 
 - **WHEN** the generated page is inspected and exercised
@@ -107,6 +119,8 @@ The page SHALL offer no capability to create, edit, annotate or approve anything
 ### Requirement: Relationships are navigable in both directions
 
 On an artifact's rendered view, every reference to another artifact SHALL be a link that navigates to the referenced artifact — both the relationships the artifact's frontmatter declares (outgoing) and the derived reverse views computed from the rest of the model (incoming, "referenced by"). The reader SHALL NOT need to know which side authored the edge.
+
+{pdac:cite id="BR-RELATIONSHIPS-001" digest="sha256:a6f9d40c2c1ac926149fe171660e5715b66b4e82ce8129f128eab0e6c1c7de8c"}
 
 #### Scenario: Outgoing reference is a link
 
@@ -123,6 +137,8 @@ On an artifact's rendered view, every reference to another artifact SHALL be a l
 The page SHALL provide exactly two graph projections — the kind-level aggregate and the Focused Topology — and SHALL NOT provide a drawing of the whole graph or any arrangement in which artifact kind determines position. No projection SHALL be rendered in the opening view. Selecting a node in the projection SHALL make that artifact the page's single selected artifact.
 
 The Focused Topology SHALL be local, bounded and progressive: anchored on the selected artifact, its immediate canonical relationships grouped by relationship meaning and artifact type with complete counts, direction distinguished other than by colour alone, expansion only on deliberate action. Its disclosure SHALL be carried in the address and SHALL replace the history entry on toggle; refocusing on a member SHALL be a navigation to a newly focused projection with disclosure reset — the traversal never accumulates. A group opened past the legibility threshold SHALL render as a structured list below the drawing, named as such, with every entry selectable.
+
+{pdac:cite id="FR-SNAPSHOT-005" digest="sha256:6f4280d6db76da8e0188db3dbb63e55d8df4ea045950cea506a50beae1d9259b"}
 
 #### Scenario: Exactly two projections
 
@@ -155,6 +171,8 @@ Each result SHALL identify its artifact by identifier, title and kind. Where a r
 If the page limits how many results it displays, it SHALL state how many matches exist in total, and SHALL NOT display a lower-ranked match in place of a higher-ranked one. Truncation SHALL never be silent.
 
 Search SHALL be fully operable from the keyboard: reaching the field, moving through results, selecting a result and clearing the query. Selecting a result SHALL make its artifact the page's single selected artifact. Clearing the query SHALL return the reader to browsing without discarding the artifact they had selected. A query matching no artifact SHALL produce an explicit no-results state that names the query rather than an empty list.
+
+{pdac:cite id="FR-SNAPSHOT-004" digest="sha256:eb069f0c5e49363227f4cdfb37f6efeb5226bbf4f7f0393f2146629e77cee3a3"}
 
 #### Scenario: An exact identifier lands first
 
@@ -228,6 +246,8 @@ The orientation view MAY report the artifacts that hold no relationships, statin
 
 Everything displayed SHALL be derived from the compiled model. The orientation view SHALL NOT assert importance, centrality, health, completeness, quality, ownership, ranking, ordering or lifecycle progression that the model does not record. It SHALL describe only the artifact kinds the model actually contains.
 
+{pdac:cite id="FR-SNAPSHOT-003" digest="sha256:279494d0984f61be58192dd8a11f7b452c4fb706436ea14a6c41b6167f2aaac7"}
+
 #### Scenario: Oriented before reading anything
 
 - **WHEN** a reader opens the snapshot for the first time
@@ -257,6 +277,8 @@ Everything displayed SHALL be derived from the compiled model. The orientation v
 
 The page SHALL provide a kind-level aggregate projection: the model's artifacts and relationships grouped by artifact kind and relationship type, with exact counts, communicating composition and traceability without rendering individual artifacts. It SHALL display nothing absent from the compiled graph, SHALL imply no importance, health, ownership or ordering, and SHALL be arranged identically for identical model content.
 
+{pdac:cite id="FR-SNAPSHOT-005" digest="sha256:6f4280d6db76da8e0188db3dbb63e55d8df4ea045950cea506a50beae1d9259b"}
+
 #### Scenario: Composition and traceability without artifacts
 
 - **WHEN** a reader opens the kind-level aggregate
@@ -277,6 +299,8 @@ The page SHALL provide a kind-level aggregate projection: the model's artifacts 
 The page SHALL hold exactly one selected artifact at a time, shared by every part of the page, and exactly one navigation mechanism SHALL own state transitions. No part of the page may change the selected artifact or the active view without that mechanism, and the address SHALL always reflect the state the page is in. The addressable state SHALL represent at least the active view and the selected artifact's identifier, using the URL fragment so it behaves identically from `file://` and from ordinary static hosting, with no server-side routing and no request at navigation time.
 
 Opening the page at an address naming an artifact SHALL open on that artifact. Browser Back and Forward SHALL restore previously visited views and selections. An address naming an artifact the snapshot does not contain SHALL produce an explicit state naming the identifier it could not resolve and offering a way to continue exploring.
+
+{pdac:cite id="FR-SNAPSHOT-006" digest="sha256:fa9fc4a9dffadd15a95838034bdeac21922756c93217d53dbce2f4b5ebc000f5"}
 
 #### Scenario: Selection is shared and addressable
 
@@ -337,6 +361,8 @@ Authored content SHALL NOT be able to become executable or structural, on either
 
 The generated page SHALL render in a single light appearance, with no dark variant and no theme or appearance control. Body and interface text SHALL use the reader's system sans-serif stack, and artifact identifiers and revision values SHALL render monospaced. Text contrast SHALL be strong; structure SHALL be carried by thin borders, deliberate alignment and consistent spacing rather than elevation or enclosure; controls SHALL be square or low-radius. Colour use SHALL be restrained to one accent plus a stable per-artifact-kind palette that does not change between artifacts, views or regenerations, and colour SHALL NOT be the sole carrier of any meaning. The interface SHALL be compact. The page SHALL NOT use gradients, glass or blur effects, decorative illustration, oversized hero typography, or a rounded-card dashboard treatment of its content.
 
+{pdac:cite id="QR-PRESENTATION-001" digest="sha256:b3b5b1e416251e2c9767240a0df454d662d93da74a9ecd06b6add3b53254665e"}
+
 #### Scenario: One light appearance regardless of environment preference
 
 - **WHEN** the page is opened with a light and then a dark environment preference
@@ -361,6 +387,8 @@ The generated page SHALL render in a single light appearance, with no dark varia
 
 Every capability of the delivered surfaces SHALL be reachable and operable by keyboard alone — the orientation view, the artifact list, the artifact detail and the view navigation — with no trapped focus and no pointer-only control. The focused element SHALL always be visibly identifiable, and focus SHALL land on a meaningful element after every view and selection change. The page SHALL expose semantic landmarks for its regions and a heading hierarchy without skipped levels. The selected artifact SHALL be reported as current with `aria-current` in the list, and the active view SHALL be reported as current in the page navigation. Every icon-only control SHALL carry an accessible name stating what it does. All text SHALL meet WCAG 2.1 AA contrast. No information a reader needs SHALL require hover or pointer proximity to reveal. Where the reader's environment expresses a reduced-motion preference, no non-essential animation or transition SHALL run.
 
+{pdac:cite id="QR-ACCESSIBILITY-001" digest="sha256:04ff33f829373a868cd6a05a8b818e300441baa8467cd713e1783be83e9ac56b"}
+
 #### Scenario: Whole increment operable by keyboard
 
 - **WHEN** a reader orients, narrows the list, selects an artifact and reads it using only the keyboard
@@ -381,6 +409,8 @@ Every capability of the delivered surfaces SHALL be reachable and operable by ke
 The document rendered when the snapshot opens SHALL NOT grow in proportion to the number of artifacts in the model: its size SHALL be bounded by the artifact kinds present and the kind-level aggregate over them. Artifact content and relationship structure SHALL be carried in the file as data the page renders on demand. Generated file size SHALL grow no worse than linearly with authored content, and generation time no worse than linearly with artifact count.
 
 Artifact-selection latency SHALL be measured on an identified reference environment — named hardware, operating system and browser version — across representative models, and the figures SHALL be recorded. A concrete artifact-selection budget SHALL be established from those recorded figures. No numeric interaction budget SHALL be asserted without a measurement supporting it. Artifacts that are hardest at scale — the longest-titled and longest-bodied — SHALL remain readable at every measured scale.
+
+{pdac:cite id="QR-SCALABILITY-001" digest="sha256:ce964e20dec3fb9facb301afb75ef2026c908a05ea56b11f3de1981522a7dfe1"}
 
 #### Scenario: Opening document does not scale with the model
 
@@ -406,6 +436,8 @@ Artifact-selection latency SHALL be measured on an identified reference environm
 
 An artifact's relationships SHALL be presented grouped within each direction, by relationship type and by the artifact kind at the other end, rather than as one undifferentiated list. Every group SHALL state the exact number of relationships it contains. Grouping and ordering SHALL be derived from the compiled graph and SHALL be identical for identical model content.
 
+{pdac:cite id="FR-SNAPSHOT-002" digest="sha256:1be502387698dc60b2610b02c9ae99bf8ee10c196034a9049e0995cf1145beff"}
+
 #### Scenario: Neighbours arrive grouped, not spilled
 
 - **WHEN** a reader selects an artifact that declares several relationships of different types
@@ -424,6 +456,8 @@ An artifact's relationships SHALL be presented grouped within each direction, by
 ### Requirement: Large relationship groups start collapsed and expand on request
 
 A relationship group large enough to overwhelm the view SHALL start collapsed, showing its exact count rather than its members, and SHALL reveal its members only when the reader expands it. Expansion SHALL be operable by keyboard, and the collapsed or expanded state SHALL be exposed to assistive technology as state rather than conveyed only by appearance. A group small enough to read at a glance SHALL be shown expanded, so nothing is hidden without reason.
+
+{pdac:cite id="FR-SNAPSHOT-002" digest="sha256:1be502387698dc60b2610b02c9ae99bf8ee10c196034a9049e0995cf1145beff"}
 
 #### Scenario: A high-degree artifact stays readable
 
@@ -467,6 +501,10 @@ The projection SHALL support panning, zooming and returning to a fitted view, ea
 A satellite or member SHALL reveal its identity on hover, and SHALL reveal the same on keyboard focus, so nothing needed is available only to a pointer. The equivalent relationship list SHALL remain available whether or not this projection is used.
 
 Placement SHALL remain a pure function of the model and of which groups are open: identical model content with identical groups open SHALL produce an identical arrangement.
+
+{pdac:cite id="FR-SNAPSHOT-009" digest="sha256:ab9721cb7fb71a07fa8a48789379024ecd0eeda9122267329ee3dcbc20718ff7"}
+
+{pdac:cite id="TERM-FOCUSED-TOPOLOGY" digest="sha256:0078e5754fc215a6bdde6b601ac543c391491356666cc36265c26e83fa134595"}
 
 #### Scenario: Groups orbit, not artifacts
 
@@ -517,6 +555,8 @@ Placement SHALL remain a pure function of the model and of which groups are open
 
 The active projection SHALL be represented in the address, so a projection view is directly linkable and is restored by browser Back and Forward alongside the selected artifact.
 
+{pdac:cite id="FR-SNAPSHOT-006" digest="sha256:fa9fc4a9dffadd15a95838034bdeac21922756c93217d53dbce2f4b5ebc000f5"}
+
 #### Scenario: A projection view is linkable
 
 - **WHEN** the reader opens a projection and copies the address
@@ -530,6 +570,8 @@ The active projection SHALL be represented in the address, so a projection view 
 ### Requirement: Catalog discovery state is addressable and preserved
 
 The catalog's active query and filters SHALL be part of the page address, serialized in a fixed order so identical states produce identical addresses. Filter and query changes SHALL re-address the page in place without adding history entries. Opening an artifact from the catalog SHALL preserve the active state, and returning SHALL resume it. Filters SHALL exist only for canonical fields — artifact type, status, and bounded context where the model declares one.
+
+{pdac:cite id="FR-SNAPSHOT-008" digest="sha256:6cd3c6602a3a0dacac6a65ef7c15485f9bc635cd30db986f5565ce684a7d43cd"}
 
 #### Scenario: A discovery is shareable
 
@@ -550,6 +592,8 @@ The catalog's active query and filters SHALL be part of the page address, serial
 
 Each artifact kind on the orientation view SHALL be an entry point into the catalog narrowed to that family, and a global search control SHALL be available on the first screen, landing in the catalog with the query live.
 
+{pdac:cite id="FR-SNAPSHOT-003" digest="sha256:279494d0984f61be58192dd8a11f7b452c4fb706436ea14a6c41b6167f2aaac7"}
+
 #### Scenario: Family entry
 
 - **WHEN** a kind is selected on the orientation view
@@ -563,6 +607,8 @@ Each artifact kind on the orientation view SHALL be an entry point into the cata
 ### Requirement: The Reader preserves and names navigation context
 
 Relationship links on the artifact detail SHALL carry the active catalog state, so following an edge preserves the discovery in progress. The detail SHALL name the discovery it returns to — the active kind, status, context, filter and query — visibly and retraceably in one step; without an active discovery it SHALL offer the full catalog.
+
+{pdac:cite id="FR-SNAPSHOT-002" digest="sha256:1be502387698dc60b2610b02c9ae99bf8ee10c196034a9049e0995cf1145beff"}
 
 #### Scenario: Following an edge keeps the discovery
 

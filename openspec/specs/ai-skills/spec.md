@@ -10,6 +10,10 @@ The canonical AI skills, slash commands and hook descriptors rendered into provi
 
 The repository SHALL provide the five canonical skills (define-product, recover-product, explore-product, analyze-product-change, audit-product-model), each defining purpose, when to use it, required inputs, files to read, deterministic commands to execute, reasoning procedure, allowed modifications, forbidden actions, human approval points, expected outputs and completion checks, with no provider-specific content.
 
+{pdac:cite id="FR-DISTRIBUTION-001" digest="sha256:2388424fc21af195bb6e33c569651407ca86fe5701ff663426325037f54caa5e"}
+
+{pdac:cite id="ACT-AI-ASSISTANT" digest="sha256:4a415e39588a8fbec8fc077090e538a5e75406b0f65a3e91cff5b86670dc7e16"}
+
 #### Scenario: Skill completeness check
 
 - **WHEN** the conformance suite parses each SKILL.md
@@ -27,6 +31,8 @@ The six `/product:*` commands (define, recover, explore, change, impact, audit) 
 ### Requirement: Skills are self-contained and portable
 
 Every skill SHALL use only portable Agent Skills frontmatter fields (`name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`), SHALL NOT reference repository-only files that do not exist after `npm pack` and clean installation, and SHALL bundle all detailed reference material in `references/` inside the skill directory. Skills SHALL NOT depend on mutable remote `main` content or ProductShape dogfooding artifacts.
+
+{pdac:cite id="FR-DISTRIBUTION-001" digest="sha256:2388424fc21af195bb6e33c569651407ca86fe5701ff663426325037f54caa5e"}
 
 #### Scenario: Self-contained after installation
 
