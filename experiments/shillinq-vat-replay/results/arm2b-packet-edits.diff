@@ -1,0 +1,180 @@
+--- /tmp/claude-0/-home-user/8c02e738-1803-5972-b538-06c3dd2c61b6/scratchpad/shillinq-5841/openspec/changes/archive/2026-06-14-bookkeeping-vat-btw-filing/proposal.md	2026-08-21 09:08:14.264154565 +0000
++++ pilot-b/openspec/changes/bookkeeping-vat-btw-filing/proposal.md	2026-08-21 09:32:05.878572487 +0000
+@@ -39,0 +40,72 @@
++## PDaC Artifacts Touched
++
++This change consumes and bears on the following canonical Product
++Definition artifacts (docs/product/model):
++
++The VAT Return domain entity that this capability models.
++
++{pdac:cite id="TERM-VAT-RETURN" digest="sha256:64e9836e29acad19a8c818a1901b916089e8b575973925a4c0b1aaeb5bfc89b7"}
++
++The Administration (tenant) that owns every return via `administrationId`.
++
++{pdac:cite id="TERM-ADMINISTRATION" digest="sha256:b032765d056bebdc8fa62e12977343e6e8e4fa5e7d018ef33d25350cc58dcc80"}
++
++The bounded context this capability lives in (NL statutory bookkeeping).
++
++{pdac:cite id="BC-BOOKKEEPING" digest="sha256:910c6d3187563c9de436d74abf9ec6e6ce3400b96b25929cfa48d55b4c9467e3"}
++
++The actor who prepares, reviews and submits returns.
++
++{pdac:cite id="ACT-VAT-ADMINISTRATOR" digest="sha256:5589e980a472f6bccafddca91c71e5ad2eb487fcf461592353131341417d75da"}
++
++The use case and journey this capability implements.
++
++{pdac:cite id="UC-PREPARE-VAT-RETURN-001" digest="sha256:f5b0a673fefde5085568901134c2477fcb6e639b31dda8ed6b268c16cc0aa10b"}
++{pdac:cite id="JRN-BTW-COMPLIANCE-001" digest="sha256:4858a38d3e18691684ddd478176fca217cbd946254391b9c3d41c78e56e12c3f"}
++
++The business rules and functional requirements that govern the VAT
++return record type.
++
++{pdac:cite id="BR-VAT-SINGLE-ENTITY-001" digest="sha256:fea05d32eec5bb5f93aff8bbfb1ceec1f1e81526f3a81b0f17d4e7f2abdce64f"}
++{pdac:cite id="BR-VAT-GENERIC-API-001" digest="sha256:c19dde6986f92fda47bdff62211be72a81728c5e09abf41c65adc8daafd5c135"}
++{pdac:cite id="BR-ADMIN-MEMBERSHIP-001" digest="sha256:46d60795f8d5300ff1e21d82afe44596c69925598554c081e17cf994bcd2d0b6"}
++{pdac:cite id="FR-VAT-STORE-001" digest="sha256:e5839cf175ec528271725cc1c8902a1ef1e346cf97baa9e564a626ceb54f6288"}
++{pdac:cite id="FR-VAT-AUTHZ-001" digest="sha256:6ccb9798462d747c4c1282aba768652fb0da8c615bb6bc735f697cd13b143dad"}
++
++### Product Change
++
++**None exists.** `docs/product/changes/active/` (and the completed
++history) contains no Product Change covering this capability. This
++proposal alters product behaviour relative to the accepted baseline
++(see conflicts below), so per `openspec/config.yaml` an
++overlay-validated, human-approved Product Change (CHG id) is required
++before implementation proceeds. The OpenSpec change is not the Product
++Change.
++
++### Known conflicts with the accepted baseline
++
++To be resolved by that Product Change, or by revising this proposal to
++match the baseline:
++
++1. **Entity multiplicity** — this change declares three registers
++   (`VATReturn`, `VATDeclaration`, `VATLine`). BR-VAT-SINGLE-ENTITY-001
++   requires that no second schema represent the periodic VAT
++   declaration under any name; `VATDeclaration` does exactly that, and
++   FR-VAT-STORE-001's verification scenario ("exactly one schema naming
++   the periodic VAT declaration") would fail.
++2. **Lifecycle** — this change uses `draft → submitted → verified →
++   filed`; TERM-VAT-RETURN and FR-VAT-STORE-001 define
++   `draft → submitted → accepted | rejected | corrected`.
++3. **API surface** — `tasks.md` authors `VATReturnController`,
++   `VATDeclarationController`, `VATLineController`, a
++   `VATReturnService`, and custom `/api/vat-returns` endpoints.
++   BR-VAT-GENERIC-API-001 forbids per-app controllers, custom VAT HTTP
++   endpoints and imperative VAT services.
++4. **Schema shape** — the `VATReturn` field set omits the
++   FR-VAT-STORE-001 minimum (`rubrieken`,
++   `verschuldigdeOmzetbelasting`, `voorbelasting`,
++   `teBetalenOfTeruggave`, `correctionOf`, `digipoortMessageId`, ...).
++5. **Access control** — no membership-scoped authorization (masked 404
++   for non-members) is specified for the new statutory record type, as
++   BR-ADMIN-MEMBERSHIP-001 and FR-VAT-AUTHZ-001 require.
++
+--- /tmp/claude-0/-home-user/8c02e738-1803-5972-b538-06c3dd2c61b6/scratchpad/shillinq-5841/openspec/changes/archive/2026-06-14-bookkeeping-vat-btw-filing/design.md	2026-08-21 09:08:14.264154565 +0000
++++ pilot-b/openspec/changes/bookkeeping-vat-btw-filing/design.md	2026-08-21 09:32:26.886573347 +0000
+@@ -63 +63,4 @@
+-prevents reconciliation gaps.
++prevents reconciliation gaps. The canonical use case requires rubriek
++amounts to be derived from GL postings.
++
++{pdac:cite id="UC-PREPARE-VAT-RETURN-001" digest="sha256:f5b0a673fefde5085568901134c2477fcb6e639b31dda8ed6b268c16cc0aa10b"}
+@@ -74,0 +78,9 @@
++Note: the state set here (`verified`, `filed`) diverges from the
++canonical VAT return lifecycle
++(`draft → submitted → accepted | rejected | corrected`); this decision
++depends on, and currently conflicts with, the canonical definition and
++requires a Product Change (see proposal).
++
++{pdac:cite id="TERM-VAT-RETURN" digest="sha256:64e9836e29acad19a8c818a1901b916089e8b575973925a4c0b1aaeb5bfc89b7"}
++{pdac:cite id="FR-VAT-STORE-001" digest="sha256:e5839cf175ec528271725cc1c8902a1ef1e346cf97baa9e564a626ceb54f6288"}
++
+@@ -85 +97,4 @@
+-performance.
++performance. The canonical rule requires derived amounts to be declared
++as schema calculations and aggregations, never an imperative service.
++
++{pdac:cite id="BR-VAT-GENERIC-API-001" digest="sha256:c19dde6986f92fda47bdff62211be72a81728c5e09abf41c65adc8daafd5c135"}
+@@ -95 +110,6 @@
+-audit and migrate.
++audit and migrate. The canonical rule requires all statutory BTW filing
++state to live in one canonical VAT return entity — which also puts the
++separate `VATDeclaration` register declared elsewhere in this change in
++conflict (see proposal).
++
++{pdac:cite id="BR-VAT-SINGLE-ENTITY-001" digest="sha256:fea05d32eec5bb5f93aff8bbfb1ceec1f1e81526f3a81b0f17d4e7f2abdce64f"}
+--- /tmp/claude-0/-home-user/8c02e738-1803-5972-b538-06c3dd2c61b6/scratchpad/shillinq-5841/openspec/changes/archive/2026-06-14-bookkeeping-vat-btw-filing/tasks.md	2026-08-21 09:08:14.268259309 +0000
++++ pilot-b/openspec/changes/bookkeeping-vat-btw-filing/tasks.md	2026-08-21 09:33:24.494575707 +0000
+@@ -4,0 +5,6 @@
++These tasks implement behaviour for the canonical VAT return record
++type and are bound by its storage requirement and API rule.
++
++{pdac:cite id="FR-VAT-STORE-001" digest="sha256:e5839cf175ec528271725cc1c8902a1ef1e346cf97baa9e564a626ceb54f6288"}
++{pdac:cite id="BR-VAT-GENERIC-API-001" digest="sha256:c19dde6986f92fda47bdff62211be72a81728c5e09abf41c65adc8daafd5c135"}
++
+@@ -35,0 +42,7 @@
++> **Conformance hold:** every task in this section authors a per-app
++> controller, custom VAT HTTP endpoints or an imperative VAT service,
++> which the canonical rule below forbids. Do not implement these tasks
++> until the Product Change named in the proposal resolves the conflict.
++
++{pdac:cite id="BR-VAT-GENERIC-API-001" digest="sha256:c19dde6986f92fda47bdff62211be72a81728c5e09abf41c65adc8daafd5c135"}
++
+@@ -300,0 +314,8 @@
++
++## Citation Maintenance
++
++- [ ] **Refresh PDaC citations after any task that changes cited
++  behaviour** — re-read digests with `npx prodshape inspect <ID>`,
++  re-emit records with `npx prodshape cite --id <ID> --digest <digest>`,
++  and confirm with `npx prodshape citations verify --provider openspec`
++  before opening the PR.
+--- /tmp/claude-0/-home-user/8c02e738-1803-5972-b538-06c3dd2c61b6/scratchpad/shillinq-5841/openspec/changes/archive/2026-06-14-bookkeeping-vat-btw-filing/specs/bookkeeping-vat-btw-filing/spec.md	2026-08-21 09:08:14.268259309 +0000
++++ pilot-b/openspec/changes/bookkeeping-vat-btw-filing/specs/bookkeeping-vat-btw-filing/spec.md	2026-08-21 09:33:06.366574964 +0000
+@@ -43,0 +44,12 @@
++The registers below model the canonical VAT Return entity and the
++administration-scoped statutory record type it is. Note: declaring
++three registers, this state set, and this field shape diverges from the
++canonical single-entity rule, lifecycle and minimum field set; a
++Product Change is required before this data model can proceed (see
++proposal).
++
++{pdac:cite id="TERM-VAT-RETURN" digest="sha256:64e9836e29acad19a8c818a1901b916089e8b575973925a4c0b1aaeb5bfc89b7"}
++{pdac:cite id="BR-VAT-SINGLE-ENTITY-001" digest="sha256:fea05d32eec5bb5f93aff8bbfb1ceec1f1e81526f3a81b0f17d4e7f2abdce64f"}
++{pdac:cite id="FR-VAT-STORE-001" digest="sha256:e5839cf175ec528271725cc1c8902a1ef1e346cf97baa9e564a626ceb54f6288"}
++{pdac:cite id="TERM-ADMINISTRATION" digest="sha256:b032765d056bebdc8fa62e12977343e6e8e4fa5e7d018ef33d25350cc58dcc80"}
++
+@@ -152,0 +165,4 @@
++{pdac:cite id="UC-PREPARE-VAT-RETURN-001" digest="sha256:f5b0a673fefde5085568901134c2477fcb6e639b31dda8ed6b268c16cc0aa10b"}
++{pdac:cite id="TERM-VAT-RETURN" digest="sha256:64e9836e29acad19a8c818a1901b916089e8b575973925a4c0b1aaeb5bfc89b7"}
++{pdac:cite id="FR-VAT-STORE-001" digest="sha256:e5839cf175ec528271725cc1c8902a1ef1e346cf97baa9e564a626ceb54f6288"}
++
+@@ -179,0 +196,3 @@
++{pdac:cite id="UC-PREPARE-VAT-RETURN-001" digest="sha256:f5b0a673fefde5085568901134c2477fcb6e639b31dda8ed6b268c16cc0aa10b"}
++{pdac:cite id="BR-VAT-GENERIC-API-001" digest="sha256:c19dde6986f92fda47bdff62211be72a81728c5e09abf41c65adc8daafd5c135"}
++
+@@ -256 +275,7 @@
+-`draft → submitted → verified → filed`.
++`draft → submitted → verified → filed`. (Diverges from the canonical
++lifecycle `draft → submitted → accepted | rejected | corrected`; a
++Product Change is required — see proposal.)
++
++{pdac:cite id="TERM-VAT-RETURN" digest="sha256:64e9836e29acad19a8c818a1901b916089e8b575973925a4c0b1aaeb5bfc89b7"}
++{pdac:cite id="FR-VAT-STORE-001" digest="sha256:e5839cf175ec528271725cc1c8902a1ef1e346cf97baa9e564a626ceb54f6288"}
++{pdac:cite id="UC-PREPARE-VAT-RETURN-001" digest="sha256:f5b0a673fefde5085568901134c2477fcb6e639b31dda8ed6b268c16cc0aa10b"}
+@@ -283,0 +309,3 @@
++{pdac:cite id="FR-VAT-STORE-001" digest="sha256:e5839cf175ec528271725cc1c8902a1ef1e346cf97baa9e564a626ceb54f6288"}
++{pdac:cite id="BR-VAT-GENERIC-API-001" digest="sha256:c19dde6986f92fda47bdff62211be72a81728c5e09abf41c65adc8daafd5c135"}
++
+@@ -331,0 +360,2 @@
++{pdac:cite id="UC-PREPARE-VAT-RETURN-001" digest="sha256:f5b0a673fefde5085568901134c2477fcb6e639b31dda8ed6b268c16cc0aa10b"}
++
+@@ -354,0 +385,3 @@
++{pdac:cite id="UC-PREPARE-VAT-RETURN-001" digest="sha256:f5b0a673fefde5085568901134c2477fcb6e639b31dda8ed6b268c16cc0aa10b"}
++{pdac:cite id="JRN-BTW-COMPLIANCE-001" digest="sha256:4858a38d3e18691684ddd478176fca217cbd946254391b9c3d41c78e56e12c3f"}
++
+@@ -408,0 +442,2 @@
++
++{pdac:cite id="BR-VAT-GENERIC-API-001" digest="sha256:c19dde6986f92fda47bdff62211be72a81728c5e09abf41c65adc8daafd5c135"}
