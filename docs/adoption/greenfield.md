@@ -2,7 +2,7 @@
 
 This guide covers adopting Product Definition as Code for a new product: a fresh repository, or a repository that has code scaffolding but no accumulated product behaviour to recover. You will initialize the layout, author the initial product baseline with the Define operation, validate it, and then run your first Product Change.
 
-> These commands target the supported published baseline, [`@prodshape/cli@0.12.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.12.0). `prodshape` is canonical; `product-definition` is an identical v0.x compatibility alias, removed before v1. Every step marked "by hand" also works without the CLI: the layout, schemas and templates are plain files. See [Limitations](../limitations.md).
+> These commands target the supported published baseline, [`@prodshape/cli@0.13.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.13.0). `prodshape` is canonical; `product-definition` is an identical v0.x compatibility alias, removed before v1. Every step marked "by hand" also works without the CLI: the layout, schemas and templates are plain files. See [Limitations](../limitations.md).
 
 ## 1. Initialize the repository
 
