@@ -1,0 +1,9 @@
+# EUPL-1.2 content fetched from ConductionNL/shillinq — never committed here.
+pilot/openspec/changes/bookkeeping-vat-btw-filing/
+pilot-b/
+# Agent scratch workspace (Arm 2a); its authored change is copied to results/.
+pilot-a/
+# Regenerable tool outputs
+pilot/.product/generated/
+pilot/.product/cache/
+pilot/.git-pilot/

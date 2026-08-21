@@ -1,0 +1,10 @@
+unclassified	openspec/changes/bookkeeping-vat-btw-filing/proposal.md [bookkeeping-vat-btw-filing]	0 citation(s)
+unclassified	openspec/changes/bookkeeping-vat-btw-filing/design.md [bookkeeping-vat-btw-filing]	0 citation(s)
+unclassified	openspec/changes/bookkeeping-vat-btw-filing/tasks.md [bookkeeping-vat-btw-filing]	0 citation(s)
+unclassified	openspec/changes/bookkeeping-vat-btw-filing/specs/bookkeeping-vat-btw-filing/spec.md [bookkeeping-vat-btw-filing]	0 citation(s)
+error PRODUCT064 openspec/changes/bookkeeping-vat-btw-filing/design.md: Consumer document is unclassified: declare 'pdac-scope: none' (exempt) or bind it with at least one PDaC citation
+error PRODUCT064 openspec/changes/bookkeeping-vat-btw-filing/proposal.md: Consumer document is unclassified: declare 'pdac-scope: none' (exempt) or bind it with at least one PDaC citation
+error PRODUCT064 openspec/changes/bookkeeping-vat-btw-filing/specs/bookkeeping-vat-btw-filing/spec.md: Consumer document is unclassified: declare 'pdac-scope: none' (exempt) or bind it with at least one PDaC citation
+error PRODUCT064 openspec/changes/bookkeeping-vat-btw-filing/tasks.md: Consumer document is unclassified: declare 'pdac-scope: none' (exempt) or bind it with at least one PDaC citation
+4 document(s): 0 bound, 0 exempt, 4 unclassified
+0 citation(s): 0 current, 0 stale, 0 tampered, 0 unresolved

@@ -1,0 +1,7 @@
+exempt	openspec/changes/bookkeeping-vat-btw-filing/proposal.md [bookkeeping-vat-btw-filing]	0 citation(s)
+exempt	openspec/changes/bookkeeping-vat-btw-filing/design.md [bookkeeping-vat-btw-filing]	0 citation(s)
+bound	openspec/changes/bookkeeping-vat-btw-filing/tasks.md [bookkeeping-vat-btw-filing]	1 citation(s)
+exempt	openspec/changes/bookkeeping-vat-btw-filing/specs/bookkeeping-vat-btw-filing/spec.md [bookkeeping-vat-btw-filing]	0 citation(s)
+current	FR-VAT-STORE-001	openspec/changes/bookkeeping-vat-btw-filing/tasks.md:1
+4 document(s): 1 bound, 3 exempt, 0 unclassified
+1 citation(s): 1 current, 0 stale, 0 tampered, 0 unresolved
