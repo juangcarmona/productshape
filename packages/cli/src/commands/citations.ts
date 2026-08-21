@@ -41,7 +41,7 @@ export interface CitationsVerifyOptions {
  * The SDD integration providers this CLI ships. The provider contract is framework-neutral
  * (@prodshape/core); each entry supplies one framework's population enumeration.
  */
-const SDD_PROVIDERS: Record<string, SddIntegrationProvider> = {
+export const SDD_PROVIDERS: Record<string, SddIntegrationProvider> = {
   [openSpecProvider.name]: openSpecProvider,
 };
 
@@ -132,12 +132,17 @@ async function scanCitationTarget(
  * citations. This is the backward-compatible mode.
  *
  * With `--provider <name>`: uses that SDD integration provider to enumerate the expected
- * current native consumer documents, distinguishes current from archived material, and enforces
+ * native consumer documents, distinguishes current from archived material, and enforces
  * the bound/exempt/unclassified scope model. Every enumerated current document has exactly one
  * effective state: `bound` (declares Product Definition dependency and carries citations),
  * `exempt` (a human declared `pdac-scope: none`), or `unclassified` (neither — a FAILURE). A
  * bound document with zero citations also fails, so a workspace can never pass vacuously
  * because no citations were discovered.
+ *
+ * Archived material is enumerated and its citations are verified, but every defect found in an
+ * archived document is reported as a warning and the scope gate does not apply to it: history is
+ * immutable, so its drift is information rather than a defect anyone can repair in place
+ * (FR-OPENSPEC-001). `--include-archived` holds archived documents to the full gate instead.
  *
  * Diagnostics: PRODUCT042 (invalid digest), PRODUCT060 (unresolved), PRODUCT061 (stale),
  * PRODUCT062 (tampered), PRODUCT063 (anchor not found), PRODUCT064 (unclassified document),
@@ -271,7 +276,23 @@ async function runRecursiveVerify(
 }
 
 /**
- * Provider-aware verification. The SDD integration provider enumerates the expected current
+ * Report an archived document's citation defect as a warning, keeping its diagnostic code. An
+ * archived change is immutable history: its drift tells the reader the canonical model moved
+ * since the change shipped, and no severity can make anyone fix a document the workflow forbids
+ * rewriting. Runs before warning escalation, so `warnings-as-errors` still lets a repository
+ * choose to block on history drift.
+ */
+function softenArchivedDiagnostic(diagnostic: Diagnostic): Diagnostic {
+  return {
+    ...diagnostic,
+    // severity-mutation: archived history reports at warning severity (FR-OPENSPEC-001).
+    severity: 'warning',
+    message: `${diagnostic.message} (archived consumer document)`,
+  };
+}
+
+/**
+ * Provider-aware verification. The SDD integration provider enumerates the expected
  * native consumer-document population; framework-neutral core classification assigns each
  * document exactly one effective scope state (bound, exempt or unclassified); every discovered
  * citation is verified against the loaded product model.
@@ -289,16 +310,17 @@ async function runProviderVerify(
 ): Promise<number> {
   const allDiagnostics: Diagnostic[] = [];
   let root = provider.name;
-  let includeArchived = options.includeArchived ?? false;
+  // Archived material is always in the verified population; the flag decides whether it is held
+  // to the full gate (scope declarations and error severities) or reported as warnings only.
+  const archivedGated = options.includeArchived ?? false;
   let classified: Awaited<ReturnType<typeof classifyConsumerDocuments>> = [];
 
   if (await provider.detectWorkspace(repoRoot)) {
     const enumeration = await provider.enumerateDocuments(repoRoot, {
-      includeArchived: options.includeArchived ?? false,
+      includeArchived: true,
       change: options.change,
     });
     root = enumeration.root;
-    includeArchived = enumeration.includeArchived;
     allDiagnostics.push(...enumeration.diagnostics);
     classified = await classifyConsumerDocuments(enumeration.documents, repoRoot);
   } else {
@@ -310,10 +332,22 @@ async function runProviderVerify(
     });
   }
 
-  const verifications = verifyCitations(
-    classified.flatMap((c) => c.citations),
-    artifacts,
-  );
+  // Verify per document so an archived document's diagnostics can be softened: history is
+  // immutable, so a defect found there is information for the reader, not a failure anyone can
+  // fix in place (FR-OPENSPEC-001). Softening happens before warning escalation, so a repository
+  // that opts into warnings-as-errors deliberately makes history drift block.
+  const verifications: ReturnType<typeof verifyCitations> = [];
+  const citationDiagnostics: Diagnostic[] = [];
+  for (const c of classified) {
+    const documentVerifications = verifyCitations(c.citations, artifacts);
+    verifications.push(...documentVerifications);
+    const diagnostics = documentVerifications.flatMap((v) => v.diagnostics);
+    citationDiagnostics.push(
+      ...(c.document.archived && !archivedGated
+        ? diagnostics.map(softenArchivedDiagnostic)
+        : diagnostics),
+    );
+  }
 
   const documentReports: DocumentReport[] = classified.map((c) => ({
     path: c.document.path,
@@ -326,9 +360,16 @@ async function runProviderVerify(
   }));
 
   // Collect every diagnostic before finalizing the public result. Citation status order remains
-  // untouched; only the complete diagnostic set is ordered at this boundary.
-  allDiagnostics.push(...classified.flatMap((c) => c.diagnostics));
-  allDiagnostics.push(...verifications.flatMap((v) => v.diagnostics));
+  // untouched; only the complete diagnostic set is ordered at this boundary. The scope gate
+  // (bound/exempt/unclassified) applies to current documents; archived documents carry it only
+  // under --include-archived, because binding and exemption are declarations made while a
+  // document is authored, and history cannot honestly make them retroactively.
+  allDiagnostics.push(
+    ...classified
+      .filter((c) => !c.document.archived || archivedGated)
+      .flatMap((c) => c.diagnostics),
+  );
+  allDiagnostics.push(...citationDiagnostics);
 
   const diagnostics = sortDiagnostics(escalateWarnings(allDiagnostics, warningsAsErrors));
   const errors = diagnostics.filter((d) => d.severity === 'error');
@@ -343,7 +384,9 @@ async function runProviderVerify(
         schema: 'product-definition-as-code/citations-provider/v1alpha1',
         provider: provider.name,
         root,
-        includeArchived,
+        // Mirrors the --include-archived flag: archived material is always enumerated and
+        // verified; true means it was also held to the full gate.
+        includeArchived: archivedGated,
         documents: documentReports,
         citations: verifications.map((v) => ({
           id: v.citation.id,

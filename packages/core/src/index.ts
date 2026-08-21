@@ -44,6 +44,8 @@ export type {
   CitationVerification,
   CiteOptions,
 } from './citations.js';
+export { parseDriftFile, parseDriftMarkers, scanDriftMarkers } from './drift.js';
+export type { DriftRecord } from './drift.js';
 export {
   classifyConsumerDocument,
   classifyConsumerDocuments,

@@ -10,6 +10,10 @@ Deterministic graph-level validation of the product model with stable diagnostic
 
 `product-definition validate` SHALL validate the whole baseline model: duplicate IDs (PRODUCT005), references to unknown IDs (PRODUCT006), relationships targeting disallowed artifact types (PRODUCT007) and active artifacts referencing retired artifacts (PRODUCT008), in addition to the per-document checks (PRODUCT001–004, PRODUCT009).
 
+{pdac:cite id="FR-VALIDATE-001" digest="sha256:b626fc20fdf1c833a8415d90d7052b85368305be170d5082f41e94400ae61587"}
+
+{pdac:cite id="BR-AI-001" digest="sha256:85b53e3987fd5facad05c0ae49a8901c806c8c9a18e49f554d6cc9b28b11ff4c"}
+
 #### Scenario: Unknown reference
 
 - **WHEN** an active use case declares `governed-by: [BR-DOES-NOT-EXIST]`
@@ -29,6 +33,8 @@ Deterministic graph-level validation of the product model with stable diagnostic
 
 Validation SHALL report the warnings PRODUCT101 (file-name misalignment), PRODUCT102 (active use case in no journey, when enabled), PRODUCT103 (requirement unreachable from any actor, when enabled), PRODUCT104 (active references deprecated), PRODUCT105 (business rule with no consumers), PRODUCT106 (domain term with no usage) and PRODUCT107 (bounded context owning no terms), and SHALL exit 0 when only warnings exist unless `validation.warnings-as-errors` is set. The `validation.warnings-as-errors` escalation SHALL apply uniformly to every validating command — baseline `validate`, `change validate`, Product Change apply and graph generation — so a repository that opts in cannot validate strictly at the baseline while applying a change whose overlay carries warnings.
 
+{pdac:cite id="FR-VALIDATE-002" digest="sha256:80aad08edc2f005a5abbaeed734fa5165b771d22e0e9f4ca43d7a925f64780ec"}
+
 #### Scenario: Warnings do not fail the build
 
 - **WHEN** validation finds only warnings
@@ -47,6 +53,8 @@ Validation SHALL report the warnings PRODUCT101 (file-name misalignment), PRODUC
 ### Requirement: Diagnostics are deterministic and machine-readable
 
 Diagnostics SHALL be ordered by file, then code, then target; `--format json` SHALL emit them as JSON with the fields severity, code, message, file and, when available, artifact, field and target. Identical repository content SHALL produce byte-identical diagnostic output on every platform.
+
+{pdac:cite id="QR-DETERMINISM-001" digest="sha256:994d01951d76adfe83a6a7a48ae331172c59ece2a0cec7c045df73597ffc38fe"}
 
 #### Scenario: JSON output
 

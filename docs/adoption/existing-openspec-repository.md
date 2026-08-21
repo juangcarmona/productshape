@@ -16,6 +16,14 @@ OpenSpec answers "how do we specify, design and verify this implementation incre
 
 The flow becomes: accepted Product Definition → proposed Product Change → overlay validation → product approval → apply on a working branch → accept the resulting baseline by merge → **native OpenSpec workflow, citing the definition** → implementation → verification.
 
+When an OpenSpec change starts — usually from a backlog item — the merged rules direct the agent through an impact pass before it writes anything: compare the item's intent with the whole product definition (understanding work only a reader of the whole model can do), widen the result with `prodshape impact <ID>`, record the list in the proposal, and cite every impacted artifact from each document that uses it. If the item's goals contradict or go beyond the definition, the rules require an explicit "Product definition drift" warning in the proposal, carried by a marker on its own line — `<!-- pdac-drift ids="BR-REFUND-001" summary="PBI wants 14 days; the rule says 30" -->` — so the developer and the product owner decide together (propose a Product Change, or adjust the item) instead of the difference slipping through unnoticed. A product owner reviews all open drift from one listing:
+
+```bash
+prodshape drift --provider openspec
+```
+
+The listing shows each warning's document, artifacts and summary, and marks archived material. It is a report, never a gate: recorded drift exits 0, because a failing check would punish recording drift and teach people not to record it.
+
 Note what is not in that list. Product Definition does not decompose your work, does not hand you a package, and does not gate on whether anything was built. Whether accepted product intent has been implemented is a fact about delivery, and delivery is yours.
 
 Product-definition work and implementation work have independent cadence. They may share a pull request, or OpenSpec implementation work may follow later, but the Product Change, the applied model and the implementation remain different things.
@@ -41,7 +49,7 @@ Verify them at any time, and in CI:
 prodshape citations verify --provider openspec
 ```
 
-Provider-aware verification enumerates the expected current OpenSpec consumer documents (each change's `proposal.md`, `design.md`, `tasks.md` and spec deltas, plus `openspec/specs/`; archived changes excluded unless you pass `--include-archived`) and gives each exactly one effective scope state:
+Provider-aware verification enumerates the expected OpenSpec consumer documents (each change's `proposal.md`, `design.md`, `tasks.md` and spec deltas, plus `openspec/specs/` and archived changes) and gives each current document exactly one effective scope state:
 
 | State | Meaning | Gate |
 | --- | --- | --- |
@@ -50,6 +58,8 @@ Provider-aware verification enumerates the expected current OpenSpec consumer do
 | `unclassified` | Neither binding nor exemption is declared. | Fails (`PRODUCT064`). |
 
 Binding and exemption are human declarations — never declare `pdac-scope: none` just because citations are missing (an exemption contradicted by citations in the same document fails with `PRODUCT066`). Because the population is enumerated, discovering zero citations over current documents is a set of failures, never a vacuous pass. This establishes citation grounding and population coverage; it does not prove semantic completeness or implementation correctness — those remain review questions.
+
+Citations in archived changes are checked too, but everything found there — staleness included — is reported as a warning, because archived history cannot be edited: a problem there is information for the reader, not something anyone can fix in place. The scope gate does not apply to archived documents by default. Pass `--include-archived` to apply the full gate to them as well.
 
 The bare form `prodshape citations verify [target]` remains available as a plain recursive scan of whatever citations a directory happens to contain, without population or scope enforcement. Without a target it scans the repository's configured `citations.consumer-roots` (default `openspec`).
 

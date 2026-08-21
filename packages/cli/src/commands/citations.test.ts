@@ -647,25 +647,65 @@ describe('citations verify --provider openspec (scope model)', () => {
     expect(payload.summary).toMatchObject({ totalDocuments: 0, totalCitations: 0, errors: 0 });
   });
 
-  it('excludes archived changes by default and includes them only with --include-archived', async () => {
+  it('verifies archived changes as warnings by default; --include-archived applies the full gate', async () => {
     await installFakeOpenSpec();
     await writeChangeDoc('add-x', 'proposal.md', `---\npdac-scope: none\n---\n\n## Why\n`);
-    // The archived change would fail if it were in scope: unclassified, unresolved citation.
+    // Archived history: an unclassified document and an unresolved citation. History is
+    // immutable, so by default both are visible but neither blocks (FR-OPENSPEC-001).
     await writeChangeDoc('archive/old-x', 'proposal.md', `## Why\n\nOld unclassified doc.\n`);
+    await writeChangeDoc(
+      'archive/old-x',
+      'design.md',
+      `## Design\n\n{pdac:cite id="FR-NOT-FOUND" digest="${VALID_DIGEST}"}\n`,
+    );
 
     const byDefault = await verifyJson();
     expect(byDefault.code).toBe(0);
     expect(byDefault.payload.documents.map((d) => d.path)).toEqual([
       'openspec/changes/add-x/proposal.md',
+      'openspec/changes/archive/old-x/proposal.md',
+      'openspec/changes/archive/old-x/design.md',
     ]);
+    // The archived defect is reported — as a warning naming the archived document.
+    expect(byDefault.payload.diagnostics).toEqual([
+      expect.objectContaining({
+        code: 'PRODUCT060',
+        severity: 'warning',
+        file: 'openspec/changes/archive/old-x/design.md',
+        message: expect.stringContaining('(archived consumer document)'),
+      }),
+    ]);
+    // The scope gate does not reach archived history by default: no PRODUCT064 for old-x.
+    expect(byDefault.payload.summary).toMatchObject({ errors: 0, warnings: 1 });
 
     const withArchived = await verifyJson('--include-archived');
     expect(withArchived.code).toBe(1);
-    const archived = withArchived.payload.documents.find((d) => d.archived);
-    expect(archived).toMatchObject({
-      path: 'openspec/changes/archive/old-x/proposal.md',
-      state: 'unclassified',
-    });
+    const archived = withArchived.payload.documents.filter((d) => d.archived);
+    expect(archived).toEqual([
+      expect.objectContaining({
+        path: 'openspec/changes/archive/old-x/proposal.md',
+        state: 'unclassified',
+      }),
+      expect.objectContaining({
+        path: 'openspec/changes/archive/old-x/design.md',
+        state: 'bound',
+      }),
+    ]);
+    // Full gate: the unclassified archived document and the unresolved citation are errors.
+    expect(withArchived.payload.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'PRODUCT064',
+          severity: 'error',
+          file: 'openspec/changes/archive/old-x/proposal.md',
+        }),
+        expect.objectContaining({
+          code: 'PRODUCT060',
+          severity: 'error',
+          file: 'openspec/changes/archive/old-x/design.md',
+        }),
+      ]),
+    );
   });
 
   it('produces deterministic JSON output across runs', async () => {

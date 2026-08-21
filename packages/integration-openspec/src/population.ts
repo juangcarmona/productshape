@@ -21,7 +21,7 @@ import type {
   EnumerateConsumerDocumentsOptions,
   SddIntegrationProvider,
 } from '@prodshape/core';
-import { envWithLocalBin, isOpenSpecWorkspace } from './workspace.js';
+import { envWithLocalBin, isOpenSpecWorkspace, pathExists } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -212,8 +212,13 @@ export async function enumerateOpenSpecDocuments(
   const documents: ConsumerDocument[] = [];
   const diagnostics: Diagnostic[] = [];
 
-  // 1. Discover current changes. Prefer `openspec list --json`; fall back to filesystem.
-  let currentChangeNames: string[] | null = await openspecListChanges(repoRoot);
+  // 1. Discover current changes. A workspace with no `openspec/changes/` directory at all (specs
+  // only) has zero changes by construction: nothing to discover, no CLI needed, and no PRODUCT069
+  // — older OpenSpec CLIs (1.3.x) even reject `list` outright in such a workspace. Otherwise
+  // prefer `openspec list --json` and fall back to filesystem scanning.
+  let currentChangeNames: string[] | null = (await pathExists(changesDir))
+    ? await openspecListChanges(repoRoot)
+    : [];
 
   if (currentChangeNames === null) {
     diagnostics.push({

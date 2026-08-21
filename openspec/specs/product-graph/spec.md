@@ -10,6 +10,10 @@ Compilation of the typed product graph from Markdown artifacts, with derived rev
 
 The graph compiler SHALL build nodes (id, type, title, status, path, content digest) and typed directed edges from artifact frontmatter alone, derive incoming indexes for every canonical relationship (including a bounded context's owned terms from `defined-in`), sort nodes and edges deterministically, and rebuild from scratch on every run.
 
+{pdac:cite id="FR-GRAPH-001" digest="sha256:514a51d7137e1c069bdc7cffdc1b497dcf188abf0b481850426a551fa90e92ad"}
+
+{pdac:cite id="BR-RELATIONSHIPS-001" digest="sha256:a6f9d40c2c1ac926149fe171660e5715b66b4e82ce8129f128eab0e6c1c7de8c"}
+
 #### Scenario: Determinism across runs
 
 - **WHEN** `product-definition graph` runs twice on identical content
@@ -23,6 +27,8 @@ The graph compiler SHALL build nodes (id, type, title, status, path, content dig
 ### Requirement: Generated outputs are versioned and non-canonical
 
 `product-definition graph` SHALL write `product-graph.json` (carrying a versioned schema identifier), `product-index.json`, `traceability.json` and `product-graph.mmd` under the configured generated root, and these files SHALL be reproducible and never required as input.
+
+{pdac:cite id="BR-CANONICAL-001" digest="sha256:19d9d0ad750bfb13d1929853dd2f4c8c680b88f54c5a79dee8133336c770fef1"}
 
 #### Scenario: Rebuild after deletion
 

@@ -9,6 +9,7 @@ import {
 } from './commands/change.js';
 import { runCite } from './commands/cite.js';
 import { runCitationsVerify } from './commands/citations.js';
+import { runDrift } from './commands/drift.js';
 import { runDoctorCommand } from './commands/doctor.js';
 import { runFix } from './commands/fix.js';
 import { runGraph } from './commands/graph.js';
@@ -224,7 +225,10 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .option('--root <dir>', 'product repository root (default: discovered upward from cwd)')
     .option('--provider <provider>', 'provider-aware verification (openspec)')
     .option('--change <name>', 'limit to one OpenSpec change (with --provider openspec)')
-    .option('--include-archived', 'include archived OpenSpec changes (with --provider openspec)')
+    .option(
+      '--include-archived',
+      'hold archived OpenSpec changes to the full gate instead of warnings (with --provider openspec)',
+    )
     .action(
       async (
         target: string | undefined,
@@ -237,6 +241,22 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
         },
       ) => {
         capture.code = await runCitationsVerify(io, target, options);
+      },
+    );
+
+  program
+    .command('drift')
+    .description('List recorded product-definition drift warnings in consumer documents')
+    .argument('[target]', 'consumer documents root (default: citations.consumer-roots)')
+    .option('--format <format>', 'output format: text or json', 'text')
+    .option('--root <dir>', 'product repository root (default: discovered upward from cwd)')
+    .option('--provider <provider>', 'provider-aware enumeration (openspec), archived included')
+    .action(
+      async (
+        target: string | undefined,
+        options: { format: 'text' | 'json'; root?: string; provider?: string },
+      ) => {
+        capture.code = await runDrift(io, target, options);
       },
     );
 

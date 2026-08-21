@@ -13,6 +13,10 @@
 #   `validation.warnings-as-errors: false`, so PRODUCT061 stays a warning. To make stale
 #   citations block the merge, set `validation.warnings-as-errors: true` in
 #   .product/config.yaml. The integration never changes that policy for you.
+# - citations in archived changes are checked too, but their problems are reported as
+#   warnings: archived history cannot be edited, so a problem there is information,
+#   not something this gate can make anyone fix. Pass --include-archived to apply the
+#   full gate to archived documents as well.
 name: pdac-citations
 on:
   pull_request:

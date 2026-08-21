@@ -2,13 +2,15 @@
   "provider": "openspec",
   "version": "0.12.0",
   "openspecVersion": "1.10.0",
-  "installedAt": "2026-08-20T21:41:59.096Z",
+  "installedAt": "2026-08-21T13:01:44.294Z",
   "configPath": "openspec/config.yaml",
   "ciExamplePath": ".product/integrations/openspec.ci.yml",
   "managed": {
     "rules": {
       "proposal": [
         "State which PDaC artifacts this change touches, each with an inline citation emitted by `npx prodshape cite --id <ID> --digest <digest>`. Never write a citation record by hand.",
+        "Find the impacted artifacts as a separate step before writing any proposal content. This is understanding work, not lookup: read the whole product definition (docs/product/model by default), compare it with what this change wants — the backlog item behind it, if there is one — and list every artifact the change depends on, alters or contradicts. Then widen the list with the graph: run `npx prodshape impact <ID>` on each artifact you found and check its direct and indirect neighbours. Put the resulting list in the proposal, cite every impacted artifact from each document that uses it (proposal, specs, design, tasks), and name any neighbour you checked and left out, so nothing is dropped silently.",
+        "If this change's goals contradict the product definition, or need behaviour it does not describe, that is product-definition drift. Record it in the proposal under a 'Product definition drift' note naming the artifacts involved, with the marker `<!-- pdac-drift ids=\"<ID>[, <ID>...]\" summary=\"<one line>\" -->` on its own line so `npx prodshape drift` can list it. The decision is human: the developer and the product owner agree whether to propose a Product Change or adjust this change. Never fix drift quietly, drop or weaken a citation to hide it, or write around the conflict.",
         "If the change implements altered product behaviour, name the Product Change (CHG id) whose applied or accepted artifacts it implements. If no overlay-validated and human-approved Product Change exists yet, stop and ask for one instead of proceeding. The OpenSpec change is not the Product Change.",
         "Every document of this change must end up bound or exempt: bind by citing the canonical text it depends on, or declare `pdac-scope: none` on a line of its own (frontmatter or `<!-- pdac-scope: none -->`) when a human judges the document has no product-semantic dependency. Never declare an exemption just because citations are missing."
       ],
