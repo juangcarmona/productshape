@@ -323,6 +323,27 @@ describe('enumerateOpenSpecDocuments + classifyConsumerDocuments', () => {
     }
   });
 
+  it('enumerates a specs-only workspace (no openspec/changes/ at all) without invoking the CLI', async () => {
+    // Regression: a workspace with specs but no changes directory has zero changes by
+    // construction. Older OpenSpec CLIs (1.3.x) reject `list` outright in such a workspace, and
+    // consulting the CLI at all used to surface PRODUCT069 wherever it was missing or failing —
+    // failing the gate for a population that needs no discovery.
+    const specsOnlyDir = await mkdtemp(join(tmpdir(), 'pdac-openspec-specsonly-'));
+    try {
+      await mkdir(join(specsOnlyDir, 'openspec', 'specs', 'checkout'), { recursive: true });
+      await writeFile(
+        join(specsOnlyDir, 'openspec', 'specs', 'checkout', 'spec.md'),
+        `## Requirement\n\nText.\n`,
+        'utf8',
+      );
+      const enumeration = await enumerateOpenSpecDocuments(specsOnlyDir);
+      expect(enumeration.diagnostics).toEqual([]);
+      expect(enumeration.documents.map((d) => d.path)).toEqual(['openspec/specs/checkout/spec.md']);
+    } finally {
+      await rm(specsOnlyDir, { recursive: true, force: true });
+    }
+  });
+
   it('marks documents with the correct artifactKind', async () => {
     const enumeration = await enumerateOpenSpecDocuments(tempDir);
     const byPath = new Map(enumeration.documents.map((d) => [d.path, d]));
