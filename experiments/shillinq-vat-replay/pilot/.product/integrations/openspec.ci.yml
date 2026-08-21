@@ -1,0 +1,30 @@
+# PDaC citation gate for OpenSpec consumer documents (CI-ready example).
+# Managed by `prodshape integration add openspec`; copy it into your pipeline
+# (e.g. .github/workflows/) and adapt the triggers.
+#
+# The gate runs ProductShape citation and scope verification only. It never invokes
+# `openspec validate`; keep OpenSpec's own verdict a separate step so a native-spec defect
+# and a grounding defect stay distinguishable.
+#
+# Blocking behaviour:
+# - unresolved citations, tampered embedded projections, unclassified current documents
+#   and bound documents with zero citations always fail the gate;
+# - stale citations DO NOT block this gate: .product/config.yaml sets
+#   `validation.warnings-as-errors: false`, so PRODUCT061 stays a warning. To make stale
+#   citations block the merge, set `validation.warnings-as-errors: true` in
+#   .product/config.yaml. The integration never changes that policy for you.
+name: pdac-citations
+on:
+  pull_request:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # The OpenSpec CLI ships as @fission-ai/openspec; population discovery runs
+      # `openspec list`, so the gate needs it installed.
+      - run: npm install -g @fission-ai/openspec@1
+      - run: npx prodshape citations verify --provider openspec

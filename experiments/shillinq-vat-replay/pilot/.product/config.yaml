@@ -1,0 +1,18 @@
+schema: product-definition-as-code/config/v1alpha1
+product:
+  root: docs/product
+  model: docs/product/model
+generated:
+  root: .product/generated
+  commit: false
+integrations:
+  ai: []
+  shorthand-commands: false
+validation:
+  warnings-as-errors: false
+  require-journey-for-use-case: false
+  require-requirement-reachability: true
+citations:
+  # Directories `prodshape citations verify` scans when no target is given.
+  consumer-roots:
+    - openspec

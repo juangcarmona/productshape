@@ -1,0 +1,38 @@
+{
+  "provider": "openspec",
+  "version": "0.12.0",
+  "openspecVersion": "1.10.0",
+  "installedAt": "2026-08-21T09:20:49.236Z",
+  "configPath": "openspec/config.yaml",
+  "ciExamplePath": ".product/integrations/openspec.ci.yml",
+  "managed": {
+    "rules": {
+      "proposal": [
+        "State which PDaC artifacts this change touches, each with an inline citation emitted by `npx prodshape cite --id <ID> --digest <digest>`. Never write a citation record by hand.",
+        "If the change implements altered product behaviour, name the Product Change (CHG id) whose applied or accepted artifacts it implements. If no overlay-validated and human-approved Product Change exists yet, stop and ask for one instead of proceeding. The OpenSpec change is not the Product Change.",
+        "Every document of this change must end up bound or exempt: bind by citing the canonical text it depends on, or declare `pdac-scope: none` on a line of its own (frontmatter or `<!-- pdac-scope: none -->`) when a human judges the document has no product-semantic dependency. Never declare an exemption just because citations are missing."
+      ],
+      "specs": [
+        "Every requirement derived from canonical product text MUST carry a citation to every PDaC artifact it derives from, one citation per line, placed after the requirement text and before the first scenario. A requirement often derives from more than one artifact; citing only the closest one silently hides the other derivations. Never place citations between the requirement heading and the requirement text; OpenSpec reads the first paragraph as the requirement.",
+        "Cite a specific verification scenario with an anchor when the requirement maps to one (anchor=\"<scenario id>\").",
+        "Never paraphrase canonical text as if it were new; either cite it inline or embed it in a marker-block citation (<!-- pdac:cite ... --> canonical text <!-- /pdac:cite -->).",
+        "Never invent artifact ids or digests. Read them with `npx prodshape inspect <ID>`."
+      ],
+      "design": [
+        "When a design decision depends on canonical product text, cite the artifact it depends on."
+      ],
+      "tasks": [
+        "A task that changes cited behaviour must include a follow-up task to refresh the affected citations.",
+        "Never infer implementation, verification, release or deployment from Product Change status; record that evidence in the delivery workflow."
+      ]
+    },
+    "operations": {
+      "apply": [
+        "Before finishing, run `npx prodshape citations verify --provider openspec` and fix every stale, tampered or unresolved citation, every unclassified document and every bound document without citations. Refresh a stale digest by re-running `npx prodshape inspect <ID>`; never delete a citation or declare `pdac-scope: none` to silence a diagnostic."
+      ],
+      "archive": [
+        "Run `npx prodshape citations verify --provider openspec` one final time. Archive only when every document is bound or exempt and every citation is current."
+      ]
+    }
+  }
+}
