@@ -21,6 +21,13 @@ context: >-
   `npx prodshape cite --id <ID> --digest <digest>` to emit the citation record.
   Place inline citations on their own line directly under the text they ground.
 
+  Mapping a change's intent to its impacted artifacts is semantic work: compare
+  the intent against the entire product definition first, then expand the
+  identified set structurally with `npx prodshape impact <ID>`. When the intent
+  contradicts or exceeds the accepted definition, record that drift in the
+  proposal as an explicit warning for humans to resolve — never resolve it
+  silently.
+
   Every current OpenSpec document (proposal, specs, design, tasks and
   openspec/specs/) has exactly one effective scope state: bound (it carries at
   least one citation, or declares `pdac-scope: cited`), exempt (a human declared
@@ -64,12 +71,25 @@ rules:
       judges the document has no product-semantic dependency. Never declare an
       exemption just because citations are missing."
     - "Identifying the impacted artifacts is a dedicated step before proposal
-      content is written, not a side effect of writing it: run `npx prodshape
-      impact <ID>` on every PDaC artifact this change touches and walk the
-      reported direct and transitive neighbours, deciding for each whether this
-      change derives from or alters it. Cite every impacted artifact from each
-      document that derives from it, and list any examined-but-excluded
-      neighbour in the proposal so the exclusion is visible, never silent."
+      content is written, and it is semantic first: read the entire product
+      definition under the model root (docs/product/model by default), compare
+      this change's motivating intent and goals — the backlog item that started
+      it, if one exists — against it, and identify every artifact this change
+      depends on, alters or contradicts. Then expand the set structurally: run
+      `npx prodshape impact <ID>` on each identified artifact and walk the
+      reported direct and transitive neighbours. Record the impacted set in the
+      proposal, cite every impacted artifact from each document that derives
+      from it (proposal, specs, design, tasks), and list any
+      examined-but-excluded neighbour so the exclusion is visible, never
+      silent."
+    - "If this change's goals contradict the accepted product definition, or
+      require behaviour it does not carry, that is product-definition drift:
+      record it in the proposal as an explicit warning under a 'Product
+      definition drift' note naming the artifacts involved, and leave the
+      resolution to humans — the developer and the product owner agree whether
+      to propose a Product Change or adapt this change. Never resolve drift
+      silently, drop or weaken a citation to hide it, or paraphrase around the
+      conflict."
   specs:
     - Every requirement derived from canonical product text MUST carry a
       citation to every PDaC artifact it derives from, one citation per line,
