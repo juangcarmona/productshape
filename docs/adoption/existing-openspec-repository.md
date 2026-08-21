@@ -41,7 +41,7 @@ Verify them at any time, and in CI:
 prodshape citations verify --provider openspec
 ```
 
-Provider-aware verification enumerates the expected current OpenSpec consumer documents (each change's `proposal.md`, `design.md`, `tasks.md` and spec deltas, plus `openspec/specs/`; archived changes excluded unless you pass `--include-archived`) and gives each exactly one effective scope state:
+Provider-aware verification enumerates the expected OpenSpec consumer documents (each change's `proposal.md`, `design.md`, `tasks.md` and spec deltas, plus `openspec/specs/` and archived changes) and gives each current document exactly one effective scope state:
 
 | State | Meaning | Gate |
 | --- | --- | --- |
@@ -50,6 +50,8 @@ Provider-aware verification enumerates the expected current OpenSpec consumer do
 | `unclassified` | Neither binding nor exemption is declared. | Fails (`PRODUCT064`). |
 
 Binding and exemption are human declarations — never declare `pdac-scope: none` just because citations are missing (an exemption contradicted by citations in the same document fails with `PRODUCT066`). Because the population is enumerated, discovering zero citations over current documents is a set of failures, never a vacuous pass. This establishes citation grounding and population coverage; it does not prove semantic completeness or implementation correctness — those remain review questions.
+
+Archived changes are verified too, at reduced severity: their citations are checked, and every defect found in archived material — staleness included — is reported as a warning, because history is immutable and its drift is information for the reader, not a defect anyone can fix in place. The scope gate does not reach archived documents by default. Pass `--include-archived` to hold archived documents to the full gate.
 
 The bare form `prodshape citations verify [target]` remains available as a plain recursive scan of whatever citations a directory happens to contain, without population or scope enforcement. Without a target it scans the repository's configured `citations.consumer-roots` (default `openspec`).
 

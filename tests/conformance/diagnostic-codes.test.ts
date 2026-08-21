@@ -27,6 +27,16 @@ const CODE = /PRODUCT\d{3}/g;
 const EMISSION = /severity: '(error|warning)',\s*code: (?:codes\.(\w+)|'(PRODUCT\d{3})')/g;
 const SEVERITY_FIELD = /severity: '(?:error|warning)',/g;
 
+/**
+ * A sanctioned severity mutation: a site that deliberately re-reports an existing diagnostic at a
+ * different severity instead of emitting a new one, marked by a `// severity-mutation:` comment
+ * naming its authority on the line above. The scan excludes these from the emission count, so a
+ * mutation is a deliberate, commented act with a reviewer — an unmarked one still fails.
+ * The one current site: archived consumer documents' citation defects report as warnings
+ * (FR-OPENSPEC-001), because archived history is immutable and its drift is information.
+ */
+const SANCTIONED_MUTATION = /\/\/ severity-mutation: [^\n]*\n\s*severity: '(?:error|warning)',/g;
+
 /** `codes` values keyed by member name, to resolve `code: codes.foo` in the scanned sources. */
 const codeByName = new Map<string, string>(Object.entries(codes));
 
@@ -65,7 +75,9 @@ async function emissions(): Promise<{ emissions: Emission[]; severityFields: num
   let severityFields = 0;
   for (const file of await sourceFiles()) {
     const source = await readFile(file, 'utf8');
-    severityFields += [...source.matchAll(SEVERITY_FIELD)].length;
+    severityFields +=
+      [...source.matchAll(SEVERITY_FIELD)].length -
+      [...source.matchAll(SANCTIONED_MUTATION)].length;
     for (const match of source.matchAll(EMISSION)) {
       const [, severity, member, literal] = match;
       const code = literal ?? codeByName.get(member as string);

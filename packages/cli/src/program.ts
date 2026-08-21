@@ -224,7 +224,10 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .option('--root <dir>', 'product repository root (default: discovered upward from cwd)')
     .option('--provider <provider>', 'provider-aware verification (openspec)')
     .option('--change <name>', 'limit to one OpenSpec change (with --provider openspec)')
-    .option('--include-archived', 'include archived OpenSpec changes (with --provider openspec)')
+    .option(
+      '--include-archived',
+      'hold archived OpenSpec changes to the full gate instead of warnings (with --provider openspec)',
+    )
     .action(
       async (
         target: string | undefined,

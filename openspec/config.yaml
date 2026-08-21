@@ -29,9 +29,11 @@ context: >-
   exemption are human declarations: never declare `pdac-scope: none` merely
   because citations are missing, and a document declared `pdac-scope: cited`
   with zero citations fails. Verify with `npx prodshape citations verify
-  --provider openspec`: it enumerates the expected current document population
-  (archived changes excluded by default), so zero discovered citations is a set
-  of failures, never a pass.
+  --provider openspec`: it enumerates the expected document population, so zero
+  discovered citations is a set of failures, never a pass. The scope gate
+  applies to current documents; archived changes' citations are still verified,
+  with their defects reported as warnings because history is immutable and its
+  drift is information.
 
   The accepted Product Definition changes only through this lifecycle: propose a
   Product Change under docs/product/changes/, validate its overlay while the
@@ -61,6 +63,13 @@ rules:
       of its own (frontmatter or `<!-- pdac-scope: none -->`) when a human
       judges the document has no product-semantic dependency. Never declare an
       exemption just because citations are missing."
+    - "Identifying the impacted artifacts is a dedicated step before proposal
+      content is written, not a side effect of writing it: run `npx prodshape
+      impact <ID>` on every PDaC artifact this change touches and walk the
+      reported direct and transitive neighbours, deciding for each whether this
+      change derives from or alters it. Cite every impacted artifact from each
+      document that derives from it, and list any examined-but-excluded
+      neighbour in the proposal so the exclusion is visible, never silent."
   specs:
     - Every requirement derived from canonical product text MUST carry a
       citation to every PDaC artifact it derives from, one citation per line,
