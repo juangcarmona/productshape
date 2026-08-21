@@ -2,7 +2,7 @@
   "provider": "openspec",
   "version": "0.12.0",
   "openspecVersion": "1.10.0",
-  "installedAt": "2026-08-21T11:07:03.402Z",
+  "installedAt": "2026-08-21T11:22:24.546Z",
   "configPath": "openspec/config.yaml",
   "ciExamplePath": ".product/integrations/openspec.ci.yml",
   "managed": {
@@ -10,7 +10,7 @@
       "proposal": [
         "State which PDaC artifacts this change touches, each with an inline citation emitted by `npx prodshape cite --id <ID> --digest <digest>`. Never write a citation record by hand.",
         "Identifying the impacted artifacts is a dedicated step before proposal content is written, and it is semantic first: read the entire product definition under the model root (docs/product/model by default), compare this change's motivating intent and goals — the backlog item that started it, if one exists — against it, and identify every artifact this change depends on, alters or contradicts. Then expand the set structurally: run `npx prodshape impact <ID>` on each identified artifact and walk the reported direct and transitive neighbours. Record the impacted set in the proposal, cite every impacted artifact from each document that derives from it (proposal, specs, design, tasks), and list any examined-but-excluded neighbour so the exclusion is visible, never silent.",
-        "If this change's goals contradict the accepted product definition, or require behaviour it does not carry, that is product-definition drift: record it in the proposal as an explicit warning under a 'Product definition drift' note naming the artifacts involved, and leave the resolution to humans — the developer and the product owner agree whether to propose a Product Change or adapt this change. Never resolve drift silently, drop or weaken a citation to hide it, or paraphrase around the conflict.",
+        "If this change's goals contradict the accepted product definition, or require behaviour it does not carry, that is product-definition drift: record it in the proposal as an explicit warning under a 'Product definition drift' note naming the artifacts involved, carried by the marker `<!-- pdac-drift ids=\"<ID>[, <ID>...]\" summary=\"<one line>\" -->` on a line of its own so `npx prodshape drift` can enumerate it, and leave the resolution to humans — the developer and the product owner agree whether to propose a Product Change or adapt this change. Never resolve drift silently, drop or weaken a citation to hide it, or paraphrase around the conflict.",
         "If the change implements altered product behaviour, name the Product Change (CHG id) whose applied or accepted artifacts it implements. If no overlay-validated and human-approved Product Change exists yet, stop and ask for one instead of proceeding. The OpenSpec change is not the Product Change.",
         "Every document of this change must end up bound or exempt: bind by citing the canonical text it depends on, or declare `pdac-scope: none` on a line of its own (frontmatter or `<!-- pdac-scope: none -->`) when a human judges the document has no product-semantic dependency. Never declare an exemption just because citations are missing."
       ],

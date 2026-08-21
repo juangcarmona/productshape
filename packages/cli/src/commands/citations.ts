@@ -41,7 +41,7 @@ export interface CitationsVerifyOptions {
  * The SDD integration providers this CLI ships. The provider contract is framework-neutral
  * (@prodshape/core); each entry supplies one framework's population enumeration.
  */
-const SDD_PROVIDERS: Record<string, SddIntegrationProvider> = {
+export const SDD_PROVIDERS: Record<string, SddIntegrationProvider> = {
   [openSpecProvider.name]: openSpecProvider,
 };
 

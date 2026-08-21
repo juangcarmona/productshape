@@ -25,8 +25,9 @@ context: >-
   the intent against the entire product definition first, then expand the
   identified set structurally with `npx prodshape impact <ID>`. When the intent
   contradicts or exceeds the accepted definition, record that drift in the
-  proposal as an explicit warning for humans to resolve — never resolve it
-  silently.
+  proposal as an explicit warning carrying the marker `<!-- pdac-drift ids="..."
+  summary="..." -->` (enumerable with `npx prodshape drift`) for humans to
+  resolve — never resolve it silently.
 
   Every current OpenSpec document (proposal, specs, design, tasks and
   openspec/specs/) has exactly one effective scope state: bound (it carries at
@@ -85,11 +86,13 @@ rules:
     - "If this change's goals contradict the accepted product definition, or
       require behaviour it does not carry, that is product-definition drift:
       record it in the proposal as an explicit warning under a 'Product
-      definition drift' note naming the artifacts involved, and leave the
-      resolution to humans — the developer and the product owner agree whether
-      to propose a Product Change or adapt this change. Never resolve drift
-      silently, drop or weaken a citation to hide it, or paraphrase around the
-      conflict."
+      definition drift' note naming the artifacts involved, carried by the
+      marker `<!-- pdac-drift ids=\"<ID>[, <ID>...]\" summary=\"<one line>\"
+      -->` on a line of its own so `npx prodshape drift` can enumerate it, and
+      leave the resolution to humans — the developer and the product owner agree
+      whether to propose a Product Change or adapt this change. Never resolve
+      drift silently, drop or weaken a citation to hide it, or paraphrase around
+      the conflict."
   specs:
     - Every requirement derived from canonical product text MUST carry a
       citation to every PDaC artifact it derives from, one citation per line,

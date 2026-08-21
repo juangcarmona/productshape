@@ -16,7 +16,13 @@ OpenSpec answers "how do we specify, design and verify this implementation incre
 
 The flow becomes: accepted Product Definition → proposed Product Change → overlay validation → product approval → apply on a working branch → accept the resulting baseline by merge → **native OpenSpec workflow, citing the definition** → implementation → verification.
 
-When an OpenSpec change starts — typically from a backlog item — the merged rules direct the agent through a dedicated impact pass before it writes anything: compare the item's intent against the entire product definition (semantic work only a reader of the whole model can do), expand the identified artifacts structurally with `prodshape impact <ID>`, record the impacted set in the proposal, and cite every impacted artifact from each document that derives from it. If the item's goals contradict or exceed the accepted definition, the rules require an explicit "Product definition drift" warning in the proposal, so the developer and the product owner decide together — propose a Product Change or adapt the item — instead of the divergence sliding through silently.
+When an OpenSpec change starts — typically from a backlog item — the merged rules direct the agent through a dedicated impact pass before it writes anything: compare the item's intent against the entire product definition (semantic work only a reader of the whole model can do), expand the identified artifacts structurally with `prodshape impact <ID>`, record the impacted set in the proposal, and cite every impacted artifact from each document that derives from it. If the item's goals contradict or exceed the accepted definition, the rules require an explicit "Product definition drift" warning in the proposal, carried by a machine-readable marker on a line of its own — `<!-- pdac-drift ids="BR-REFUND-001" summary="PBI wants 14 days; the rule says 30" -->` — so the developer and the product owner decide together — propose a Product Change or adapt the item — instead of the divergence sliding through silently. A product owner reviews all open drift from one listing:
+
+```bash
+prodshape drift --provider openspec
+```
+
+The listing names each warning's document, artifacts and summary, distinguishing archived material. It is a report, never a gate: recorded drift exits 0, because a gate would make recording drift punishable, which teaches people not to record it.
 
 Note what is not in that list. Product Definition does not decompose your work, does not hand you a package, and does not gate on whether anything was built. Whether accepted product intent has been implemented is a fact about delivery, and delivery is yours.
 

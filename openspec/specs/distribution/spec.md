@@ -28,7 +28,7 @@ Repository scaffolding, managed provider assets, the installation lock and the d
 
 {pdac:cite id="UC-INIT-001" digest="sha256:63e9c430be5d559c0c9101ba2bc0184ed31960be4839269d29e49434a5963a72"}
 
-{pdac:cite id="FR-OPENSPEC-001" digest="sha256:83562b52c577f8490a8364a7d363712984695dc84db6b54e9c9f7b9c87cb44e2"}
+{pdac:cite id="FR-OPENSPEC-001" digest="sha256:df5820477564ba67cb4062154f626989a432ec31b83d9684abf43018839f601e"}
 
 #### Scenario: Existing workspace wired in one run
 
