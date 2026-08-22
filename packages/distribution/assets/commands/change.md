@@ -11,8 +11,6 @@ Use the `analyze-product-change` skill.
 5. **Apply** — `prodshape change apply <chg-id> --dry-run`, then for real: writes the model, reports the product diff, archives the change
 6. **Accept the resulting baseline** — a human reviews and merges the pull request carrying the applied result
 
-Product-definition work and implementation work have independent cadence. They may share a pull request or implementation may follow later, but apply, merge acceptance and delivery remain distinct.
-
 ## Stop conditions
 
 - `prodshape change validate` reports zero errors.
