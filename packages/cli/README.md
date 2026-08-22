@@ -4,6 +4,12 @@
 
 Product Definition as Code keeps the agreed product definition in versioned Markdown that delivery work cites instead of restating. `@prodshape/cli` installs `prodshape`, the Product Definition as Code CLI.
 
+<p align="center">
+  <a href="https://pdac.dev/#watch-the-drift"><img src="https://pdac.dev/pdac-demo.gif" alt="Terminal recording: grep shows three specs paraphrasing one refund rule; the rule is defined once as BR-REFUND-001; each spec cites it by ID and content digest; verification reports three current citations; the rule changes, and verification reports three stale citations with PRODUCT061 warnings, naming each file and line." width="720" /></a>
+</p>
+
+<p align="center"><em>Three specs restate one rule; a change flags every recorded citation. Real output — the end card names the CLI version recorded. <a href="https://pdac.dev/">Watch on pdac.dev</a>.</em></p>
+
 > **Supported published baseline:** `@prodshape/cli@0.13.0`. The command surface and outputs are still settling; the schema and diagnostic contracts (`product-definition-as-code/…`, `PRODUCT###`) are intended to be stable. Behaviour present only on the repository's `main` branch is unreleased until a newer package version appears on npm.
 
 ## Install
