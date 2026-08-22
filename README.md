@@ -15,6 +15,12 @@
 
 Product Definition as Code keeps the agreed product definition in versioned Markdown that delivery work cites instead of restating.
 
+<p align="center">
+  <a href="https://pdac.dev/#watch-the-drift"><img src="https://pdac.dev/pdac-demo.gif" alt="Terminal recording: grep shows three specs paraphrasing one refund rule; the rule is defined once as BR-REFUND-001; each spec cites it by ID and content digest; verification reports three current citations; the rule changes, and verification reports three stale citations with PRODUCT061 warnings, naming each file and line." width="720" /></a>
+</p>
+
+<p align="center"><em>Three specs restate one rule; a change flags every recorded citation. Real output — the end card names the CLI version recorded. <a href="https://pdac.dev/">Watch on pdac.dev</a>.</em></p>
+
 The methodology belongs to the [specification repository](https://github.com/product-definition-as-code/spec): the normative contracts, the conformance tests and [the manifesto](https://github.com/product-definition-as-code/spec/blob/main/MANIFESTO.md), which states the founding position. ProductShape is the Product Definition as Code CLI: `prodshape` lets you author actors, journeys, use cases, business rules, domain terms and product requirements in Markdown, then keeps that definition validated, evolvable and citable:
 
 - `prodshape init` — scaffold a product definition (and optional AI and OpenSpec integrations) in any repository.
@@ -54,6 +60,47 @@ The CLI bundles every package below, so installing `@prodshape/cli` is all you n
 `@prodshape/integration-openspec` is the current OpenSpec package. The previously published `@prodshape/adapter-openspec` name belongs to older releases and is not part of the current package set.
 
 ## Quickstart
+
+Your model, rendered, in a couple of minutes:
+
+```bash
+mkdir my-product && cd my-product
+npm init -y && npm install --save-dev --save-exact @prodshape/cli@0.13.0
+npx --no-install prodshape init
+
+cat > docs/product/model/business-rules/br-refund-001.md <<'EOF'
+---
+id: BR-REFUND-001
+type: business-rule
+title: Refund window
+status: active
+---
+
+## Rule
+
+Refunds are accepted within 30 days of delivery.
+
+## Rationale
+
+Customers need a predictable window; finance needs a bounded liability.
+
+## Examples
+
+A delivery on March 1 may be refunded through March 31.
+
+## Exceptions
+
+None.
+EOF
+
+npx --no-install prodshape validate
+npx --no-install prodshape graph --format html
+open .product/generated/snapshot.html   # xdg-open on Linux
+```
+
+`validate` reports one warning — the rule has no consumers yet — which is the model telling you what to connect next. The snapshot is your product definition rendered as a browsable graph; add artifacts from `templates/` and re-run.
+
+### Release contract (what CI executes)
 
 One business rule, one citation, one detected drift. CI runs this exact block against the packed release candidate (the release-contract workflow), substituting only `PRODSHAPE_PACKAGE` with the tarball path — what you read here is what is tested.
 
@@ -133,6 +180,10 @@ What to read next:
 - [The specification](https://github.com/product-definition-as-code/spec) — normative — and [its manifesto](https://github.com/product-definition-as-code/spec/blob/main/MANIFESTO.md), the authoritative founding position. The [frontmatter reference](docs/specification/frontmatter-reference.md) enumerates what you may write in every artifact kind; `prodshape schema <kind>` prints the same contract without a repository.
 - The self-hosted model under [`docs/product/model`](docs/product/model): this repository defines itself with its own methodology, so every artifact kind has a real example. `schemas/` and `templates/` hold the machine contracts the CLI validates against and a conformant starting point for each kind.
 - Adoption guides for the four entry paths: [greenfield](docs/adoption/greenfield.md), [brownfield](docs/adoption/brownfield.md), [existing repository](docs/adoption/existing-repository.md) and [existing OpenSpec repository](docs/adoption/existing-openspec-repository.md).
+
+## Agent skills
+
+`prodshape init --ai claude,codex,copilot` installs generated commands and skills for the chosen providers, so an AI agent works the model through the same operations you do: explore, define, change, audit, impact and recover. The assets are canonical to the CLI — `prodshape integration update` refreshes them after an upgrade — and [the methodology overview](docs/methodology/overview.md) explains what each operation does.
 
 ## PDaC conformance
 
