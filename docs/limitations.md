@@ -2,7 +2,7 @@
 
 An honest account of what the toolkit does not do: where the implemented scope has operational limits, what is deliberately excluded, and where the design has known limits. Genuinely open decisions are tracked separately in [OPEN-DECISIONS.md](../OPEN-DECISIONS.md).
 
-> Supported published baseline: `@prodshape/cli@0.13.0`. This file is deliberately unversioned: a limitations document named after one release stops describing the product at the next one. Items explicitly labelled **Unreleased** describe the next release candidate on `main`, not the published baseline.
+> Supported published baseline: `@prodshape/cli@0.13.1`. This file is deliberately unversioned: a limitations document named after one release stops describing the product at the next one. Items explicitly labelled **Unreleased** describe the next release candidate on `main`, not the published baseline.
 
 ## Implementation status
 
