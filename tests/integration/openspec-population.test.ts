@@ -277,7 +277,6 @@ describe('enumerateOpenSpecDocuments + classifyConsumerDocuments', () => {
     const paths = enumeration.documents.map((d) => d.path);
     expect(paths.some((p) => p.includes('archive/old-feature'))).toBe(true);
 
-    // Archived documents should have archived: true.
     const archivedDocs = enumeration.documents.filter((d) => d.archived);
     expect(archivedDocs.length).toBeGreaterThan(0);
     expect(archivedDocs.every((d) => d.change === 'old-feature')).toBe(true);

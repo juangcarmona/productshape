@@ -4,9 +4,6 @@ import { describe, expect, it } from 'vitest';
 
 const repoRoot = join(import.meta.dirname, '..', '..');
 
-/**
- * Recursively collect all Markdown files under a directory.
- */
 async function collectMarkdown(dir: string): Promise<string[]> {
   const results: string[] = [];
   let entries;
