@@ -12,10 +12,10 @@
  * (schema, context, rules, operations, githubCopilot, and anything else) and only appends PDaC
  * guidance, deduplicating identical entries so the operation is idempotent.
  */
-import { execFile } from 'node:child_process';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { parse, stringify } from 'yaml';
+import { runCommand } from './process.js';
 import { envWithLocalBin, isOpenSpecWorkspace, pathExists } from './workspace.js';
 
 export { isOpenSpecWorkspace } from './workspace.js';
@@ -229,23 +229,12 @@ function compareVersions(a: string, b: string): number {
 }
 
 /** Run a command at the repository root, resolving stdout+stderr or rejecting on failure. */
-function runAtRoot(root: string, command: string, args: string[]): Promise<string> {
-  return new Promise((resolve, reject) => {
-    // Commands are typically .cmd shims on Windows; `shell: true` lets execFile find them on PATH
-    // across platforms without callers needing to know the extension.
-    execFile(
-      command,
-      args,
-      { cwd: root, shell: true, env: envWithLocalBin(root) },
-      (error, stdout, stderr) => {
-        if (error) {
-          reject(new Error(`${command} ${args.join(' ')} failed: ${error.message}`));
-          return;
-        }
-        resolve(`${stdout}${stderr}`);
-      },
-    );
+async function runAtRoot(root: string, command: string, args: string[]): Promise<string> {
+  const { stdout, stderr } = await runCommand(command, args, {
+    cwd: root,
+    env: envWithLocalBin(root),
   });
+  return `${stdout}${stderr}`;
 }
 
 /**
@@ -255,31 +244,23 @@ function runAtRoot(root: string, command: string, args: string[]): Promise<strin
 export async function detectOpenSpecVersion(
   root?: string,
 ): Promise<{ version: string } | { error: string }> {
-  return new Promise((resolve) => {
-    // `openspec` is typically a .cmd shim on Windows; `shell: true` lets execFile find it on PATH
-    // across platforms without callers needing to know the extension.
-    execFile(
-      'openspec',
-      ['--version'],
-      { shell: true, ...(root ? { env: envWithLocalBin(root) } : {}) },
-      (error, stdout, stderr) => {
-        if (error) {
-          resolve({
-            error: `OpenSpec CLI not found on PATH (run: npm install -g ${OPENSPEC_NPX_SPEC}). ${error.message}`,
-          });
-          return;
-        }
-        const output = `${stdout}${stderr}`.trim();
-        // `openspec --version` prints something like "1.3.0" or "openspec/1.3.0 ...".
-        const match = output.match(/(\d+\.\d+\.\d+(?:-[^\s]+)?)/);
-        if (!match?.[1]) {
-          resolve({ error: `Could not parse OpenSpec version from output: ${output}` });
-          return;
-        }
-        resolve({ version: match[1] });
-      },
-    );
-  });
+  try {
+    const { stdout, stderr } = await runCommand('openspec', ['--version'], {
+      ...(root ? { cwd: root, env: envWithLocalBin(root) } : {}),
+    });
+    const output = `${stdout}${stderr}`.trim();
+    // `openspec --version` prints something like "1.3.0" or "openspec/1.3.0 ...".
+    const match = output.match(/(\d+\.\d+\.\d+(?:-[^\s]+)?)/);
+    if (!match?.[1]) {
+      return { error: `Could not parse OpenSpec version from output: ${output}` };
+    }
+    return { version: match[1] };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return {
+      error: `OpenSpec CLI not found on PATH (run: npm install -g ${OPENSPEC_NPX_SPEC}). ${message}`,
+    };
+  }
 }
 
 /**

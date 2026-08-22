@@ -8,10 +8,8 @@
  * consumer-document population; scope classification and citation verification are core
  * responsibilities that operate on the enumeration.
  */
-import { execFile } from 'node:child_process';
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
-import { promisify } from 'node:util';
 import fg from 'fast-glob';
 import { codes } from '@prodshape/core';
 import type {
@@ -21,9 +19,8 @@ import type {
   EnumerateConsumerDocumentsOptions,
   SddIntegrationProvider,
 } from '@prodshape/core';
+import { runCommand } from './process.js';
 import { envWithLocalBin, isOpenSpecWorkspace, pathExists } from './workspace.js';
-
-const execFileAsync = promisify(execFile);
 
 /**
  * The artifact files that make up an OpenSpec change, relative to the change directory.
@@ -40,12 +37,8 @@ async function runOpenSpec(
   repoRoot: string,
   args: string[],
 ): Promise<{ stdout: string; stderr: string }> {
-  // `openspec` is typically a .cmd shim on Windows; `shell: true` lets execFile find it on PATH
-  // across platforms. The repository's node_modules/.bin is consulted first, so a
-  // devDependency install counts.
-  return execFileAsync('openspec', args, {
+  return runCommand('openspec', args, {
     cwd: repoRoot,
-    shell: true,
     env: envWithLocalBin(repoRoot),
     maxBuffer: 10 * 1024 * 1024,
   });
@@ -74,9 +67,8 @@ async function openspecListChanges(repoRoot: string): Promise<string[] | null> {
 /** Check whether `openspec` is runnable (PATH or node_modules/.bin) with a parseable version. */
 export async function isOpenSpecCliAvailable(repoRoot?: string): Promise<boolean> {
   try {
-    const { stdout } = await execFileAsync('openspec', ['--version'], {
-      shell: true,
-      ...(repoRoot ? { env: envWithLocalBin(repoRoot) } : {}),
+    const { stdout } = await runCommand('openspec', ['--version'], {
+      ...(repoRoot ? { cwd: repoRoot, env: envWithLocalBin(repoRoot) } : {}),
     });
     return /\d+\.\d+\.\d+/.test(stdout);
   } catch {
