@@ -10,38 +10,54 @@ The supported published CLI baseline is `@prodshape/cli@0.13.0`. Every stable pu
 
 ## [0.13.0]
 
-## [0.12.0]
+### Added
 
-## [0.11.0]
+- `prodshape drift`: lists every recorded product-definition drift warning across consumer documents, reporting the document, the artifacts involved (with whether each still exists in the model) and the summary. `--provider openspec` covers the whole population, with archived material marked. Drift is reported, never gated: a recorded warning exits `0`.
+- The merged-proposal rules require an impact pass before any proposal content is written: compare the change's intent with the whole product definition to find every artifact the change depends on, alters or contradicts, widen that list with `prodshape impact <ID>`, record it in the proposal, cite every impacted artifact, and name the neighbours that were checked and left out.
+- The merged-proposal rules require surfacing product-definition drift explicitly: when a change's goals contradict or go beyond the definition, the divergence is recorded in the proposal as a warning naming the artifacts involved, marked with `<!-- pdac-drift ids="..." summary="..." -->` on its own line. Drift is never fixed quietly; the decision belongs to humans.
+
+### Changed
+
+- `citations verify --provider openspec` always includes archived changes and checks their citations, reporting anything found in archived material as a warning (archived history cannot be edited, so its drift is informational). `--include-archived` now applies the full gate, scope declarations and error severities included, to archived documents too.
+
+## [0.12.0]
 
 ### Added
 
+- The diagnostic registry tracks a pinned spec revision: `docs/specification/.source.json` records the spec commit the local code tables are checked against, `pnpm registry:sync` vendors the normative code-to-severity extract, and the conformance test compares the local tables and every emission against it instead of against themselves. `PRODUCT061` (stale citation) now has a row in the warning-code table.
+- `citations.consumer-roots` (default `['openspec']`) names the directories `citations verify` scans when no target is given. Several roots may be listed, and a configured root that does not exist is an error rather than an empty pass; the JSON result reports `targets` in place of the single `target` field.
+
+### Changed
+
+- `validate` no longer writes `.product/generated` as a side effect. Generation is opt-in via `validate --write-generated`; `prodshape graph` remains the dedicated generator.
+- `change list --all` help text names the `superseded` history it has always included.
+
+### Fixed
+
+- `PRODUCT108`'s Open Questions heading match is exact: anchored to a line start and to exactly two hashes, so a nested `### Open Questions` subsection is no longer read as the change's own, and list items inside fenced code blocks are no longer counted.
+- `PRODUCT025` compares every pair of changes. Self-exclusion previously matched on `id`, so two changes both missing an `id` skipped each other and a real overlap disappeared behind the missing-id defect.
+
+## [0.11.0]
+
+Version 0.10.0 was prepared but never published: the release workflow could not complete without the OpenSpec CLI it shells out to (fixed below), so no `0.10.0` package ever reached npm. Its changes are included in this release, published directly after `0.9.0`.
+
+### Added
+
+- `change apply` and `change apply --dry-run` report the affected citation set before the change is accepted: every citation whose target the product diff reports as changed, with consumer path, point of use, target id and the prospective status under the existing precedence. An empty set is stated explicitly. The report is recomputed output, never persisted, and never a veto.
+- Provider-aware OpenSpec citation enforcement: `citations verify --provider openspec` verifies the enumerated consumer-document population (`bound` / `exempt` / `unclassified`) instead of globbing for citation syntax, so a workspace with current documents can never pass vacuously through zero discovered citations (`PRODUCT064`, `PRODUCT065`, `PRODUCT066`).
+- SDD-aware initialization: `prodshape init` detects OpenSpec, Kiro and Spec Kit; `--sdd openspec` wires the OpenSpec integration in the same run.
+- `prodshape --version`, sourced directly from the CLI package manifest and verified from the packed tarball.
+- A release-contract smoke gate that packs the CLI, installs the tarball without workspace links, and executes the primary documented init, validation, citation, current-verification and stale-verification workflow in a clean repository.
 - `prodshape change create <CHG-ID>` scaffolds a valid draft Product Change: frontmatter with `status: draft` and a `base-revision` resolved from the repository head (or the `CHG-INITIAL` sentinel outside git history), every required body section, and a `proposed/` directory. It validates the ID before writing and refuses to overwrite an existing change.
 - `-v` as the short form of `--version`.
 - `--root <dir>` on `validate` and `citations verify`: an explicit root replaces upward discovery but must carry the discovery markers, so a mistyped path cannot open an empty repository and read as a pass. `examples/minimal` carries its own `.product/config.yaml` and runs directly via `prodshape validate --root examples/minimal`.
 
 ### Changed
 
+- Product Change guidance now follows the normative lifecycle: overlay validation, human product approval, explicit apply on a working branch, pull-request review, and merge acceptance of the resulting baseline. Apply is not acceptance, and neither apply nor merge attests implementation, verification, release or deployment.
+- The sidecar citation ledger is accepted in both the bare-array and the `citations:` mapping form, and `citations verify` can check a supported consumer file directly.
 - `PRODUCT002` names the offending field: JSON Schema violations for additional and missing properties carry the dotted property path in the message and the diagnostic `field`.
 - The OpenSpec integration tip after `citations verify` prints only in an OpenSpec workspace without the integration installed, and never in JSON output.
-
-## [0.10.0]
-
-### Added
-
-- `change apply` and `change apply --dry-run` report the affected citation set before the change is accepted: every citation whose target the product diff reports as changed, with consumer path, point of use, target id and the prospective status under the existing precedence. An empty set is stated explicitly. The report is recomputed output, never persisted, and never a veto.
-- Provider-aware OpenSpec citation enforcement: `citations verify --provider openspec` verifies the enumerated consumer-document population (`bound` / `exempt` / `unclassified`) instead of globbing for citation syntax, so a workspace with current documents can never pass vacuously through zero discovered citations (`PRODUCT070`, `PRODUCT074`, `PRODUCT075`).
-- SDD-aware initialization: `prodshape init` detects OpenSpec, Kiro and Spec Kit; `--sdd openspec` wires the OpenSpec integration in the same run.
-- `prodshape --version`, sourced directly from the CLI package manifest and verified from the packed tarball.
-- A release-contract smoke gate that packs the CLI, installs the tarball without workspace links, and executes the primary documented init, validation, citation, current-verification and stale-verification workflow in a clean repository.
-- SDD-aware initialization on `main`: `prodshape init --sdd openspec` can create or detect an OpenSpec workspace and wire the integration in the same run. This remains explicitly unreleased until the next CLI package is published.
-
-### Changed
-
-- Product Change guidance now follows the normative lifecycle: overlay validation, human product approval, explicit apply on a working branch, pull-request review, and merge acceptance of the resulting baseline. Apply is not acceptance, and neither apply nor merge attests implementation, verification, release or deployment.
-- Public documentation identifies `@prodshape/cli@0.13.0` as the supported baseline, uses current package names, marks next-release behaviour explicitly, and derives or omits model counts instead of maintaining them by hand.
-
-- The sidecar citation ledger is accepted in both the bare-array and the `citations:` mapping form, and `citations verify` can check a supported consumer file directly.
 
 ### Fixed
 
@@ -160,8 +176,7 @@ Published as `@prodshape/cli` 0.2.0, `core` and `distribution` 0.3.0, `integrati
 [unreleased]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.13.0...HEAD
 [0.13.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.12.0...@prodshape/cli@0.13.0
 [0.12.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.11.0...@prodshape/cli@0.12.0
-[0.11.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.10.0...@prodshape/cli@0.11.0
-[0.10.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.9.0...@prodshape/cli@0.10.0
+[0.11.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.9.0...@prodshape/cli@0.11.0
 [0.9.0]: https://github.com/juangcarmona/productshape/releases/tag/@prodshape/cli@0.9.0
 [0.8.1]: https://github.com/juangcarmona/productshape/releases/tag/@prodshape/cli@0.8.1
 [0.8.0]: https://github.com/juangcarmona/productshape/releases/tag/@prodshape/cli@0.8.0

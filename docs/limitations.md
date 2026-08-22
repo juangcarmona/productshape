@@ -6,9 +6,7 @@ An honest account of what the toolkit does not do: where the implemented scope h
 
 ## Implementation status
 
-The supported `0.10.0` baseline includes the `prodshape` CLI (with its `product-definition` v0.x alias and `--version`), graph compilation, Product Change overlay validation and apply with the affected-citation report, citation emission and verification (including provider-aware OpenSpec population verification), Product Snapshot generation, deterministic brownfield recovery sessions, SDD-aware initialization, and generated AI and OpenSpec integrations. The current packages are published under `@prodshape/*`; the current OpenSpec library is `@prodshape/integration-openspec`, while `@prodshape/adapter-openspec` is a legacy name retained only for older consumers.
-
-**Unreleased:** the next CLI release adds the issue #106 paper cuts: `prodshape change create <CHG-ID>`, `-v`, `PRODUCT002` naming the offending field, the OpenSpec tip printing only where it applies, and `--root <dir>` on `validate` and `citations verify`. Public guidance must not present those as `0.10.0` behaviour.
+The supported `0.13.0` baseline includes the `prodshape` CLI (with its `product-definition` v0.x alias and `--version`), graph compilation, Product Change overlay validation and apply with the affected-citation report, citation emission and verification (including provider-aware OpenSpec population verification), Product Snapshot generation, deterministic brownfield recovery sessions, SDD-aware initialization, `prodshape change create` and `prodshape drift`, and generated AI and OpenSpec integrations. The current packages are published under `@prodshape/*`; the current OpenSpec library is `@prodshape/integration-openspec`, while `@prodshape/adapter-openspec` is a legacy name retained only for older consumers. Version `0.10.0` was prepared but never published; its changes shipped in `0.11.0` (see the [root changelog](../CHANGELOG.md)).
 
 Honest operational limitations within that scope:
 

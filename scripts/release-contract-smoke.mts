@@ -70,8 +70,39 @@ for (const path of baselineDocs) {
 
 const rootChangelog = await readFile(join(repoRoot, 'CHANGELOG.md'), 'utf8');
 const cliChangelog = await readFile(join(cliDir, 'CHANGELOG.md'), 'utf8');
+
+// Text of one root-changelog `## [x.y.z]` section, up to the next `## ` heading (or end of file).
+// `bump-baseline-docs.mts` inserts the heading but leaves its content to a human, which is exactly
+// how the `0.12.0` and `0.13.0` sections shipped empty (issue #120): the heading existed, so the
+// membership check below passed, and nobody noticed the section under it said nothing.
+function changelogSection(changelog: string, heading: string): string {
+  const start = changelog.indexOf(heading);
+  if (start === -1) return '';
+  const rest = changelog.slice(start + heading.length);
+  const end = rest.search(/\n## /);
+  return (end === -1 ? rest : rest.slice(0, end)).trim();
+}
+
+// Version bumps `changeset version` produced that never reached npm (issue #120): the version PR
+// merged and packages/cli/CHANGELOG.md keeps the section forever, but the publish step never
+// completed for it, so no such package exists. Presenting the bump as a release is exactly the
+// defect this gate exists to catch, so membership here is a deliberate, reviewed exception, not a
+// default. `0.10.0`: prepared, never published; its changes shipped in `0.11.0` instead.
+const neverPublished = new Set(['0.10.0']);
+
 for (const match of cliChangelog.matchAll(/^## (\d+\.\d+\.\d+)$/gm)) {
-  requireText(rootChangelog, `## [${match[1]}]`, 'root changelog');
+  const version = match[1];
+  const heading = `## [${version}]`;
+  if (neverPublished.has(version)) {
+    if (rootChangelog.includes(heading)) {
+      throw new Error(`${version} was never published; root changelog must not carry ${heading}`);
+    }
+    continue;
+  }
+  requireText(rootChangelog, heading, 'root changelog');
+  if (changelogSection(rootChangelog, heading).length === 0) {
+    throw new Error(`root changelog section ${heading} is empty; backfill it before release`);
+  }
 }
 
 const packageSection = readme.slice(readme.indexOf('## Packages'), readme.indexOf('## Quickstart'));
@@ -105,6 +136,21 @@ for (const block of publicDocs.matchAll(/```bash\r?\n([\s\S]*?)\r?\n```/g)) {
     throw new Error(
       'an executable public code block claims unreleased prodshape init --sdd behaviour',
     );
+  }
+}
+
+// Phrasing that describes shipped behaviour as pending. Each of these went stale in place once the
+// behaviour it hedged actually published (issue #120): the pin above still named the current
+// baseline correctly, but the surrounding sentence kept calling the same behaviour unreleased.
+const stalePendingPhrases = [
+  'the next release candidate adds',
+  'not behaviour of the published',
+  'remains explicitly unreleased until the next CLI package is published',
+  'is claimed as published until the package version advances',
+];
+for (const phrase of stalePendingPhrases) {
+  if (publicDocs.includes(phrase)) {
+    throw new Error(`public docs contain the stale pending-release phrase "${phrase}"`);
   }
 }
 
