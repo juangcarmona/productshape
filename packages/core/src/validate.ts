@@ -110,16 +110,16 @@ export function validateModel(
       diagnostics.push({
         severity: 'warning',
         code: 'PRODUCT101',
-        message: `File name is not aligned with its ID (expected '${expected}')`,
+        message: `File name does not match the artifact ID (expected '${expected}'); rename with: prodshape fix --filenames`,
         file: artifact.file,
         artifact: artifact.id,
       });
     }
   }
 
-  // PRODUCT111: a draft resting on low-confidence evidence needs human validation. Unlike
-  // PRODUCT102/103 this is not configuration-gated: it reports what the artifact says about
-  // itself, not a model-shape policy a repository may reasonably reject.
+  // PRODUCT111: a low-confidence draft needs human validation. Unlike PRODUCT102/103 this is
+  // not configuration-gated: it reports what the artifact says about itself, not a model-shape
+  // policy a repository may reasonably reject.
   for (const artifact of artifacts) {
     if (artifact.status !== 'draft') continue;
     const provenance = artifact.frontmatter.provenance;
@@ -128,7 +128,7 @@ export function validateModel(
     diagnostics.push({
       severity: 'warning',
       code: codes.lowConfidenceDraft,
-      message: `Draft artifact rests on low-confidence provenance and needs human validation`,
+      message: `Draft artifact declares 'provenance.confidence: low'; a human must validate it before it is accepted`,
       file: artifact.file,
       artifact: artifact.id,
       field: 'provenance.confidence',
@@ -209,7 +209,7 @@ export function validateModel(
         diagnostics.push({
           severity: 'warning',
           code: 'PRODUCT107',
-          message: `Bounded context '${node.id}' owns no domain language`,
+          message: `No domain term is defined in bounded context '${node.id}'`,
           file: node.path,
           artifact: node.id,
         });

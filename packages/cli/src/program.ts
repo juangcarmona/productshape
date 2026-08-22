@@ -291,7 +291,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
   const recover = program
     .command('recover')
     .description(
-      'Manage deterministic brownfield recovery sessions (semantic extraction stays with the recover-product skill)',
+      'Track a recovery session that rebuilds a product definition from an existing system (the recover-product skill does the semantic work)',
     );
   const sessionOption = [
     '--session <id>',
@@ -489,7 +489,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
   recover
     .command('check')
     .description(
-      'Re-hash evidence, detect drift, verify CHG-INITIAL-only output and revalidate the overlay',
+      'Re-hash evidence, detect drift, confirm all output stayed inside CHG-INITIAL and revalidate the overlay',
     )
     .option(...sessionOption)
     .option(...formatOption)
