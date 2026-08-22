@@ -23,7 +23,7 @@ The methodology belongs to the [specification repository](https://github.com/pro
 - `prodshape change validate` and `prodshape change apply` — evolve the definition through a Product Change: validated as an overlay, approved by a human, applied explicitly on a working branch. A human merge accepts the resulting baseline; apply is not acceptance.
 - `prodshape cite` and `prodshape citations verify` — cite product artifacts from SDD specs and agent prompts by ID and content digest, then verify citations: `current`, `stale`, `tampered` or `unresolved`.
 
-Tools check structure and references, never truth; people decide what the product should say and what should change.
+Deterministic tools check structure and references, never truth; people decide what is true and what should change.
 
 ## Install
 
@@ -136,7 +136,7 @@ What to read next:
 
 ## PDaC conformance
 
-The pinned conformance workflow builds and packs ProductShape, installs that tarball outside the workspace, and runs the external `pdac-lint` suite (`0.1.2`) against [PDaC spec commit `89b43b78a6547c9dea709b6d261212c2fe4f3c4b`](https://github.com/product-definition-as-code/spec/commit/89b43b78a6547c9dea709b6d261212c2fe4f3c4b) — the full published v0.1-draft profile: kernel, reference profile and reference workflow. The published tests are not yet a complete normative set, so the badge claims only this pinned executable profile; ProductShape's own fixtures, self-model and traceability checks run separately as **Internal contracts**.
+The pinned conformance workflow builds and packs ProductShape, installs that tarball outside the workspace, and runs the spec's conformance tests via the external runner `pdac-lint` (`0.1.2`) against [PDaC spec commit `89b43b78a6547c9dea709b6d261212c2fe4f3c4b`](https://github.com/product-definition-as-code/spec/commit/89b43b78a6547c9dea709b6d261212c2fe4f3c4b) — the full published v0.1-draft profile: kernel, reference profile and reference workflow. The published tests are not yet a complete normative set, so the badge claims only this pinned executable profile; ProductShape's own fixtures, self-model and traceability checks run separately as **Internal contracts**.
 
 ## Current status
 
