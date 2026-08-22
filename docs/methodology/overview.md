@@ -1,6 +1,8 @@
 # Methodology overview
 
-Product Definition as Code keeps a canonical, versioned, machine-validatable definition of your product in your repository — plain Markdown with YAML frontmatter — and evolves it through Product Changes whose applied result is accepted by pull-request merge. It sits _before_ your backlog and before Spec-Driven Development (SDD): the definition says what the product is; backlog items and SDD specs cite it rather than re-stating it.
+Product Definition as Code keeps the agreed product definition in versioned Markdown that delivery work cites instead of restating.
+
+The definition — plain Markdown with YAML frontmatter — lives in your repository and evolves through Product Changes whose applied result is accepted by pull-request merge. It sits _before_ your backlog and before Spec-Driven Development (SDD): the definition says what the product is; backlog items and SDD specs cite it rather than re-stating it.
 
 Five minutes here gives you the artifact families, the product graph, the operations, and the citation contract. The normative contracts live in the [specification repository](https://github.com/product-definition-as-code/spec); these pages explain, the specification decides.
 
@@ -82,7 +84,7 @@ See the [citation contract](https://github.com/product-definition-as-code/spec/b
 
 ## Where to go next
 
-- [Manifesto](../manifesto.md) — why this layer exists.
+- [Manifesto](../manifesto.md) — why this layer exists; the authoritative founding position is the [specification repository's manifesto](https://github.com/product-definition-as-code/spec/blob/main/MANIFESTO.md).
 - [The product graph](product-graph.md) · [Define](define.md) · [Recover](recover.md) · [Change](change.md)
 - [Validation](../specification/validation.md) — diagnostic codes and exit codes.
 - [Specification](https://github.com/product-definition-as-code/spec) — the normative contracts.
