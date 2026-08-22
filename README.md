@@ -205,9 +205,7 @@ The gate retains JSON and human-readable reports, verifies every pinned digest, 
 
 ## Current status
 
-`@prodshape/cli@0.13.0` is the supported published baseline. It includes deterministic brownfield recovery sessions, Product Change overlay validation and apply with the affected-citation report, citation emission and verification (including provider-aware OpenSpec population verification), snapshot generation, schema discovery, filename repair, SDD-aware initialization, `prodshape --version`, and generated AI/OpenSpec integrations. The [root changelog](CHANGELOG.md) records every stable CLI release from `0.1.0` through `0.10.0`.
-
-The next release candidate adds the issue #106 paper cuts: `prodshape change create <CHG-ID>` scaffolds a valid draft Product Change, `-v` joins `--version`, `PRODUCT002` names the offending field, the OpenSpec upsell tip prints only where it applies, and `validate`/`citations verify` accept `--root <dir>` (so `prodshape validate --root examples/minimal` runs the example directly). None is claimed as published until the package version advances on npm.
+`@prodshape/cli@0.13.0` is the supported published baseline. It includes deterministic brownfield recovery sessions, Product Change overlay validation and apply with the affected-citation report, citation emission and verification (including provider-aware OpenSpec population verification), snapshot generation, schema discovery, filename repair, SDD-aware initialization, `prodshape change create`, `prodshape drift`, `prodshape --version`, and generated AI/OpenSpec integrations. The [root changelog](CHANGELOG.md) records every stable CLI release from `0.1.0` through `0.13.0`. Version `0.10.0` was prepared but never published; its changes shipped in `0.11.0`.
 
 The loop is not a diagram here; the repository runs on it. This repository defines itself with its own methodology — the model the CLI validates above is the product definition of ProductShape itself, evolved through Product Changes, accepted through pull-request merges and verified by citations.
 

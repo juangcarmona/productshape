@@ -16,8 +16,6 @@ npx @prodshape/cli@0.13.0 --help
 
 The canonical command is `prodshape`; `product-definition` remains an identical v0.x compatibility alias. Requires Node.js >= 22.
 
-`prodshape change create <CHG-ID>`, `-v`, `PRODUCT002` field naming, the gated OpenSpec tip and `--root` on `validate`/`citations verify` are implemented on `main` for the next release, but they are not behaviour of the published `0.10.0` package.
-
 ## What it does
 
 A product definition is a set of Markdown artifacts with stable IDs — actors, journeys, use cases, business rules, domain terms, bounded contexts and requirements — whose typed frontmatter relationships compile into a product graph. It evolves through Product Changes: complete proposed future-state artifacts are validated as an overlay, approved by a human and explicitly applied on a working branch. A pull request reviews the applied result, and its merge accepts the resulting baseline; apply is not acceptance, and neither apply nor merge attests delivery. Product-definition work and implementation work may share that pull request or proceed at different times, but they remain distinct.
