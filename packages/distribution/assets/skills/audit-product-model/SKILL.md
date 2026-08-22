@@ -32,7 +32,7 @@ Do not use this skill to author artifacts (use `define-product`) or to reconstru
 
 Run these FIRST and treat their output as the authoritative structural baseline:
 
-- `prodshape validate --format json` — all structural diagnostics (PRODUCT0xx errors, PRODUCT1xx warnings). Never re-derive by reading files anything this command reports: duplicate IDs, unknown references, missing sections, orphaned use cases (PRODUCT102), unreachable requirements (PRODUCT103), unused rules and terms (PRODUCT105, PRODUCT106), file names not aligned with their IDs (PRODUCT101), and draft artifacts resting on low-confidence provenance (PRODUCT111).
+- `prodshape validate --format json` — all structural diagnostics (PRODUCT0xx errors, PRODUCT1xx warnings). Never re-derive by reading files anything this command reports: duplicate IDs, unknown references, missing sections, orphaned use cases (PRODUCT102), unreachable requirements (PRODUCT103), unused rules and terms (PRODUCT105, PRODUCT106), file names that do not match their IDs (PRODUCT101), and low-confidence drafts (PRODUCT111).
 - `prodshape graph --format json` — the compiled graph for connectivity questions.
 - `prodshape impact <ID> [--depth n] [--direction incoming|outgoing|both]` — incoming and outgoing reach of a suspect artifact.
 - `prodshape inspect <ID>` — the resolved view of a single artifact.
@@ -50,7 +50,7 @@ Run these FIRST and treat their output as the authoritative structural baseline:
    - Implementation-shaped requirements: bodies naming classes, packages, frameworks, storage or algorithms where the spec demands product behaviour.
    - Missing failure behaviour: use cases whose `## Failure Conditions` or `## Alternative Flows` are empty, trivial or ignore failures the main flow implies.
    - Weak traceability: requirements whose `derived-from` is formally present but thin — one tenuous source for a broad obligation, or derivation that does not actually support the requirement's content.
-   - Unvalidated recovered knowledge: artifacts carrying `provenance` that no human has confirmed — a draft resting on low confidence (PRODUCT111), or an active artifact whose provenance records inference rather than observation. Recovered claims are candidates until validated, so these are QUESTIONs for a reviewer, not defects.
+   - Unvalidated recovered knowledge: artifacts carrying `provenance` that no human has confirmed — a draft with low confidence (PRODUCT111), or an active artifact whose provenance records inference rather than observation. Recovered claims are candidates until validated, so these are QUESTIONs for a reviewer, not defects.
 4. Classify every finding as exactly one of:
    - ERROR — violates the specification (structural diagnostics, and semantic violations of a MUST in `artifacts.md`, such as implementation design in a body).
    - OBSERVATION — a quality concern the spec does not forbid (near-duplication, thin failure coverage, vague rationale).
