@@ -6,10 +6,10 @@ import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
+import { sameDiagnosticMultiset } from './pdac-conformance-diagnostics.mjs';
 
 const profile =
   'full published v0.1-draft suite (kernel, reference profile and reference workflow)';
-const comparedDiagnosticFields = ['severity', 'code', 'file', 'artifact', 'field', 'target'];
 const citationDiagnosticCodes = new Set([
   'PRODUCT042',
   'PRODUCT060',
@@ -102,10 +102,6 @@ function parseJson(text, source) {
   } catch (error) {
     throw new Error(`${source} is not valid JSON: ${error.message}`);
   }
-}
-
-function diagnosticKey(diagnostic) {
-  return JSON.stringify(comparedDiagnosticFields.map((field) => diagnostic?.[field] ?? null));
 }
 
 function multiset(values) {
@@ -330,15 +326,14 @@ function assertNegativeControl(
     const citationDiagnostics = (citationPayloads.get(testCase.name)?.diagnostics ?? []).filter(
       (diagnostic) => citationDiagnosticCodes.has(diagnostic.code),
     );
-    const expectedMissing = multiset(citationDiagnostics.map(diagnosticKey));
-    const actualMissing = multiset((testCase.missing ?? []).map(diagnosticKey));
+    const expectedMissing = testCase.missing ?? [];
 
-    if (expectedMissing.size > 0) {
+    if (citationDiagnostics.length > 0) {
       expectedFailures += 1;
-      missingDiagnostics += testCase.missing.length;
+      missingDiagnostics += expectedMissing.length;
       invariant(testCase.status === 'fail', `${testCase.name}: omission did not fail the case`);
       invariant(
-        sameMultiset(expectedMissing, actualMissing),
+        sameDiagnosticMultiset(expectedMissing, citationDiagnostics),
         `${testCase.name}: failure was not the expected missing citation diagnostics`,
       );
       invariant(
