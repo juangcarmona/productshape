@@ -140,6 +140,40 @@ jobs:
       # Post-publish supply-chain verification.
       - name: verify signatures and provenance
         run: pnpm -r exec npm audit signatures || true
+      # Tell pdac.dev to rebuild so it never lags this release's version. Mirrors how the spec
+      # repository's notify-site.yml dispatches to the site: GITHUB_TOKEN is scoped to this
+      # repository and cannot dispatch to another one, so this needs a token of its own, a
+      # fine-grained PAT with Contents write on the site repository, stored here as
+      # SITE_DISPATCH_TOKEN. This is a separate secret from the spec repository's copy; GitHub
+      # secrets do not cross repositories.
+      #
+      # A missing token fails the job rather than skipping quietly, same as the spec repository's
+      # version. Only the stable train reaches this job; alpha/beta publishes run through the
+      # `dispatch` job below and never trigger this step.
+      - name: notify pdac.dev of release
+        env:
+          TOKEN: ${{ secrets.SITE_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::SITE_DISPATCH_TOKEN is not set. Create a fine-grained PAT with Contents: write on product-definition-as-code/product-definition-as-code.github.io and add it as a repository secret."
+            exit 1
+          fi
+          version=$(node -p "require('./packages/cli/package.json').version")
+          code=$(curl -sS -o response.txt -w '%{http_code}' -X POST \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer $TOKEN" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            https://api.github.com/repos/product-definition-as-code/product-definition-as-code.github.io/dispatches \
+            -d "{\"event_type\":\"prodshape-released\",\"client_payload\":{\"version\":\"${version}\"}}")
+          # 204 is the only success the dispatch API returns. Anything else, including a 200 with a
+          # body, means the event was not accepted, and pdac.dev keeps serving a stale version.
+          if [ "$code" != "204" ]; then
+            echo "::error::dispatch was not accepted (HTTP $code)"
+            cat response.txt
+            exit 1
+          fi
+          echo "prodshape-released dispatched for ${version}"
+          echo "### Asked pdac.dev to rebuild for \`${version}\`" >> "$GITHUB_STEP_SUMMARY"
 
   # Manual path: prerelease publishing (alpha/beta), recovery, and pre-mode management.
   dispatch:
