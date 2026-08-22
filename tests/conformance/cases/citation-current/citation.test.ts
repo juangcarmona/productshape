@@ -23,7 +23,6 @@ describe('citation contract for the citation-current test case', () => {
     const fr = artifacts.find((a) => a.id === 'FR-AVAILABILITY-001');
     expect(fr).toBeDefined();
 
-    // Build a consumer document with a current inline citation.
     const digest = fr!.digest;
     const consumerContent = `{pdac:cite id="FR-AVAILABILITY-001" digest="${digest}"}`;
     const consumerPath = join(caseDir, 'consumer-inline.md');

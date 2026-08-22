@@ -75,7 +75,6 @@ async function readDirRecursive(dir: string): Promise<string[]> {
 beforeAll(async () => {
   scratch = await mkdtemp(join(tmpdir(), 'prodshape-conformance-'));
 
-  // Pack the CLI package
   const cliDir = join(repoRoot, 'packages', 'cli');
   await execFileAsync('npm', ['pack', '--pack-destination', scratch], {
     cwd: cliDir,
@@ -85,7 +84,6 @@ beforeAll(async () => {
   tarball = (await readdir(scratch)).find((f) => f.endsWith('.tgz'))!;
   expect(tarball).toBeDefined();
 
-  // Install into scratch
   await writeFile(join(scratch, 'package.json'), '{ "name": "scratch", "private": true }\n');
   await execFileAsync('npm', ['install', '--no-audit', '--no-fund', tarball], {
     cwd: scratch,

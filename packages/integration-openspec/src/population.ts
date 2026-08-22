@@ -111,7 +111,6 @@ async function discoverChangeDocuments(
 ): Promise<ConsumerDocument[]> {
   const docs: ConsumerDocument[] = [];
 
-  // Fixed artifact files: proposal.md, design.md, tasks.md.
   for (const { file, kind } of CHANGE_ARTIFACT_FILES) {
     const absolutePath = join(changeDir, file);
     try {
@@ -124,7 +123,6 @@ async function discoverChangeDocuments(
     }
   }
 
-  // specs/ directory: one or more <capability>/spec.md files.
   const specsDir = join(changeDir, 'specs');
   try {
     const specFiles = await discoverMarkdownFiles(specsDir);
@@ -204,10 +202,10 @@ export async function enumerateOpenSpecDocuments(
   const documents: ConsumerDocument[] = [];
   const diagnostics: Diagnostic[] = [];
 
-  // 1. Discover current changes. A workspace with no `openspec/changes/` directory at all (specs
-  // only) has zero changes by construction: nothing to discover, no CLI needed, and no PRODUCT069
-  // — older OpenSpec CLIs (1.3.x) even reject `list` outright in such a workspace. Otherwise
-  // prefer `openspec list --json` and fall back to filesystem scanning.
+  // A workspace with no `openspec/changes/` directory at all (specs only) has zero changes by
+  // construction: nothing to discover, no CLI needed, and no PRODUCT069 — older OpenSpec CLIs
+  // (1.3.x) even reject `list` outright in such a workspace. Otherwise prefer
+  // `openspec list --json` and fall back to filesystem scanning.
   let currentChangeNames: string[] | null = (await pathExists(changesDir))
     ? await openspecListChanges(repoRoot)
     : [];
@@ -219,8 +217,7 @@ export async function enumerateOpenSpecDocuments(
       message: `OpenSpec CLI not available; the document population was enumerated by filesystem convention instead of 'openspec list'. Install with 'npm install -g @fission-ai/openspec@1' for authoritative population discovery.`,
       file: 'openspec/',
     });
-    // CLI unavailable or unparseable: fall back to filesystem scanning of openspec/changes/,
-    // excluding archive/ (it's handled separately below).
+    // archive/ is excluded here: archived changes are enumerated separately below.
     try {
       const entries = await readdir(changesDir, { withFileTypes: true });
       currentChangeNames = entries
@@ -232,7 +229,6 @@ export async function enumerateOpenSpecDocuments(
     }
   }
 
-  // 2. Filter to a single change if requested.
   if (options?.change) {
     const wanted = options.change;
     if (currentChangeNames.includes(wanted)) {
@@ -243,13 +239,11 @@ export async function enumerateOpenSpecDocuments(
     }
   }
 
-  // 3. Discover documents for each current change.
   for (const name of currentChangeNames) {
     const changeDir = join(changesDir, name);
     documents.push(...(await discoverChangeDocuments(changeDir, repoRoot, name, false)));
   }
 
-  // 4. Discover archived changes if requested.
   if (includeArchived) {
     const archivedNames = await discoverArchivedChanges(archiveDir);
     for (const name of archivedNames) {
@@ -260,7 +254,6 @@ export async function enumerateOpenSpecDocuments(
     }
   }
 
-  // 5. Discover current specs (openspec/specs/).
   documents.push(...(await discoverSpecDocuments(specsDir, repoRoot)));
 
   return {

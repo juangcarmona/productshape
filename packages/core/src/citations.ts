@@ -109,7 +109,6 @@ function extractMarkerBlockCitations(content: string, source: string): CitationR
     const { id, digest } = attrs;
     if (!id || !digest) continue;
 
-    // Look for the closing marker and capture embedded text.
     let embeddedText: string | undefined;
     for (let j = i + 1; j < lines.length; j++) {
       const closeLine = lines[j];
