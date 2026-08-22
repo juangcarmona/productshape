@@ -661,10 +661,11 @@ describe('change apply', () => {
     ).resolves.toBeDefined();
   });
 
-  it('refuses to apply when the baseline moved under the change (PRODUCT027)', async () => {
+  it('refuses to apply when the baseline moved under the change (PRODUCT027: content digest differs)', async () => {
     await approvedChange();
     // The baseline drifts: an artifact the change modifies is edited and committed after the
-    // change recorded its base-revision.
+    // change recorded its base-revision. base-revision itself still resolves fine here, so this
+    // must be reported as an actual content difference, not an unresolvable revision.
     const target = join(
       workDir,
       'docs',
@@ -684,7 +685,42 @@ describe('change apply', () => {
 
     const result = await run(['change', 'apply', 'CHG-PROBE-001']);
     expect(result.code).toBe(1);
-    expect(result.err.join('\n')).toContain('PRODUCT027');
+    const errText = result.err.join('\n');
+    expect(errText).toContain('PRODUCT027');
+    expect(errText).toContain('changed since base-revision');
+    expect(errText).not.toContain('could not be resolved');
+    await expect(
+      stat(join(workDir, 'docs', 'product', 'model', 'business-rules', 'br-probe-001.md')),
+    ).rejects.toThrow();
+  });
+
+  it('refuses to apply with a distinct PRODUCT027 message when base-revision cannot be resolved at all', async () => {
+    // A base-revision that names no commit in this repository: ambiguous/missing revision, a
+    // shallow clone missing it, or (equally) a workDir that is not a Git repository at all. None of
+    // these mean the content differs; no comparison was ever possible, so the message must say so
+    // instead of asserting a content change that was never checked.
+    const dir = await writeChange({
+      status: 'approved',
+      modify: ['BR-VALID-URL-001'],
+      baseRevision: 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
+    });
+    await proposeArtifact(
+      dir,
+      'business-rules',
+      'BR-VALID-URL-001',
+      businessRule(
+        'BR-VALID-URL-001',
+        'Only well-formed absolute URLs are shortened',
+        'UC-SHORTEN-001',
+      ),
+    );
+
+    const result = await run(['change', 'apply', 'CHG-PROBE-001']);
+    expect(result.code).toBe(1);
+    const errText = result.err.join('\n');
+    expect(errText).toContain('PRODUCT027');
+    expect(errText).toContain('could not be resolved');
+    expect(errText).not.toContain('changed since base-revision');
     await expect(
       stat(join(workDir, 'docs', 'product', 'model', 'business-rules', 'br-probe-001.md')),
     ).rejects.toThrow();

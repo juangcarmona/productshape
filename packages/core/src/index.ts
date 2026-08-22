@@ -87,7 +87,7 @@ export {
   renderKindText,
 } from './frontmatter-reference.js';
 export type { FieldDescriptor, FieldKind, KindDescriptor } from './frontmatter-reference.js';
-export { gitHead, gitShow, gitShowBytes } from './git.js';
+export { gitHead, gitRevisionExists, gitShow, gitShowBytes } from './git.js';
 export { compileGraph, ownedTerms } from './graph.js';
 export type { GraphNode, ProductGraph } from './graph.js';
 export { analyzeImpact } from './impact.js';
