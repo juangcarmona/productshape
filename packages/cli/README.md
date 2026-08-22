@@ -4,14 +4,14 @@
 
 Product Definition as Code keeps the agreed product definition in versioned Markdown that delivery work cites instead of restating. `@prodshape/cli` installs `prodshape`, the Product Definition as Code CLI.
 
-> **Supported published baseline:** `@prodshape/cli@0.13.0`. The command surface and outputs are still settling; the schema and diagnostic contracts (`product-definition-as-code/…`, `PRODUCT###`) are intended to be stable. Behaviour present only on the repository's `main` branch is unreleased until a newer package version appears on npm.
+> **Supported published baseline:** `@prodshape/cli@0.13.1`. The command surface and outputs are still settling; the schema and diagnostic contracts (`product-definition-as-code/…`, `PRODUCT###`) are intended to be stable. Behaviour present only on the repository's `main` branch is unreleased until a newer package version appears on npm.
 
 ## Install
 
 ```bash
-npm install -g @prodshape/cli@0.13.0
+npm install -g @prodshape/cli@0.13.1
 # or run without installing:
-npx @prodshape/cli@0.13.0 --help
+npx @prodshape/cli@0.13.1 --help
 ```
 
 The canonical command is `prodshape`; `product-definition` remains an identical v0.x compatibility alias. Requires Node.js >= 22.
