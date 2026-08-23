@@ -10,6 +10,16 @@ The supported published CLI baseline is `@prodshape/cli@0.14.0`. Every stable pu
 
 ## [0.14.0]
 
+### Added
+
+- Spec Kit integration (`@prodshape/integration-speckit`): `citations verify --provider speckit` and `drift --provider speckit` enumerate the `spec.md`, `plan.md` and `tasks.md` of every feature directory under `specs/` and apply the bound/exempt/unclassified scope gate, so verification over a Spec Kit workspace runs on a known population and never passes vacuously. `prodshape integration add/update/check/remove speckit` manage a guidance file at `.specify/memory/pdac.md`, sentinel-delimited Product Grounding blocks merged into the workspace's spec, plan and tasks templates (carried into every generated document), a CI-ready example and integration metadata; the constitution, Spec Kit scripts and feature directories are never written. `init` and `doctor` detect and route Spec Kit workspaces.
+- `prodshape context <ID> [<ID>...]`: a deterministic, derived, non-canonical cited context projection of the requested artifacts' canonical text (ready inline citations included) plus their structural neighborhood, in Markdown and JSON, so delivery work starts from cited product text instead of paraphrase.
+- The pdac Spec Kit extension (`extensions/speckit-pdac`): context and verify commands plus optional hooks after the specify, plan and tasks phases, installable through Spec Kit's own tooling.
+
+### Fixed
+
+- OpenSpec provider commands run with safely escaped argument arrays across platforms, eliminating Node 24 DEP0190 warnings.
+
 ## [0.13.0]
 
 ### Added
