@@ -72,3 +72,50 @@ Only `npm unpublish` within the 72h window, and only for a genuinely broken or u
 - `@prodshape/integration-openspec` is the supported library name and the one bundled by the CLI.
 - `@prodshape/adapter-openspec` is a legacy published package from the earlier delivery-pipeline design. Existing consumers may remain pinned to it, but it receives no current features and must not appear as the current package in quickstarts or package tables.
 - `prodshape` is the canonical binary. `product-definition` remains byte-identical through v0.x and is removed before v1; release smoke tests exercise both names.
+
+## Releasing the pdac Spec Kit extension
+
+The extension under `extensions/speckit-pdac/` releases independently of the npm packages, through tags:
+
+1. Bump `version` in `extensions/speckit-pdac/extension.yml` in a normal PR and merge it.
+2. Tag the merge commit and push the tag: `git tag speckit-pdac-v<version> && git push origin speckit-pdac-v<version>`.
+3. The `speckit-pdac release` workflow builds `speckit-pdac.zip` with `git archive`, creates the GitHub release with the asset, and opens an automated PR that updates `extensions/catalog.json` with the new version, the pinned asset URL and the archive's sha256.
+4. Merge that catalog PR. From that moment `specify extension add pdac` and `specify extension update pdac` serve the new version to everyone who added the catalog.
+
+The workflow refuses a tag whose version does not match `extension.yml`, and the test suite keeps any catalog entry consistent with the manifest identity and its own pinned URL.
+
+### Community catalog listing (discovery)
+
+Spec Kit's community catalog (`extensions/catalog.community.json` in [github/spec-kit](https://github.com/github/spec-kit)) is discovery-only: it makes `specify extension search` find the extension but is never an install source. The listing is a one-time manual PR; using the `releases/latest/download` alias keeps its URL valid across our releases. Ready-to-submit entry:
+
+```json
+"pdac": {
+  "name": "Product Definition as Code (PDaC)",
+  "id": "pdac",
+  "description": "Ground Spec Kit features in an accepted product definition kept as versioned Markdown: fetch a cited context projection before specifying, and verify citations by id and content digest after specify, plan and tasks. Deterministic and read-only over the product model.",
+  "author": "Juan G. Carmona (@juangcarmona)",
+  "version": "0.1.0",
+  "download_url": "https://github.com/juangcarmona/productshape/releases/latest/download/speckit-pdac.zip",
+  "repository": "https://github.com/juangcarmona/productshape",
+  "homepage": "https://pdac.dev",
+  "documentation": "https://github.com/juangcarmona/productshape/blob/main/extensions/speckit-pdac/README.md",
+  "license": "Apache-2.0",
+  "category": "process",
+  "effect": "read-write",
+  "requires": {
+    "speckit_version": ">=0.2.0",
+    "tools": [
+      {
+        "name": "prodshape",
+        "version": ">=0.14.0",
+        "required": true
+      }
+    ]
+  },
+  "provides": {
+    "commands": 2,
+    "hooks": 3
+  },
+  "tags": ["product", "citations", "pdac", "traceability", "governance"]
+}
+```

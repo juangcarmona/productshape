@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0",
+  "name": "Product Definition as Code (PDaC) extension catalog",
+  "description": "Installable Spec Kit extension catalog maintained by the ProductShape project. Add with: specify extension catalog add <raw URL of this file> --name pdac --install-allowed",
+  "repository": "https://github.com/juangcarmona/productshape",
+  "extensions": {}
+}

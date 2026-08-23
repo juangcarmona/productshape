@@ -8,6 +8,7 @@
  * mirroring how the OpenSpec consumer tests treat the `openspec` CLI.
  */
 import { execFile } from 'node:child_process';
+import type { Server } from 'node:http';
 import { existsSync } from 'node:fs';
 import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -241,6 +242,110 @@ describe.skipIf(!hasSpecify)('pdac Spec Kit extension (real specify CLI)', () =>
           existsSync(join(dir, '.claude', 'commands', 'speckit.pdac.verify.md')),
       ).toBe(true);
     } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  }, 120_000);
+
+  it('installs by name from a served catalog with sha256 verification', async (ctx) => {
+    const { createHash } = await import('node:crypto');
+    const { createServer } = await import('node:http');
+
+    const dir = await mkdtemp(join(tmpdir(), 'prodshape-speckit-catalog-'));
+    let server: Server | undefined;
+    try {
+      try {
+        await execFileAsync(
+          'specify',
+          [
+            'init',
+            '--here',
+            '--force',
+            '--non-interactive',
+            '--integration',
+            'claude',
+            '--ignore-agent-tools',
+          ],
+          { cwd: dir, maxBuffer: 10 * 1024 * 1024 },
+        );
+      } catch (error) {
+        ctx.skip(
+          `specify init failed in this environment: ${error instanceof Error ? error.message : String(error)}`,
+        );
+        return;
+      }
+
+      // Build the archive exactly as the release workflow does. HEAD carries the committed
+      // extension; the test exercises the distribution mechanics, not working-tree freshness.
+      const zipPath = join(dir, 'speckit-pdac.zip');
+      await execFileAsync(
+        'git',
+        ['archive', 'HEAD:extensions/speckit-pdac', '--format=zip', '-o', zipPath],
+        { cwd: repoRoot, maxBuffer: 10 * 1024 * 1024 },
+      );
+      const zipBytes = await readFile(zipPath);
+      const sha256 = createHash('sha256').update(zipBytes).digest('hex');
+
+      // Serve the catalog and the archive over localhost; the specify CLI accepts plain HTTP
+      // for localhost only, which is exactly the loophole this test needs. The port is assigned
+      // once the server listens; requests only arrive after that.
+      let port = 0;
+      server = createServer((req, res) => {
+        if (req.url === '/speckit-pdac.zip') {
+          res.writeHead(200, { 'content-type': 'application/zip' });
+          res.end(zipBytes);
+          return;
+        }
+        if (req.url === '/catalog.json') {
+          res.writeHead(200, { 'content-type': 'application/json' });
+          res.end(
+            JSON.stringify({
+              schema_version: '1.0',
+              extensions: {
+                pdac: {
+                  id: 'pdac',
+                  name: 'Product Definition as Code (PDaC)',
+                  version: '0.1.0',
+                  description: 'Test catalog entry',
+                  author: 'juangcarmona',
+                  repository: 'https://github.com/juangcarmona/productshape',
+                  license: 'Apache-2.0',
+                  download_url: `http://127.0.0.1:${port}/speckit-pdac.zip`,
+                  sha256: `sha256:${sha256}`,
+                  tags: ['pdac'],
+                },
+              },
+            }),
+          );
+          return;
+        }
+        res.writeHead(404);
+        res.end();
+      });
+      await new Promise<void>((resolve) => server!.listen(0, '127.0.0.1', resolve));
+      const address = server.address();
+      port = typeof address === 'object' && address ? address.port : 0;
+
+      await execFileAsync(
+        'specify',
+        [
+          'extension',
+          'catalog',
+          'add',
+          `http://127.0.0.1:${port}/catalog.json`,
+          '--name',
+          'pdac-test',
+          '--install-allowed',
+        ],
+        { cwd: dir, maxBuffer: 10 * 1024 * 1024 },
+      );
+      const { stdout } = await execFileAsync('specify', ['extension', 'add', 'pdac'], {
+        cwd: dir,
+        maxBuffer: 10 * 1024 * 1024,
+      });
+      expect(stdout).toContain('speckit.pdac.verify');
+      expect(existsSync(join(dir, '.specify', 'extensions', 'pdac', 'extension.yml'))).toBe(true);
+    } finally {
+      await new Promise<void>((resolve) => (server ? server.close(() => resolve()) : resolve()));
       await rm(dir, { recursive: true, force: true });
     }
   }, 120_000);

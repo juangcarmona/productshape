@@ -60,10 +60,11 @@ Two maintenance notes: `specify init --force` and Spec Kit upgrades regenerate t
 
 The [`speckit-pdac` extension](../../extensions/speckit-pdac/README.md) packages the bridge through Spec Kit's own extension mechanism. It adds two commands, `speckit.pdac.context` (fetch the cited context projection before specifying) and `speckit.pdac.verify` (run the citation gate and repair findings), plus optional hooks that run verification automatically after the specify, plan and tasks phases. That moves the first verification from CI into the generation session itself: an unclassified document or a stale citation surfaces while the agent that produced it can still fix it.
 
-Install from a checkout of this repository:
+Install from the ProductShape extension catalog (add it once as a trusted install source, then install by name):
 
 ```bash
-specify extension add /path/to/productshape/extensions/speckit-pdac --dev
+specify extension catalog add https://raw.githubusercontent.com/juangcarmona/productshape/main/extensions/catalog.json --name pdac --install-allowed
+specify extension add pdac
 ```
 
-Or from a zip of that directory (for example a release asset), with `specify extension add pdac --from <url>`. Verify with `specify extension list`; remove with `specify extension remove pdac`. The extension only adds commands and hooks over the same deterministic operations; it gains no write authority over the product model, and its hooks degrade to a successful no-op in a workspace without ProductShape. The extension and `prodshape integration add speckit` compose; each also works alone.
+`specify extension update pdac` follows new releases; every catalog entry pins the release asset and its sha256, verified before install. Alternatives: install from a checkout with `specify extension add /path/to/productshape/extensions/speckit-pdac --dev`, or from a release asset with `specify extension add pdac --from <url>`. Verify with `specify extension list`; remove with `specify extension remove pdac`. The extension only adds commands and hooks over the same deterministic operations; it gains no write authority over the product model, and its hooks degrade to a successful no-op in a workspace without ProductShape. The extension and `prodshape integration add speckit` compose; each also works alone.
