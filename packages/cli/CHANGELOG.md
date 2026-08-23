@@ -1,5 +1,15 @@
 # @prodshape/cli
 
+## 0.14.0
+
+### Minor Changes
+
+- 0dd6320: Spec Kit bridge: a new `@prodshape/integration-speckit` package configures existing Spec Kit workspaces (managed guidance at `.specify/memory/pdac.md`, CI example, metadata; the constitution, templates, scripts and feature directories are never written) and enumerates the `spec.md`, `plan.md` and `tasks.md` of every feature directory for `citations verify --provider speckit` and `drift --provider speckit`. New `prodshape context` command renders a deterministic, cited context projection of requested product artifacts and their structural neighborhood for delivery intake. `init`, `integration add/update/check/remove` and `doctor` route Spec Kit workspaces into the integration.
+
+### Patch Changes
+
+- f47c886: Run OpenSpec commands with safely escaped argument arrays across platforms, eliminating Node 24 DEP0190 warnings from provider commands.
+
 ## 0.13.0
 
 ### Minor Changes
