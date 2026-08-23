@@ -41,13 +41,20 @@ jobs:
           git archive "$GITHUB_REF_NAME:extensions/speckit-pdac" --format=zip -o speckit-pdac.zip
           sha256sum speckit-pdac.zip | cut -d' ' -f1 > speckit-pdac.zip.sha256
           echo "sha256: $(cat speckit-pdac.zip.sha256)"
-      - name: create the GitHub release with the asset
+      # Idempotent on purpose: a tag pushed with git has no release yet, so one is created; a tag
+      # created through the GitHub releases UI (the only way from a browser) arrives with its
+      # release already existing, so the asset is uploaded to it instead (issue #149).
+      - name: create or complete the GitHub release with the asset
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" speckit-pdac.zip \
-            --title "pdac Spec Kit extension ${GITHUB_REF_NAME#speckit-pdac-}" \
-            --notes "Spec Kit extension release. Install: specify extension add pdac (with the ProductShape catalog added), or specify extension add pdac --from the attached speckit-pdac.zip URL. sha256: $(cat speckit-pdac.zip.sha256)"
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" speckit-pdac.zip --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" speckit-pdac.zip \
+              --title "pdac Spec Kit extension ${GITHUB_REF_NAME#speckit-pdac-}" \
+              --notes "Spec Kit extension release. Install: specify extension add pdac (with the ProductShape catalog added), or specify extension add pdac --from the attached speckit-pdac.zip URL. sha256: $(cat speckit-pdac.zip.sha256)"
+          fi
       - name: open the catalog update pull request
         env:
           GH_TOKEN: ${{ github.token }}
