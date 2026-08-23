@@ -1,10 +1,15 @@
-import { readFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
 import { existsSync } from 'node:fs';
+import { copyFile, mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { promisify } from 'node:util';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import { extractScopeDeclaration } from '@prodshape/core';
 import { repoRoot } from '../helpers.js';
+
+const execFileAsync = promisify(execFile);
 
 /**
  * Structural integrity of the pdac Spec Kit extension (extensions/speckit-pdac): the manifest
@@ -85,6 +90,103 @@ describe('pdac Spec Kit extension manifest', () => {
         content.split('\n').some((l) => /^\s*<!--\s*pdac-drift\b/.test(l)),
         command.file,
       ).toBe(false);
+    }
+  });
+});
+
+/**
+ * The installable catalog (extensions/catalog.json) and its release-time updater. The catalog is
+ * served raw from main and consumed by `specify extension catalog add`; its pdac entry, when
+ * present, must be internally consistent (the download URL pins the entry's own version tag, the
+ * sha256 is well-formed, identity matches the manifest). The entry may lag the manifest version:
+ * the catalog serves released versions, and a version in development is not released yet.
+ */
+describe('pdac extension catalog', () => {
+  const catalogPath = join(repoRoot, 'extensions', 'catalog.json');
+
+  interface CatalogEntry {
+    id: string;
+    name: string;
+    version: string;
+    repository: string;
+    license: string;
+    download_url: string;
+    sha256: string;
+  }
+
+  async function loadCatalog(): Promise<{
+    schema_version: string;
+    extensions: Record<string, CatalogEntry>;
+  }> {
+    return JSON.parse(await readFile(catalogPath, 'utf8'));
+  }
+
+  it('parses with the shape the specify CLI validates', async () => {
+    const catalog = await loadCatalog();
+    expect(catalog.schema_version).toBe('1.0');
+    expect(typeof catalog.extensions).toBe('object');
+    expect(Array.isArray(catalog.extensions)).toBe(false);
+  });
+
+  it('keeps any pdac entry internally consistent with the manifest identity', async () => {
+    const catalog = await loadCatalog();
+    const entry = catalog.extensions['pdac'];
+    if (!entry) return; // No release served yet; the empty catalog is a valid state.
+    const manifest = await loadManifest();
+    expect(entry.id).toBe('pdac');
+    expect(entry.name).toBe(manifest.extension.name);
+    expect(entry.repository).toBe(manifest.extension.repository);
+    expect(entry.license).toBe(manifest.extension.license);
+    expect(entry.version).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(entry.download_url).toBe(
+      `https://github.com/juangcarmona/productshape/releases/download/speckit-pdac-v${entry.version}/speckit-pdac.zip`,
+    );
+    expect(entry.sha256).toMatch(/^sha256:[0-9a-f]{64}$/);
+  });
+
+  it('the release updater writes a consistent entry for the manifest version', async () => {
+    const manifest = await loadManifest();
+    const version = manifest.extension.version;
+    const sha = 'a'.repeat(64);
+    const dir = await mkdtemp(join(tmpdir(), 'prodshape-catalog-'));
+    try {
+      const scratch = join(dir, 'catalog.json');
+      await copyFile(catalogPath, scratch);
+      await execFileAsync(
+        process.execPath,
+        [join(repoRoot, 'scripts', 'update-speckit-catalog.mjs'), version, sha, scratch],
+        { cwd: repoRoot },
+      );
+      const updated = JSON.parse(await readFile(scratch, 'utf8'));
+      const entry = updated.extensions['pdac'];
+      expect(entry.version).toBe(version);
+      expect(entry.sha256).toBe(`sha256:${sha}`);
+      expect(entry.download_url).toContain(`speckit-pdac-v${version}/speckit-pdac.zip`);
+      expect(entry.name).toBe(manifest.extension.name);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('the release updater refuses a version the manifest does not declare', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'prodshape-catalog-'));
+    try {
+      const scratch = join(dir, 'catalog.json');
+      await copyFile(catalogPath, scratch);
+      await expect(
+        execFileAsync(
+          process.execPath,
+          [
+            join(repoRoot, 'scripts', 'update-speckit-catalog.mjs'),
+            '99.99.99',
+            'b'.repeat(64),
+            scratch,
+          ],
+          { cwd: repoRoot },
+        ),
+      ).rejects.toThrow(/version mismatch|Command failed/);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
     }
   });
 });

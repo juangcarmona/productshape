@@ -1,0 +1,67 @@
+# Release pipeline for the pdac Spec Kit extension (extensions/speckit-pdac).
+#
+# Trigger: pushing a tag `speckit-pdac-v<version>` whose version matches extension.yml.
+# It builds the archive with `git archive` (the layout the specify CLI installs), creates the
+# GitHub release with the asset, then opens a pull request that updates the installable catalog
+# (extensions/catalog.json) with the new version, the pinned download URL and the archive's
+# sha256, which the specify CLI verifies before installing. The catalog PR is opened rather than
+# pushed to main so a human reviews and accepts what `specify extension update` will start
+# serving; the release itself is immutable either way.
+name: speckit-pdac release
+
+on:
+  push:
+    tags: ['speckit-pdac-v*']
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: check the tag matches the manifest version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#speckit-pdac-v}"
+          MANIFEST_VERSION="$(node -e "const {parse}=require('yaml');const {readFileSync}=require('node:fs');process.stdout.write(parse(readFileSync('extensions/speckit-pdac/extension.yml','utf8')).extension.version)")"
+          if [ "$TAG_VERSION" != "$MANIFEST_VERSION" ]; then
+            echo "tag version $TAG_VERSION does not match extension.yml version $MANIFEST_VERSION"
+            exit 1
+          fi
+      - name: build the extension archive
+        run: |
+          git archive "$GITHUB_REF_NAME:extensions/speckit-pdac" --format=zip -o speckit-pdac.zip
+          sha256sum speckit-pdac.zip | cut -d' ' -f1 > speckit-pdac.zip.sha256
+          echo "sha256: $(cat speckit-pdac.zip.sha256)"
+      - name: create the GitHub release with the asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" speckit-pdac.zip \
+            --title "pdac Spec Kit extension ${GITHUB_REF_NAME#speckit-pdac-}" \
+            --notes "Spec Kit extension release. Install: specify extension add pdac (with the ProductShape catalog added), or specify extension add pdac --from the attached speckit-pdac.zip URL. sha256: $(cat speckit-pdac.zip.sha256)"
+      - name: open the catalog update pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#speckit-pdac-v}"
+          BRANCH="speckit-pdac-catalog-v${TAG_VERSION}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B "$BRANCH" origin/main
+          node scripts/update-speckit-catalog.mjs "$TAG_VERSION" "$(cat speckit-pdac.zip.sha256)"
+          git add extensions/catalog.json
+          git commit -m "chore: serve speckit-pdac v${TAG_VERSION} from the extension catalog"
+          git push -u origin "$BRANCH" --force-with-lease
+          gh pr create --base main --head "$BRANCH" \
+            --title "Serve speckit-pdac v${TAG_VERSION} from the extension catalog" \
+            --body "Automated by the speckit-pdac release workflow for tag ${GITHUB_REF_NAME}. Updates extensions/catalog.json to version ${TAG_VERSION} with the pinned release asset URL and its sha256. Merging makes the version visible to specify extension add pdac and specify extension update."

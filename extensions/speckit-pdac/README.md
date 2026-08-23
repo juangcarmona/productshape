@@ -20,16 +20,23 @@ Recommended companion: `npx prodshape integration add speckit`, which installs t
 
 ## Install
 
-From a local checkout of this repository:
+The primary path is the ProductShape extension catalog. Add it once (the `--install-allowed` flag marks it as a trusted install source; only do that for catalogs you have vetted), then install by name:
 
 ```bash
-specify extension add /path/to/productshape/extensions/speckit-pdac --dev
+specify extension catalog add https://raw.githubusercontent.com/juangcarmona/productshape/main/extensions/catalog.json --name pdac --install-allowed
+specify extension add pdac
 ```
 
-From a custom URL (a zip of this directory, for example a GitHub release asset):
+`specify extension update pdac` picks up new versions as the catalog serves them. Each catalog entry pins the exact release asset and its sha256, which the specify CLI verifies before installing.
+
+Alternatives:
 
 ```bash
-specify extension add pdac --from <url-to-speckit-pdac.zip>
+# From a local checkout of this repository
+specify extension add /path/to/productshape/extensions/speckit-pdac --dev
+
+# From a release asset URL directly
+specify extension add pdac --from https://github.com/juangcarmona/productshape/releases/latest/download/speckit-pdac.zip
 ```
 
 Verify the installation with `specify extension list` and `specify extension info pdac`.
