@@ -1,5 +1,11 @@
 # @prodshape/integration-openspec
 
+## 0.4.1
+
+### Patch Changes
+
+- f47c886: Run OpenSpec commands with safely escaped argument arrays across platforms, eliminating Node 24 DEP0190 warnings from provider commands.
+
 ## 0.4.0
 
 ### Minor Changes
