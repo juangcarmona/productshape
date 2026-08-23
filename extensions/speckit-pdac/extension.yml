@@ -1,0 +1,42 @@
+schema_version: '1.0'
+
+extension:
+  id: pdac
+  name: 'Product Definition as Code (PDaC)'
+  version: '0.1.0'
+  description: 'Ground Spec Kit features in an accepted product definition: fetch the cited context projection before specifying, and verify citations after specify, plan and tasks with ProductShape'
+  author: juangcarmona
+  repository: https://github.com/juangcarmona/productshape
+  license: Apache-2.0
+
+requires:
+  speckit_version: '>=0.2.0'
+
+provides:
+  commands:
+    - name: speckit.pdac.context
+      file: commands/speckit.pdac.context.md
+      description: 'Fetch the cited context projection for the artifacts a feature implements, ready to feed into specification'
+    - name: speckit.pdac.verify
+      file: commands/speckit.pdac.verify.md
+      description: 'Verify product citations across the feature documents and fix what verification reports'
+
+hooks:
+  after_specify:
+    command: speckit.pdac.verify
+    optional: true
+    description: 'Verify product citations after specification'
+  after_plan:
+    command: speckit.pdac.verify
+    optional: true
+    description: 'Verify product citations after planning'
+  after_tasks:
+    command: speckit.pdac.verify
+    optional: true
+    description: 'Verify product citations after task generation'
+
+tags:
+  - 'product'
+  - 'citations'
+  - 'pdac'
+  - 'traceability'

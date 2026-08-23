@@ -55,3 +55,15 @@ Three layers, from steering to gate:
 Optionally, add a citation-discipline principle to your constitution yourself (for example: "Behaviour derived from the product definition is cited by artifact id and digest, never restated; divergence is recorded as drift and resolved through a Product Change"). Spec Kit natively enforces the constitution through the plan template's Constitution Check gate and `/speckit-analyze`. The integration never writes the constitution for you: it is yours, and this keeps product intent out of it.
 
 Two maintenance notes: `specify init --force` and Spec Kit upgrades regenerate templates, which wipes the managed blocks; `prodshape integration check` detects that and `prodshape integration update` re-merges. And if you install a Spec Kit preset or extension that overrides template resolution, the overriding template shadows the project one; merge the block into your override or re-point the preset.
+
+## Optional: the pdac Spec Kit extension (in-loop verification)
+
+The [`speckit-pdac` extension](../../extensions/speckit-pdac/README.md) packages the bridge through Spec Kit's own extension mechanism. It adds two commands, `speckit.pdac.context` (fetch the cited context projection before specifying) and `speckit.pdac.verify` (run the citation gate and repair findings), plus optional hooks that run verification automatically after the specify, plan and tasks phases. That moves the first verification from CI into the generation session itself: an unclassified document or a stale citation surfaces while the agent that produced it can still fix it.
+
+Install from a checkout of this repository:
+
+```bash
+specify extension add /path/to/productshape/extensions/speckit-pdac --dev
+```
+
+Or from a zip of that directory (for example a release asset), with `specify extension add pdac --from <url>`. Verify with `specify extension list`; remove with `specify extension remove pdac`. The extension only adds commands and hooks over the same deterministic operations; it gains no write authority over the product model, and its hooks degrade to a successful no-op in a workspace without ProductShape. The extension and `prodshape integration add speckit` compose; each also works alone.
