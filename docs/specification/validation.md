@@ -40,7 +40,7 @@ Warnings are not errors. `validation.warnings-as-errors` in `.product/config.yam
 | `PRODUCT024` | Removal leaves a dangling reference from an active artifact in the overlay |
 | `PRODUCT025` | Concurrent live Product Changes with overlapping modify/remove operations |
 | `PRODUCT026` | Proposed artifact not listed in operations, or operation without its proposed artifact |
-| `PRODUCT027` | Baseline revision incompatible at apply without explicit resolution |
+| `PRODUCT027` | Baseline revision incompatible at apply: either the base-revision could not be resolved to a commit, or it resolved and a touched artifact's content digest differs from it |
 | `PRODUCT028` | Apply attempted on a Product Change whose status is not `approved` |
 | `PRODUCT042` | Invalid or unverifiable citation digest |
 | `PRODUCT050` | Invalid configuration or unknown top-level configuration key |

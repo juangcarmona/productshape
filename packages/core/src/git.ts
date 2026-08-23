@@ -26,6 +26,20 @@ export async function gitHead(root: string): Promise<string | undefined> {
 }
 
 /**
+ * Whether a revision resolves to a commit in this repository, checked independently of any path.
+ *
+ * False outside a Git repository, in a shallow clone that does not carry the revision, or for a
+ * revision that is missing or ambiguous. Callers that also look up a path at the revision (see
+ * {@link gitShowBytes}) should check this first: it lets "the revision itself could not be
+ * resolved" be told apart from "the revision resolved, but the file within it is absent or
+ * differs", which are different findings and should not be reported as the same one.
+ */
+export async function gitRevisionExists(root: string, revision: string): Promise<boolean> {
+  const result = await gitRaw(root, ['rev-parse', '--verify', '--quiet', `${revision}^{commit}`]);
+  return result !== undefined;
+}
+
+/**
  * File content at a specific revision (repository-relative POSIX path),
  * or undefined when the revision or path cannot be resolved.
  *
