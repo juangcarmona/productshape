@@ -192,6 +192,60 @@ describe('Spec Kit consumer conformance (fixture workspace)', () => {
   });
 });
 
+describe.skipIf(!hasSpecify)('pdac Spec Kit extension (real specify CLI)', () => {
+  it('installs from the repository checkout and registers commands and hooks', async (ctx) => {
+    const dir = await mkdtemp(join(tmpdir(), 'prodshape-speckit-ext-'));
+    try {
+      try {
+        await execFileAsync(
+          'specify',
+          [
+            'init',
+            '--here',
+            '--force',
+            '--non-interactive',
+            '--integration',
+            'claude',
+            '--ignore-agent-tools',
+          ],
+          { cwd: dir, maxBuffer: 10 * 1024 * 1024 },
+        );
+      } catch (error) {
+        ctx.skip(
+          `specify init failed in this environment: ${error instanceof Error ? error.message : String(error)}`,
+        );
+        return;
+      }
+
+      const extensionSource = join(repoRoot, 'extensions', 'speckit-pdac');
+      const { stdout } = await execFileAsync(
+        'specify',
+        ['extension', 'add', extensionSource, '--dev'],
+        { cwd: dir, maxBuffer: 10 * 1024 * 1024 },
+      );
+      expect(stdout).toContain('speckit.pdac.context');
+      expect(stdout).toContain('speckit.pdac.verify');
+
+      expect(existsSync(join(dir, '.specify', 'extensions', 'pdac', 'extension.yml'))).toBe(true);
+
+      const { stdout: listed } = await execFileAsync('specify', ['extension', 'list'], {
+        cwd: dir,
+        maxBuffer: 10 * 1024 * 1024,
+      });
+      expect(listed).toContain('pdac');
+      expect(listed).toContain('Hooks: 3');
+
+      // The claude integration materializes provided commands as agent skills.
+      expect(
+        existsSync(join(dir, '.claude', 'skills', 'speckit-pdac-verify', 'SKILL.md')) ||
+          existsSync(join(dir, '.claude', 'commands', 'speckit.pdac.verify.md')),
+      ).toBe(true);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  }, 120_000);
+});
+
 describe.skipIf(!hasSpecify)('Spec Kit consumer conformance (real specify init)', () => {
   it('drives the full citation lifecycle over a workspace created by the specify CLI', async (ctx) => {
     const dir = await mkdtemp(join(tmpdir(), 'prodshape-speckit-real-'));

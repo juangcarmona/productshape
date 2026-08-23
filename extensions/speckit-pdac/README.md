@@ -1,0 +1,41 @@
+# PDaC extension for Spec Kit
+
+Grounds Spec Kit features in an accepted product definition kept as code ([Product Definition as Code](https://pdac.dev), reference implementation [ProductShape](https://github.com/juangcarmona/productshape)).
+
+What it adds to a Spec Kit workspace:
+
+- `speckit.pdac.context`: fetch the cited context projection (canonical text of the product artifacts a feature implements, with ready citation records) before specifying.
+- `speckit.pdac.verify`: run deterministic citation verification over every feature's `spec.md`, `plan.md` and `tasks.md` and repair what it reports.
+- Optional hooks that run the verification automatically after the specify, plan and tasks phases, so an ungrounded document or a stale citation surfaces inside the session that can fix it, not later in CI.
+
+The extension adds commands and hooks only. It gains no write authority over the product model: the accepted definition under `docs/product/model` changes exclusively through a human-approved Product Change, and the verifier is read-only.
+
+## Requirements
+
+- A Spec Kit workspace (`specify init`).
+- ProductShape reachable as `npx prodshape` (install: `npm install -g @prodshape/cli`, or as a devDependency).
+- A product definition: `npx prodshape init` for greenfield, or the [brownfield recovery path](../../docs/adoption/brownfield.md).
+
+Recommended companion: `npx prodshape integration add speckit`, which installs the full guidance at `.specify/memory/pdac.md`, merges the Product Grounding blocks into the workspace templates and provides the CI example. The extension and the integration compose; each also works alone.
+
+## Install
+
+From a local checkout of this repository:
+
+```bash
+specify extension add /path/to/productshape/extensions/speckit-pdac --dev
+```
+
+From a custom URL (a zip of this directory, for example a GitHub release asset):
+
+```bash
+specify extension add pdac --from <url-to-speckit-pdac.zip>
+```
+
+Verify the installation with `specify extension list` and `specify extension info pdac`.
+
+## Uninstall
+
+```bash
+specify extension remove pdac
+```
