@@ -62,6 +62,15 @@ async function driveCitationLifecycle(dir: string): Promise<void> {
   expect(add.out).toContain('.specify/memory/pdac.md');
   expect(existsSync(join(dir, '.specify', 'memory', 'pdac.md'))).toBe(true);
 
+  // Generation-time enforcement: every Spec Kit template the workspace has carries the managed
+  // PDaC block after installation, so documents generated from it inherit the requirement.
+  for (const template of ['spec-template.md', 'plan-template.md', 'tasks-template.md']) {
+    const templatePath = join(dir, '.specify', 'templates', template);
+    if (existsSync(templatePath)) {
+      expect(await readFile(templatePath, 'utf8'), template).toContain('Product Grounding');
+    }
+  }
+
   // The integration never touches the constitution Spec Kit owns.
   const constitutionPath = join(dir, '.specify', 'memory', 'constitution.md');
   const constitutionBefore = existsSync(constitutionPath)

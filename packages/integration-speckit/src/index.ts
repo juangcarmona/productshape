@@ -1,23 +1,50 @@
 /**
  * Spec Kit integration for Product Definition as Code.
  *
- * This module configures an existing Spec Kit workspace with PDaC citation guidance by writing
- * one fully managed memory file (`.specify/memory/pdac.md`) and recording metadata under
- * `.product/integrations/`. It never touches `.specify/memory/constitution.md` (the constitution
- * governs how software is built and must not carry product intent), never patches Spec Kit's
- * templates or scripts, and never writes into `specs/` feature directories. The integration is
- * configuration + deterministic verification: consumer documents cite canonical product
- * artifacts by id + digest, and `prodshape citations verify --provider speckit` checks them.
+ * This module configures an existing Spec Kit workspace on two surfaces, both official
+ * customization points, and records metadata under `.product/integrations/`:
+ *
+ * - One fully managed memory file (`.specify/memory/pdac.md`) carrying the complete PDaC
+ *   guidance and the exact citation, scope and drift syntaxes.
+ * - A sentinel-delimited PDaC block merged into each project template
+ *   (`.specify/templates/{spec,plan,tasks}-template.md`). Spec Kit's commands copy the resolved
+ *   template into every generated document, so the block reaches the generating agent at
+ *   authoring time — the moment canonical text would otherwise be paraphrased. User-authored
+ *   template content is preserved; removal strips exactly the block.
+ *
+ * It never touches `.specify/memory/constitution.md` (the constitution governs how software is
+ * built and must not carry product intent; a citation-discipline principle there is the human's
+ * to add), never patches Spec Kit's scripts or generated agent command definitions, and never
+ * writes into `specs/` feature directories. The hard gate stays deterministic verification:
+ * consumer documents cite canonical product artifacts by id + digest, and
+ * `prodshape citations verify --provider speckit` checks them over the enumerated population.
  *
  * Spec Kit installs through its own tooling (`specify init`); this integration requires the
  * workspace to exist and never creates it.
  */
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import {
+  MANAGED_TEMPLATES,
+  extractTemplateBlock,
+  mergeTemplateBlock,
+  removeTemplateBlock,
+} from './templates.js';
 import { isSpecKitWorkspace, pathExists } from './workspace.js';
 
 export { isSpecKitWorkspace } from './workspace.js';
 export { enumerateSpecKitDocuments, specKitProvider } from './population.js';
+export {
+  MANAGED_TEMPLATES,
+  PDAC_PLAN_TEMPLATE_BLOCK,
+  PDAC_SPEC_TEMPLATE_BLOCK,
+  PDAC_TASKS_TEMPLATE_BLOCK,
+  PDAC_TEMPLATE_BEGIN,
+  PDAC_TEMPLATE_END,
+  extractTemplateBlock,
+  mergeTemplateBlock,
+  removeTemplateBlock,
+} from './templates.js';
 
 /** Repository-relative paths used by this integration. */
 const MEMORY_RELATIVE = '.specify/memory/pdac.md';
@@ -95,6 +122,14 @@ Change or adjust the feature. Never fix drift quietly, drop or weaken a citation
 write around the conflict. Spec Kit never edits docs/product/model: the accepted definition
 changes only through a Product Change under docs/product/changes/.
 
+## The Product Grounding sections
+
+The integration merges a managed "Product Grounding (PDaC)" section into this workspace's spec,
+plan and tasks templates, so every generated document carries it. Fill it: replace its
+placeholder with the citations the document depends on, or (a human decision only) with the
+exemption declaration. Never delete the section without doing one of the two; a gated document
+with neither is unclassified and fails verification.
+
 ## Before finishing a feature
 
 Run \`${SPECKIT_VERIFY_COMMAND}\` and fix every stale, tampered or unresolved citation, every
@@ -110,6 +145,8 @@ export interface SpecKitIntegrationMeta {
   installedAt: string;
   memoryPath: string;
   ciExamplePath: string;
+  /** The Spec Kit template files a managed PDaC block was merged into (repository-relative). */
+  templatePaths: string[];
 }
 
 /**
@@ -209,6 +246,8 @@ export async function readSpecKitIntegrationMeta(
  *
  * - Requires an existing `.specify/` workspace (run `specify init` first); never creates one.
  * - Writes the fully managed guidance file at `.specify/memory/pdac.md`.
+ * - Merges the managed PDaC block into each project template the workspace has
+ *   (`.specify/templates/{spec,plan,tasks}-template.md`), preserving user-authored content.
  * - Installs the CI-ready example at `.product/integrations/speckit.ci.yml`.
  * - Records metadata under `.product/integrations/speckit.json`.
  * - Idempotent: running twice produces the same result and reports no changes.
@@ -246,6 +285,23 @@ export async function addSpecKitIntegration(
   const ciExisting = (await pathExists(ciAbsolute)) ? await readFile(ciAbsolute, 'utf8') : null;
   const ciChanged = ciExisting !== ciDesired;
 
+  // Generation-time enforcement: merge the managed PDaC block into each Spec Kit template the
+  // workspace has. Spec Kit copies the resolved template into every generated document, so the
+  // block reaches the generating agent at authoring time. A template the workspace lacks is
+  // simply not applicable; a template Spec Kit later restores (e.g. `specify init --force`)
+  // loses the block, which `check` reports and `update` re-merges.
+  const templateMerges: Array<{ relative: string; absolute: string; content: string }> = [];
+  const templatePaths: string[] = [];
+  for (const managed of MANAGED_TEMPLATES) {
+    const absolute = join(root, ...managed.relative.split('/'));
+    if (!(await pathExists(absolute))) continue;
+    templatePaths.push(managed.relative);
+    const merged = mergeTemplateBlock(await readFile(absolute, 'utf8'), managed.block);
+    if (merged.changed) {
+      templateMerges.push({ relative: managed.relative, absolute, content: merged.content });
+    }
+  }
+
   const changes: string[] = [];
   if (memoryChanged) {
     changes.push(
@@ -253,6 +309,9 @@ export async function addSpecKitIntegration(
         ? `Installed PDaC guidance at ${MEMORY_RELATIVE}.`
         : `Updated PDaC guidance at ${MEMORY_RELATIVE}.`,
     );
+  }
+  for (const merge of templateMerges) {
+    changes.push(`Merged the PDaC block into ${merge.relative}.`);
   }
   if (ciChanged) {
     changes.push(
@@ -268,6 +327,7 @@ export async function addSpecKitIntegration(
     installedAt: new Date().toISOString(),
     memoryPath: MEMORY_RELATIVE,
     ciExamplePath: CI_EXAMPLE_RELATIVE,
+    templatePaths,
   };
 
   if (changes.length === 0 && !force) {
@@ -284,6 +344,10 @@ export async function addSpecKitIntegration(
       await mkdir(dirname(memoryAbsolute), { recursive: true });
       await writeFile(memoryAbsolute, PDAC_SPECKIT_GUIDANCE, 'utf8');
       written.push(MEMORY_RELATIVE);
+    }
+    for (const merge of templateMerges) {
+      await writeFile(merge.absolute, merge.content, 'utf8');
+      written.push(merge.relative);
     }
     if (ciChanged || force) {
       await mkdir(dirname(ciAbsolute), { recursive: true });
@@ -353,6 +417,39 @@ export async function checkSpecKitIntegration(root: string): Promise<{
     checks.push({ name: 'guidance', ok: true, detail: 'PDaC guidance present and current.' });
   }
 
+  for (const managed of MANAGED_TEMPLATES) {
+    const absolute = join(root, ...managed.relative.split('/'));
+    if (!(await pathExists(absolute))) {
+      checks.push({
+        name: `template: ${managed.relative}`,
+        ok: true,
+        detail: 'Template not present in this workspace; PDaC block not applicable.',
+      });
+      continue;
+    }
+    const existing = extractTemplateBlock(await readFile(absolute, 'utf8'));
+    if (existing === managed.block) {
+      checks.push({
+        name: `template: ${managed.relative}`,
+        ok: true,
+        detail: 'PDaC block present and current.',
+      });
+    } else if (existing === null) {
+      checks.push({
+        name: `template: ${managed.relative}`,
+        ok: false,
+        detail:
+          'PDaC block missing (was the template regenerated by Spec Kit?). Run: prodshape integration update',
+      });
+    } else {
+      checks.push({
+        name: `template: ${managed.relative}`,
+        ok: false,
+        detail: 'PDaC block outdated or edited. Run: prodshape integration update',
+      });
+    }
+  }
+
   if (await pathExists(ciExamplePath(root))) {
     checks.push({
       name: 'ci example',
@@ -387,9 +484,10 @@ export async function checkSpecKitIntegration(root: string): Promise<{
 }
 
 /**
- * Remove the Spec Kit integration: the managed guidance file, the CI example and the metadata
- * file. Native Spec Kit files and feature directories are never touched. `--dry-run` reports
- * what would be removed without deleting.
+ * Remove the Spec Kit integration: strip the managed PDaC block from each template that carries
+ * one, and delete the managed guidance file, the CI example and the metadata file. User-authored
+ * template content, other native Spec Kit files and feature directories are never touched.
+ * `--dry-run` reports what would be removed without writing.
  */
 export async function removeSpecKitIntegration(
   root: string,
@@ -397,6 +495,18 @@ export async function removeSpecKitIntegration(
 ): Promise<{ removed: string[] }> {
   const { dryRun = false } = options;
   const removed: string[] = [];
+
+  for (const managed of MANAGED_TEMPLATES) {
+    const absolute = join(root, ...managed.relative.split('/'));
+    if (!(await pathExists(absolute))) continue;
+    const stripped = removeTemplateBlock(await readFile(absolute, 'utf8'));
+    if (stripped.changed) {
+      if (!dryRun) {
+        await writeFile(absolute, stripped.content, 'utf8');
+      }
+      removed.push(managed.relative);
+    }
+  }
 
   for (const relativePath of [MEMORY_RELATIVE, CI_EXAMPLE_RELATIVE, META_RELATIVE]) {
     const absolute = join(root, ...relativePath.split('/'));

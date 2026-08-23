@@ -24,9 +24,10 @@ npx prodshape init            # scaffold docs/product/model if you have no defin
 npx prodshape integration add speckit
 ```
 
-The integration writes exactly three files, all removable with `prodshape integration remove speckit`:
+The integration configures two of Spec Kit's own customization surfaces, plus its own files, all removable with `prodshape integration remove speckit`:
 
-- `.specify/memory/pdac.md`: a fully managed guidance file for the agents that run your specify, plan and tasks commands. It is workflow instruction, never product intent, and it never touches `.specify/memory/constitution.md`.
+- A managed "Product Grounding (PDaC)" block merged into `.specify/templates/spec-template.md`, `plan-template.md` and `tasks-template.md` (sentinel-delimited; your template content is preserved). Spec Kit's specify, plan and tasks commands copy the resolved template into every document they generate, so the block, and its instruction to cite instead of restate, reaches the generating agent at authoring time.
+- `.specify/memory/pdac.md`: a fully managed guidance file carrying the complete rules and exact syntaxes the template blocks point to. It is workflow instruction, never product intent, and it never touches `.specify/memory/constitution.md`.
 - `.product/integrations/speckit.ci.yml`: a CI-ready verification example.
 - `.product/integrations/speckit.json`: ProductShape's integration metadata.
 
@@ -42,3 +43,15 @@ Brownfield: if the product has no definition yet, recover one from the existing 
 Verification enumerates the `spec.md`, `plan.md` and `tasks.md` of every feature directory under `specs/` and requires each to be bound (it carries citations) or exempt (a human declared `pdac-scope: none`). Zero discovered citations over enumerated documents is a set of failures, never a pass. Spec Kit has no archive lifecycle, so the whole population is current.
 
 When the accepted definition later changes through a Product Change, the citations in affected feature specs report `stale` (`PRODUCT061`), and CI points at exactly the features whose grounding moved. If a feature's goals contradict the definition, record drift with `<!-- pdac-drift ids="..." summary="..." -->` and review it with `prodshape drift --provider speckit`; the resolution is a human decision through the change process, never a quiet edit.
+
+## How citation is enforced instead of re-definition
+
+Three layers, from steering to gate:
+
+1. **Generation time (templates).** Every generated `spec.md`, `plan.md` and `tasks.md` carries the managed Product Grounding section, so the agent filling the template is told to cite (with the exact commands) at the moment it would otherwise paraphrase. The unfilled placeholder deliberately contains no parseable citation and no scope declaration, so it can never satisfy the gate by itself.
+2. **Session context (memory).** `.specify/memory/pdac.md` holds the full rules and syntaxes; `prodshape context` supplies the canonical text pre-cited, making the grounded path the cheapest path.
+3. **The deterministic gate (the only hard enforcement).** `prodshape citations verify --provider speckit` enumerates the gated documents of every feature and requires each to be bound or exempt. An agent that deletes or ignores the section produces an unclassified document (`PRODUCT064`) and the gate fails; a bound document whose cited artifact later changed reports `PRODUCT061`. Steering can be ignored; the gate cannot.
+
+Optionally, add a citation-discipline principle to your constitution yourself (for example: "Behaviour derived from the product definition is cited by artifact id and digest, never restated; divergence is recorded as drift and resolved through a Product Change"). Spec Kit natively enforces the constitution through the plan template's Constitution Check gate and `/speckit-analyze`. The integration never writes the constitution for you: it is yours, and this keeps product intent out of it.
+
+Two maintenance notes: `specify init --force` and Spec Kit upgrades regenerate templates, which wipes the managed blocks; `prodshape integration check` detects that and `prodshape integration update` re-merges. And if you install a Spec Kit preset or extension that overrides template resolution, the overriding template shadows the project one; merge the block into your override or re-point the preset.
