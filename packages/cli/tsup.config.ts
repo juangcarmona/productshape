@@ -20,6 +20,7 @@ export default defineConfig({
       '@prodshape/core': internal('core'),
       '@prodshape/distribution': internal('distribution'),
       '@prodshape/integration-openspec': internal('integration-openspec'),
+      '@prodshape/integration-speckit': internal('integration-speckit'),
       '@prodshape/integration-claude': internal('integration-claude'),
       '@prodshape/integration-codex': internal('integration-codex'),
       '@prodshape/integration-copilot': internal('integration-copilot'),

@@ -33,6 +33,8 @@ const expectedIds: Record<string, string[]> = {
     'UC-FIX-001',
     // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
     'UC-SNAPSHOT-001',
+    // Added by CHG-SPECKIT-001 (Spec Kit bridge and cited context projection).
+    'UC-CONTEXT-001',
     'UC-SNAPSHOT-EXPLORE-001',
     // Added by CHG-EXPLORE-001 (ps:explore thinking partner).
     'UC-EXPLORE-001',
@@ -82,6 +84,9 @@ const expectedIds: Record<string, string[]> = {
     'FR-CHANGE-002',
     'FR-DISTRIBUTION-001',
     'FR-OPENSPEC-001',
+    // Added by CHG-SPECKIT-001 (Spec Kit bridge and cited context projection).
+    'FR-SPECKIT-001',
+    'FR-CONTEXT-001',
     // Added by CHG-CLI-POLISH-001 (adoption improvements).
     'FR-SCHEMA-001',
     'FR-FIX-001',

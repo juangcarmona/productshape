@@ -11,6 +11,9 @@ export const workspaceSourceAliases = {
   '@prodshape/integration-openspec': fileURLToPath(
     new URL('./packages/integration-openspec/src/index.ts', import.meta.url),
   ),
+  '@prodshape/integration-speckit': fileURLToPath(
+    new URL('./packages/integration-speckit/src/index.ts', import.meta.url),
+  ),
   '@prodshape/integration-claude': fileURLToPath(
     new URL('./packages/integration-claude/src/index.ts', import.meta.url),
   ),

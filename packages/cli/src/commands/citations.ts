@@ -21,6 +21,11 @@ import {
   openSpecProvider,
 } from '@prodshape/integration-openspec';
 import {
+  isSpecKitIntegrationInstalled,
+  isSpecKitWorkspace,
+  specKitProvider,
+} from '@prodshape/integration-speckit';
+import {
   CliError,
   exitCodes,
   formatDiagnosticLine,
@@ -43,6 +48,7 @@ export interface CitationsVerifyOptions {
  */
 export const SDD_PROVIDERS: Record<string, SddIntegrationProvider> = {
   [openSpecProvider.name]: openSpecProvider,
+  [specKitProvider.name]: specKitProvider,
 };
 
 /** A document's effective scope state with its citation count, for reporting. */
@@ -268,6 +274,11 @@ async function runRecursiveVerify(
     ) {
       io.out(
         'Tip: use --provider openspec for OpenSpec-aware verification that distinguishes current from archived material and enforces scope declarations.',
+      );
+    }
+    if ((await isSpecKitWorkspace(repoRoot)) && !(await isSpecKitIntegrationInstalled(repoRoot))) {
+      io.out(
+        'Tip: use --provider speckit for Spec Kit-aware verification that enumerates every feature directory and enforces scope declarations.',
       );
     }
   }

@@ -719,9 +719,10 @@ describe('citations verify --provider openspec (scope model)', () => {
   });
 
   it('rejects an unknown provider with exit 2', async () => {
-    const result = await run(['citations', 'verify', '--provider', 'speckit']);
+    const result = await run(['citations', 'verify', '--provider', 'nonesuch']);
     expect(result.code).toBe(2);
-    expect(result.err.join('\n')).toContain("Unknown provider 'speckit'");
+    expect(result.err.join('\n')).toContain("Unknown provider 'nonesuch'");
+    expect(result.err.join('\n')).toContain('openspec, speckit');
   });
 
   it('fails with PRODUCT068 when no OpenSpec workspace exists', async () => {

@@ -11,6 +11,9 @@ export default defineConfig({
       '@prodshape/integration-openspec': fileURLToPath(
         new URL('../integration-openspec/src/index.ts', import.meta.url),
       ),
+      '@prodshape/integration-speckit': fileURLToPath(
+        new URL('../integration-speckit/src/index.ts', import.meta.url),
+      ),
       '@prodshape/integration-claude': fileURLToPath(
         new URL('../integration-claude/src/index.ts', import.meta.url),
       ),

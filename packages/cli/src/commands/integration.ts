@@ -17,6 +17,15 @@ import {
   removeOpenSpecIntegration,
   updateOpenSpecIntegration,
 } from '@prodshape/integration-openspec';
+import {
+  addSpecKitIntegration,
+  checkSpecKitIntegration,
+  isSpecKitIntegrationInstalled,
+  removeSpecKitIntegration,
+  SPECKIT_CI_EXAMPLE_RELATIVE,
+  SPECKIT_VERIFY_COMMAND,
+  updateSpecKitIntegration,
+} from '@prodshape/integration-speckit';
 import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
@@ -68,9 +77,42 @@ export async function runIntegrationAdd(
     return exitCodes.success;
   }
 
+  if (provider === 'speckit') {
+    try {
+      const result = await addSpecKitIntegration(repo.root, {
+        force: options?.force,
+        dryRun: options?.dryRun,
+        warningsAsErrors: repo.config.validation['warnings-as-errors'],
+      });
+      if (options?.dryRun) {
+        io.out('Dry run — no files written.');
+        for (const change of result.changes) io.out(`  would change: ${change}`);
+        if (result.changes.length === 0) io.out('  Spec Kit integration is already up to date.');
+        return exitCodes.success;
+      }
+      if (result.written.length === 0) {
+        io.out('Spec Kit integration is already up to date.');
+        io.out(`Verify: ${SPECKIT_VERIFY_COMMAND}`);
+        return exitCodes.success;
+      }
+      io.out(`Installed Spec Kit integration (${result.written.length} file(s) written):`);
+      for (const path of result.written) io.out(`  ${path}`);
+      io.out(`Verify: ${SPECKIT_VERIFY_COMMAND}`);
+      io.out(
+        `CI: copy ${SPECKIT_CI_EXAMPLE_RELATIVE} into your pipeline; it states how the repository's stale-citation policy applies.`,
+      );
+    } catch (error) {
+      throw new CliError(
+        error instanceof Error ? error.message : String(error),
+        exitCodes.validationErrors,
+      );
+    }
+    return exitCodes.success;
+  }
+
   if (!rendererFor(provider)) {
     throw new CliError(
-      `Unknown provider '${provider}' (supported: claude, copilot, codex, openspec)`,
+      `Unknown provider '${provider}' (supported: claude, copilot, codex, openspec, speckit)`,
       exitCodes.invalidInvocation,
     );
   }
@@ -150,7 +192,29 @@ export async function runIntegrationUpdate(
     }
   }
 
-  if (results.length === 0 && !openspecInstalled) {
+  // Update Spec Kit integration if installed.
+  const speckitInstalled = await isSpecKitIntegrationInstalled(repo.root);
+  if (speckitInstalled) {
+    try {
+      const skResult = await updateSpecKitIntegration(repo.root, {
+        force: options.force,
+        warningsAsErrors: repo.config.validation['warnings-as-errors'],
+      });
+      if (skResult.written.length > 0) {
+        io.out(`Updated Spec Kit integration (${skResult.written.length} file(s) written):`);
+        for (const path of skResult.written) io.out(`  ${path}`);
+      } else {
+        io.out('Spec Kit integration is already up to date.');
+      }
+    } catch (error) {
+      throw new CliError(
+        error instanceof Error ? error.message : String(error),
+        exitCodes.validationErrors,
+      );
+    }
+  }
+
+  if (results.length === 0 && !openspecInstalled && !speckitInstalled) {
     io.out('No integrations installed; add one with: prodshape integration add <provider>');
     return exitCodes.success;
   }
@@ -171,6 +235,8 @@ export async function runIntegrationCheck(io: CliIo): Promise<number> {
       : `${diagnostics.length} managed file problem(s).`,
   );
 
+  let sddOk = true;
+
   // Check OpenSpec integration if installed.
   if (await isOpenSpecIntegrationInstalled(repo.root)) {
     const osResult = await checkOpenSpecIntegration(repo.root);
@@ -179,11 +245,23 @@ export async function runIntegrationCheck(io: CliIo): Promise<number> {
     }
     if (!osResult.ok) {
       io.out('OpenSpec integration has problem(s).');
+      sddOk = false;
     }
-    return aiOk && osResult.ok ? exitCodes.success : exitCodes.validationErrors;
   }
 
-  return aiOk ? exitCodes.success : exitCodes.validationErrors;
+  // Check Spec Kit integration if installed.
+  if (await isSpecKitIntegrationInstalled(repo.root)) {
+    const skResult = await checkSpecKitIntegration(repo.root);
+    for (const check of skResult.checks) {
+      io.out(`${check.ok ? 'ok  ' : 'FAIL'} ${check.name}: ${check.detail}`);
+    }
+    if (!skResult.ok) {
+      io.out('Spec Kit integration has problem(s).');
+      sddOk = false;
+    }
+  }
+
+  return aiOk && sddOk ? exitCodes.success : exitCodes.validationErrors;
 }
 
 export async function runIntegrationRemove(
@@ -220,9 +298,36 @@ export async function runIntegrationRemove(
     return exitCodes.success;
   }
 
+  if (provider === 'speckit') {
+    try {
+      const result = await removeSpecKitIntegration(repo.root, { dryRun: options?.dryRun });
+      if (options?.dryRun) {
+        io.out('Dry run — no files removed.');
+        if (result.removed.length === 0) {
+          io.out('  Spec Kit integration is not installed.');
+        } else {
+          for (const path of result.removed) io.out(`  would remove: ${path}`);
+        }
+        return exitCodes.success;
+      }
+      if (result.removed.length === 0) {
+        io.out('Spec Kit integration is not installed.');
+        return exitCodes.success;
+      }
+      io.out(`Removed Spec Kit integration (${result.removed.length} file(s)):`);
+      for (const path of result.removed) io.out(`  ${path}`);
+    } catch (error) {
+      throw new CliError(
+        error instanceof Error ? error.message : String(error),
+        exitCodes.validationErrors,
+      );
+    }
+    return exitCodes.success;
+  }
+
   if (!rendererFor(provider)) {
     throw new CliError(
-      `Unknown provider '${provider}' (supported: claude, copilot, codex, openspec)`,
+      `Unknown provider '${provider}' (supported: claude, copilot, codex, openspec, speckit)`,
       exitCodes.invalidInvocation,
     );
   }

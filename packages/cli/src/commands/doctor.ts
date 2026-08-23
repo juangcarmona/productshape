@@ -5,6 +5,11 @@ import {
   isOpenSpecIntegrationInstalled,
   isOpenSpecWorkspace,
 } from '@prodshape/integration-openspec';
+import {
+  checkSpecKitIntegration,
+  isSpecKitIntegrationInstalled,
+  isSpecKitWorkspace,
+} from '@prodshape/integration-speckit';
 import { exitCodes, formatDiagnosticLine, resolveRepository, type CliIo } from '../context.js';
 
 export async function runDoctorCommand(io: CliIo): Promise<number> {
@@ -31,6 +36,16 @@ export async function runDoctorCommand(io: CliIo): Promise<number> {
     openspecHealth = { installed: false, checks: [] };
   }
 
+  // Same terms for Spec Kit: health when installed, informational when only the workspace exists.
+  let speckitHealth:
+    { installed: boolean; checks: { name: string; ok: boolean; detail: string }[] } | undefined;
+  if (await isSpecKitIntegrationInstalled(repo.root)) {
+    const result = await checkSpecKitIntegration(repo.root);
+    speckitHealth = { installed: true, checks: result.checks };
+  } else if (await isSpecKitWorkspace(repo.root)) {
+    speckitHealth = { installed: false, checks: [] };
+  }
+
   const report = await runDoctor({
     root: repo.root,
     configValid: configErrors.length === 0,
@@ -45,6 +60,7 @@ export async function runDoctorCommand(io: CliIo): Promise<number> {
       artifacts: baseline.graph.nodes.length,
     },
     ...(openspecHealth ? { openspec: openspecHealth } : {}),
+    ...(speckitHealth ? { speckit: speckitHealth } : {}),
   });
 
   let failed = 0;

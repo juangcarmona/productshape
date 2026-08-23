@@ -10,6 +10,7 @@ The `@prodshape/*` packages are published to npm **only from GitHub Actions** ([
 | `@prodshape/cli`                  | self-contained executable (bundles the others at build time) |
 | `@prodshape/distribution`         | library                                                      |
 | `@prodshape/integration-openspec` | library                                                      |
+| `@prodshape/integration-speckit`  | library                                                      |
 | `@prodshape/integration-claude`   | library                                                      |
 | `@prodshape/integration-copilot`  | library                                                      |
 | `@prodshape/integration-codex`    | library                                                      |

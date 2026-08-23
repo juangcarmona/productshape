@@ -45,6 +45,15 @@ export interface DoctorOptions {
     installed: boolean;
     checks: { name: string; ok: boolean; detail: string }[];
   };
+  /**
+   * Spec Kit integration health supplied by the caller, on the same terms as `openspec`: the
+   * distribution package must not depend on integration-speckit. Omit when no Spec Kit workspace
+   * is present.
+   */
+  speckit?: {
+    installed: boolean;
+    checks: { name: string; ok: boolean; detail: string }[];
+  };
 }
 
 /** Repository health checks: structure, configuration, versions, managed files, OpenSpec, skills. */
@@ -170,6 +179,35 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
         ok: true,
         detail:
           'OpenSpec workspace detected; integration not installed (informational; run: prodshape integration add openspec)',
+      });
+    }
+  }
+
+  // Spec Kit integration health: when an integration is recorded, verify it is functional.
+  if (options.speckit) {
+    if (options.speckit.installed) {
+      const allOk = options.speckit.checks.every((c) => c.ok);
+      checks.push({
+        name: 'speckit integration',
+        ok: allOk,
+        detail: allOk
+          ? 'Spec Kit integration healthy'
+          : `${options.speckit.checks.filter((c) => !c.ok).length} Spec Kit integration problem(s)`,
+      });
+      for (const check of options.speckit.checks) {
+        checks.push({
+          name: `speckit: ${check.name}`,
+          ok: check.ok,
+          detail: check.detail,
+        });
+      }
+    } else {
+      // A Spec Kit workspace exists but the integration is not installed — informational.
+      checks.push({
+        name: 'speckit integration',
+        ok: true,
+        detail:
+          'Spec Kit workspace detected; integration not installed (informational; run: prodshape integration add speckit)',
       });
     }
   }

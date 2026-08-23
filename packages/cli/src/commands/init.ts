@@ -20,6 +20,12 @@ import {
   OPENSPEC_NPX_SPEC,
   OPENSPEC_VERIFY_COMMAND,
 } from '@prodshape/integration-openspec';
+import {
+  addSpecKitIntegration,
+  isSpecKitIntegrationInstalled,
+  isSpecKitWorkspace,
+  SPECKIT_VERIFY_COMMAND,
+} from '@prodshape/integration-speckit';
 import { CliError, exitCodes, type CliIo } from '../context.js';
 
 export interface InitCliOptions {
@@ -78,6 +84,8 @@ interface SddContext {
   detected: SddFramework[];
   openspecDetected: boolean;
   openspecIntegrated: boolean;
+  speckitDetected: boolean;
+  speckitIntegrated: boolean;
   choice: SddChoice | undefined;
 }
 
@@ -88,12 +96,18 @@ function reportSddDetection(io: CliIo, context: SddContext): void {
     return;
   }
   for (const framework of context.detected) {
-    const integrationNote =
+    const integrated =
       framework.id === 'openspec'
         ? context.openspecIntegrated
+        : framework.id === 'speckit'
+          ? context.speckitIntegrated
+          : undefined;
+    const integrationNote =
+      integrated === undefined
+        ? ''
+        : integrated
           ? '; ProductShape integration installed'
-          : '; ProductShape integration not installed'
-        : '';
+          : '; ProductShape integration not installed';
     io.out(`  detected: ${framework.name} (${framework.marker}/ present${integrationNote})`);
   }
 }
@@ -122,11 +136,22 @@ async function resolveSddChoice(
     return answer === '' || answer === 'y' || answer === 'yes' ? 'openspec' : 'none';
   }
 
+  if (context.speckitDetected && !context.speckitIntegrated) {
+    const answer = (
+      await io.prompt(
+        'Spec Kit workspace detected. Install the ProductShape Spec Kit integration now? [Y/n] ',
+      )
+    )
+      .trim()
+      .toLowerCase();
+    return answer === '' || answer === 'y' || answer === 'yes' ? 'speckit' : 'none';
+  }
+
   if (context.detected.length === 0) {
     io.out('No SDD framework detected. ProductShape can pair the product definition with one:');
     io.out('  1) OpenSpec   installed and wired now (runs openspec init --tools none)');
     io.out('  2) Kiro       setup guidance only');
-    io.out('  3) Spec Kit   setup guidance only');
+    io.out('  3) Spec Kit   setup guidance only (wired once `specify init` has run)');
     io.out('  4) Skip');
     const answer = (await io.prompt('Choose [1-4, default 4]: ')).trim();
     const byNumber: Record<string, SddChoice> = { '1': 'openspec', '2': 'kiro', '3': 'speckit' };
@@ -145,12 +170,22 @@ function sddNextSteps(context: SddContext): string[] {
   if (context.choice === 'openspec') {
     return context.openspecDetected && !context.openspecIntegrated ? [recoveryStep] : [];
   }
-  if (context.choice === 'kiro' || context.choice === 'speckit') {
+  if (context.choice === 'speckit') {
+    // With a workspace present the integration installs now; without one, guidance first.
+    return context.speckitDetected ? [] : [...(sddFrameworkById('speckit')?.guidance ?? [])];
+  }
+  if (context.choice === 'kiro') {
     return [...(sddFrameworkById(context.choice)?.guidance ?? [])];
   }
   if (context.openspecDetected && !context.openspecIntegrated) {
     return [
       'Wire the OpenSpec integration: prodshape integration add openspec (or re-run: prodshape init --sdd openspec)',
+      recoveryStep,
+    ];
+  }
+  if (context.speckitDetected && !context.speckitIntegrated) {
+    return [
+      'Wire the Spec Kit integration: prodshape integration add speckit (or re-run: prodshape init --sdd speckit)',
       recoveryStep,
     ];
   }
@@ -168,7 +203,36 @@ async function executeSddChoice(
   options: InitCliOptions,
   context: SddContext,
 ): Promise<number> {
-  if (context.choice === 'kiro' || context.choice === 'speckit') {
+  if (context.choice === 'speckit') {
+    if (!(await isSpecKitWorkspace(io.cwd))) {
+      const framework = sddFrameworkById('speckit');
+      io.out('Spec Kit workspaces are created by its own tooling:');
+      for (const line of framework?.guidance ?? []) io.out(`  ${line}`);
+      return exitCodes.success;
+    }
+    try {
+      const config = await loadConfig(join(io.cwd, '.product', 'config.yaml'), io.cwd);
+      const result = await addSpecKitIntegration(io.cwd, {
+        ...(options.force !== undefined ? { force: options.force } : {}),
+        warningsAsErrors: config.config.validation['warnings-as-errors'],
+      });
+      if (result.written.length === 0) {
+        io.out('Spec Kit integration is already up to date.');
+      } else {
+        io.out(`Installed Spec Kit integration (${result.written.length} file(s) written):`);
+        for (const path of result.written) io.out(`  ${path}`);
+      }
+      io.out(`Verify: ${SPECKIT_VERIFY_COMMAND}`);
+      return exitCodes.success;
+    } catch (error) {
+      io.err(
+        `The repository was initialized, but the Spec Kit integration step failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      io.err('Retry just this step with: prodshape integration add speckit');
+      return exitCodes.validationErrors;
+    }
+  }
+  if (context.choice === 'kiro') {
     const framework = sddFrameworkById(context.choice);
     if (framework) {
       io.out(`${framework.name} is set up from its own tooling:`);
@@ -240,10 +304,13 @@ export async function runInit(io: CliIo, options: InitCliOptions): Promise<numbe
 
   const detected = await detectSddFrameworks(io.cwd);
   const openspecDetected = detected.some((framework) => framework.id === 'openspec');
+  const speckitDetected = detected.some((framework) => framework.id === 'speckit');
   const context: SddContext = {
     detected,
     openspecDetected,
     openspecIntegrated: openspecDetected && (await isOpenSpecIntegrationInstalled(io.cwd)),
+    speckitDetected,
+    speckitIntegrated: speckitDetected && (await isSpecKitIntegrationInstalled(io.cwd)),
     choice: undefined,
   };
   reportSddDetection(io, context);
@@ -273,7 +340,18 @@ export async function runInit(io: CliIo, options: InitCliOptions): Promise<numbe
       }
       io.out('  would merge PDaC guidance into openspec/config.yaml');
       io.out('  would write .product/integrations/openspec.json');
-    } else if (context.choice === 'kiro' || context.choice === 'speckit') {
+    } else if (context.choice === 'speckit') {
+      io.out('SDD plan (dry run):');
+      if (context.speckitDetected) {
+        io.out('  would write PDaC guidance to .specify/memory/pdac.md');
+        io.out('  would write .product/integrations/speckit.ci.yml');
+        io.out('  would write .product/integrations/speckit.json');
+      } else {
+        io.out(
+          '  would print Spec Kit setup guidance (run `specify init` first, then: prodshape integration add speckit)',
+        );
+      }
+    } else if (context.choice === 'kiro') {
       const framework = sddFrameworkById(context.choice);
       io.out('SDD plan (dry run):');
       io.out(`  would print ${framework?.name} setup guidance (nothing to install)`);

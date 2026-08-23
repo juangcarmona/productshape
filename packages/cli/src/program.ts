@@ -9,6 +9,7 @@ import {
 } from './commands/change.js';
 import { runCite } from './commands/cite.js';
 import { runCitationsVerify } from './commands/citations.js';
+import { runContext } from './commands/context.js';
 import { runDrift } from './commands/drift.js';
 import { runDoctorCommand } from './commands/doctor.js';
 import { runFix } from './commands/fix.js';
@@ -103,7 +104,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .description('Manage generated AI provider integrations');
   integration
     .command('add')
-    .description('Install a provider integration (claude, copilot, codex, openspec)')
+    .description('Install a provider integration (claude, copilot, codex, openspec, speckit)')
     .argument('<provider>', 'provider name')
     .option('--force', 'overwrite existing unmanaged or hand-edited files')
     .option('--dry-run', 'report what would change without writing anything')
@@ -214,6 +215,22 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
       },
     );
 
+  program
+    .command('context')
+    .description('Render a bounded, cited context projection for delivery intake')
+    .argument('<ids...>', 'artifact IDs the delivery work implements')
+    .option('--depth <depth>', 'related-artifact traversal depth', '1')
+    .option('--format <format>', 'output format: markdown or json', 'markdown')
+    .option('--root <dir>', 'product repository root (default: discovered upward from cwd)')
+    .action(
+      async (
+        ids: string[],
+        options: { depth?: string; format: 'markdown' | 'json'; root?: string },
+      ) => {
+        capture.code = await runContext(io, ids, options);
+      },
+    );
+
   const citations = program
     .command('citations')
     .description('Verify citations in consumer documents against the product model');
@@ -223,8 +240,8 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .argument('[target]', 'consumer documents root (default: citations.consumer-roots)')
     .option('--format <format>', 'output format: text or json', 'text')
     .option('--root <dir>', 'product repository root (default: discovered upward from cwd)')
-    .option('--provider <provider>', 'provider-aware verification (openspec)')
-    .option('--change <name>', 'limit to one OpenSpec change (with --provider openspec)')
+    .option('--provider <provider>', 'provider-aware verification (openspec, speckit)')
+    .option('--change <name>', 'limit to one change or feature (with --provider)')
     .option(
       '--include-archived',
       'hold archived OpenSpec changes to the full gate instead of warnings (with --provider openspec)',
@@ -250,7 +267,10 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .argument('[target]', 'consumer documents root (default: citations.consumer-roots)')
     .option('--format <format>', 'output format: text or json', 'text')
     .option('--root <dir>', 'product repository root (default: discovered upward from cwd)')
-    .option('--provider <provider>', 'provider-aware enumeration (openspec), archived included')
+    .option(
+      '--provider <provider>',
+      'provider-aware enumeration (openspec, speckit), archived included',
+    )
     .action(
       async (
         target: string | undefined,
