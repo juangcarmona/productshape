@@ -46,7 +46,7 @@ export const sddFrameworks: readonly SddFramework[] = [
     marker: '.specify',
     installable: false,
     guidance: [
-      'Spec Kit installs through its own tooling (specify init); see https://github.com/github/spec-kit for setup, then cite product artifacts from its specs with: prodshape cite',
+      'Spec Kit installs through its own tooling (specify init); see https://github.com/github/spec-kit for setup, then wire the ProductShape integration with: prodshape integration add speckit',
     ],
   },
 ];

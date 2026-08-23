@@ -25,11 +25,12 @@ Product Definition as Code keeps the agreed product definition in versioned Mark
 
 The methodology belongs to the [specification repository](https://github.com/product-definition-as-code/spec): the normative contracts, the conformance tests and [the manifesto](https://github.com/product-definition-as-code/spec/blob/main/MANIFESTO.md), which states the founding position. ProductShape is the Product Definition as Code CLI: `prodshape` lets you author actors, journeys, use cases, business rules, domain terms and product requirements in Markdown, then keeps that definition validated, evolvable and citable:
 
-- `prodshape init` — scaffold a product definition (and optional AI and OpenSpec integrations) in any repository.
+- `prodshape init` — scaffold a product definition (and optional AI, OpenSpec and Spec Kit integrations) in any repository.
 - `prodshape validate` — validate the product definition deterministically: schemas, IDs, relationships and lifecycles, with stable diagnostic codes.
 - `prodshape graph` and `prodshape impact <ID>` — compile the product graph from the Markdown and answer "what is connected to this?" structurally.
 - `prodshape change validate` and `prodshape change apply` — evolve the definition through a Product Change: validated as an overlay, approved by a human, applied explicitly on a working branch. A human merge accepts the resulting baseline; apply is not acceptance.
-- `prodshape cite` and `prodshape citations verify` — cite product artifacts from SDD specs and agent prompts by ID and content digest, then verify citations: `current`, `stale`, `tampered` or `unresolved`.
+- `prodshape cite` and `prodshape citations verify` — cite product artifacts from SDD specs and agent prompts by ID and content digest, then verify citations: `current`, `stale`, `tampered` or `unresolved`. Provider-aware verification enumerates the expected population of an OpenSpec or Spec Kit workspace, so zero discovered citations is a failure, never a vacuous pass.
+- `prodshape context <ID> [<ID>...]` — render a cited context projection of the artifacts a piece of delivery work implements, ready to feed into a Spec Kit specify run or an OpenSpec proposal, so delivery starts from cited canonical text instead of paraphrase.
 
 Deterministic tools check structure and references, never truth; people decide what is true and what should change.
 
@@ -58,6 +59,7 @@ The CLI bundles every package below, so installing `@prodshape/cli` is all you n
 | [`@prodshape/integration-codex`](https://www.npmjs.com/package/@prodshape/integration-codex) | [![npm](https://img.shields.io/npm/v/@prodshape/integration-codex)](https://www.npmjs.com/package/@prodshape/integration-codex) | Codex renderer for canonical assets |
 | [`@prodshape/integration-copilot`](https://www.npmjs.com/package/@prodshape/integration-copilot) | [![npm](https://img.shields.io/npm/v/@prodshape/integration-copilot)](https://www.npmjs.com/package/@prodshape/integration-copilot) | GitHub Copilot renderer for canonical assets |
 | [`@prodshape/integration-openspec`](https://www.npmjs.com/package/@prodshape/integration-openspec) | [![npm](https://img.shields.io/npm/v/@prodshape/integration-openspec)](https://www.npmjs.com/package/@prodshape/integration-openspec) | OpenSpec configuration and citation-rule integration |
+| [`@prodshape/integration-speckit`](https://www.npmjs.com/package/@prodshape/integration-speckit) | [![npm](https://img.shields.io/npm/v/@prodshape/integration-speckit)](https://www.npmjs.com/package/@prodshape/integration-speckit) | Spec Kit guidance and feature-spec citation verification |
 
 `@prodshape/integration-openspec` is the current OpenSpec package. The previously published `@prodshape/adapter-openspec` name belongs to older releases and is not part of the current package set.
 
@@ -181,7 +183,7 @@ What to read next:
 - [The methodology overview](docs/methodology/overview.md) — a five-minute read: the artifact families, the product graph, the operations and the citation contract.
 - [The specification](https://github.com/product-definition-as-code/spec) — normative — and [its manifesto](https://github.com/product-definition-as-code/spec/blob/main/MANIFESTO.md), the authoritative founding position. The [frontmatter reference](docs/specification/frontmatter-reference.md) enumerates what you may write in every artifact kind; `prodshape schema <kind>` prints the same contract without a repository.
 - The self-hosted model under [`docs/product/model`](docs/product/model): this repository defines itself with its own methodology, so every artifact kind has a real example. `schemas/` and `templates/` hold the machine contracts the CLI validates against and a conformant starting point for each kind.
-- Adoption guides for the four entry paths: [greenfield](docs/adoption/greenfield.md), [brownfield](docs/adoption/brownfield.md), [existing repository](docs/adoption/existing-repository.md) and [existing OpenSpec repository](docs/adoption/existing-openspec-repository.md).
+- Adoption guides for the entry paths: [greenfield](docs/adoption/greenfield.md), [brownfield](docs/adoption/brownfield.md), [existing repository](docs/adoption/existing-repository.md), [existing OpenSpec repository](docs/adoption/existing-openspec-repository.md) and [existing Spec Kit repository](docs/adoption/existing-speckit-repository.md).
 
 ## Agent skills
 

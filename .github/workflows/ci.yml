@@ -28,6 +28,17 @@ jobs:
       # not a drifting CI surface. The consumer-install tests spawn the bare `openspec` command.
       - name: install OpenSpec CLI
         run: npm install -g @fission-ai/openspec@1.3.0
+      # The Spec Kit CLI (specify) drives the real-workspace suite in
+      # tests/conformance/speckit-consumer.test.ts; the fixture suite guards the same contract
+      # without it. Pinned to a commit so an upstream Spec Kit change is a deliberate bump, not a
+      # drifting CI surface. `specify init` scaffolds from assets bundled in the CLI, offline.
+      - name: install uv
+        uses: astral-sh/setup-uv@v6
+      - name: install Spec Kit CLI
+        shell: bash
+        run: |
+          uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@27f50f7e6b618ea14d74dd4037f9e7c60218b16c
+          echo "$(uv tool dir --bin)" >> "$GITHUB_PATH"
       - run: pnpm typecheck
       # Build before test: the packed-tarball test installs the built CLI package
       # (dist/ + staged schemas/assets) into a clean directory and runs its binaries.
