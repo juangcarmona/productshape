@@ -3,5 +3,30 @@
   "name": "Product Definition as Code (PDaC) extension catalog",
   "description": "Installable Spec Kit extension catalog maintained by the ProductShape project. Add with: specify extension catalog add <raw URL of this file> --name pdac --install-allowed",
   "repository": "https://github.com/juangcarmona/productshape",
-  "extensions": {}
+  "extensions": {
+    "pdac": {
+      "id": "pdac",
+      "name": "Product Definition as Code (PDaC)",
+      "version": "0.1.0",
+      "description": "Ground Spec Kit features in an accepted product definition: fetch the cited context projection before specifying, and verify citations after specify, plan and tasks with ProductShape",
+      "author": "juangcarmona",
+      "repository": "https://github.com/juangcarmona/productshape",
+      "license": "Apache-2.0",
+      "download_url": "https://github.com/juangcarmona/productshape/releases/download/speckit-pdac-v0.1.0/speckit-pdac.zip",
+      "sha256": "sha256:b42420ce3e593dd04f23b7f1771d1465237650d7fb6b9e67f875915a2a5fd4e2",
+      "requires": {
+        "speckit_version": ">=0.2.0"
+      },
+      "provides": {
+        "commands": 2,
+        "hooks": 3
+      },
+      "tags": [
+        "product",
+        "citations",
+        "pdac",
+        "traceability"
+      ]
+    }
+  }
 }
