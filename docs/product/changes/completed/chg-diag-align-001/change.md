@@ -24,7 +24,7 @@ Every diagnostic carries the attribution the validation contract fixes for its c
 
 ## Rationale
 
-This product is the reference implementation of the specification, so where the two disagree the specification wins and this product's definition is what has to move. The alternative, holding the earlier defaults and documenting the divergence, would make the conformance claim in `docs/specification/` untrue: the finished conformance corpus already asserts the contract attribution, for example `change` on `PRODUCT108` and `target` with `line` on `PRODUCT062`.
+This product is the reference implementation of the specification, so where the two disagree the specification wins and this product's definition is what has to move. The alternative, holding the earlier defaults and documenting the divergence, would make the conformance claim in `docs/specification/` untrue: the finished conformance test cases already assert the contract attribution, for example `change` on `PRODUCT108` and `target` with `line` on `PRODUCT062`.
 
 The subject split is not cosmetic. Consumers of machine-readable diagnostics key remediation on the subject field: a pipeline that reads `artifact` to locate a Product Artifact breaks silently when the value is sometimes a Product Change ID or an ID that resolves to nothing. The ordering change exists because citation diagnostics gained a numeric point of use, and a report that interleaves points of use non-monotonically within a file is not diffable line by line.
 
