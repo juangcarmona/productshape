@@ -13,6 +13,7 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { parse } from 'yaml';
+import prettier from 'prettier';
 
 const [version, sha256, catalogPath = 'extensions/catalog.json'] = process.argv.slice(2);
 
@@ -54,5 +55,9 @@ catalog.extensions.pdac = {
   tags: manifest.tags,
 };
 
-writeFileSync(catalogPath, `${JSON.stringify(catalog, null, 2)}\n`, 'utf8');
+const formatted = await prettier.format(JSON.stringify(catalog, null, 2), {
+  ...(await prettier.resolveConfig(catalogPath)),
+  filepath: catalogPath,
+});
+writeFileSync(catalogPath, formatted, 'utf8');
 console.log(`updated ${catalogPath}: pdac ${version} (sha256:${sha256})`);
