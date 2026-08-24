@@ -356,8 +356,9 @@ describe('init SDD detection and --sdd', () => {
         },
       });
       expect(code).toBe(0);
-      expect(questions).toHaveLength(1);
-      expect(questions[0]).toContain('OpenSpec workspace detected');
+      // Asked once, not once per detected marker. Other prompts in the same run (the ignore rules)
+      // are a separate decision, so the count is taken over this question alone.
+      expect(questions.filter((q) => q.includes('OpenSpec workspace detected'))).toHaveLength(1);
       await expect(
         readFile(join(scratch, '.product', 'integrations', 'openspec.json'), 'utf8'),
       ).rejects.toThrow();

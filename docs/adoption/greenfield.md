@@ -38,7 +38,7 @@ docs/product/
 
 The model subdirectories are a **recommendation, not a rule**: artifact discovery walks the model directory recursively and keys on the frontmatter `type`, so any layout validates. Taking the recommended one means not having to invent a taxonomy; `--flat` opts out. Each directory gets a `.gitkeep` so the structure survives a commit — Git does not track empty directories.
 
-`.product/generated/` and `.product/cache/` appear later, when a command writes them. They are regenerable and non-canonical, so add them to your `.gitignore`; `init` does not modify that file for you.
+`.product/generated/` and `.product/cache/` appear later, when a command writes them. They are regenerable and non-canonical, so they belong in your `.gitignore`: run `prodshape init --gitignore` to have the rules written, or accept the prompt when running interactively. `init` never touches that file unasked, and only ever appends to it. Everything else under `.product/` is committed, including the configuration, the installation lock, the templates and any integration records.
 
 Preview all of this against your repository before running it for real:
 
