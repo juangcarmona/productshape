@@ -1,8 +1,18 @@
 import { access, mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { loadBundledAssets, type CanonicalAssets } from './assets.js';
+import {
+  gitignoreRelativePath,
+  mergeIgnoreRules,
+  missingIgnoreRules,
+  readIgnoreFile,
+  requiredIgnoreRules,
+} from './gitignore.js';
 import { applyProviderPlan, planProvider, InstallConflictError } from './install.js';
 import { lockPath, lockRelativePath } from './lock.js';
+
+/** Where generated output goes when a repository has not configured `generated.root`. */
+export const defaultGeneratedRoot = '.product/generated';
 
 export interface InitOptions {
   root: string;
@@ -18,12 +28,31 @@ export interface InitOptions {
    * over `shorthand` when a configuration file exists and force is not set.
    */
   existingShorthand?: boolean;
+  /**
+   * Add the regenerable-output rules to the repository's `.gitignore`.
+   *
+   * Off unless the caller says otherwise, and never inferred: the ignore file belongs to the user,
+   * so extending it requires an explicit request. The caller is responsible for obtaining that
+   * request, whether from a flag or an interactive confirmation.
+   */
+  gitignore?: boolean;
+  /**
+   * The configured `generated.root`, supplied by the caller (configuration is parsed by core,
+   * which this package must not depend on). Decides which rule the ignore file needs, so a
+   * repository that relocates its generated output does not get a rule pointing at nothing.
+   */
+  generatedRoot?: string;
 }
 
 export interface InitResult {
   created: string[];
   skipped: string[];
   removed: string[];
+  /**
+   * Files that existed and were extended rather than created. Kept apart from `created` so the
+   * created count still matches what the dry run reported it would create.
+   */
+  appended: string[];
   nextSteps: string[];
 }
 
@@ -62,14 +91,20 @@ export const changeScaffoldDirs = [
   'docs/product/changes/superseded',
 ];
 
-export type InitActionKind = 'create' | 'preserve' | 'overwrite' | 'regenerate' | 'conflict';
+export type InitActionKind =
+  'create' | 'preserve' | 'append' | 'overwrite' | 'regenerate' | 'conflict';
 
 export interface InitAction {
   /** Repository-relative path, POSIX separators. */
   path: string;
   kind: InitActionKind;
-  source: 'scaffold' | 'config' | 'readme' | 'template' | 'lock' | `provider:${string}`;
-  /** The bytes to write. Absent for preserve, conflict, and the lock (written by the installer). */
+  source:
+    'scaffold' | 'config' | 'readme' | 'template' | 'lock' | 'gitignore' | `provider:${string}`;
+  /**
+   * The bytes to write. Absent for preserve, conflict, and the lock (written by the installer).
+   * An `append` carries the whole resulting file, not the added part, so applying any action is
+   * the same straight write.
+   */
   content?: string;
   reason?: string;
 }
@@ -145,7 +180,14 @@ async function exists(path: string): Promise<boolean> {
  * could compute something different.
  */
 export async function planInit(options: InitOptions): Promise<InitPlan> {
-  const { root, ai, force = false, flat = false } = options;
+  const {
+    root,
+    ai,
+    force = false,
+    flat = false,
+    gitignore = false,
+    generatedRoot = defaultGeneratedRoot,
+  } = options;
   const actions: InitAction[] = [];
 
   // Existing configuration wins over the flag unless --force. Otherwise `init --shorthand` in an
@@ -231,6 +273,26 @@ export async function planInit(options: InitOptions): Promise<InitPlan> {
     });
   }
 
+  // The ignore file is the one target that belongs to the user rather than to the installation, so
+  // it is only ever touched on request, and only ever by appending what is missing. An existing
+  // file that already covers everything is reported as preserved rather than silently omitted:
+  // "nothing to do" and "not considered" are different answers to the same question.
+  const ignoreRules = requiredIgnoreRules(generatedRoot);
+  if (gitignore) {
+    const existing = await readIgnoreFile(root);
+    const missing = missingIgnoreRules(existing, generatedRoot);
+    if (missing.length === 0) {
+      actions.push({ path: gitignoreRelativePath, kind: 'preserve', source: 'gitignore' });
+    } else {
+      actions.push({
+        path: gitignoreRelativePath,
+        kind: existing === undefined ? 'create' : 'append',
+        source: 'gitignore',
+        content: mergeIgnoreRules(existing, missing),
+      });
+    }
+  }
+
   const proposedModelHint = flat
     ? 'docs/product/changes/active/chg-initial/proposed'
     : "docs/product/changes/active/chg-initial/proposed (using the model's per-kind layout)";
@@ -243,7 +305,14 @@ export async function planInit(options: InitOptions): Promise<InitPlan> {
     'Apply explicitly with: prodshape change apply CHG-INITIAL',
     'Open a pull request with the applied result; its merge accepts the initial baseline. Apply does not.',
     'Implementation may share that pull request or follow later; Product Change status never reports delivery.',
-    'Ignore regenerable outputs: add .product/generated/ and .product/cache/ to your .gitignore.',
+    // What to commit is asked on every adoption, and getting it wrong in the safe-looking direction
+    // (ignoring .product entirely) is what breaks the installation for everyone else who clones.
+    'Commit .product/config.yaml, .product/installation.lock.json, .product/templates/ and .product/integrations/: every clone verifies the installation against them.',
+    ...(gitignore
+      ? []
+      : [
+          `Ignore regenerable outputs: add ${ignoreRules.join(' and ')} to .gitignore, or re-run with --gitignore.`,
+        ]),
     'Cite product artifacts from consumer docs with: prodshape cite',
     'Verify citations with: prodshape citations verify',
   ];
@@ -273,6 +342,7 @@ export async function applyInitPlan(plan: InitPlan): Promise<InitResult> {
 
   const created: string[] = [];
   const skipped: string[] = [];
+  const appended: string[] = [];
   for (const action of plan.actions) {
     if (action.kind === 'preserve') {
       skipped.push(action.path);
@@ -285,7 +355,8 @@ export async function applyInitPlan(plan: InitPlan): Promise<InitResult> {
     const target = join(plan.root, ...action.path.split('/'));
     await mkdir(dirname(target), { recursive: true });
     await writeFile(target, action.content, 'utf8');
-    created.push(action.path);
+    if (action.kind === 'append') appended.push(action.path);
+    else created.push(action.path);
   }
 
   const version = (await loadBundledAssets()).version;
@@ -312,7 +383,7 @@ export async function applyInitPlan(plan: InitPlan): Promise<InitResult> {
   // Counted so the applied result matches the dry-run report exactly; the installer wrote it.
   if (byProvider.size > 0) created.push(lockRelativePath);
 
-  return { created, skipped, removed, nextSteps: plan.nextSteps };
+  return { created, skipped, removed, appended, nextSteps: plan.nextSteps };
 }
 
 /**

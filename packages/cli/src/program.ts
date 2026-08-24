@@ -85,6 +85,10 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .option('--force', 'overwrite existing files')
     .option('--flat', 'scaffold the model directory without per-kind subdirectories')
     .option('--shorthand', 'also generate the /ps:<name> aliases for /product:<name>')
+    .option(
+      '--gitignore',
+      'add the regenerable-output rules to .gitignore (asked when interactive)',
+    )
     .option('--dry-run', 'report what init would do, without writing anything')
     .action(
       async (options: {
@@ -93,6 +97,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
         force?: boolean;
         flat?: boolean;
         shorthand?: boolean;
+        gitignore?: boolean;
         dryRun?: boolean;
       }) => {
         capture.code = await runInit(io, options);

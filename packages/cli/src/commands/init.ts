@@ -3,7 +3,9 @@ import { loadConfig } from '@prodshape/core';
 import {
   applyInitPlan,
   detectSddFrameworks,
+  gitignoreRelativePath,
   InstallConflictError,
+  missingIgnoreRulesIn,
   planInit,
   rendererFor,
   sddFrameworkById,
@@ -34,6 +36,7 @@ export interface InitCliOptions {
   force?: boolean;
   flat?: boolean;
   shorthand?: boolean;
+  gitignore?: boolean;
   dryRun?: boolean;
 }
 
@@ -43,19 +46,28 @@ type SddChoice = (typeof sddChoices)[number];
 const groupLabels: Record<InitActionKind, string> = {
   create: 'Would create',
   preserve: 'Would preserve',
+  append: 'Would extend',
   regenerate: 'Would regenerate',
   overwrite: 'Would overwrite',
   conflict: 'Conflicts',
 };
 
 const groupNotes: Partial<Record<InitActionKind, string>> = {
+  append: 'existing content kept; the missing rules are added at the end',
   regenerate: 'managed by the installation lock; rewritten identically',
   overwrite: 'replaced because --force is set',
 };
 
 function reportPlan(io: CliIo, plan: InitPlan): number {
   io.out(`Init plan for ${plan.root} (dry run):`);
-  const order: InitActionKind[] = ['create', 'preserve', 'regenerate', 'overwrite', 'conflict'];
+  const order: InitActionKind[] = [
+    'create',
+    'preserve',
+    'append',
+    'regenerate',
+    'overwrite',
+    'conflict',
+  ];
   for (const kind of order) {
     const group = plan.actions.filter((a: InitAction) => a.kind === kind);
     if (group.length === 0) {
@@ -197,6 +209,31 @@ function sddNextSteps(context: SddContext): string[] {
   return [];
 }
 
+/**
+ * Decide whether to extend the ignore file. The flag is an explicit request and always wins;
+ * otherwise an interactive terminal is asked, and everywhere else the answer is no.
+ *
+ * Never defaulting to yes is the point: the ignore file belongs to the user, and initialization
+ * earns its trust by not editing what it was not asked to edit. There is also nothing to ask when
+ * the rules are already covered, and nothing to decide under --dry-run, which writes nothing.
+ */
+async function resolveGitignore(
+  io: CliIo,
+  options: InitCliOptions,
+  missing: string[],
+): Promise<boolean> {
+  if (options.gitignore) return true;
+  if (missing.length === 0 || !io.prompt || options.dryRun) return false;
+  const answer = (
+    await io.prompt(
+      `Add ${missing.join(' and ')} to ${gitignoreRelativePath}? Regenerable output, never canonical. [Y/n] `,
+    )
+  )
+    .trim()
+    .toLowerCase();
+  return answer === '' || answer === 'y' || answer === 'yes';
+}
+
 /** Execute the resolved SDD choice after the scaffold was applied. Returns the exit code. */
 async function executeSddChoice(
   io: CliIo,
@@ -320,10 +357,21 @@ export async function runInit(io: CliIo, options: InitCliOptions): Promise<numbe
   // rendered rather than a flag silently disagreeing with it.
   const existing = await loadConfig(join(io.cwd, '.product', 'config.yaml'), io.cwd);
 
+  // Asked from the configured generated root, so a repository that relocated it is offered the
+  // rule it actually needs rather than the default one.
+  const generatedRoot = existing.config.generated.root;
+  const gitignore = await resolveGitignore(
+    io,
+    options,
+    await missingIgnoreRulesIn(io.cwd, generatedRoot),
+  );
+
   const plan = await planInit({
     root: io.cwd,
     ai,
     existingShorthand: existing.config.integrations['shorthand-commands'],
+    gitignore,
+    generatedRoot,
     ...(options.force !== undefined ? { force: options.force } : {}),
     ...(options.flat !== undefined ? { flat: options.flat } : {}),
     ...(options.shorthand !== undefined ? { shorthand: options.shorthand } : {}),
@@ -377,6 +425,10 @@ export async function runInit(io: CliIo, options: InitCliOptions): Promise<numbe
   if (result.removed.length > 0) {
     io.out('Removed managed files that are no longer generated:');
     for (const path of result.removed) io.out(`  ${path}`);
+  }
+  if (result.appended.length > 0) {
+    io.out('Extended existing files (nothing removed, rules added at the end):');
+    for (const path of result.appended) io.out(`  ${path}`);
   }
 
   const sddExitCode = await executeSddChoice(io, options, context);

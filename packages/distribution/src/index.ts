@@ -9,8 +9,19 @@ export type {
 export { runDoctor } from './doctor.js';
 export type { DoctorCheck, DoctorOptions, DoctorReport } from './doctor.js';
 export {
+  cacheIgnoreRule,
+  gitignoreRelativePath,
+  ignoreSectionHeading,
+  mergeIgnoreRules,
+  missingIgnoreRules,
+  missingIgnoreRulesIn,
+  readIgnoreFile,
+  requiredIgnoreRules,
+} from './gitignore.js';
+export {
   applyInitPlan,
   configContent,
+  defaultGeneratedRoot,
   initRepository,
   modelScaffoldDirs,
   planInit,

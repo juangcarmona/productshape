@@ -25,7 +25,7 @@ docs/product/                    # canonical product definition
 openspec/config.yaml             # after integration add openspec: PDaC guidance merged additively
 ```
 
-Your source code, build configuration, CI and existing documentation are untouched — including your `.gitignore`, which `init` does not modify (see below). `.product/generated/` and `.product/cache/` are not created by `init`; they appear when a command writes them.
+Your source code, build configuration, CI and existing documentation are untouched. Your `.gitignore` is touched only if you ask for it, with `--gitignore` or by accepting the prompt, and then only by appending the rules below. `.product/generated/` and `.product/cache/` are not created by `init`; they appear when a command writes them.
 
 OpenSpec can be wired in the same run with `prodshape init --sdd openspec`, or separately with `prodshape integration add openspec` after an OpenSpec workspace exists. The merge into `openspec/config.yaml` is additive and reversible with `prodshape integration remove openspec`.
 
@@ -112,15 +112,36 @@ Unknown top-level keys are a configuration error (`PRODUCT050`). Unknown _nested
 - Never edit it by hand. `integration update` rewrites it; `integration update --check` verifies it (`PRODUCT051` for a hand-edited file, `PRODUCT052` for a missing one) and is the right CI gate.
 - If it is deleted, validation and graph compilation still work — they do not read it — but the tool no longer knows which files it owns. Recover with `integration add <provider> --force`.
 
-## .gitignore guidance
+## What to commit, and what to ignore
 
-**`init` does not modify your `.gitignore`.** It is a file you own, and appending to it invites merge conflicts. Add these yourself:
+Only two things under `.product/` are regenerable. Everything else in it is how each clone verifies the installation, so it belongs in version control:
+
+| Path |  |
+| --- | --- |
+| `.product/config.yaml` | **Commit.** Declares the roots, the integrations and the validation policy every clone and CI run reads. |
+| `.product/installation.lock.json` | **Commit.** The record of which files the tool owns; every integrity check depends on it. |
+| `.product/templates/` | **Commit.** Not covered by the lock, so nothing restores a deleted template except re-running `init`, and the AI skills author from them. |
+| `.product/integrations/` | **Commit.** The record of an installed SDD integration, read by `integration update` and by citation verification. |
+| `.product/generated/` | **Ignore.** Regenerable and never canonical. |
+| `.product/cache/` | **Ignore.** Regenerable and never canonical. |
+
+Managed files under `.claude/` and `.github/` are committed too: the integrations need them present, and `doctor` guards their integrity.
+
+**Do not ignore `.product/` as a whole.** It is the tempting shortcut when the directory shows up untracked, and it takes the configuration and the lock out of history with it. Every other clone then has an installation `doctor` cannot verify and `integration update` refuses to reconcile.
+
+### The ignore rules
+
+`init` prints the rules it recommends and, when you ask it to, writes them:
+
+```bash
+prodshape init --gitignore
+```
+
+Run interactively without the option and it asks first. It only ever appends: existing content is preserved exactly, a rule you already have in an equivalent form is not repeated, and a second run adds nothing. Without the option and without a terminal, in CI or a script, it writes nothing. What it adds is:
 
 ```gitignore
 .product/generated/
 .product/cache/
 ```
 
-Generated outputs are reproducible from canonical files, so committing them invites merge noise and drift. If your workflow needs them in the repository (for example, rendering Mermaid diagrams on a docs site), set `generated.commit: true` and drop the `generated/` line. Generated files remain non-canonical either way: tooling can always rebuild them and never requires them to exist.
-
-Managed files under `.claude/` and `.github/`, and `.product/installation.lock.json`, **are committed** — the integrations need them present, and `doctor` guards their integrity.
+The first line follows `generated.root`, so a repository that relocates its generated output gets the rule for where the output actually goes. If your workflow needs generated files in the repository (for example, rendering Mermaid diagrams on a docs site), set `generated.commit: true` and drop that line. Generated files remain non-canonical either way: tooling can always rebuild them and never requires them to exist.
