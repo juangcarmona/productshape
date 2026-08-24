@@ -17,8 +17,9 @@ context: >-
   or unresolved.
 
   To cite: run `npx prodshape inspect <ID>` to read the current digest, then
-  `npx prodshape cite --id <ID> --digest <digest>` to emit the citation record.
-  Place inline citations on their own line directly under the text they ground.
+  `npx prodshape cite --id <ID> --digest <digest>` to emit the canonical
+  payload. Wrap it in the document's native comment (`<!-- ... -->` in Markdown)
+  on its own line directly under the text it grounds.
 
   To find which artifacts a change impacts, compare the change's intent with the
   whole product definition first, then widen the result with `npx prodshape
@@ -53,9 +54,6 @@ context: >-
   <!-- pdac:context end -->
 rules:
   proposal:
-    - State which PDaC artifacts this change touches, each with an inline
-      citation emitted by `npx prodshape cite --id <ID> --digest <digest>`.
-      Never write a citation record by hand.
     - If the change implements altered product behaviour, name the Product
       Change (CHG id) whose applied or accepted artifacts it implements. If no
       overlay-validated and human-approved Product Change exists yet, stop and
@@ -84,6 +82,10 @@ rules:
       neighbours. Put the resulting list in the proposal, cite every impacted
       artifact from each document that uses it (proposal, specs, design, tasks),
       and name any neighbour you checked and left out."
+    - State which PDaC artifacts this change touches, each with a citation
+      payload emitted by `npx prodshape cite --id <ID> --digest <digest>` and
+      wrapped in the document native comment (`<!-- ... -->` in Markdown). Never
+      write a citation record by hand.
   specs:
     - Cite a specific verification scenario with an anchor when the requirement
       maps to one (anchor="<scenario id>").
