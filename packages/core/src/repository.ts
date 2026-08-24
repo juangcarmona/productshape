@@ -21,14 +21,23 @@ async function exists(path: string): Promise<boolean> {
 }
 
 /**
- * Find the repository root by walking upward from cwd, looking for
- * .product/config.yaml first, then a docs/product directory.
+ * Find the repository root by the configuration contract's discovery rule: inspect the invoked
+ * directory and each parent for `.product/config.yaml`; the first file found wins and its
+ * containing directory is the configuration root. When no configuration file exists, defaults
+ * apply at the enclosing git repository root. Outside a git working tree there is no root, and
+ * an invocation that needs repository configuration fails as invalid configuration.
  */
 export async function findRepositoryRoot(cwd: string): Promise<string | undefined> {
   let current = resolve(cwd);
   for (;;) {
     if (await exists(join(current, '.product', 'config.yaml'))) return current;
-    if (await exists(join(current, 'docs', 'product'))) return current;
+    const parent = dirname(current);
+    if (parent === current) break;
+    current = parent;
+  }
+  current = resolve(cwd);
+  for (;;) {
+    if (await exists(join(current, '.git'))) return current;
     const parent = dirname(current);
     if (parent === current) return undefined;
     current = parent;
@@ -57,7 +66,7 @@ export async function openRepository(root: string): Promise<ProductRepository> {
     registry,
     modelDir: join(root, ...config.product.model.split('/')),
     changesDir: join(root, ...config.product.changes.split('/')),
-    generatedDir: join(root, ...config.generated.root.split('/')),
+    generatedDir: join(root, ...config.prodshape.generated.root.split('/')),
   };
 }
 
@@ -79,7 +88,7 @@ export async function validateBaseline(repo: ProductRepository): Promise<Baselin
   const graph = compileGraph(model.artifacts);
   const diagnostics = sortDiagnostics([
     ...model.diagnostics,
-    ...validateModel(model.artifacts, graph, { config: repo.config }),
+    ...validateModel(model.artifacts, graph),
   ]);
   return { artifacts: model.artifacts, graph, diagnostics };
 }

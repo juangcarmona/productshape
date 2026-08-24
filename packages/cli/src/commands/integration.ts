@@ -120,7 +120,7 @@ export async function runIntegrationAdd(
   try {
     result = await installProvider(repo.root, provider, {
       force: options?.force,
-      render: { shorthandCommands: repo.config.integrations['shorthand-commands'] },
+      render: { shorthandCommands: repo.config.prodshape.integrations['shorthand-commands'] },
     });
   } catch (error) {
     if (error instanceof InstallConflictError) {
@@ -150,7 +150,7 @@ export async function runIntegrationUpdate(
   try {
     results = await updateIntegrations(repo.root, {
       force: options.force,
-      render: { shorthandCommands: repo.config.integrations['shorthand-commands'] },
+      render: { shorthandCommands: repo.config.prodshape.integrations['shorthand-commands'] },
     });
   } catch (error) {
     if (error instanceof InstallConflictError) {

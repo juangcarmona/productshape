@@ -359,7 +359,7 @@ export async function runInit(io: CliIo, options: InitCliOptions): Promise<numbe
 
   // Asked from the configured generated root, so a repository that relocated it is offered the
   // rule it actually needs rather than the default one.
-  const generatedRoot = existing.config.generated.root;
+  const generatedRoot = existing.config.prodshape.generated.root;
   const gitignore = await resolveGitignore(
     io,
     options,
@@ -369,7 +369,7 @@ export async function runInit(io: CliIo, options: InitCliOptions): Promise<numbe
   const plan = await planInit({
     root: io.cwd,
     ai,
-    existingShorthand: existing.config.integrations['shorthand-commands'],
+    existingShorthand: existing.config.prodshape.integrations['shorthand-commands'],
     gitignore,
     generatedRoot,
     ...(options.force !== undefined ? { force: options.force } : {}),

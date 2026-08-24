@@ -23,7 +23,7 @@ Every diagnostic carries:
 
 Diagnostics MUST be available in machine-readable JSON (`--format json`) and MUST be ordered deterministically by `file`, then `line` (absent before present), then `entry` (absent before present), then `code`, `field`, `target`, `artifact` and `change`, comparing absent strings as empty strings. Numeric fields sort numerically; strings sort by Unicode code point.
 
-Warnings are not errors. `validation.warnings-as-errors` in `.product/config.yaml` MAY escalate them for a repository; tools MUST NOT escalate unilaterally.
+Warnings are not errors. `validation.warnings-as-errors` in `.product/config.yaml` MAY make a command fail when warnings are present; tools MUST NOT escalate unilaterally, and the emitted diagnostic severity remains `warning`, so machine-readable output is identical with the option on or off.
 
 ## Error codes
 
@@ -65,7 +65,7 @@ Warnings are not errors. `validation.warnings-as-errors` in `.product/config.yam
 
 `PRODUCT027` and `PRODUCT028` are apply preconditions: both are evaluated before anything is written and reported with the working tree untouched. The invocation itself is well formed in either case, so apply exits `1`, not `2`.
 
-`PRODUCT050`–`PRODUCT052` are reported by `doctor` and integration commands; product-model validation does not inspect managed files.
+`PRODUCT050` is reported by any command that discovers an invalid configuration: exactly one diagnostic against `.product/config.yaml`, exit `2`, before artifact discovery or command-specific work, and never a fallback to defaults. `PRODUCT051` and `PRODUCT052` are reported by `doctor` and integration commands; product-model validation does not inspect managed files.
 
 `PRODUCT064`, `PRODUCT065` and `PRODUCT066` are reported only by provider-aware verification (`citations verify --provider <name>`). The SDD integration provider enumerates the expected consumer-document population — current work and archived history — and every current document receives exactly one effective scope state: `bound` (it carries at least one citation or declares `pdac-scope: cited`), `exempt` (a human declared `pdac-scope: none`), or `unclassified` (neither, which fails). Binding and exemption are human declarations; exemption is never inferred from missing citations. Enumerating the population is what makes a zero-citation result over current documents a set of failures instead of a vacuous pass. Citations in archived material are verified as well, with everything found there reported as a warning — archived history cannot be edited, so its drift is information rather than something to fix — and the scope gate applies to current documents only, unless the full gate is explicitly requested for archived material. This establishes citation grounding and population coverage only: it never proves semantic completeness, semantic correctness or implementation conformance, which remain review questions.
 

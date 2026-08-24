@@ -4,7 +4,7 @@ import {
   appliedArtifacts,
   computeAffectedCitations,
   discoverChanges,
-  escalateWarnings,
+  blockingDiagnostics,
   executeApply,
   gitHead,
   loadChange,
@@ -76,35 +76,31 @@ export async function runChangeValidate(
   // The baseline must be sound before an overlay on it means anything.
   const diagnostics: Diagnostic[] = [...baseline.diagnostics];
   for (const change of targets) {
-    diagnostics.push(
-      ...validateChange(change, baseline.artifacts, changes, repo.config).diagnostics,
-    );
+    diagnostics.push(...validateChange(change, baseline.artifacts, changes).diagnostics);
   }
 
-  const escalated = escalateWarnings(
-    sortDiagnostics(diagnostics),
-    repo.config.validation['warnings-as-errors'],
-  );
-  const errors = escalated.filter((d) => d.severity === 'error');
-  const warnings = escalated.filter((d) => d.severity === 'warning');
+  const sorted = sortDiagnostics(diagnostics);
+  const blocking = blockingDiagnostics(sorted, repo.config.validation['warnings-as-errors']);
+  const errors = sorted.filter((d) => d.severity === 'error');
+  const warnings = sorted.filter((d) => d.severity === 'warning');
 
   if (options.format === 'json') {
     io.out(
       stableJson({
         schema: 'product-definition-as-code/diagnostics/v1alpha1',
-        diagnostics: escalated,
+        diagnostics: sorted,
         summary: { errors: errors.length, warnings: warnings.length, changes: targets.length },
       }).trimEnd(),
     );
   } else {
-    for (const diagnostic of escalated) io.out(formatDiagnosticLine(diagnostic));
+    for (const diagnostic of sorted) io.out(formatDiagnosticLine(diagnostic));
     io.out(
       `${errors.length} error(s), ${warnings.length} warning(s) across ${baseline.graph.nodes.length} artifact(s) and ${targets.length} live change(s)`,
     );
     if (targets.length === 0) io.out('No live changes under docs/product/changes/active/.');
   }
 
-  return errors.length > 0 ? exitCodes.validationErrors : exitCodes.success;
+  return blocking.length > 0 ? exitCodes.validationErrors : exitCodes.success;
 }
 
 export interface ChangeCreateOptions extends ChangeFormatOptions {
@@ -383,11 +379,11 @@ export async function runChangeApply(
   const change = findChange(changes, id);
   if (!change) return notFound(io, id, changes);
 
-  const validation = validateChange(change, baseline.artifacts, changes, repo.config);
-  const overlayErrors = escalateWarnings(
+  const validation = validateChange(change, baseline.artifacts, changes);
+  const overlayErrors = blockingDiagnostics(
     validation.diagnostics,
     repo.config.validation['warnings-as-errors'],
-  ).filter((d) => d.severity === 'error');
+  );
 
   const plan = await planApply({
     repoRoot: repo.root,

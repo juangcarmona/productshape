@@ -31,8 +31,10 @@ async function run(argv: string[]): Promise<RunResult> {
 beforeEach(async () => {
   workDir = await mkdtemp(join(tmpdir(), 'prodshape-citations-'));
   await mkdir(join(workDir, 'docs', 'product'), { recursive: true });
+  await mkdir(join(workDir, '.product'), { recursive: true });
+  await writeFile(join(workDir, '.product', 'config.yaml'), 'version: v1alpha1\n', 'utf8');
   await cp(
-    join(repoRoot, 'examples', 'minimal', 'model'),
+    join(repoRoot, 'examples', 'minimal', 'product', 'model'),
     join(workDir, 'docs', 'product', 'model'),
     { recursive: true },
   );
@@ -197,7 +199,13 @@ This is not the canonical requirement text.
     const jsonResult = await run(['citations', 'verify', 'specs', '--format', 'json']);
     const payload = JSON.parse(jsonResult.out.join('\n')) as {
       citations: { id: string; source: string; line: number }[];
-      diagnostics: { file: string; code: string; artifact?: string; target?: string }[];
+      diagnostics: {
+        file: string;
+        line?: number;
+        code: string;
+        artifact?: string;
+        target?: string;
+      }[];
       summary: Record<string, number>;
     };
 
@@ -254,7 +262,7 @@ This is not the canonical requirement text.
     await mkdir(join(workDir, '.product'), { recursive: true });
     await writeFile(
       join(workDir, '.product', 'config.yaml'),
-      'citations:\n  consumer-roots:\n    - specs\n    - docs/consumers\n',
+      'version: v1alpha1\nextensions:\n  prodshape:\n    citations:\n      consumer-roots:\n        - specs\n        - docs/consumers\n',
       'utf8',
     );
     await writeFile(
@@ -305,7 +313,7 @@ This is not the canonical requirement text.
     await mkdir(join(workDir, '.product'), { recursive: true });
     await writeFile(
       join(workDir, '.product', 'config.yaml'),
-      'citations:\n  consumer-roots:\n    - nowhere\n',
+      'version: v1alpha1\nextensions:\n  prodshape:\n    citations:\n      consumer-roots:\n        - nowhere\n',
       'utf8',
     );
 
@@ -583,13 +591,15 @@ describe('citations verify --provider openspec (scope model)', () => {
     await mkdir(join(workDir, '.product'), { recursive: true });
     await writeFile(
       join(workDir, '.product', 'config.yaml'),
-      'validation:\n  warnings-as-errors: true\n',
+      'version: v1alpha1\nvalidation:\n  warnings-as-errors: true\n',
       'utf8',
     );
     const blocking = await verifyJson();
     expect(blocking.code).toBe(1);
+    // warnings-as-errors changes the command result only: the emitted severity stays `warning`,
+    // so the report is identical with the option on or off.
     expect(blocking.payload.diagnostics).toEqual([
-      expect.objectContaining({ code: 'PRODUCT061', severity: 'error' }),
+      expect.objectContaining({ code: 'PRODUCT061', severity: 'warning' }),
     ]);
   });
 

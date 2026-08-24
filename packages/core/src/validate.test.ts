@@ -1,17 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { defaultConfig } from './config.js';
 import { compileGraph } from './graph.js';
 import type { LoadedArtifact } from './model.js';
 import { artifact } from './test-support.js';
 import { validateModel } from './validate.js';
 
-function run(
-  artifacts: LoadedArtifact[],
-  configure?: (c: ReturnType<typeof defaultConfig>) => void,
-) {
-  const config = defaultConfig();
-  configure?.(config);
-  return validateModel(artifacts, compileGraph(artifacts), { config });
+function run(artifacts: LoadedArtifact[]) {
+  return validateModel(artifacts, compileGraph(artifacts));
 }
 
 const baseActor = artifact('ACT-A', 'actor', { 'actor-kind': 'human' });
@@ -79,16 +73,12 @@ describe('validateModel warnings', () => {
     expect(run([misnamed]).filter((d) => d.code === 'PRODUCT101')).toHaveLength(1);
   });
 
-  it('gates PRODUCT102 behind require-journey-for-use-case', () => {
+  it('always reports PRODUCT102: no configuration can suppress a normative warning', () => {
     const uc = artifact('UC-LONELY', 'use-case', { 'primary-actor': 'ACT-A' });
-    expect(run([baseActor, uc]).filter((d) => d.code === 'PRODUCT102')).toHaveLength(0);
-    const gated = run([baseActor, uc], (c) => {
-      c.validation['require-journey-for-use-case'] = true;
-    });
-    expect(gated.filter((d) => d.code === 'PRODUCT102')).toHaveLength(1);
+    expect(run([baseActor, uc]).filter((d) => d.code === 'PRODUCT102')).toHaveLength(1);
   });
 
-  it('flags unreachable requirements (PRODUCT103) and respects the gate', () => {
+  it('flags unreachable requirements (PRODUCT103)', () => {
     const orphan = artifact('FR-ORPHAN-001', 'functional-requirement', {
       'derived-from': ['UC-GHOST'],
       verification: [{ scenario: 'x' }],
@@ -101,10 +91,6 @@ describe('validateModel warnings', () => {
     const diagnostics = run([baseActor, uc, orphan, connected]);
     const flagged = diagnostics.filter((d) => d.code === 'PRODUCT103').map((d) => d.artifact);
     expect(flagged).toEqual(['FR-ORPHAN-001']);
-    const ungated = run([baseActor, uc, orphan, connected], (c) => {
-      c.validation['require-requirement-reachability'] = false;
-    });
-    expect(ungated.filter((d) => d.code === 'PRODUCT103')).toHaveLength(0);
   });
 
   describe('low-confidence drafts (PRODUCT111)', () => {

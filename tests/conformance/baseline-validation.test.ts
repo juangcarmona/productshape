@@ -4,7 +4,6 @@ import { describe, expect, it } from 'vitest';
 import {
   SchemaRegistry,
   compileGraph,
-  defaultConfig,
   loadModel,
   validateModel,
   type Diagnostic,
@@ -16,10 +15,7 @@ async function validateFixtureModel(name: string, group = 'invalid-models'): Pro
   const fixtureRoot = join(repoRoot, 'tests', 'fixtures', group, name);
   const model = await loadModel(join(fixtureRoot, 'model'), fixtureRoot, registry);
   const graph = compileGraph(model.artifacts);
-  return [
-    ...model.diagnostics,
-    ...validateModel(model.artifacts, graph, { config: defaultConfig() }),
-  ];
+  return [...model.diagnostics, ...validateModel(model.artifacts, graph)];
 }
 
 describe('reference-level invalid models', () => {
@@ -51,16 +47,13 @@ describe('self-hosted model through the full pipeline', () => {
     const registry = await SchemaRegistry.loadBundled();
     const model = await loadModel(join(repoRoot, 'docs', 'product', 'model'), repoRoot, registry);
     const graph = compileGraph(model.artifacts);
-    const config = defaultConfig();
-    const diagnostics = [
-      ...model.diagnostics,
-      ...validateModel(model.artifacts, graph, { config }),
-    ];
+    const diagnostics = [...model.diagnostics, ...validateModel(model.artifacts, graph)];
     expect(diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
-    // Zero warnings: the CHG-BRAND-001 terms (TERM-METHODOLOGY,
-    // TERM-REFERENCE-IMPLEMENTATION) are referenced from UC-INIT-001.
+    // PRODUCT102 is a normative warning the contract forbids configuration from suppressing, and
+    // the self-model has known journey-coverage debt. Every warning must be that debt; any other
+    // warning is a regression.
     const warnings = diagnostics.filter((d) => d.severity === 'warning');
-    expect(warnings).toEqual([]);
+    expect([...new Set(warnings.map((d) => d.code))]).toEqual(['PRODUCT102']);
     expect(graph.nodes).toHaveLength(model.artifacts.length);
     expect(graph.edges.length).toBeGreaterThan(60);
   });

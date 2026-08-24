@@ -6,7 +6,7 @@
       "type": "actor",
       "title": "Visitor",
       "status": "active",
-      "path": "model/actors/act-visitor.md",
+      "path": "product/model/actors/act-visitor.md",
       "digest": "sha256:d969b1c778c9501eaf481fdffe6cd61ef1c249ece4794e38a8a62264e8898022"
     },
     {
@@ -14,7 +14,7 @@
       "type": "bounded-context",
       "title": "Shortening",
       "status": "active",
-      "path": "model/domain/bounded-contexts/bc-shortening.md",
+      "path": "product/model/domain/bounded-contexts/bc-shortening.md",
       "digest": "sha256:2fc58ad1fef23f881b1c918a77dc2ec3552a5ad136a62f74a068a315b07ba2c2"
     },
     {
@@ -22,7 +22,7 @@
       "type": "business-rule",
       "title": "Only well-formed absolute URLs are shortened",
       "status": "active",
-      "path": "model/business-rules/br-valid-url-001.md",
+      "path": "product/model/business-rules/br-valid-url-001.md",
       "digest": "sha256:08a2beb833c78440ad392220d2aa29f77fed51da8b886ea0a2328a26f2ea42be"
     },
     {
@@ -30,7 +30,7 @@
       "type": "constraint",
       "title": "The service does not track visitors",
       "status": "active",
-      "path": "model/requirements/constraints/con-no-tracking.md",
+      "path": "product/model/requirements/constraints/con-no-tracking.md",
       "digest": "sha256:89dc3f900ca0898141ccf7e2b96be5fd300d6a789b52ef6673d4bb97a3208671"
     },
     {
@@ -38,7 +38,7 @@
       "type": "functional-requirement",
       "title": "Issue a resolving short link for every accepted URL",
       "status": "active",
-      "path": "model/requirements/functional/fr-shorten-001.md",
+      "path": "product/model/requirements/functional/fr-shorten-001.md",
       "digest": "sha256:7e8957aff5ed6edd8c58d476fc6f972dd00f4a426d7fd1aeee56cd57a4518d5d"
     },
     {
@@ -46,7 +46,7 @@
       "type": "journey",
       "title": "Share a long address as a short link",
       "status": "active",
-      "path": "model/journeys/jrn-share-001.md",
+      "path": "product/model/journeys/jrn-share-001.md",
       "digest": "sha256:9b0b9885690f5227584842cbf4647f29adaba67b6e9098978f9fce5f3488c2bf"
     },
     {
@@ -54,7 +54,7 @@
       "type": "quality-requirement",
       "title": "Short links keep resolving",
       "status": "active",
-      "path": "model/requirements/quality/qr-resolve-001.md",
+      "path": "product/model/requirements/quality/qr-resolve-001.md",
       "digest": "sha256:c18911939ab5645cc02f4b42f308bf32d033ff8ec515a3c2ea4c97e47da778a3"
     },
     {
@@ -62,7 +62,7 @@
       "type": "domain-term",
       "title": "Short Link",
       "status": "active",
-      "path": "model/domain/terms/term-short-link.md",
+      "path": "product/model/domain/terms/term-short-link.md",
       "digest": "sha256:ca3b4bc3f9a8842b3093f554957be158d615645330b83bc8e1238837029a89d4"
     },
     {
@@ -70,7 +70,7 @@
       "type": "use-case",
       "title": "Shorten a URL",
       "status": "active",
-      "path": "model/use-cases/uc-shorten-001.md",
+      "path": "product/model/use-cases/uc-shorten-001.md",
       "digest": "sha256:6dbf4cfe242af19f50495db0cdd070df5bfd155a85bc1d812b14d3b28adc1fa8"
     }
   ],

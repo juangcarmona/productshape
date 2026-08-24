@@ -1,8 +1,2 @@
-schema: product-definition-as-code/config/v1alpha1
-product:
-  root: .
-  model: model
-  changes: changes
-generated:
-  root: .product/generated
-  commit: false
+version: v1alpha1
+product-root: product

@@ -1,5 +1,4 @@
 import type { LoadedChange } from './changes.js';
-import type { ProductConfig } from './config.js';
 import type { Diagnostic } from './diagnostics.js';
 import { sortDiagnostics } from './diagnostics.js';
 import type { ProductGraph } from './graph.js';
@@ -221,13 +220,12 @@ export function validateChange(
   change: LoadedChange,
   baseline: LoadedArtifact[],
   otherChanges: LoadedChange[],
-  config: ProductConfig,
 ): ChangeValidation {
   const overlayArtifacts = applyOverlay(baseline, change);
   const overlayGraph = compileGraph(overlayArtifacts);
   const removed = new Set(change.operations.remove);
 
-  const overlayDiagnostics = validateModel(overlayArtifacts, overlayGraph, { config }).map(
+  const overlayDiagnostics = validateModel(overlayArtifacts, overlayGraph).map(
     (diagnostic): Diagnostic => {
       if (diagnostic.code === 'PRODUCT005') {
         return {

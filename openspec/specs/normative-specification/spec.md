@@ -84,7 +84,7 @@ The specification SHALL define a citation as a machine-verifiable reference from
 
 {pdac:cite id="TERM-CITATION" digest="sha256:3451ef0f31f948a5f3fe1a228e699cf5677aa7e6906ac48faaf48f97c1b00dcf"}
 
-{pdac:cite id="FR-CITATIONS-VERIFY-001" digest="sha256:528c97ff13f05d4ca945bee7794d7a7e47fe340128601be1c6142042a5ae5469"}
+{pdac:cite id="FR-CITATIONS-VERIFY-001" digest="sha256:42ed644eddf854c1dc7af1b818713d4a405074c47ab93b5ecef361e885d7d629"}
 
 #### Scenario: A consumer document cites an artifact
 

@@ -61,37 +61,34 @@ Managed integration files are generated from canonical assets (skills, command d
 
 ## Configuration
 
-`.product/config.yaml` is the repository's configuration. This is the v0.1 shape (schema `product-definition-as-code/config/v1alpha1`); later versions may extend it under a new schema identifier:
+`.product/config.yaml` follows the PDaC configuration contract: a versioned kernel of `version`, `product-root`, `validation.warnings-as-errors` and `extensions`, with every ProductShape-specific setting under the `extensions.prodshape` namespace:
 
 ```yaml
-schema: product-definition-as-code/config/v1alpha1
-product:
-  root: docs/product # product root
-  model: docs/product/model # repository-relative path to the model directory
-  changes: docs/product/changes # repository-relative path to the changes directory
-generated:
-  root: .product/generated # where compiled outputs go
-  commit: false # whether generated outputs are committed (see .gitignore below)
-integrations:
-  ai: # AI providers with generated integrations
-    - claude
-  shorthand-commands: false # also generate the /ps:<name> aliases for /product:<name>
+version: v1alpha1
+product-root: docs/product # the Product Definition root; model/ and changes/ live beneath it
 validation:
-  warnings-as-errors: false # escalate validation warnings to errors for this repository
-  require-journey-for-use-case: false
-  require-requirement-reachability: true
-citations:
-  consumer-roots: # directories `citations verify` scans when no target is given
-    - openspec
+  warnings-as-errors: false # make warnings fail the command (their reported severity stays warning)
+extensions:
+  prodshape:
+    generated:
+      root: .product/generated # where compiled outputs go
+      commit: false # whether generated outputs are committed (see .gitignore below)
+    integrations:
+      ai: # AI providers with generated integrations
+        - claude
+      shorthand-commands: false # also generate the /ps:<name> aliases for /product:<name>
+    citations:
+      consumer-roots: # directories `citations verify` scans when no target is given
+        - openspec
 ```
 
-`product.model` and `product.changes` are **repository-relative paths, not relative to `product.root`** — they are resolved from the repository root.
+`product-root` is a repository-relative POSIX path; the layout fixes `model/` and `changes/` beneath it, so they are not configured separately.
 
-Unknown top-level keys are a configuration error (`PRODUCT050`). Unknown _nested_ keys are not rejected, so a misspelling inside `integrations` or `validation` is silently ignored: check spelling against this list. Defaults match the values shown; a minimal config declaring only `schema` is valid.
+An invalid configuration (malformed YAML, a missing or unsupported `version`, an unknown key outside `extensions`, a wrong value type, or a forbidden YAML feature such as anchors, aliases, tags or merge keys) is exactly one `PRODUCT050` and exit code `2`, reported before any other work; commands never fall back to defaults over an invalid file. Extension namespaces ProductShape does not own are ignored. Defaults match the values shown; a minimal config declaring only `version: v1alpha1` is valid.
 
-`citations.consumer-roots` names the directories `prodshape citations verify` scans when you do not pass a target. Where consumer documents live is your repository's decision: the default is `openspec`, and a repository that keeps its consumers under `specs/` sets that instead. A configured root that does not exist is an error rather than an empty result, so a misconfigured gate cannot report success for having verified nothing.
+`extensions.prodshape.citations.consumer-roots` names the directories `prodshape citations verify` scans when you do not pass a target. Where consumer documents live is your repository's decision: the default is `openspec`, and a repository that keeps its consumers under `specs/` sets that instead. A configured root that does not exist is an error rather than an empty result, so a misconfigured gate cannot report success for having verified nothing.
 
-`integrations.shorthand-commands` must be set in configuration rather than passed per command, because `integration update` re-renders from configuration; `init --shorthand` writes it for you. Turning it off removes the aliases the previous setting generated, provided they are unmodified — a hand-edited one is left in place and reported.
+`extensions.prodshape.integrations.shorthand-commands` must be set in configuration rather than passed per command, because `integration update` re-renders from configuration; `init --shorthand` writes it for you. Turning it off removes the aliases the previous setting generated, provided they are unmodified — a hand-edited one is left in place and reported.
 
 ## The installation lock
 

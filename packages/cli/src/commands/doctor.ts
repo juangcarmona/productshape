@@ -1,4 +1,4 @@
-import { escalateWarnings, validateBaseline } from '@prodshape/core';
+import { blockingDiagnostics, validateBaseline } from '@prodshape/core';
 import { runDoctor } from '@prodshape/distribution';
 import {
   checkOpenSpecIntegration,
@@ -18,10 +18,8 @@ export async function runDoctorCommand(io: CliIo): Promise<number> {
   // validateBaseline, not runValidate: `doctor` diagnoses and must not write. runValidate would
   // regenerate .product/generated as a side effect.
   const baseline = await validateBaseline(repo);
-  const diagnostics = escalateWarnings(
-    baseline.diagnostics,
-    repo.config.validation['warnings-as-errors'],
-  );
+  const diagnostics = baseline.diagnostics;
+  const blocking = blockingDiagnostics(diagnostics, repo.config.validation['warnings-as-errors']);
 
   const configErrors = repo.configDiagnostics.filter((d) => d.severity === 'error');
 
@@ -54,9 +52,11 @@ export async function runDoctorCommand(io: CliIo): Promise<number> {
         ? '.product/config.yaml valid (or defaults in effect)'
         : `${configErrors.length} configuration error(s)`,
     modelPath: repo.config.product.model,
+    // The health verdict gates on the blocking set, so warnings-as-errors fails the check while
+    // the emitted diagnostics keep their severity.
     validation: {
-      errors: diagnostics.filter((d) => d.severity === 'error').length,
-      warnings: diagnostics.filter((d) => d.severity === 'warning').length,
+      errors: blocking.length,
+      warnings: diagnostics.length - blocking.length,
       artifacts: baseline.graph.nodes.length,
     },
     ...(openspecHealth ? { openspec: openspecHealth } : {}),

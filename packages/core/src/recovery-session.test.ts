@@ -142,7 +142,7 @@ describe('startRecoverySession', () => {
       'src/refunds.ts': 'export const days = 30;\n',
       'docs/help.md': '# Help\n',
       'docs/product/model/.gitkeep': '',
-      '.product/config.yaml': 'schema: product-definition-as-code/config/v1alpha1\n',
+      '.product/config.yaml': 'version: v1alpha1\n',
     };
     const first = await startRecoverySession(await makeRepo(files), {
       cliVersion: '0.0.0-test',

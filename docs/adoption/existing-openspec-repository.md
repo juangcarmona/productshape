@@ -61,7 +61,7 @@ Binding and exemption are human declarations — never declare `pdac-scope: none
 
 Citations in archived changes are checked too, but everything found there — staleness included — is reported as a warning, because archived history cannot be edited: a problem there is information for the reader, not something anyone can fix in place. The scope gate does not apply to archived documents by default. Pass `--include-archived` to apply the full gate to them as well.
 
-The bare form `prodshape citations verify [target]` remains available as a plain recursive scan of whatever citations a directory happens to contain, without population or scope enforcement. Without a target it scans the repository's configured `citations.consumer-roots` (default `openspec`).
+The bare form `prodshape citations verify [target]` remains available as a plain recursive scan of whatever citations a directory happens to contain, without population or scope enforcement. Without a target it scans the repository's configured `extensions.prodshape.citations.consumer-roots` (default `openspec`).
 
 Every citation resolves to exactly one status:
 

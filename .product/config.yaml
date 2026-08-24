@@ -1,23 +1,21 @@
-schema: product-definition-as-code/config/v1alpha1
-product:
-  root: docs/product
-  model: docs/product/model
-generated:
-  root: .product/generated
-  commit: false
-integrations:
-  ai:
-    - claude
-    - copilot
-  # This repository documents /ps:* publicly (README, CHANGELOG) and ships the aliases, so it opts
-  # in. New installations default to false: for a single-assistant repository the aliases double
-  # the command namespace without adding a capability.
-  shorthand-commands: true
+version: v1alpha1
+product-root: docs/product
 validation:
   warnings-as-errors: false
-  require-journey-for-use-case: false
-  require-requirement-reachability: true
-citations:
-  # Directories `prodshape citations verify` scans when no target is given.
-  consumer-roots:
-    - openspec
+extensions:
+  prodshape:
+    generated:
+      root: .product/generated
+      commit: false
+    integrations:
+      ai:
+        - claude
+        - copilot
+      # This repository documents /ps:* publicly (README, CHANGELOG) and ships the aliases, so it
+      # opts in. New installations default to false: for a single-assistant repository the aliases
+      # double the command namespace without adding a capability.
+      shorthand-commands: true
+    citations:
+      # Directories `prodshape citations verify` scans when no target is given.
+      consumer-roots:
+        - openspec

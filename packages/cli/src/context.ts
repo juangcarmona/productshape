@@ -56,7 +56,7 @@ export async function resolveRepository(
     root = await findRepositoryRoot(io.cwd);
     if (!root) {
       throw new CliError(
-        'No product repository found: expected .product/config.yaml or docs/product upward from the working directory',
+        'No product repository found: expected .product/config.yaml upward from the working directory, or an enclosing git repository for defaults',
         exitCodes.invalidInvocation,
       );
     }

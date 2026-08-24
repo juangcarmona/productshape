@@ -148,18 +148,10 @@ async function writeSyntheticModel(root: string, scale: number): Promise<void> {
   await mkdir(join(root, '.product'), { recursive: true });
   await writeFile(
     join(root, '.product/config.yaml'),
-    `schema: product-definition-as-code/config/v1alpha1
-product:
-  root: docs/product
-  model: docs/product/model
-  changes: docs/product/changes
-generated:
-  root: .product/generated
-  commit: false
+    `version: v1alpha1
+product-root: docs/product
 validation:
   warnings-as-errors: false
-  require-journey-for-use-case: false
-  require-requirement-reachability: false
 `,
     'utf8',
   );

@@ -1,6 +1,5 @@
 import { basename } from 'node:path';
 import { expectedFileName } from './artifact.js';
-import type { ProductConfig } from './config.js';
 import type { Diagnostic } from './diagnostics.js';
 import { codes, sortDiagnostics } from './diagnostics.js';
 import type { ProductGraph } from './graph.js';
@@ -9,20 +8,12 @@ import { allowedTargets } from './relationships.js';
 
 const requirementTypes = new Set(['functional-requirement', 'quality-requirement', 'constraint']);
 
-export interface ValidateModelOptions {
-  config: ProductConfig;
-}
-
 /**
  * Baseline model validation: identity and reference errors (PRODUCT005-008) and
  * model-quality warnings (PRODUCT101-107). Per-document diagnostics are produced
  * at load time and are not repeated here.
  */
-export function validateModel(
-  artifacts: LoadedArtifact[],
-  graph: ProductGraph,
-  { config }: ValidateModelOptions,
-): Diagnostic[] {
+export function validateModel(artifacts: LoadedArtifact[], graph: ProductGraph): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
 
   // PRODUCT005: duplicate IDs.
@@ -135,8 +126,9 @@ export function validateModel(
     });
   }
 
-  // PRODUCT102: active use case in no journey (configuration-gated).
-  if (config.validation['require-journey-for-use-case']) {
+  // PRODUCT102: active use case in no journey. Normative warning; the contract forbids
+  // configuration from suppressing it.
+  {
     for (const node of graph.nodes) {
       if (node.type !== 'use-case' || node.status !== 'active') continue;
       const inJourney = (graph.incoming.get(node.id) ?? []).some((e) => e.kind === 'steps');
@@ -152,8 +144,9 @@ export function validateModel(
     }
   }
 
-  // PRODUCT103: requirement unreachable from any actor (configuration-gated).
-  if (config.validation['require-requirement-reachability']) {
+  // PRODUCT103: requirement unreachable from any actor. Normative warning; the contract forbids
+  // configuration from suppressing it.
+  {
     const reachable = undirectedReachabilityFromActors(graph);
     for (const node of graph.nodes) {
       if (!requirementTypes.has(node.type)) continue;

@@ -78,7 +78,8 @@ export async function runDrift(
       }
     }
   } else {
-    const targets = target !== undefined ? [target] : repo.config.citations['consumer-roots'];
+    const targets =
+      target !== undefined ? [target] : repo.config.prodshape.citations['consumer-roots'];
     const records: DriftRecord[] = [];
     for (const targetDir of targets) {
       const rootDir = isAbsolute(targetDir) ? targetDir : resolvePath(repo.root, targetDir);

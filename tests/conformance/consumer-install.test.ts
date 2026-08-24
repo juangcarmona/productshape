@@ -793,7 +793,7 @@ describe.skipIf(!hasOpenspec)('OpenSpec citation enforcement (packed binary)', (
     // A minimal accepted Product Definition to cite.
     await rm(join(dir, 'docs', 'product', 'model'), { recursive: true, force: true });
     await cp(
-      join(repoRoot, 'examples', 'minimal', 'model'),
+      join(repoRoot, 'examples', 'minimal', 'product', 'model'),
       join(dir, 'docs', 'product', 'model'),
       {
         recursive: true,
@@ -884,7 +884,7 @@ describe.skipIf(!hasOpenspec)('OpenSpec citation enforcement (packed binary)', (
     // 5. With the repository's stale policy escalated, verification blocks.
     await writeFile(
       join(dir, '.product', 'config.yaml'),
-      'validation:\n  warnings-as-errors: true\n',
+      'version: v1alpha1\nvalidation:\n  warnings-as-errors: true\n',
       'utf8',
     );
     const blocking = await prodshape(['citations', 'verify', '--provider', 'openspec']);

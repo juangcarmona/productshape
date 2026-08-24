@@ -1184,7 +1184,7 @@ export async function checkRecoverySession(
     for (const dir of await discoverChanges(activeDir)) {
       if (dir !== changeDirAbs) others.push(await loadChange(dir, repo.root, repo.registry));
     }
-    const validation = validateChange(change, baseline, others, repo.config);
+    const validation = validateChange(change, baseline, others);
     diagnostics = validation.diagnostics;
     const errors = diagnostics.filter((d) => d.severity === 'error');
     const lowConfidence = [

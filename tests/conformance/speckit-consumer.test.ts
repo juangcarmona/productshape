@@ -46,9 +46,15 @@ async function run(argv: string[], cwd: string): Promise<RunResult> {
 /** Copy the minimal example model into a scratch repository root. */
 async function scaffoldModel(dir: string): Promise<void> {
   await mkdir(join(dir, 'docs', 'product'), { recursive: true });
-  await cp(join(repoRoot, 'examples', 'minimal', 'model'), join(dir, 'docs', 'product', 'model'), {
-    recursive: true,
-  });
+  await mkdir(join(dir, '.product'), { recursive: true });
+  await writeFile(join(dir, '.product', 'config.yaml'), 'version: v1alpha1\n', 'utf8');
+  await cp(
+    join(repoRoot, 'examples', 'minimal', 'product', 'model'),
+    join(dir, 'docs', 'product', 'model'),
+    {
+      recursive: true,
+    },
+  );
 }
 
 /**

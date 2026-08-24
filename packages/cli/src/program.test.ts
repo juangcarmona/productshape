@@ -26,8 +26,10 @@ beforeAll(async () => {
   // A standalone consumer-shaped repository built from examples/minimal.
   workDir = await mkdtemp(join(tmpdir(), 'product-definition-cli-'));
   await mkdir(join(workDir, 'docs', 'product'), { recursive: true });
+  await mkdir(join(workDir, '.product'), { recursive: true });
+  await writeFile(join(workDir, '.product', 'config.yaml'), 'version: v1alpha1\n', 'utf8');
   await cp(
-    join(repoRoot, 'examples', 'minimal', 'model'),
+    join(repoRoot, 'examples', 'minimal', 'product', 'model'),
     join(workDir, 'docs', 'product', 'model'),
     {
       recursive: true,
@@ -186,8 +188,10 @@ describe('prodshape validate', () => {
     const cleanDir = await mkdtemp(join(tmpdir(), 'product-definition-readonly-'));
     try {
       await mkdir(join(cleanDir, 'docs', 'product'), { recursive: true });
+      await mkdir(join(cleanDir, '.product'), { recursive: true });
+      await writeFile(join(cleanDir, '.product', 'config.yaml'), 'version: v1alpha1\n', 'utf8');
       await cp(
-        join(repoRoot, 'examples', 'minimal', 'model'),
+        join(repoRoot, 'examples', 'minimal', 'product', 'model'),
         join(cleanDir, 'docs', 'product', 'model'),
         { recursive: true },
       );
@@ -316,8 +320,10 @@ describe('prodshape fix --filenames', () => {
   beforeAll(async () => {
     fixDir = await mkdtemp(join(tmpdir(), 'prodshape-fix-'));
     await mkdir(join(fixDir, 'docs', 'product'), { recursive: true });
+    await mkdir(join(fixDir, '.product'), { recursive: true });
+    await writeFile(join(fixDir, '.product', 'config.yaml'), 'version: v1alpha1\n', 'utf8');
     await cp(
-      join(repoRoot, 'examples', 'minimal', 'model'),
+      join(repoRoot, 'examples', 'minimal', 'product', 'model'),
       join(fixDir, 'docs', 'product', 'model'),
       {
         recursive: true,
@@ -507,7 +513,8 @@ describe('self-application', () => {
   it('validates this repository with exit 0', async () => {
     const result = await run(['validate'], repoRoot);
     expect(result.code).toBe(0);
-    // The whole Product Definition, zero diagnostics.
-    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across \d+ artifact\(s\)/);
+    // Zero errors; the self-model carries known PRODUCT102 journey-coverage debt, which the
+    // contract forbids configuration from suppressing.
+    expect(result.out.at(-1)).toMatch(/0 error\(s\), \d+ warning\(s\) across \d+ artifact\(s\)/);
   });
 });
