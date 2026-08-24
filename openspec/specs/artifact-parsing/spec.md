@@ -51,7 +51,7 @@ The repository SHALL contain fixtures with, per artifact kind, a minimal valid a
 
 The core SHALL discover every Markdown artifact under the configured model root (excluding `index.md`), in deterministic order with POSIX-normalized repository-relative paths, and load each through the established parsing and schema-validation contract.
 
-{pdac:cite id="QR-DETERMINISM-001" digest="sha256:994d01951d76adfe83a6a7a48ae331172c59ece2a0cec7c045df73597ffc38fe"}
+{pdac:cite id="QR-DETERMINISM-001" digest="sha256:222606693286667f7974e3dd8b88e6248ca29ce75cb54c9285cc7aaef2c08da3"}
 
 #### Scenario: Deterministic discovery order
 

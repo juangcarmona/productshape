@@ -164,7 +164,7 @@ export function classifyConsumerDocument(
       code: codes.invalidScopeDeclaration,
       message: `Invalid pdac-scope value '${declaration.raw}': expected 'none' (exempt) or 'cited' (bound)`,
       file: document.path,
-      field: 'pdac-scope',
+      field: 'scope',
     });
     return { document, state: 'unclassified', declaration, citations, diagnostics };
   }
@@ -176,7 +176,7 @@ export function classifyConsumerDocument(
         code: codes.invalidScopeDeclaration,
         message: `Document declares 'pdac-scope: none' but carries ${citations.length} citation(s); remove the exemption or the citations`,
         file: document.path,
-        field: 'pdac-scope',
+        field: 'scope',
       });
     }
     return { document, state: 'exempt', declaration, citations, diagnostics };
@@ -189,7 +189,7 @@ export function classifyConsumerDocument(
         code: codes.emptyBoundDocument,
         message: `Document declares 'pdac-scope: cited' but carries no citations; a bound document must cite the canonical text it depends on`,
         file: document.path,
-        field: 'pdac-scope',
+        field: 'scope',
       });
     }
     return { document, state: 'bound', declaration, citations, diagnostics };
@@ -204,6 +204,7 @@ export function classifyConsumerDocument(
     code: codes.missingScopeDeclaration,
     message: `Consumer document is unclassified: declare 'pdac-scope: none' (exempt) or bind it with at least one PDaC citation`,
     file: document.path,
+    field: 'scope',
   });
   return { document, state: 'unclassified', declaration, citations, diagnostics };
 }

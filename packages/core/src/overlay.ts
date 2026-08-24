@@ -25,7 +25,7 @@ export function applyOverlay(baseline: LoadedArtifact[], change: LoadedChange): 
 export function validateOperations(change: LoadedChange, baseline: LoadedArtifact[]): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
   const baselineIds = new Set(baseline.map((a) => a.id).filter(Boolean));
-  const artifactId = change.id;
+  const changeId = change.id;
 
   for (const id of change.operations.add) {
     if (baselineIds.has(id)) {
@@ -34,7 +34,7 @@ export function validateOperations(change: LoadedChange, baseline: LoadedArtifac
         code: 'PRODUCT020',
         message: `Addition '${id}' already exists in the baseline`,
         file: change.file,
-        artifact: artifactId,
+        change: changeId,
         field: 'operations.add',
         target: id,
       });
@@ -47,7 +47,7 @@ export function validateOperations(change: LoadedChange, baseline: LoadedArtifac
         code: 'PRODUCT021',
         message: `Modification target '${id}' does not exist in the baseline`,
         file: change.file,
-        artifact: artifactId,
+        change: changeId,
         field: 'operations.modify',
         target: id,
       });
@@ -60,7 +60,7 @@ export function validateOperations(change: LoadedChange, baseline: LoadedArtifac
         code: 'PRODUCT022',
         message: `Removal target '${id}' does not exist in the baseline`,
         file: change.file,
-        artifact: artifactId,
+        change: changeId,
         field: 'operations.remove',
         target: id,
       });
@@ -88,7 +88,8 @@ export function validateOperations(change: LoadedChange, baseline: LoadedArtifac
         code: 'PRODUCT026',
         message: `Operation on '${id}' has no proposed future-state artifact under proposed/`,
         file: change.file,
-        artifact: artifactId,
+        change: changeId,
+        field: change.operations.add.includes(id) ? 'operations.add' : 'operations.modify',
         target: id,
       });
     }
@@ -119,7 +120,8 @@ export function validateConcurrency(
         code: 'PRODUCT025',
         message: `'${id}' is also modified or removed by concurrent change '${other.id ?? other.file}'`,
         file: change.file,
-        artifact: change.id,
+        change: change.id,
+        field: change.operations.modify.includes(id) ? 'operations.modify' : 'operations.remove',
         target: id,
       });
     }
@@ -198,7 +200,8 @@ export function validateOpenQuestions(change: LoadedChange): Diagnostic[] {
       code: 'PRODUCT108',
       message: `Change is 'approved' but its Open Questions section still lists unresolved questions; resolve a question by removing its list item`,
       file: change.file,
-      artifact: change.id,
+      change: change.id,
+      field: 'Open Questions',
     },
   ];
 }

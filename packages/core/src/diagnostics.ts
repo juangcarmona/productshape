@@ -6,9 +6,17 @@ export interface Diagnostic {
   message: string;
   /** Repository-relative source file, POSIX separators. */
   file: string;
+  /** ID of the Product Artifact the diagnostic is about; never a Product Change or unresolved ID. */
   artifact?: string;
+  /** ID of the Product Change the diagnostic is about. */
+  change?: string;
   field?: string;
+  /** Referenced, operated-on or cited ID exactly as authored, whether or not it resolves. */
   target?: string;
+  /** One-based consumer-file line carrying a citation payload. */
+  line?: number;
+  /** One-based citation entry within a sidecar's `citations` sequence. */
+  entry?: number;
 }
 
 /**
@@ -71,12 +79,28 @@ export function compareCodeUnits(left: string, right: string): number {
   return 0;
 }
 
-/** Deterministic ordering: by file, then code, then target. */
+/** Compare optional one-based positions numerically, absent before present. */
+function compareOptionalNumbers(left: number | undefined, right: number | undefined): number {
+  if (left === undefined) return right === undefined ? 0 : -1;
+  if (right === undefined) return 1;
+  return left - right;
+}
+
+/**
+ * Deterministic ordering: by `file`, then `line` (absent before present), then `entry` (absent
+ * before present), then `code`, `field`, `target`, `artifact` and `change`, comparing absent
+ * strings as empty strings. Numeric fields sort numerically.
+ */
 export function sortDiagnostics(diagnostics: Diagnostic[]): Diagnostic[] {
   return [...diagnostics].sort(
     (a, b) =>
       compareCodeUnits(a.file ?? '', b.file ?? '') ||
+      compareOptionalNumbers(a.line, b.line) ||
+      compareOptionalNumbers(a.entry, b.entry) ||
       compareCodeUnits(a.code, b.code) ||
-      compareCodeUnits(a.target ?? '', b.target ?? ''),
+      compareCodeUnits(a.field ?? '', b.field ?? '') ||
+      compareCodeUnits(a.target ?? '', b.target ?? '') ||
+      compareCodeUnits(a.artifact ?? '', b.artifact ?? '') ||
+      compareCodeUnits(a.change ?? '', b.change ?? ''),
   );
 }

@@ -92,6 +92,49 @@ describe('sortDiagnostics', () => {
     }
   });
 
+  it('orders line before code, numerically, with absent before present', () => {
+    const result = sortDiagnostics([
+      { ...diagnostic('line 10, earlier code', 'same.md', 'PRODUCT042'), line: 10 },
+      { ...diagnostic('line 2, later code', 'same.md', 'PRODUCT063'), line: 2 },
+      diagnostic('no line, latest code', 'same.md', 'PRODUCT108'),
+    ]);
+
+    expect(labels(result)).toEqual([
+      'no line, latest code',
+      'line 2, later code',
+      'line 10, earlier code',
+    ]);
+  });
+
+  it('orders entry after line and before code, numerically, absent before present', () => {
+    const result = sortDiagnostics([
+      { ...diagnostic('entry 10', 'ledger.citations.yml', 'PRODUCT060'), entry: 10 },
+      { ...diagnostic('entry 2', 'ledger.citations.yml', 'PRODUCT061'), entry: 2 },
+      diagnostic('no entry', 'ledger.citations.yml', 'PRODUCT067'),
+    ]);
+
+    expect(labels(result)).toEqual(['no entry', 'entry 2', 'entry 10']);
+  });
+
+  it('breaks full ties by field, target, artifact and then change', () => {
+    const base = diagnostic('base', 'same.md', 'PRODUCT100');
+    const result = sortDiagnostics([
+      { ...base, message: 'change B', field: 'f', target: 't', artifact: 'a', change: 'CHG-B' },
+      { ...base, message: 'change A', field: 'f', target: 't', artifact: 'a', change: 'CHG-A' },
+      { ...base, message: 'artifact earlier', field: 'f', target: 't', artifact: 'A' },
+      { ...base, message: 'target earlier', field: 'f', target: 'T' },
+      { ...base, message: 'field earlier', field: 'F' },
+    ]);
+
+    expect(labels(result)).toEqual([
+      'field earlier',
+      'target earlier',
+      'artifact earlier',
+      'change A',
+      'change B',
+    ]);
+  });
+
   it('preserves relative order for equal normative keys and does not mutate its input', () => {
     const input = [
       diagnostic('first', 'same.md', 'PRODUCT100', 'TARGET'),
