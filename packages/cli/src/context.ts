@@ -89,12 +89,20 @@ export function formatDiagnosticLine(diagnostic: {
   message: string;
   file: string;
   artifact?: string;
+  change?: string;
   field?: string;
   target?: string;
+  line?: number;
+  entry?: number;
 }): string {
-  const location = diagnostic.artifact
-    ? `${diagnostic.file} [${diagnostic.artifact}]`
-    : diagnostic.file;
+  const point =
+    diagnostic.line !== undefined
+      ? `${diagnostic.file}:${diagnostic.line}`
+      : diagnostic.entry !== undefined
+        ? `${diagnostic.file} entry ${diagnostic.entry}`
+        : diagnostic.file;
+  const subject = diagnostic.artifact ?? diagnostic.change;
+  const location = subject ? `${point} [${subject}]` : point;
   const relation =
     diagnostic.field || diagnostic.target
       ? ` (${[diagnostic.field, diagnostic.target].filter(Boolean).join(' -> ')})`

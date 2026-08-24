@@ -89,6 +89,7 @@ export class SchemaRegistry {
           message: `Unknown artifact type '${kind}'`,
           file,
           artifact,
+          field: 'type',
         },
       ];
     }
@@ -112,6 +113,9 @@ export class SchemaRegistry {
     }
 
     if (!validator(data)) {
+      // One diagnostic per distinct invalid instance path: several failed schema keywords at the
+      // same path count once, per the validation contract's emission granularity.
+      const reportedPaths = new Set<string>();
       for (const error of validator.errors ?? []) {
         if (prefixMismatch && error.instancePath === '/id') continue;
         const path = error.instancePath.replace(/^\//, '').replaceAll('/', '.');
@@ -129,6 +133,8 @@ export class SchemaRegistry {
         const detail =
           typeof params.additionalProperty === 'string' ? ` ('${params.additionalProperty}')` : '';
         const field = offending ? (path ? `${path}.${offending}` : offending) : path || undefined;
+        if (reportedPaths.has(field ?? '')) continue;
+        reportedPaths.add(field ?? '');
         diagnostics.push({
           severity: 'error',
           code: codes.schemaViolation,

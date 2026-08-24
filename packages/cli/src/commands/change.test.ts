@@ -806,7 +806,7 @@ describe('change apply', () => {
     expect(payload.applied).toBe(false);
     expect(payload.diagnostics.map(({ file, code, target }) => ({ file, code, target }))).toEqual([
       {
-        file: 'docs/product/model/business-rules/br-valid-url-001.md',
+        file: 'docs/product/changes/active/chg-probe-001/change.md',
         code: 'PRODUCT027',
         target: 'BR-VALID-URL-001',
       },

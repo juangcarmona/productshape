@@ -33,7 +33,7 @@ Deterministic graph-level validation of the product model with stable diagnostic
 
 Validation SHALL report the warnings PRODUCT101 (file-name misalignment), PRODUCT102 (active use case in no journey, when enabled), PRODUCT103 (requirement unreachable from any actor, when enabled), PRODUCT104 (active references deprecated), PRODUCT105 (business rule with no consumers), PRODUCT106 (domain term with no usage) and PRODUCT107 (bounded context owning no terms), and SHALL exit 0 when only warnings exist unless `validation.warnings-as-errors` is set. The `validation.warnings-as-errors` escalation SHALL apply uniformly to every validating command — baseline `validate`, `change validate`, Product Change apply and graph generation — so a repository that opts in cannot validate strictly at the baseline while applying a change whose overlay carries warnings.
 
-{pdac:cite id="FR-VALIDATE-002" digest="sha256:80aad08edc2f005a5abbaeed734fa5165b771d22e0e9f4ca43d7a925f64780ec"}
+{pdac:cite id="FR-VALIDATE-002" digest="sha256:a9e15d3c013ca4534d4e7c94df7a70de582b590b6eed52799172ce3c00eb1e5d"}
 
 #### Scenario: Warnings do not fail the build
 
@@ -52,9 +52,9 @@ Validation SHALL report the warnings PRODUCT101 (file-name misalignment), PRODUC
 
 ### Requirement: Diagnostics are deterministic and machine-readable
 
-Diagnostics SHALL be ordered by file, then code, then target; `--format json` SHALL emit them as JSON with the fields severity, code, message, file and, when available, artifact, field and target. Identical repository content SHALL produce byte-identical diagnostic output on every platform.
+Diagnostics SHALL be ordered by file, then line and entry (absent before present, compared numerically), then code, field, target, artifact and change; `--format json` SHALL emit them as JSON with the fields severity, code, message, file and, when applicable, artifact, change, field, target, line and entry. A Product Change ID SHALL appear in change and a cited ID in target, never artifact. Identical repository content SHALL produce byte-identical diagnostic output on every platform.
 
-{pdac:cite id="QR-DETERMINISM-001" digest="sha256:994d01951d76adfe83a6a7a48ae331172c59ece2a0cec7c045df73597ffc38fe"}
+{pdac:cite id="QR-DETERMINISM-001" digest="sha256:222606693286667f7974e3dd8b88e6248ca29ce75cb54c9285cc7aaef2c08da3"}
 
 #### Scenario: JSON output
 

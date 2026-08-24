@@ -6,17 +6,22 @@ Structural validation is deterministic. Given the same repository content, valid
 
 Every diagnostic carries:
 
-| Field      | Presence        | Meaning                                            |
-| ---------- | --------------- | -------------------------------------------------- |
-| `severity` | always          | `error` or `warning`                               |
-| `code`     | always          | stable code from the tables below                  |
-| `message`  | always          | human-readable explanation                         |
-| `file`     | always          | repository-relative source file (POSIX separators) |
-| `artifact` | when available  | artifact ID                                        |
-| `field`    | when available  | frontmatter field or relationship                  |
-| `target`   | when applicable | referenced target ID                               |
+| Field | Presence | Meaning |
+| --- | --- | --- |
+| `severity` | always | `error` or `warning` |
+| `code` | always | stable code from the tables below |
+| `message` | always | human-readable explanation |
+| `file` | always | repository-relative source or expected file (POSIX separators) |
+| `artifact` | when applicable | ID of the Product Artifact the diagnostic is about; never a Product Change or unresolved ID |
+| `change` | when applicable | ID of the Product Change the diagnostic is about |
+| `field` | when applicable | frontmatter field, relationship or body section |
+| `target` | when applicable | referenced, operated-on or cited ID exactly as authored, whether or not it resolves |
+| `line` | payload only | one-based consumer-file line carrying a citation payload |
+| `entry` | sidecar only | one-based citation entry within the sidecar's `citations` sequence |
 
-Diagnostics MUST be available in machine-readable JSON (`--format json`) and MUST be ordered deterministically (by file, then code, then target).
+`artifact`, `change` and `target` are distinct subjects. A citation diagnostic uses `target` for the cited ID. An unresolved ID never appears in `artifact`, because resolution is what would establish that it identifies an artifact. A Product Change ID appears in `change`, never `artifact`.
+
+Diagnostics MUST be available in machine-readable JSON (`--format json`) and MUST be ordered deterministically by `file`, then `line` (absent before present), then `entry` (absent before present), then `code`, `field`, `target`, `artifact` and `change`, comparing absent strings as empty strings. Numeric fields sort numerically; strings sort by Unicode code point.
 
 Warnings are not errors. `validation.warnings-as-errors` in `.product/config.yaml` MAY escalate them for a repository; tools MUST NOT escalate unilaterally.
 

@@ -210,15 +210,16 @@ This is not the canonical requirement text.
       { id: 'FR-A-NOT-FOUND', source: 'specs/z-consumer.md', line: 3 },
     ]);
 
+    // Point of use sorts before code: the contract orders by file, then line, then code.
     const expectedOrder = [
-      { file: 'specs/a-consumer.md', code: 'PRODUCT042', artifact: 'FR-A-BAD-DIGEST' },
-      { file: 'specs/a-consumer.md', code: 'PRODUCT060', artifact: 'FR-Z-UNKNOWN' },
-      { file: 'specs/z-consumer.md', code: 'PRODUCT060', artifact: 'FR-Z-NOT-FOUND' },
-      { file: 'specs/z-consumer.md', code: 'PRODUCT060', artifact: 'FR-A-NOT-FOUND' },
-      { file: 'specs/z-consumer.md', code: 'PRODUCT063', artifact: 'FR-SHORTEN-001' },
+      { file: 'specs/a-consumer.md', line: 1, code: 'PRODUCT060', target: 'FR-Z-UNKNOWN' },
+      { file: 'specs/a-consumer.md', line: 2, code: 'PRODUCT042', target: 'FR-A-BAD-DIGEST' },
+      { file: 'specs/z-consumer.md', line: 1, code: 'PRODUCT063', target: 'FR-SHORTEN-001' },
+      { file: 'specs/z-consumer.md', line: 2, code: 'PRODUCT060', target: 'FR-Z-NOT-FOUND' },
+      { file: 'specs/z-consumer.md', line: 3, code: 'PRODUCT060', target: 'FR-A-NOT-FOUND' },
     ];
     expect(
-      payload.diagnostics.map(({ file, code, artifact }) => ({ file, code, artifact })),
+      payload.diagnostics.map(({ file, line, code, target }) => ({ file, line, code, target })),
     ).toEqual(expectedOrder);
     expect(payload.summary).toMatchObject({
       total: 5,
@@ -234,8 +235,13 @@ This is not the canonical requirement text.
     const textOrder = textResult.out
       .filter((line) => /^(?:error|warning) PRODUCT\d+ /.test(line))
       .map((line) => {
-        const match = /^(?:error|warning) (PRODUCT\d+) (\S+) \[([^\]]+)\]/.exec(line);
-        return match ? { file: match[2], code: match[1], artifact: match[3] } : undefined;
+        const match =
+          /^(?:error|warning) (PRODUCT\d+) ([^\s:]+):(\d+): .*\((?:[a-z]+ -> )?([A-Z0-9-]+)\)$/.exec(
+            line,
+          );
+        return match
+          ? { file: match[2], line: Number(match[3]), code: match[1], target: match[4] }
+          : undefined;
       });
     expect(textResult.code).toBe(1);
     expect(textOrder).toEqual(expectedOrder);

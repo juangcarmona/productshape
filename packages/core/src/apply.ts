@@ -116,7 +116,7 @@ export async function planApply(options: PlanApplyOptions): Promise<ApplyPlan> {
       code: 'PRODUCT028',
       message: `Apply requires status 'approved'; the change is '${change.status ?? 'unknown'}'. Approval is a human product decision, so set it by hand once the change is ready.`,
       file: change.file,
-      artifact: change.id,
+      change: change.id,
       field: 'status',
     });
   }
@@ -145,7 +145,7 @@ export async function planApply(options: PlanApplyOptions): Promise<ApplyPlan> {
         code: 'PRODUCT027',
         message: `Base-revision ${change.baseRevision.slice(0, 12)} could not be resolved to exactly one commit (outside a Git repository, a shallow clone, or an ambiguous or missing revision); rebase the change against a resolvable base-revision`,
         file: change.file,
-        artifact: change.id,
+        change: change.id,
         field: 'base-revision',
       });
     }
@@ -161,8 +161,9 @@ export async function planApply(options: PlanApplyOptions): Promise<ApplyPlan> {
           severity: 'error',
           code: 'PRODUCT027',
           message: `Baseline artifact '${id}' changed since base-revision ${change.baseRevision.slice(0, 12)}; rebase the change explicitly`,
-          file: artifact.file,
-          artifact: id,
+          file: change.file,
+          change: change.id,
+          field: change.operations.modify.includes(id) ? 'operations.modify' : 'operations.remove',
           target: id,
         });
       }

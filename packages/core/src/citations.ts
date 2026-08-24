@@ -34,7 +34,10 @@ export interface CitationRecord {
   anchor?: string;
   /** Repository-relative path of the consumer document containing this citation. */
   source: string;
-  /** 1-based line number in the source document where the citation was found. */
+  /**
+   * One-based point of use: the source-document line for payload forms, or the entry position
+   * within the sidecar's `citations` sequence for the sidecar ledger.
+   */
   line: number;
   /** The form the citation was found in. */
   form: 'inline' | 'marker-block' | 'sidecar-ledger';
@@ -351,6 +354,19 @@ function resolveAnchor(
 }
 
 /**
+ * Contract attribution for a citation diagnostic: the cited ID goes in `target` exactly as
+ * authored (never `artifact`, which resolution alone could establish), and the point of use is
+ * the payload `line` or the sidecar `entry`.
+ */
+function citationAttribution(
+  citation: CitationRecord,
+): Pick<Diagnostic, 'target' | 'line' | 'entry'> {
+  return citation.form === 'sidecar-ledger'
+    ? { target: citation.id, entry: citation.line }
+    : { target: citation.id, line: citation.line };
+}
+
+/**
  * Verify one citation against the loaded model. Computes exactly one status and emits
  * the appropriate diagnostics.
  */
@@ -367,7 +383,7 @@ export function verifyCitation(
       code: codes.invalidCitationDigest,
       message: `Citation of '${citation.id}' has an invalid digest '${citation.digest}'`,
       file: citation.source,
-      artifact: citation.id,
+      ...citationAttribution(citation),
       field: 'digest',
     });
     return { citation, status: 'unresolved', diagnostics };
@@ -381,7 +397,7 @@ export function verifyCitation(
       code: codes.unresolvedCitation,
       message: `Citation target '${citation.id}' does not resolve`,
       file: citation.source,
-      artifact: citation.id,
+      ...citationAttribution(citation),
     });
     return { citation, status: 'unresolved', diagnostics };
   }
@@ -395,7 +411,7 @@ export function verifyCitation(
         code: codes.citationAnchorNotFound,
         message: `Anchor '${citation.anchor}' not found in '${citation.id}'`,
         file: citation.source,
-        artifact: citation.id,
+        ...citationAttribution(citation),
         field: 'anchor',
       });
       return { citation, status: 'unresolved', diagnostics };
@@ -415,7 +431,7 @@ export function verifyCitation(
         code: codes.tamperedCitation,
         message: `Embedded projection of '${citation.id}' differs from canonical content at the recorded digest`,
         file: citation.source,
-        artifact: citation.id,
+        ...citationAttribution(citation),
       });
       return { citation, status: 'tampered', diagnostics };
     }
@@ -428,7 +444,7 @@ export function verifyCitation(
       code: codes.staleCitation,
       message: `Citation of '${citation.id}' is stale: canonical content changed since the citation was recorded`,
       file: citation.source,
-      artifact: citation.id,
+      ...citationAttribution(citation),
     });
     return { citation, status: 'stale', diagnostics };
   }

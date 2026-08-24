@@ -79,7 +79,7 @@ The page SHALL display the source revision of the model it was generated from, p
 
 Identical model content SHALL yield a byte-identical HTML file across runs and platforms. Output SHALL NOT embed timestamps, random values, or environment-dependent content; artifact ordering SHALL be stable; line endings SHALL be normalized.
 
-{pdac:cite id="QR-DETERMINISM-001" digest="sha256:994d01951d76adfe83a6a7a48ae331172c59ece2a0cec7c045df73597ffc38fe"}
+{pdac:cite id="QR-DETERMINISM-001" digest="sha256:222606693286667f7974e3dd8b88e6248ca29ce75cb54c9285cc7aaef2c08da3"}
 
 #### Scenario: Double generation is byte-identical
 
