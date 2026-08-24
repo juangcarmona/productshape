@@ -41,7 +41,7 @@ prodshape cite --id FR-SHORTEN-001 --file docs/product/model/requirements/functi
 prodshape cite --id UC-SHORTEN-001 --anchor S2 --file docs/product/model/use-cases/uc-shorten-001.md
 ```
 
-Three forms are available through `--form`: `inline` (the default, a single line inside prose), `marker-block` (a delimited block carrying an embedded projection of the cited text) and `sidecar-ledger` (a YAML file listing a document's citations). Use whichever suits the document; the verification semantics are identical.
+The default `payload` form emits the exact carrier-independent `pdac:cite id="..." digest="..."` payload. Put it inside the document format's native comment (for Markdown, `<!-- ... -->`) at the point of use. `--form sidecar-ledger` emits the canonical YAML mapping for the adjacent `<consumer>.citations.yml` file. The legacy `inline` option is accepted only as a compatibility alias and is rewritten to the canonical payload; the writer no longer emits brace citations, bare-sequence ledgers or empty marker blocks.
 
 Verify them at any time, and in CI:
 

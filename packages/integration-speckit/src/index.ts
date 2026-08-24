@@ -87,9 +87,9 @@ content digest and an optional verification scenario anchor. Verification report
 citation: current, stale, tampered or unresolved.
 
 To cite: run \`npx prodshape inspect <ID>\` to read the current digest, then
-\`npx prodshape cite --id <ID> --digest <digest>\` to emit the citation record. Place inline
-citations on their own line directly under the text they ground. Never write a citation record by
-hand, and never invent artifact ids or digests.
+\`npx prodshape cite --id <ID> --digest <digest>\` to emit the canonical payload. Wrap it in the
+document's native comment (\`<!-- ... -->\` in Markdown) on its own line directly under the text
+it grounds. Never write a citation record by hand, and never invent artifact ids or digests.
 
 ## Before specifying a feature
 

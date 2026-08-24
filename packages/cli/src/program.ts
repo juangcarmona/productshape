@@ -207,14 +207,14 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .option('--digest <digest>', 'content digest (sha256:<hex>); required unless --file is given')
     .option('--file <path>', 'compute the digest from this file')
     .option('--anchor <anchor>', 'verification scenario id within the target artifact')
-    .option('--form <form>', 'citation form: inline, marker-block, or sidecar-ledger', 'inline')
+    .option('--form <form>', 'citation form: payload or sidecar-ledger', 'payload')
     .action(
       async (options: {
         id: string;
         digest?: string;
         file?: string;
         anchor?: string;
-        form: 'inline' | 'marker-block' | 'sidecar-ledger';
+        form: 'payload' | 'inline' | 'marker-block' | 'sidecar-ledger';
       }) => {
         capture.code = await runCite(io, options);
       },
