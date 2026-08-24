@@ -2,7 +2,7 @@
 id: CHG-INIT-IGNORE-001
 type: product-change
 title: Initialization may extend the repository ignore rules when explicitly asked
-status: proposed
+status: applied
 base-revision: '8d73a5b1b8682d99d2dcd1cf15a0a657ad85a975'
 operations:
   add: []
