@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   buildCitationIndex,
   computeAffectedCitations,
+  emitCitation,
   parseCitations,
   type CitationRecord,
 } from './citations.js';
@@ -76,6 +77,57 @@ describe('YAML sidecar citation parsing', () => {
     );
 
     await expect(parseCitations(unrelated, workDir)).resolves.toEqual([]);
+  });
+});
+
+describe('canonical citation writing', () => {
+  it('emits the exact carrier-independent payload grammar', () => {
+    expect(emitCitation({ id: 'FR-ONE', digest: DIGEST_A, anchor: 'S1', form: 'payload' })).toBe(
+      `pdac:cite id="FR-ONE" digest="${DIGEST_A}" anchor="S1"`,
+    );
+  });
+
+  it('rewrites the legacy inline writer request to the canonical payload', () => {
+    expect(emitCitation({ id: 'FR-ONE', digest: DIGEST_A, form: 'inline' })).toBe(
+      `pdac:cite id="FR-ONE" digest="${DIGEST_A}"`,
+    );
+  });
+
+  it('emits the canonical mapping-form sidecar', () => {
+    expect(
+      emitCitation({ id: 'FR-ONE', digest: DIGEST_A, anchor: 'S1', form: 'sidecar-ledger' }),
+    ).toBe(`citations:\n  - id: FR-ONE\n    digest: ${DIGEST_A}\n    anchor: S1`);
+  });
+
+  it('does not emit an empty marker block or invalid record', () => {
+    expect(() => emitCitation({ id: 'FR-ONE', digest: DIGEST_A, form: 'marker-block' })).toThrow(
+      'whole artifact projection',
+    );
+    expect(() => emitCitation({ id: 'FR-ONE', digest: 'invalid', form: 'payload' })).toThrow(
+      'Invalid citation digest',
+    );
+  });
+});
+
+describe('canonical payload parsing', () => {
+  it('discovers the same payload inside different native comment wrappers', async () => {
+    const consumer = join(workDir, 'consumer.md');
+    await writeFile(
+      consumer,
+      [
+        `<!-- pdac:cite id="FR-ONE" digest="${DIGEST_A}" -->`,
+        `# pdac:cite id="FR-TWO" digest="${DIGEST_B}" anchor="S2"`,
+        `// pdac:cite id="BR-THREE" digest="${DIGEST_A}"`,
+      ].join('\n'),
+      'utf8',
+    );
+
+    const citations = await parseCitations(consumer, workDir);
+    expect(citations.map(({ id, anchor, line }) => ({ id, anchor, line }))).toEqual([
+      { id: 'FR-ONE', anchor: undefined, line: 1 },
+      { id: 'FR-TWO', anchor: 'S2', line: 2 },
+      { id: 'BR-THREE', anchor: undefined, line: 3 },
+    ]);
   });
 });
 

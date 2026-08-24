@@ -5,7 +5,7 @@ export interface CiteCommandOptions {
   id: string;
   digest?: string;
   anchor?: string;
-  form: 'inline' | 'marker-block' | 'sidecar-ledger';
+  form: 'payload' | 'inline' | 'marker-block' | 'sidecar-ledger';
   file?: string;
 }
 
@@ -35,6 +35,11 @@ export async function runCite(io: CliIo, options: CiteCommandOptions): Promise<n
     form: options.form,
   };
 
-  io.out(emitCitation(citeOptions));
+  try {
+    io.out(emitCitation(citeOptions));
+  } catch (error) {
+    io.err(`error: ${error instanceof Error ? error.message : String(error)}`);
+    return exitCodes.invalidInvocation;
+  }
   return exitCodes.success;
 }

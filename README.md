@@ -148,10 +148,11 @@ A delivery on March 1 may be refunded through March 31.
 None.
 EOF
 
+printf '# Refund delivery specification\n' > openspec/refund.md
 npx --no-install prodshape cite \
   --id BR-REFUND-001 \
   --file docs/product/model/business-rules/br-refund-001.md \
-  --form sidecar-ledger > openspec/refund.citations.yaml
+  --form sidecar-ledger > openspec/refund.citations.yml
 npx --no-install prodshape citations verify
 
 node --input-type=module -e "

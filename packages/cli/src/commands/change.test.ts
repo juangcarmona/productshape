@@ -726,6 +726,45 @@ describe('change apply', () => {
     ).rejects.toThrow();
   });
 
+  it('applies the exact CHG-INITIAL no-baseline sentinel without resolving it through Git', async () => {
+    const dir = await writeChange({
+      id: 'CHG-INITIAL',
+      status: 'approved',
+      add: ['BR-PROBE-001'],
+      baseRevision: '0000000',
+    });
+    await proposeArtifact(
+      dir,
+      'business-rules',
+      'BR-PROBE-001',
+      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN-001'),
+    );
+
+    const result = await run(['change', 'apply', 'CHG-INITIAL', '--dry-run']);
+    expect(result.code).toBe(0);
+    expect(result.err.join('\n')).not.toContain('PRODUCT027');
+    expect(result.out.join('\n')).toContain('Dry run');
+  });
+
+  it('treats 0000000 on a non-initial add-only change as an ordinary unresolved revision', async () => {
+    const dir = await writeChange({
+      status: 'approved',
+      add: ['BR-PROBE-001'],
+      baseRevision: '0000000',
+    });
+    await proposeArtifact(
+      dir,
+      'business-rules',
+      'BR-PROBE-001',
+      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN-001'),
+    );
+
+    const result = await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run']);
+    expect(result.code).toBe(1);
+    expect(result.err.join('\n').match(/PRODUCT027/g)).toHaveLength(1);
+    expect(result.err.join('\n')).toContain('could not be resolved');
+  });
+
   it('orders PRODUCT027 before later-file overlay diagnostics on a dry-run refusal', async () => {
     const dir = await writeChange({
       status: 'approved',

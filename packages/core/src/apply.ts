@@ -122,10 +122,10 @@ export async function planApply(options: PlanApplyOptions): Promise<ApplyPlan> {
   }
 
   // Baseline-revision compatibility: artifacts the change touches must be unchanged since
-  // base-revision (PRODUCT027). The comparison is by normalized content digest, so a commit that
-  // touched a file without changing its content is not drift. `operations.add` is not checked: an
-  // addition has no baseline artifact to compare against, and an ID that appeared in the baseline
-  // since is already PRODUCT020 from the revalidated overlay.
+  // base-revision (PRODUCT027). The exact CHG-INITIAL/0000000 pair is the no-baseline sentinel;
+  // it is never resolved and has no baseline against which drift could be checked. Every other
+  // value, including 0000000 on another change and longer all-zero strings, is an ordinary Git
+  // revision and must resolve even when the change is add-only.
   //
   // Fail-closed on any Git failure, but say which of two distinct things went wrong. A `git show`
   // failure and "no baseline exists" both used to collapse into "changed since base-revision",
@@ -135,24 +135,24 @@ export async function planApply(options: PlanApplyOptions): Promise<ApplyPlan> {
   //     ambiguous/missing revision. No comparison was possible, so none is claimed.
   //   - resolved: the per-artifact digest comparison runs, and a mismatch (including the file
   //     being absent at that revision) is reported as actual content drift.
-  // (A future reserved base-revision sentinel for "no baseline exists" is proposed in spec#46 and
-  // not yet accepted; if it lands, CHG-INITIAL changes carrying it would skip this resolution step
-  // entirely, but that is a separate, not-yet-decided case and is not handled here.)
   const baselineById = new Map(baseline.filter((a) => a.id).map((a) => [a.id as string, a]));
-  if (change.baseRevision) {
+  const noBaselineSentinel = change.id === 'CHG-INITIAL' && change.baseRevision === '0000000';
+  if (change.baseRevision && !noBaselineSentinel) {
     const baseRevisionResolved = await gitRevisionExists(repoRoot, change.baseRevision);
+    if (!baseRevisionResolved) {
+      diagnostics.push({
+        severity: 'error',
+        code: 'PRODUCT027',
+        message: `Base-revision ${change.baseRevision.slice(0, 12)} could not be resolved to exactly one commit (outside a Git repository, a shallow clone, or an ambiguous or missing revision); rebase the change against a resolvable base-revision`,
+        file: change.file,
+        artifact: change.id,
+        field: 'base-revision',
+      });
+    }
     for (const id of [...change.operations.modify, ...change.operations.remove].sort()) {
       const artifact = baselineById.get(id);
       if (!artifact) continue; // PRODUCT021/022 already reported by validation.
       if (!baseRevisionResolved) {
-        diagnostics.push({
-          severity: 'error',
-          code: 'PRODUCT027',
-          message: `Base-revision ${change.baseRevision.slice(0, 12)} could not be resolved to a commit (outside a Git repository, a shallow clone, or an ambiguous or missing revision), so baseline artifact '${id}' could not be checked for drift; rebase the change against a resolvable base-revision`,
-          file: artifact.file,
-          artifact: id,
-          target: id,
-        });
         continue;
       }
       const historical = await gitShowBytes(repoRoot, change.baseRevision, artifact.file);

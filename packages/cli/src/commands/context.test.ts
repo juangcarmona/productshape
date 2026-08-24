@@ -41,18 +41,18 @@ afterEach(async () => {
 });
 
 describe('context', () => {
-  it('renders the requested artifact with a ready inline citation and the related listing', async () => {
+  it('renders the requested artifact with a canonical comment payload and the related listing', async () => {
     const result = await run(['context', 'FR-SHORTEN-001']);
     expect(result.code).toBe(0);
     const text = result.out.join('\n');
 
     expect(text).toContain('# Product context: FR-SHORTEN-001');
-    expect(text).toMatch(/\{pdac:cite id="FR-SHORTEN-001" digest="sha256:[0-9a-f]{64}"\}/);
+    expect(text).toMatch(/<!-- pdac:cite id="FR-SHORTEN-001" digest="sha256:[0-9a-f]{64}" -->/);
     // The projection announces itself as derived and non-canonical.
     expect(text).toContain('Derived, non-canonical projection');
     // The structural neighborhood is listed with its own ready citations.
     expect(text).toContain('## Related artifacts');
-    expect(text).toMatch(/UC-SHORTEN-001.*\{pdac:cite id="UC-SHORTEN-001"/);
+    expect(text).toMatch(/UC-SHORTEN-001.*<!-- pdac:cite id="UC-SHORTEN-001"/);
   });
 
   it('emits citations that verify as current against the model they were generated from', async () => {

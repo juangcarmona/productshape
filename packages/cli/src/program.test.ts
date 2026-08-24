@@ -39,6 +39,38 @@ afterAll(async () => {
   await rm(workDir, { recursive: true, force: true });
 });
 
+describe('prodshape cite', () => {
+  const digest = 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+
+  it('emits the canonical payload by default and canonical mapping sidecar on request', async () => {
+    const payload = await run(['cite', '--id', 'FR-ONE', '--digest', digest], workDir);
+    expect(payload).toEqual({
+      code: 0,
+      err: [],
+      out: [`pdac:cite id="FR-ONE" digest="${digest}"`],
+    });
+
+    const sidecar = await run(
+      ['cite', '--id', 'FR-ONE', '--digest', digest, '--anchor', 'S1', '--form', 'sidecar-ledger'],
+      workDir,
+    );
+    expect(sidecar.code).toBe(0);
+    expect(sidecar.out.join('\n')).toBe(
+      `citations:\n  - id: FR-ONE\n    digest: ${digest}\n    anchor: S1`,
+    );
+  });
+
+  it('refuses to emit an unverifiable empty marker block', async () => {
+    const result = await run(
+      ['cite', '--id', 'FR-ONE', '--digest', digest, '--form', 'marker-block'],
+      workDir,
+    );
+    expect(result.code).toBe(2);
+    expect(result.err.join('\n')).toContain('whole artifact projection');
+    expect(result.out).toEqual([]);
+  });
+});
+
 describe('prodshape validate', () => {
   it('--version prints the CLI package version and exits 0', async () => {
     const packageJson = JSON.parse(

@@ -5,9 +5,9 @@
  * an agent prompt file, a design doc) to canonical product text. It records the target
  * artifact `id`, a content `digest`, and an optional `anchor` (a verification scenario id).
  *
- * This module parses citations in three forms, resolves them against a loaded product model,
- * recomputes digests, and reports one status per citation: `current`, `stale`, `tampered` or
- * `unresolved`.
+ * This module parses the canonical comment payload and adjacent mapping-form sidecar, preserves
+ * legacy readers as compatibility extensions, resolves citations against a loaded product model,
+ * and reports one status per citation: `current`, `stale`, `tampered` or `unresolved`.
  *
  * Diagnostics: PRODUCT042 (invalid digest), PRODUCT060 (unresolved), PRODUCT061 (stale),
  * PRODUCT062 (tampered), PRODUCT063 (anchor not found).
@@ -28,7 +28,7 @@ export type CitationStatus = 'current' | 'stale' | 'tampered' | 'unresolved';
 export interface CitationRecord {
   /** Target artifact stable ID (e.g. `FR-X`). */
   id: string;
-  /** Recorded content digest of the cited canonical text (`sha256:<hex>`). */
+  /** Recorded whole-artifact digest of the cited canonical text (`sha256:<hex>`). */
   digest: string;
   /** Optional anchor: a verification scenario id within the target artifact. */
   anchor?: string;
@@ -110,17 +110,19 @@ function extractMarkerBlockCitations(content: string, source: string): CitationR
     if (!id || !digest) continue;
 
     let embeddedText: string | undefined;
+    let closeFound = false;
     for (let j = i + 1; j < lines.length; j++) {
       const closeLine = lines[j];
       if (closeLine === undefined) continue;
       MARKER_CLOSE.lastIndex = 0;
       if (MARKER_CLOSE.test(closeLine)) {
-        if (j > i + 1) {
-          embeddedText = lines.slice(i + 1, j).join('\n');
-        }
+        closeFound = true;
+        // The line ending immediately before the closing marker belongs to the projection.
+        embeddedText = `${lines.slice(i + 1, j).join('\n')}\n`;
         break;
       }
     }
+    if (!closeFound) continue;
 
     records.push({
       id,
@@ -175,13 +177,45 @@ function extractInlineCitations(content: string, source: string): CitationRecord
   return records;
 }
 
+// --- Canonical carrier-independent payload parsing --------------------------
+
+const PAYLOAD_PATTERN =
+  /pdac:cite[ \t]+id="([^"\\\r\n]+)"[ \t]+digest="([^"\\\r\n]+)"(?:[ \t]+anchor="([^"\\\r\n]+)")?/g;
+
+/** Parse the canonical payload wherever the consumer format carries it in a native comment. */
+function extractPayloadCitations(content: string, source: string): CitationRecord[] {
+  const records: CitationRecord[] = [];
+  const lines = content.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line === undefined) continue;
+    PAYLOAD_PATTERN.lastIndex = 0;
+    for (const match of line.matchAll(PAYLOAD_PATTERN)) {
+      // The brace form remains a reader extension and is parsed by its compatibility path below.
+      // Skipping it here prevents one legacy record from being counted twice.
+      if (match.index !== undefined && line[match.index - 1] === '{') continue;
+      const id = match[1];
+      const digest = match[2];
+      if (id === undefined || digest === undefined) continue;
+      records.push({
+        id,
+        digest,
+        anchor: match[3],
+        source,
+        line: i + 1,
+        form: 'inline',
+      });
+    }
+  }
+  return records;
+}
+
 // --- YAML sidecar ledger parsing ---------------------------------------------
 
 /**
- * Sidecar-ledger citations live in a YAML file (conventionally `citations.yaml`) alongside
- * the consumer document. Until the specification normalizes one serialization, the ledger may
- * be either a bare array of citation records or a mapping whose `citations` property is that
- * array:
+ * Canonical sidecar-ledger citations live in `<consumer-stem>.citations.yml` alongside the
+ * consumer document and use a mapping whose `citations` property is the record array. The former
+ * bare array remains accepted only as a non-conforming reader extension:
  *
  * Bare array:
  *
@@ -267,9 +301,14 @@ export async function parseCitations(
     }
   }
 
-  // Markdown and YAML files can both carry inline and marker-block citations.
+  // Markdown and YAML files can both carry canonical payloads, compatibility inline citations,
+  // and embedded marker blocks. An embedded opening line also contains a payload, so keep only
+  // the marker-block record for that line.
   records.push(...extractInlineCitations(content, source));
-  records.push(...extractMarkerBlockCitations(content, source));
+  const markerBlocks = extractMarkerBlockCitations(content, source);
+  const markerLines = new Set(markerBlocks.map((record) => record.line));
+  records.push(...extractPayloadCitations(content, source).filter((r) => !markerLines.has(r.line)));
+  records.push(...markerBlocks);
 
   return records;
 }
@@ -479,21 +518,36 @@ export interface CiteOptions {
   id: string;
   digest: string;
   anchor?: string;
-  form: 'inline' | 'marker-block' | 'sidecar-ledger';
+  /** `inline` is a compatibility alias that is rewritten to the canonical payload form. */
+  form: 'payload' | 'inline' | 'marker-block' | 'sidecar-ledger';
 }
 
 /** Emit a citation record in the requested form. */
 export function emitCitation(options: CiteOptions): string {
+  const artifactId = /^(ACT|JRN|UC|BR|TERM|BC|FR|QR|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$/;
+  const anchorId = /^[A-Z0-9]+(-[A-Z0-9]+)*$/;
+  if (!artifactId.test(options.id)) throw new Error(`Invalid citation artifact id '${options.id}'`);
+  if (!DIGEST_PATTERN.test(options.digest))
+    throw new Error(`Invalid citation digest '${options.digest}'`);
+  if (options.anchor !== undefined && !anchorId.test(options.anchor)) {
+    throw new Error(`Invalid citation anchor '${options.anchor}'`);
+  }
+
   const attrs = [`id="${options.id}"`, `digest="${options.digest}"`];
   if (options.anchor) attrs.push(`anchor="${options.anchor}"`);
   const attrString = attrs.join(' ');
 
   switch (options.form) {
+    case 'payload':
     case 'inline':
-      return `{pdac:cite ${attrString}}`;
+      return `pdac:cite ${attrString}`;
     case 'marker-block':
-      return `<!-- pdac:cite ${attrString} -->\n<!-- /pdac:cite -->`;
+      throw new Error(
+        'marker-block writing requires the whole artifact projection; emit a payload and let the caller supply its native comment wrapper',
+      );
     case 'sidecar-ledger':
-      return `- id: ${options.id}\n  digest: ${options.digest}${options.anchor ? `\n  anchor: ${options.anchor}` : ''}`;
+      return `citations:\n  - id: ${options.id}\n    digest: ${options.digest}${options.anchor ? `\n    anchor: ${options.anchor}` : ''}`;
+    default:
+      throw new Error(`Invalid citation form '${String(options.form)}'`);
   }
 }

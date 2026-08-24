@@ -30,7 +30,7 @@ function toEntry(artifact: LoadedArtifact): ContextEntry {
     ...(artifact.title !== undefined ? { title: artifact.title } : {}),
     file: artifact.file,
     digest: artifact.digest,
-    citation: emitCitation({ id: artifact.id ?? '', digest: artifact.digest, form: 'inline' }),
+    citation: `<!-- ${emitCitation({ id: artifact.id ?? '', digest: artifact.digest, form: 'payload' })} -->`,
   };
 }
 
