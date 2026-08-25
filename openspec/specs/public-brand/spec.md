@@ -1,3 +1,5 @@
+<!-- pdac-scope: cited -->
+
 # public-brand Specification
 
 ## Purpose

@@ -7,16 +7,18 @@
  * document into exactly one effective scope state:
  *
  * - `bound`: the document declares a Product Definition dependency and carries citations.
- * - `exempt`: a human explicitly declared the document has no product-semantic dependency.
- * - `unclassified`: neither binding nor exemption is declared — a failure.
+ * - `exempt`: a human explicitly declared the document has no product-semantic dependency,
+ *   with a non-empty human-authored reason.
+ * - `unclassified`: no explicit declaration — a failure.
  *
- * Binding and exemption are human declarations. A citation placed in the document is the binding
- * declaration; exemption is never inferred from missing citations. Enumerating the population is
- * what stops a verifier from passing vacuously: zero discovered citations over enumerated
- * documents is a set of failures, not a success.
+ * Binding and exemption are explicit human declarations, exactly one per current document.
+ * A citation alone is not a declaration, so it never implicitly binds, and exemption is never
+ * inferred from missing citations, file names, generated content or AI assessment. Enumerating
+ * the population is what stops a verifier from passing vacuously: zero discovered citations over
+ * enumerated documents is a set of failures, not a success.
  *
  * Diagnostics: PRODUCT064 (unclassified document), PRODUCT065 (bound document with zero
- * citations), PRODUCT066 (invalid scope declaration).
+ * citations), PRODUCT066 (invalid exemption).
  */
 import { readFile } from 'node:fs/promises';
 import { parseCitations } from './citations.js';
@@ -68,6 +70,8 @@ export interface ConsumerDocumentEnumeration {
 export interface SddIntegrationProvider {
   /** Provider identifier as used by `prodshape citations verify --provider <name>`. */
   readonly name: string;
+  /** Integration version, reported by population-aware verification alongside the identity. */
+  readonly version: string;
   /** Whether the provider's native workspace exists at the repository root. */
   detectWorkspace(repoRoot: string): Promise<boolean>;
   /**
@@ -92,36 +96,51 @@ export interface ScopeDeclaration {
   raw: string;
   /** The recognized value, or null when the declaration is invalid. */
   value: ScopeDeclarationValue | null;
+  /** The human-authored exemption reason, or null when none was written. */
+  reason: string | null;
   /** The document path the declaration was found in. */
   source: string;
 }
 
-/** Match `pdac-scope: <value>` as an HTML comment anywhere in the document. */
-const SCOPE_COMMENT_PATTERN = /<!--\s*pdac-scope:\s*(\S+)\s*-->/;
+/** Match `pdac-scope: <value>` with an optional exemption reason as an HTML comment. */
+const SCOPE_COMMENT_PATTERN = /<!--\s*pdac-scope:\s*(\S+)(?:\s+reason="([^"]*)")?\s*-->/;
 
 /**
  * Scan a consumer document for a `pdac-scope` declaration, in YAML frontmatter
- * (`pdac-scope: none`) or as an HTML comment (`<!-- pdac-scope: none -->`).
+ * (`pdac-scope: none` with `pdac-scope-reason: <text>`) or as an HTML comment
+ * (`<!-- pdac-scope: none reason="<text>" -->`).
  *
  * Returns `null` when no declaration is present. A declaration with an unrecognized value is
- * returned with `value: null` so classification can report it (PRODUCT066) instead of silently
+ * returned with `value: null` so classification can name the bad value instead of silently
  * treating the document as undeclared.
  */
 export function extractScopeDeclaration(content: string, source: string): ScopeDeclaration | null {
+  const recognize = (raw: string): ScopeDeclarationValue | null =>
+    raw === 'none' || raw === 'cited' ? raw : null;
+
   // YAML frontmatter: a leading `---` block containing a `pdac-scope:` key.
   const frontmatterMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (frontmatterMatch?.[1]) {
-    const fmLine = frontmatterMatch[1].split('\n').find((l) => /^\s*pdac-scope\s*:\s*\S+/.test(l));
+    const lines = frontmatterMatch[1].split('\n');
+    const fmLine = lines.find((l) => /^\s*pdac-scope\s*:\s*\S+/.test(l));
     if (fmLine) {
       const raw = fmLine.replace(/^\s*pdac-scope\s*:\s*/, '').trim();
-      return { raw, value: raw === 'none' || raw === 'cited' ? raw : null, source };
+      const reasonLine = lines.find((l) => /^\s*pdac-scope-reason\s*:\s*\S+/.test(l));
+      const reason = reasonLine
+        ? reasonLine
+            .replace(/^\s*pdac-scope-reason\s*:\s*/, '')
+            .trim()
+            .replace(/^['"]|['"]$/g, '')
+        : '';
+      return { raw, value: recognize(raw), reason: reason.length > 0 ? reason : null, source };
     }
   }
 
   const comment = content.match(SCOPE_COMMENT_PATTERN);
   if (comment?.[1]) {
     const raw = comment[1];
-    return { raw, value: raw === 'none' || raw === 'cited' ? raw : null, source };
+    const reason = comment[2]?.trim() ?? '';
+    return { raw, value: recognize(raw), reason: reason.length > 0 ? reason : null, source };
   }
 
   return null;
@@ -143,13 +162,14 @@ export interface ClassifiedConsumerDocument {
 /**
  * Classify one consumer document from its declaration and parsed citations.
  *
- * - An explicit `pdac-scope: none` makes the document `exempt`; if it nevertheless carries
- *   citations the exemption is invalid (PRODUCT066) — a human must resolve the contradiction.
+ * - Every current document needs exactly one explicit declaration. No declaration, or one with
+ *   an unrecognized value, leaves the document `unclassified` (PRODUCT064); citations alone
+ *   never bind, so a tool cannot infer the declaration from them.
+ * - An explicit `pdac-scope: none` makes the document `exempt`. An exemption carries a
+ *   non-empty human-authored reason and no citations; violating either or both is one
+ *   PRODUCT066 per document, never two.
  * - An explicit `pdac-scope: cited` makes the document `bound`; with zero citations it fails
  *   (PRODUCT065) rather than passing as if nothing were expected.
- * - Without a declaration, at least one citation binds the document (the citation itself is the
- *   human's dependency declaration); zero citations leave it `unclassified` (PRODUCT064).
- * - An unrecognized `pdac-scope` value is reported (PRODUCT066) and classifies nothing.
  */
 export function classifyConsumerDocument(
   document: ConsumerDocument,
@@ -158,23 +178,32 @@ export function classifyConsumerDocument(
 ): ClassifiedConsumerDocument {
   const diagnostics: Diagnostic[] = [];
 
-  if (declaration && declaration.value === null) {
+  if (!declaration || declaration.value === null) {
+    const detail = !declaration
+      ? citations.length > 0
+        ? `carries ${citations.length} citation(s) but no scope declaration`
+        : 'has no scope declaration'
+      : `declares the unrecognized pdac-scope value '${declaration.raw}'`;
     diagnostics.push({
       severity: 'error',
-      code: codes.invalidScopeDeclaration,
-      message: `Invalid pdac-scope value '${declaration.raw}': expected 'none' (exempt) or 'cited' (bound)`,
+      code: codes.missingScopeDeclaration,
+      message: `Consumer document is unclassified: it ${detail}; declare 'pdac-scope: cited' (bound) or 'pdac-scope: none' with a reason (exempt)`,
       file: document.path,
       field: 'scope',
     });
     return { document, state: 'unclassified', declaration, citations, diagnostics };
   }
 
-  if (declaration?.value === 'none') {
-    if (citations.length > 0) {
+  if (declaration.value === 'none') {
+    const defects: string[] = [];
+    if (!declaration.reason) defects.push('has no exemption reason');
+    if (citations.length > 0) defects.push(`carries ${citations.length} citation(s)`);
+    if (defects.length > 0) {
+      // One PRODUCT066 per invalid exempt document, even when both conditions hold at once.
       diagnostics.push({
         severity: 'error',
         code: codes.invalidScopeDeclaration,
-        message: `Document declares 'pdac-scope: none' but carries ${citations.length} citation(s); remove the exemption or the citations`,
+        message: `Invalid exemption: the document ${defects.join(' and ')}; an exemption carries a non-empty human-authored reason and no citations`,
         file: document.path,
         field: 'scope',
       });
@@ -182,31 +211,16 @@ export function classifyConsumerDocument(
     return { document, state: 'exempt', declaration, citations, diagnostics };
   }
 
-  if (declaration?.value === 'cited') {
-    if (citations.length === 0) {
-      diagnostics.push({
-        severity: 'error',
-        code: codes.emptyBoundDocument,
-        message: `Document declares 'pdac-scope: cited' but carries no citations; a bound document must cite the canonical text it depends on`,
-        file: document.path,
-        field: 'scope',
-      });
-    }
-    return { document, state: 'bound', declaration, citations, diagnostics };
+  if (citations.length === 0) {
+    diagnostics.push({
+      severity: 'error',
+      code: codes.emptyBoundDocument,
+      message: `Document declares 'pdac-scope: cited' but carries no citations; a bound document must cite the canonical text it depends on`,
+      file: document.path,
+      field: 'scope',
+    });
   }
-
-  if (citations.length > 0) {
-    return { document, state: 'bound', declaration, citations, diagnostics };
-  }
-
-  diagnostics.push({
-    severity: 'error',
-    code: codes.missingScopeDeclaration,
-    message: `Consumer document is unclassified: declare 'pdac-scope: none' (exempt) or bind it with at least one PDaC citation`,
-    file: document.path,
-    field: 'scope',
-  });
-  return { document, state: 'unclassified', declaration, citations, diagnostics };
+  return { document, state: 'bound', declaration, citations, diagnostics };
 }
 
 /**

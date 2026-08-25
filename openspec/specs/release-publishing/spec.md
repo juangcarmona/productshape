@@ -1,3 +1,5 @@
+<!-- pdac-scope: cited -->
+
 # release-publishing Specification
 
 ## Purpose

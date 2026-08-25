@@ -93,11 +93,19 @@ async function driveCitationLifecycle(dir: string): Promise<void> {
   await mkdir(featureDir, { recursive: true });
   await writeFile(
     join(featureDir, 'spec.md'),
-    `# Feature: shorten a URL\n\nThe system issues a resolving short link for every accepted URL.\n{pdac:cite id="FR-SHORTEN-001" digest="${digest}"}\n`,
+    `<!-- pdac-scope: cited -->\n\n# Feature: shorten a URL\n\nThe system issues a resolving short link for every accepted URL.\n{pdac:cite id="FR-SHORTEN-001" digest="${digest}"}\n`,
     'utf8',
   );
-  await writeFile(join(featureDir, 'plan.md'), '---\npdac-scope: none\n---\n# Plan\n', 'utf8');
-  await writeFile(join(featureDir, 'tasks.md'), '---\npdac-scope: none\n---\n# Tasks\n', 'utf8');
+  await writeFile(
+    join(featureDir, 'plan.md'),
+    '---\npdac-scope: none\npdac-scope-reason: plan carries no product semantics\n---\n# Plan\n',
+    'utf8',
+  );
+  await writeFile(
+    join(featureDir, 'tasks.md'),
+    '---\npdac-scope: none\npdac-scope-reason: task list carries no product semantics\n---\n# Tasks\n',
+    'utf8',
+  );
 
   // Current: the population is bound or exempt and the citation verifies.
   const current = await run(

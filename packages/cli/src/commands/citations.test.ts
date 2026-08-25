@@ -357,15 +357,16 @@ This is not the canonical requirement text.
     expect(payload.diagnostics.map(({ file, code }) => ({ file, code }))).toEqual([
       { file: 'openspec/', code: 'PRODUCT069' },
       { file: 'openspec/changes/a-change/proposal.md', code: 'PRODUCT064' },
+      { file: 'openspec/changes/z-change/proposal.md', code: 'PRODUCT064' },
       { file: 'openspec/changes/z-change/proposal.md', code: 'PRODUCT060' },
     ]);
     expect(payload.summary).toMatchObject({
       totalDocuments: 2,
-      bound: 1,
-      unclassified: 1,
+      bound: 0,
+      unclassified: 2,
       totalCitations: 1,
       unresolved: 1,
-      errors: 3,
+      errors: 4,
       warnings: 0,
     });
   });
@@ -523,12 +524,21 @@ describe('citations verify --provider openspec (scope model)', () => {
       'proposal.md',
       `---\npdac-scope: cited\n---\n\n## Why\n\n{pdac:cite id="FR-SHORTEN-001" digest="${digest}"}\n`,
     );
-    await writeChangeDoc('add-x', 'design.md', `---\npdac-scope: none\n---\n\n## Design\n`);
-    await writeChangeDoc('add-x', 'tasks.md', `<!-- pdac-scope: none -->\n## Tasks\n`);
+    await writeChangeDoc(
+      'add-x',
+      'design.md',
+      `---\npdac-scope: none\npdac-scope-reason: design notes only\n---\n\n## Design\n`,
+    );
+    await writeChangeDoc(
+      'add-x',
+      'tasks.md',
+      `<!-- pdac-scope: none reason="task list without product semantics" -->\n## Tasks\n`,
+    );
 
     const { code, payload } = await verifyJson();
     expect(code).toBe(0);
     expect(payload.schema).toBe('product-definition-as-code/citations-provider/v1alpha1');
+    expect(typeof payload.integrationVersion).toBe('string');
     expect(payload.summary).toMatchObject({
       totalDocuments: 3,
       bound: 1,
@@ -551,8 +561,11 @@ describe('citations verify --provider openspec (scope model)', () => {
     expect(text.code).toBe(0);
     expect(text.out).toContain('exempt\topenspec/changes/add-x/design.md [add-x]\t0 citation(s)');
     expect(
-      text.out.some((l) => l.includes('3 document(s): 1 bound, 2 exempt, 0 unclassified')),
+      text.out.some((l) =>
+        l.includes('3 document(s), 3 current: 1 bound, 2 exempt, 0 unclassified'),
+      ),
     ).toBe(true);
+    expect(text.out.some((l) => /^provider openspec \d+\.\d+\.\d+/.test(l))).toBe(true);
   });
 
   it('turns a bound document stale when the cited canonical text changes, blocking under warnings-as-errors', async () => {
@@ -561,7 +574,7 @@ describe('citations verify --provider openspec (scope model)', () => {
     await writeChangeDoc(
       'add-x',
       'proposal.md',
-      `## Why\n\n{pdac:cite id="FR-SHORTEN-001" digest="${digest}"}\n`,
+      `<!-- pdac-scope: cited -->\n\n## Why\n\n{pdac:cite id="FR-SHORTEN-001" digest="${digest}"}\n`,
     );
 
     const green = await verifyJson();
@@ -618,9 +631,10 @@ describe('citations verify --provider openspec (scope model)', () => {
     ]);
   });
 
-  it('fails an invalid scope declaration (PRODUCT066) and an exemption contradicted by citations', async () => {
+  it('fails an unrecognized declaration as unclassified and an invalid exemption with one PRODUCT066', async () => {
     await installFakeOpenSpec();
     await writeChangeDoc('add-x', 'proposal.md', `---\npdac-scope: maybe\n---\n\n## Why\n`);
+    // Both invalid-exemption conditions at once: no reason and a citation. One PRODUCT066.
     await writeChangeDoc(
       'add-x',
       'design.md',
@@ -629,10 +643,11 @@ describe('citations verify --provider openspec (scope model)', () => {
 
     const { code, payload } = await verifyJson();
     expect(code).toBe(1);
-    const codes075 = payload.diagnostics.filter((d) => d.code === 'PRODUCT066');
-    expect(codes075.map((d) => d.file).sort()).toEqual([
-      'openspec/changes/add-x/design.md',
-      'openspec/changes/add-x/proposal.md',
+    expect(payload.diagnostics.filter((d) => d.code === 'PRODUCT066')).toEqual([
+      expect.objectContaining({ file: 'openspec/changes/add-x/design.md', field: 'scope' }),
+    ]);
+    expect(payload.diagnostics.filter((d) => d.code === 'PRODUCT064')).toEqual([
+      expect.objectContaining({ file: 'openspec/changes/add-x/proposal.md' }),
     ]);
     const byPath = new Map(payload.documents.map((d) => [d.path, d]));
     expect(byPath.get('openspec/changes/add-x/proposal.md')?.state).toBe('unclassified');
@@ -663,12 +678,16 @@ describe('citations verify --provider openspec (scope model)', () => {
     expect(payload.summary).toMatchObject({ totalDocuments: 0, totalCitations: 0, errors: 0 });
   });
 
-  it('verifies archived changes as warnings by default; --include-archived applies the full gate', async () => {
+  it('excludes archived changes by default; --include-archived reports their defects as warnings', async () => {
     await installFakeOpenSpec();
-    await writeChangeDoc('add-x', 'proposal.md', `---\npdac-scope: none\n---\n\n## Why\n`);
-    // Archived history: an unclassified document and an unresolved citation. History is
-    // immutable, so by default both are visible but neither blocks (FR-OPENSPEC-001).
-    await writeChangeDoc('archive/old-x', 'proposal.md', `## Why\n\nOld unclassified doc.\n`);
+    await writeChangeDoc(
+      'add-x',
+      'proposal.md',
+      `---\npdac-scope: none\npdac-scope-reason: no product semantics\n---\n\n## Why\n`,
+    );
+    // Archived history: an undeclared document and an unresolved citation. The contract excludes
+    // archived material from the default population entirely.
+    await writeChangeDoc('archive/old-x', 'proposal.md', `## Why\n\nOld undeclared doc.\n`);
     await writeChangeDoc(
       'archive/old-x',
       'design.md',
@@ -679,11 +698,25 @@ describe('citations verify --provider openspec (scope model)', () => {
     expect(byDefault.code).toBe(0);
     expect(byDefault.payload.documents.map((d) => d.path)).toEqual([
       'openspec/changes/add-x/proposal.md',
+    ]);
+    expect(byDefault.payload.diagnostics).toEqual([]);
+    expect(byDefault.payload.summary).toMatchObject({
+      totalDocuments: 1,
+      currentDocuments: 1,
+      errors: 0,
+      warnings: 0,
+    });
+
+    // Explicit inclusion verifies the citations history carries, at warning severity; the scope
+    // gate stays current-only, so the undeclared archived document produces no PRODUCT064.
+    const withArchived = await verifyJson('--include-archived');
+    expect(withArchived.code).toBe(0);
+    expect(withArchived.payload.documents.map((d) => d.path)).toEqual([
+      'openspec/changes/add-x/proposal.md',
       'openspec/changes/archive/old-x/proposal.md',
       'openspec/changes/archive/old-x/design.md',
     ]);
-    // The archived defect is reported — as a warning naming the archived document.
-    expect(byDefault.payload.diagnostics).toEqual([
+    expect(withArchived.payload.diagnostics).toEqual([
       expect.objectContaining({
         code: 'PRODUCT060',
         severity: 'warning',
@@ -691,43 +724,22 @@ describe('citations verify --provider openspec (scope model)', () => {
         message: expect.stringContaining('(archived consumer document)'),
       }),
     ]);
-    // The scope gate does not reach archived history by default: no PRODUCT064 for old-x.
-    expect(byDefault.payload.summary).toMatchObject({ errors: 0, warnings: 1 });
-
-    const withArchived = await verifyJson('--include-archived');
-    expect(withArchived.code).toBe(1);
-    const archived = withArchived.payload.documents.filter((d) => d.archived);
-    expect(archived).toEqual([
-      expect.objectContaining({
-        path: 'openspec/changes/archive/old-x/proposal.md',
-        state: 'unclassified',
-      }),
-      expect.objectContaining({
-        path: 'openspec/changes/archive/old-x/design.md',
-        state: 'bound',
-      }),
-    ]);
-    // Full gate: the unclassified archived document and the unresolved citation are errors.
-    expect(withArchived.payload.diagnostics).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          code: 'PRODUCT064',
-          severity: 'error',
-          file: 'openspec/changes/archive/old-x/proposal.md',
-        }),
-        expect.objectContaining({
-          code: 'PRODUCT060',
-          severity: 'error',
-          file: 'openspec/changes/archive/old-x/design.md',
-        }),
-      ]),
-    );
+    expect(withArchived.payload.summary).toMatchObject({
+      totalDocuments: 3,
+      currentDocuments: 1,
+      errors: 0,
+      warnings: 1,
+    });
   });
 
   it('produces deterministic JSON output across runs', async () => {
     await installFakeOpenSpec();
     await writeChangeDoc('add-x', 'proposal.md', `---\npdac-scope: cited\n---\n\n## Why\n`);
-    await writeChangeDoc('add-x', 'design.md', `---\npdac-scope: none\n---\n\n## Design\n`);
+    await writeChangeDoc(
+      'add-x',
+      'design.md',
+      `---\npdac-scope: none\npdac-scope-reason: design notes only\n---\n\n## Design\n`,
+    );
 
     const first = await verifyJson();
     const second = await verifyJson();

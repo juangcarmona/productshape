@@ -53,11 +53,11 @@ Provider-aware verification enumerates the expected OpenSpec consumer documents 
 
 | State | Meaning | Gate |
 | --- | --- | --- |
-| `bound` | The document carries at least one citation, or declares `pdac-scope: cited`. | Every citation is verified; a bound document with zero citations fails (`PRODUCT065`). |
-| `exempt` | A human declared `pdac-scope: none` because the document has no product-semantic dependency. | Passes, but stays visible in the results. |
+| `bound` | The document declares `pdac-scope: cited` and carries at least one citation. | Every citation is verified; a bound document with zero citations fails (`PRODUCT065`). |
+| `exempt` | A human declared `pdac-scope: none` with a non-empty reason (`pdac-scope-reason: <why>` in frontmatter, or `<!-- pdac-scope: none reason="<why>" -->`). | Passes, but stays visible in the results. |
 | `unclassified` | Neither binding nor exemption is declared. | Fails (`PRODUCT064`). |
 
-Binding and exemption are human declarations — never declare `pdac-scope: none` just because citations are missing (an exemption contradicted by citations in the same document fails with `PRODUCT066`). Because the population is enumerated, discovering zero citations over current documents is a set of failures, never a vacuous pass. This establishes citation grounding and population coverage; it does not prove semantic completeness or implementation correctness — those remain review questions.
+Binding and exemption are explicit human declarations: citations alone never bind (an undeclared document is unclassified, `PRODUCT064`), and never declare `pdac-scope: none` just because citations are missing (an exemption without a reason or contradicted by citations fails with `PRODUCT066`). Archived changes are excluded by default; `--include-archived` verifies the citations history carries, reported as warnings. Because the population is enumerated, discovering zero citations over current documents is a set of failures, never a vacuous pass. This establishes citation grounding and population coverage; it does not prove semantic completeness or implementation correctness — those remain review questions.
 
 Citations in archived changes are checked too, but everything found there — staleness included — is reported as a warning, because archived history cannot be edited: a problem there is information for the reader, not something anyone can fix in place. The scope gate does not apply to archived documents by default. Pass `--include-archived` to apply the full gate to them as well.
 

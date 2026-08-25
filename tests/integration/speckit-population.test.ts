@@ -100,8 +100,8 @@ describe('enumerateSpecKitDocuments', () => {
 
   it('composes with core classification: bound, exempt and unclassified per document', async () => {
     await feature('001-first', {
-      'spec.md': `# Spec\n\n{pdac:cite id="FR-X" digest="sha256:1111111111111111111111111111111111111111111111111111111111111111"}\n`,
-      'plan.md': `---\npdac-scope: none\n---\n# Plan\n`,
+      'spec.md': `<!-- pdac-scope: cited -->\n\n# Spec\n\n{pdac:cite id="FR-X" digest="sha256:1111111111111111111111111111111111111111111111111111111111111111"}\n`,
+      'plan.md': `---\npdac-scope: none\npdac-scope-reason: plan carries no product semantics\n---\n# Plan\n`,
       'tasks.md': '# Tasks with no declaration\n',
     });
 

@@ -1,3 +1,5 @@
+<!-- pdac-scope: cited -->
+
 # product-graph Specification
 
 ## Purpose

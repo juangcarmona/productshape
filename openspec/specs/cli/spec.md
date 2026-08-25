@@ -1,5 +1,7 @@
 # cli Specification
 
+<!-- pdac-scope: cited -->
+
 ## Purpose
 
 The prodshape command-line surface: commands, options, exit codes and output contracts.

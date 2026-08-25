@@ -1,5 +1,7 @@
 # distribution Specification
 
+<!-- pdac-scope: cited -->
+
 ## Purpose
 
 Repository scaffolding, managed provider assets, the installation lock and the doctor health check.
@@ -28,7 +30,7 @@ Repository scaffolding, managed provider assets, the installation lock and the d
 
 {pdac:cite id="UC-INIT-001" digest="sha256:63e9c430be5d559c0c9101ba2bc0184ed31960be4839269d29e49434a5963a72"}
 
-{pdac:cite id="FR-OPENSPEC-001" digest="sha256:3768f980394827bef9f3e7de65b2b04d3984d3f129b729929db0d1d29944b523"}
+{pdac:cite id="FR-OPENSPEC-001" digest="sha256:11d4986f2a7277679cd3871f664c92136f541a9c1941b60edf9b4b70d62b7837"}
 
 #### Scenario: Existing workspace wired in one run
 

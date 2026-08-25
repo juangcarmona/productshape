@@ -1,3 +1,5 @@
+<!-- pdac-scope: cited -->
+
 # structural-validation Specification
 
 ## Purpose

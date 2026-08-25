@@ -1,3 +1,5 @@
+<!-- pdac-scope: cited -->
+
 # self-hosted-product-model Specification
 
 ## Purpose

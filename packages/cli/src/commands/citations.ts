@@ -138,16 +138,17 @@ async function scanCitationTarget(
  * citations. This is the backward-compatible mode.
  *
  * With `--provider <name>`: uses that SDD integration provider to enumerate the expected
- * native consumer documents, distinguishes current from archived material, and enforces
- * the bound/exempt/unclassified scope model. Every enumerated current document has exactly one
- * effective state: `bound` (declares Product Definition dependency and carries citations),
- * `exempt` (a human declared `pdac-scope: none`), or `unclassified` (neither — a FAILURE). A
- * bound document with zero citations also fails, so a workspace can never pass vacuously
+ * native consumer documents and enforces the bound/exempt/unclassified scope model. Every
+ * enumerated current document carries exactly one explicit declaration: `bound`
+ * (`pdac-scope: cited` with at least one citation), or `exempt` (`pdac-scope: none` with a
+ * non-empty human-authored reason and no citations). Citations alone never bind; a document
+ * without a declaration is unclassified — a FAILURE — so a workspace can never pass vacuously
  * because no citations were discovered.
  *
- * Archived material is enumerated and its citations are verified, but every defect found in an
- * archived document is reported as a warning and the scope gate does not apply to it: history is
- * immutable, so its drift is information rather than a defect anyone can repair in place
+ * Archived material is excluded by default per the citation contract. `--include-archived`
+ * enumerates it and verifies the citations it carries, with every defect reported as a warning
+ * and the scope gate still current-only: history is immutable, so its drift is information
+ * rather than a defect anyone can repair in place
  * (FR-OPENSPEC-001). `--include-archived` holds archived documents to the full gate instead.
  *
  * Diagnostics: PRODUCT042 (invalid digest), PRODUCT060 (unresolved), PRODUCT061 (stale),
@@ -321,14 +322,14 @@ async function runProviderVerify(
 ): Promise<number> {
   const allDiagnostics: Diagnostic[] = [];
   let root = provider.name;
-  // Archived material is always in the verified population; the flag decides whether it is held
-  // to the full gate (scope declarations and error severities) or reported as warnings only.
-  const archivedGated = options.includeArchived ?? false;
+  // The contract excludes archived or historical documents by default; --include-archived adds
+  // them to the verified population, with their citation defects reported as warnings.
+  const includeArchived = options.includeArchived ?? false;
   let classified: Awaited<ReturnType<typeof classifyConsumerDocuments>> = [];
 
   if (await provider.detectWorkspace(repoRoot)) {
     const enumeration = await provider.enumerateDocuments(repoRoot, {
-      includeArchived: true,
+      includeArchived,
       change: options.change,
     });
     root = enumeration.root;
@@ -354,9 +355,7 @@ async function runProviderVerify(
     verifications.push(...documentVerifications);
     const diagnostics = documentVerifications.flatMap((v) => v.diagnostics);
     citationDiagnostics.push(
-      ...(c.document.archived && !archivedGated
-        ? diagnostics.map(softenArchivedDiagnostic)
-        : diagnostics),
+      ...(c.document.archived ? diagnostics.map(softenArchivedDiagnostic) : diagnostics),
     );
   }
 
@@ -372,13 +371,11 @@ async function runProviderVerify(
 
   // Collect every diagnostic before finalizing the public result. Citation status order remains
   // untouched; only the complete diagnostic set is ordered at this boundary. The scope gate
-  // (bound/exempt/unclassified) applies to current documents; archived documents carry it only
-  // under --include-archived, because binding and exemption are declarations made while a
-  // document is authored, and history cannot honestly make them retroactively.
+  // (bound/exempt/unclassified) applies to current documents only, even when archived material
+  // is included: binding and exemption are declarations made while a document is authored, and
+  // history cannot honestly make them retroactively.
   allDiagnostics.push(
-    ...classified
-      .filter((c) => !c.document.archived || archivedGated)
-      .flatMap((c) => c.diagnostics),
+    ...classified.filter((c) => !c.document.archived).flatMap((c) => c.diagnostics),
   );
   allDiagnostics.push(...citationDiagnostics);
 
@@ -395,10 +392,11 @@ async function runProviderVerify(
       stableJson({
         schema: 'product-definition-as-code/citations-provider/v1alpha1',
         provider: provider.name,
+        integrationVersion: provider.version,
         root,
-        // Mirrors the --include-archived flag: archived material is always enumerated and
-        // verified; true means it was also held to the full gate.
-        includeArchived: archivedGated,
+        // Mirrors the --include-archived flag: archived material joins the verified population
+        // only on request, with its citation defects reported as warnings.
+        includeArchived,
         documents: documentReports,
         citations: verifications.map((v) => ({
           id: v.citation.id,
@@ -412,6 +410,7 @@ async function runProviderVerify(
         diagnostics,
         summary: {
           totalDocuments: documentReports.length,
+          currentDocuments: documentReports.filter((d) => !d.archived).length,
           bound: countState('bound'),
           exempt: countState('exempt'),
           unclassified: countState('unclassified'),
@@ -426,6 +425,7 @@ async function runProviderVerify(
       }).trimEnd(),
     );
   } else {
+    io.out(`provider ${provider.name} ${provider.version}, root ${root}`);
     // Per-document effective scope state.
     for (const doc of documentReports) {
       const archiveTag = doc.archived ? ' (archived)' : '';
@@ -441,7 +441,7 @@ async function runProviderVerify(
       io.out(formatDiagnosticLine(diagnostic));
     }
     io.out(
-      `${documentReports.length} document(s): ${countState('bound')} bound, ${countState('exempt')} exempt, ${countState('unclassified')} unclassified`,
+      `${documentReports.length} document(s), ${documentReports.filter((d) => !d.archived).length} current: ${countState('bound')} bound, ${countState('exempt')} exempt, ${countState('unclassified')} unclassified`,
     );
     io.out(
       `${verifications.length} citation(s): ${verifications.filter((v) => v.status === 'current').length} current, ${verifications.filter((v) => v.status === 'stale').length} stale, ${verifications.filter((v) => v.status === 'tampered').length} tampered, ${verifications.filter((v) => v.status === 'unresolved').length} unresolved`,

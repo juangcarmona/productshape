@@ -1,5 +1,7 @@
 # normative-specification Specification
 
+<!-- pdac-scope: cited -->
+
 ## Purpose
 
 The normative specification documents that fix the methodology's artifact, relationship and citation contracts.

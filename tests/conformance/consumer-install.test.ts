@@ -830,7 +830,7 @@ describe.skipIf(!hasOpenspec)('OpenSpec citation enforcement (packed binary)', (
     const digest = (JSON.parse(inspect.stdout) as { digest: string }).digest;
     await writeFile(
       join(changeDir, 'proposal.md'),
-      `## Why\n\nImplements link shortening.\n\n{pdac:cite id="FR-SHORTEN-001" digest="${digest}"}\n`,
+      `<!-- pdac-scope: cited -->\n\n## Why\n\nImplements link shortening.\n\n{pdac:cite id="FR-SHORTEN-001" digest="${digest}"}\n`,
       'utf8',
     );
     await writeFile(join(changeDir, 'tasks.md'), '## Tasks\n\n- [ ] Implement\n', 'utf8');
@@ -853,7 +853,7 @@ describe.skipIf(!hasOpenspec)('OpenSpec citation enforcement (packed binary)', (
     // 3. A human declares the exemption; the population is fully bound or exempt and passes.
     await writeFile(
       join(changeDir, 'tasks.md'),
-      '<!-- pdac-scope: none -->\n## Tasks\n\n- [ ] Implement\n',
+      '<!-- pdac-scope: none reason="task list carries no product semantics" -->\n## Tasks\n\n- [ ] Implement\n',
       'utf8',
     );
     const green = await prodshape(['citations', 'verify', '--provider', 'openspec']);
@@ -897,7 +897,7 @@ describe.skipIf(!hasOpenspec)('OpenSpec citation enforcement (packed binary)', (
     const renewedDigest = (JSON.parse(renewed.stdout) as { digest: string }).digest;
     await writeFile(
       join(changeDir, 'proposal.md'),
-      `## Why\n\nImplements link shortening.\n\n{pdac:cite id="FR-SHORTEN-001" digest="${renewedDigest}"}\n`,
+      `<!-- pdac-scope: cited -->\n\n## Why\n\nImplements link shortening.\n\n{pdac:cite id="FR-SHORTEN-001" digest="${renewedDigest}"}\n`,
       'utf8',
     );
     const recovered = await prodshape(['citations', 'verify', '--provider', 'openspec']);

@@ -1,5 +1,7 @@
 # artifact-parsing Specification
 
+<!-- pdac-scope: cited -->
+
 ## Purpose
 
 The parsing contract that turns canonical Markdown-plus-frontmatter files into typed product artifacts.

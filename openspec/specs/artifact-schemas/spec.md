@@ -1,5 +1,7 @@
 # artifact-schemas Specification
 
+<!-- pdac-scope: cited -->
+
 ## Purpose
 
 The JSON Schema contracts every product artifact kind and Product Change document validates against.
