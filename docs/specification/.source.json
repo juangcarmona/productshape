@@ -1,6 +1,6 @@
 {
   "repo": "product-definition-as-code/spec",
   "path": "spec/validation.md",
-  "ref": "89b43b78a6547c9dea709b6d261212c2fe4f3c4b",
+  "ref": "9ff12dff4f50ae153bd79c66d8366ba2c37e9116",
   "note": "The normative diagnostic registry lives in the spec repository. This pin records the exact revision the local validation.md tables are checked against; `.spec-registry.json` is the vendored extract, so the check runs offline. Run `pnpm registry:sync` to re-extract after bumping `ref`. Keep `ref` in step with PDAC_SPEC_SHA in .github/workflows/pdac-conformance.yml."
 }

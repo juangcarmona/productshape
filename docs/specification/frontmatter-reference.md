@@ -272,7 +272,7 @@ The nine artifact types of the current product model.
 | `type` | yes | const | `product-change` |  |
 | `title` | yes | string |  | Must not be empty. |
 | `status` | yes | enum | `draft`, `proposed`, `approved`, `applied`, `rejected`, `superseded` | Lifecycle of a product change. |
-| `base-revision` | yes | string | `^[0-9a-f]{7,40}$` | The baseline Git revision this change was created against. |
+| `base-revision` | yes | string | `^[0-9a-f]{7,40}$` | The baseline Git revision this change was created against. The exact string 0000000 is the no-baseline sentinel only for CHG-INITIAL. |
 | `operations` | yes | object |  |  |
 | `operations.add` | yes | array of string |  |  |
 | `operations.add[]` | yes | string | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$` | Any artifact of the current product model. |

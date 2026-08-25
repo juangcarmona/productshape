@@ -117,16 +117,11 @@ async function specRegistry(): Promise<SpecRegistry> {
  * (see the `bound`/`exempt`/`unclassified` model) and OpenSpec workspace resolution.
  *
  * The list is explicit so adding a code outside the normative registry is a deliberate act with a
- * reviewer, not a silent divergence. `PRODUCT064`-`PRODUCT066` implement the numbering spec RFC
- * 0042 (draft) allocates for consumer binding and leave this list when that RFC's registry lands
- * in the pinned spec; `PRODUCT067`-`PRODUCT069` are OpenSpec adapter mechanics the kernel leaves
- * to implementations. The reserved `PRODUCT070`-`PRODUCT079` band is not occupied.
+ * reviewer, not a silent divergence. The finished registry now defines `PRODUCT064`-`PRODUCT067` normatively,
+ * so only the OpenSpec adapter mechanics remain implementation-specific. The reserved
+ * `PRODUCT070`-`PRODUCT079` band is not occupied.
  */
 const implementationSpecificCodes: Record<string, 'error' | 'warning'> = {
-  PRODUCT064: 'error',
-  PRODUCT065: 'error',
-  PRODUCT066: 'error',
-  PRODUCT067: 'error',
   PRODUCT068: 'error',
   PRODUCT069: 'error',
 };

@@ -15,7 +15,7 @@
       "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/productChangeStatus"
     },
     "base-revision": {
-      "description": "The baseline Git revision this change was created against.",
+      "description": "The baseline Git revision this change was created against. The exact string 0000000 is the no-baseline sentinel only for CHG-INITIAL.",
       "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/gitRevision"
     },
     "operations": {
