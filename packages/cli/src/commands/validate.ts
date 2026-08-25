@@ -19,7 +19,7 @@ export interface ValidateOptions {
 }
 
 export async function runValidate(io: CliIo, options: ValidateOptions): Promise<number> {
-  const repo = await resolveRepository(io, options.root);
+  const repo = await resolveRepository(io, options.root, options.format);
   const { graph, diagnostics } = await validateBaseline(repo);
   const blocking = blockingDiagnostics(diagnostics, repo.config.validation['warnings-as-errors']);
 

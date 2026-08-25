@@ -163,7 +163,8 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .description('Validate live Product Changes as overlays on the baseline')
     .argument('[id]', 'change ID (e.g. CHG-ADD-CITE-001); omit to validate every live change')
     .option('--format <format>', 'output format: text or json', 'text')
-    .action(async (id: string | undefined, options: { format: 'text' | 'json' }) => {
+    .option('--root <dir>', 'product repository root (default: discovered upward from cwd)')
+    .action(async (id: string | undefined, options: { format: 'text' | 'json'; root?: string }) => {
       capture.code = await runChangeValidate(io, id, options);
     });
   change

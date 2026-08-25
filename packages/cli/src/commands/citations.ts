@@ -161,7 +161,7 @@ export async function runCitationsVerify(
   target: string | undefined,
   options: CitationsVerifyOptions,
 ): Promise<number> {
-  const repo = await resolveRepository(io, options.root);
+  const repo = await resolveRepository(io, options.root, options.format);
   const { artifacts } = await validateBaseline(repo);
 
   if (options.provider !== undefined) {

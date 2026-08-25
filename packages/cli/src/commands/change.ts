@@ -26,6 +26,8 @@ import { exitCodes, formatDiagnosticLine, resolveRepository, type CliIo } from '
 
 export interface ChangeFormatOptions {
   format?: 'text' | 'json';
+  /** Explicit repository root; replaces upward discovery from the working directory. */
+  root?: string;
 }
 
 /** Load every live change under changes/active. Archived changes are inert and never loaded. */
@@ -65,7 +67,7 @@ export async function runChangeValidate(
   id: string | undefined,
   options: ChangeFormatOptions,
 ): Promise<number> {
-  const repo = await resolveRepository(io);
+  const repo = await resolveRepository(io, options.root, options.format);
   const baseline = await validateBaseline(repo);
   const changes = await loadActiveChanges(repo);
 

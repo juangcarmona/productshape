@@ -115,6 +115,36 @@ describe('prodshape validate', () => {
     }
   });
 
+  it('change validate accepts --root like validate: conformance fixtures run in a plain working copy', async () => {
+    const elsewhere = await mkdtemp(join(tmpdir(), 'product-definition-elsewhere-'));
+    try {
+      const result = await run(['change', 'validate', '--root', workDir], elsewhere);
+      expect(result.code).toBe(0);
+    } finally {
+      await rm(elsewhere, { recursive: true, force: true });
+    }
+  });
+
+  it('reports an invalid configuration as JSON on stdout under --format json', async () => {
+    // The configuration contract promises PRODUCT050 in machine-readable output too; a runner
+    // parsing stdout must not be left with an empty document and a text-only stderr.
+    const broken = await mkdtemp(join(tmpdir(), 'product-definition-brokencfg-'));
+    try {
+      await mkdir(join(broken, '.product'), { recursive: true });
+      await writeFile(join(broken, '.product', 'config.yaml'), 'version: v9\n', 'utf8');
+      const result = await run(['validate', '--root', broken, '--format', 'json'], workDir);
+      expect(result.code).toBe(2);
+      const parsed = JSON.parse(result.out.join('\n')) as {
+        diagnostics: { code: string; field?: string }[];
+      };
+      expect(parsed.diagnostics).toEqual([
+        expect.objectContaining({ code: 'PRODUCT050', field: 'version' }),
+      ]);
+    } finally {
+      await rm(broken, { recursive: true, force: true });
+    }
+  });
+
   it('--root keeps examples/minimal directly runnable as a self-contained repository', async () => {
     const result = await run(
       ['validate', '--root', join(repoRoot, 'examples', 'minimal')],

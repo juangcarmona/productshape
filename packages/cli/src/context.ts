@@ -1,6 +1,11 @@
 import { access } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { findRepositoryRoot, openRepository, type ProductRepository } from '@prodshape/core';
+import {
+  findRepositoryRoot,
+  openRepository,
+  stableJson,
+  type ProductRepository,
+} from '@prodshape/core';
 
 /** Documented exit codes (docs/specification/validation.md). */
 export const exitCodes = {
@@ -50,6 +55,7 @@ async function exists(path: string): Promise<boolean> {
 export async function resolveRepository(
   io: CliIo,
   explicitRoot?: string,
+  format?: 'text' | 'json' | 'markdown' | 'summary' | 'mermaid' | 'html',
 ): Promise<ProductRepository> {
   let root: string | undefined;
   if (explicitRoot === undefined) {
@@ -75,6 +81,20 @@ export async function resolveRepository(
   }
   const repo = await openRepository(root);
   if (repo.configDiagnostics.some((d) => d.severity === 'error')) {
+    // The configuration contract promises the diagnostic in machine-readable JSON too, so a JSON
+    // invocation gets the envelope on stdout before the invalid-invocation exit.
+    if (format === 'json') {
+      io.out(
+        stableJson({
+          schema: 'product-definition-as-code/diagnostics/v1alpha1',
+          diagnostics: repo.configDiagnostics,
+          summary: {
+            errors: repo.configDiagnostics.filter((d) => d.severity === 'error').length,
+            warnings: repo.configDiagnostics.filter((d) => d.severity === 'warning').length,
+          },
+        }).trimEnd(),
+      );
+    }
     for (const diagnostic of repo.configDiagnostics) {
       io.err(formatDiagnosticLine(diagnostic));
     }

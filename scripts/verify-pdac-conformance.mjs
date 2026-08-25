@@ -502,9 +502,9 @@ async function main() {
   );
 
   const implementationArgv = [
-    [options.prodshape, 'validate'],
-    [options.prodshape, 'change', 'validate'],
-    [options.prodshape, 'citations', 'verify', '.'],
+    [options.prodshape, 'validate', '--root', '.'],
+    [options.prodshape, 'change', 'validate', '--root', '.'],
+    [options.prodshape, 'citations', 'verify', '.', '--root', '.'],
   ];
   const negativeArgv = implementationArgv.slice(0, 2);
   const implementationCommands = implementationArgv.map(runnerCommand);
