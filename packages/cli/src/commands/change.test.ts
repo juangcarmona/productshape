@@ -1017,7 +1017,11 @@ describe('change apply', () => {
     await approvedChange();
     const digest = await modelDigest('business-rules/br-valid-url-001.md');
     // Written in reverse of the expected order, so the order below is sorted, not incidental.
-    await writeConsumer('specs/citations.yaml', `- id: BR-VALID-URL-001\n  digest: ${digest}\n`);
+    await writeConsumer('specs/ledger.md', '# Ledger consumer\n');
+    await writeConsumer(
+      'specs/ledger.citations.yaml',
+      `- id: BR-VALID-URL-001\n  digest: ${digest}\n`,
+    );
     await writeConsumer(
       'specs/b.md',
       `{pdac:cite id="BR-VALID-URL-001" digest="${digest}"}\n\n{pdac:cite id="BR-VALID-URL-001" digest="${digest}"}\n`,
@@ -1035,12 +1039,12 @@ describe('change apply', () => {
       { source: 'specs/a.md', line: 1, form: 'inline' },
       { source: 'specs/b.md', line: 1, form: 'inline' },
       { source: 'specs/b.md', line: 3, form: 'inline' },
-      { source: 'specs/citations.yaml', line: 1, form: 'sidecar-ledger' },
+      { source: 'specs/ledger.citations.yaml', line: 1, form: 'sidecar-ledger' },
     ]);
 
     // The sidecar's point of use is its ledger entry, not a file line.
     const text = (await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run'])).out.join('\n');
-    expect(text).toContain('specs/citations.yaml entry 1\tBR-VALID-URL-001\tstale');
+    expect(text).toContain('specs/ledger.citations.yaml entry 1\tBR-VALID-URL-001\tstale');
   });
 });
 

@@ -153,10 +153,14 @@ export interface ClassifiedConsumerDocument {
   state: ConsumerScopeState;
   /** The human declaration found in the document, or null when none is present. */
   declaration: ScopeDeclaration | null;
-  /** The citation records parsed from the document. */
+  /** The citation records parsed from the document (and its adjacent sidecar). */
   citations: CitationRecord[];
   /** Scope diagnostics for this document (empty when the state gate passes). */
   diagnostics: Diagnostic[];
+  /** Carrier diagnostics (PRODUCT067) from parsing this document's citations. */
+  carrierDiagnostics: Diagnostic[];
+  /** True when a carrier conflict suppresses this document's citation statuses. */
+  suppressed: boolean;
 }
 
 /**
@@ -176,6 +180,8 @@ export function classifyConsumerDocument(
   declaration: ScopeDeclaration | null,
   citations: CitationRecord[],
 ): ClassifiedConsumerDocument {
+  const carrierDiagnostics: Diagnostic[] = [];
+  const suppressed = false;
   const diagnostics: Diagnostic[] = [];
 
   if (!declaration || declaration.value === null) {
@@ -191,7 +197,15 @@ export function classifyConsumerDocument(
       file: document.path,
       field: 'scope',
     });
-    return { document, state: 'unclassified', declaration, citations, diagnostics };
+    return {
+      document,
+      state: 'unclassified',
+      declaration,
+      citations,
+      diagnostics,
+      carrierDiagnostics,
+      suppressed,
+    };
   }
 
   if (declaration.value === 'none') {
@@ -208,7 +222,15 @@ export function classifyConsumerDocument(
         field: 'scope',
       });
     }
-    return { document, state: 'exempt', declaration, citations, diagnostics };
+    return {
+      document,
+      state: 'exempt',
+      declaration,
+      citations,
+      diagnostics,
+      carrierDiagnostics,
+      suppressed,
+    };
   }
 
   if (citations.length === 0) {
@@ -220,7 +242,15 @@ export function classifyConsumerDocument(
       field: 'scope',
     });
   }
-  return { document, state: 'bound', declaration, citations, diagnostics };
+  return {
+    document,
+    state: 'bound',
+    declaration,
+    citations,
+    diagnostics,
+    carrierDiagnostics,
+    suppressed,
+  };
 }
 
 /**
@@ -235,8 +265,12 @@ export async function classifyConsumerDocuments(
   for (const document of documents) {
     const content = await readFile(document.absolutePath, 'utf8');
     const declaration = extractScopeDeclaration(content, document.path);
-    const citations = await parseCitations(document.absolutePath, repoRoot);
-    classified.push(classifyConsumerDocument(document, declaration, citations));
+    const parsed = await parseCitations(document.absolutePath, repoRoot);
+    classified.push({
+      ...classifyConsumerDocument(document, declaration, parsed.records),
+      carrierDiagnostics: parsed.diagnostics,
+      suppressed: parsed.suppressed,
+    });
   }
   return classified;
 }

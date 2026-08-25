@@ -43,6 +43,8 @@ prodshape cite --id UC-SHORTEN-001 --anchor S2 --file docs/product/model/use-cas
 
 The default `payload` form emits the exact carrier-independent `pdac:cite id="..." digest="..."` payload. Put it inside the document format's native comment (for Markdown, `<!-- ... -->`) at the point of use. `--form sidecar-ledger` emits the canonical YAML mapping for the adjacent `<consumer>.citations.yml` file. The legacy `inline` option is accepted only as a compatibility alias and is rewritten to the canonical payload; the writer no longer emits brace citations, bare-sequence ledgers or empty marker blocks.
 
+The reader enforces the carriers (`PRODUCT067`): a document uses payloads or its adjacent sidecar, never both; the payload grammar is closed (attributes `id`, `digest`, optional `anchor`, in that order, double-quoted, nothing else), so a typo in a citation is reported at its line instead of silently reading as prose; a sidecar must be the canonical mapping of closed records and its consumer file must exist. Legacy brace citations and bare-sequence ledgers remain readable as non-conforming extensions.
+
 Verify them at any time, and in CI:
 
 ```bash

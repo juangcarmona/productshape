@@ -41,6 +41,10 @@ async function scaffoldTemplates(): Promise<void> {
   }
 }
 
+async function parsedRecords(absolutePath: string, repoRoot: string) {
+  return (await parseCitations(absolutePath, repoRoot)).records;
+}
+
 describe('template block merge mechanics', () => {
   it('appends the block preserving user content, idempotently, and strips it back out', () => {
     const managed = MANAGED_TEMPLATES[0]!;
@@ -80,7 +84,7 @@ describe('block safety: an unfilled block never classifies or cites', () => {
       const path = join(workDir, 'probe.md');
       await writeFile(path, document, 'utf8');
 
-      expect(await parseCitations(path, workDir), managed.relative).toEqual([]);
+      expect(await parsedRecords(path, workDir), managed.relative).toEqual([]);
       expect(extractScopeDeclaration(document, 'probe.md'), managed.relative).toBeNull();
       expect(
         document.split('\n').some((l) => /^\s*<!--\s*pdac-drift\b/.test(l)),

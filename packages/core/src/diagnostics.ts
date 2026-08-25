@@ -48,7 +48,7 @@ export const codes = {
   tamperedCitation: 'PRODUCT062',
   citationAnchorNotFound: 'PRODUCT063',
   missingScopeDeclaration: 'PRODUCT064',
-  unsupportedOpenSpecStore: 'PRODUCT067',
+  malformedCitationCarrier: 'PRODUCT067',
   openSpecRootUnresolved: 'PRODUCT068',
   openSpecCliMissing: 'PRODUCT069',
   emptyBoundDocument: 'PRODUCT065',

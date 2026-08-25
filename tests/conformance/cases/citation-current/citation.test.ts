@@ -29,7 +29,7 @@ describe('citation contract for the citation-current test case', () => {
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
-    const citations = await parseCitations(consumerPath, repoRoot);
+    const { records: citations } = await parseCitations(consumerPath, repoRoot);
     expect(citations).toHaveLength(1);
     expect(citations[0].form).toBe('inline');
 
@@ -51,7 +51,7 @@ describe('citation contract for the citation-current test case', () => {
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
-    const citations = await parseCitations(consumerPath, repoRoot);
+    const { records: citations } = await parseCitations(consumerPath, repoRoot);
     const verifications = verifyCitations(citations, artifacts);
     expect(verifications[0].status).toBe('stale');
     expect(verifications[0].diagnostics.map((d) => d.code)).toContain('PRODUCT061');
@@ -65,7 +65,7 @@ describe('citation contract for the citation-current test case', () => {
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
-    const citations = await parseCitations(consumerPath, repoRoot);
+    const { records: citations } = await parseCitations(consumerPath, repoRoot);
     const verifications = verifyCitations(citations, artifacts);
     expect(verifications[0].status).toBe('unresolved');
     expect(verifications[0].diagnostics.map((d) => d.code)).toContain('PRODUCT060');
@@ -82,7 +82,7 @@ describe('citation contract for the citation-current test case', () => {
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
-    const citations = await parseCitations(consumerPath, repoRoot);
+    const { records: citations } = await parseCitations(consumerPath, repoRoot);
     const verifications = verifyCitations(citations, artifacts);
     expect(verifications[0].status).toBe('unresolved');
     expect(verifications[0].diagnostics.map((d) => d.code)).toContain('PRODUCT063');
@@ -99,7 +99,7 @@ describe('citation contract for the citation-current test case', () => {
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
-    const citations = await parseCitations(consumerPath, repoRoot);
+    const { records: citations } = await parseCitations(consumerPath, repoRoot);
     const verifications = verifyCitations(citations, artifacts);
     expect(verifications[0].status).toBe('current');
     expect(verifications[0].diagnostics).toEqual([]);
@@ -118,7 +118,7 @@ The applicant MUST provide availability information.
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
-    const citations = await parseCitations(consumerPath, repoRoot);
+    const { records: citations } = await parseCitations(consumerPath, repoRoot);
     expect(citations).toHaveLength(1);
     expect(citations[0].form).toBe('marker-block');
     expect(citations[0].embeddedText).toBeDefined();
@@ -133,11 +133,11 @@ The applicant MUST provide availability information.
     const consumerContent = `- id: FR-AVAILABILITY-001
   digest: ${digest}
   anchor: S1`;
-    const consumerPath = join(caseDir, 'citations.yaml');
+    const consumerPath = join(caseDir, 'ledger.citations.yaml');
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
-    const citations = await parseCitations(consumerPath, repoRoot);
+    const { records: citations } = await parseCitations(consumerPath, repoRoot);
     expect(citations).toHaveLength(1);
     expect(citations[0].form).toBe('sidecar-ledger');
 
@@ -159,7 +159,7 @@ This is NOT the canonical text.
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
-    const citations = await parseCitations(consumerPath, repoRoot);
+    const { records: citations } = await parseCitations(consumerPath, repoRoot);
     const verifications = verifyCitations(citations, artifacts);
     expect(verifications[0].status).toBe('tampered');
     expect(verifications[0].diagnostics.map((d) => d.code)).toContain('PRODUCT062');
@@ -181,7 +181,7 @@ This is NOT the canonical text.
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
-    const citations = await parseCitations(consumerPath, repoRoot);
+    const { records: citations } = await parseCitations(consumerPath, repoRoot);
     const verifications = verifyCitations(citations, artifacts);
     expect(verifications[0].status).toBe('tampered');
     const codes = verifications[0].diagnostics.map((d) => d.code);
@@ -196,7 +196,7 @@ This is NOT the canonical text.
     const { writeFile } = await import('node:fs/promises');
     await writeFile(consumerPath, consumerContent, 'utf8');
 
-    const citations = await parseCitations(consumerPath, repoRoot);
+    const { records: citations } = await parseCitations(consumerPath, repoRoot);
     const verifications = verifyCitations(citations, artifacts);
     expect(verifications[0].status).toBe('unresolved');
     expect(verifications[0].diagnostics.map((d) => d.code)).toContain('PRODUCT042');

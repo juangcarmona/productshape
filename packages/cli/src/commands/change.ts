@@ -424,7 +424,7 @@ export async function runChangeApply(
     (entry) => entry.id,
   );
   const affected = computeAffectedCitations(
-    await scanCitations(repo.root, repo.root),
+    (await scanCitations(repo.root, repo.root)).records,
     changedIds,
     appliedArtifacts(baseline.artifacts, change),
   );
