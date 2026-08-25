@@ -10,6 +10,7 @@
  * convention is therefore the authoritative population, not a degraded fallback, and no
  * CLI-missing diagnostic applies.
  */
+import { readFileSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 import type {
@@ -110,8 +111,16 @@ export async function enumerateSpecKitDocuments(
  * The Spec Kit implementation of the SDD integration-provider contract.
  * `prodshape citations verify --provider speckit` verifies the population this enumerates.
  */
+/** The integration version, read once from this package's own manifest. */
+const integrationVersion = (
+  JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as {
+    version: string;
+  }
+).version;
+
 export const specKitProvider: SddIntegrationProvider = {
   name: 'speckit',
+  version: integrationVersion,
   detectWorkspace: isSpecKitWorkspace,
   enumerateDocuments: enumerateSpecKitDocuments,
 };

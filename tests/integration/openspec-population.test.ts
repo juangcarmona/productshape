@@ -34,25 +34,47 @@ describe('extractScopeDeclaration', () => {
   it('detects pdac-scope: none in YAML frontmatter', () => {
     const content = `---\ntitle: Test\npdac-scope: none\n---\n\n# Body\n`;
     const result = extractScopeDeclaration(content, 'doc.md');
-    expect(result).toEqual({ raw: 'none', value: 'none', source: 'doc.md' });
+    expect(result).toEqual({ raw: 'none', value: 'none', reason: null, source: 'doc.md' });
+  });
+
+  it('reads the exemption reason from YAML frontmatter', () => {
+    const content = `---\npdac-scope: none\npdac-scope-reason: tooling notes with no product semantics\n---\n\n# Body\n`;
+    const result = extractScopeDeclaration(content, 'doc.md');
+    expect(result).toEqual({
+      raw: 'none',
+      value: 'none',
+      reason: 'tooling notes with no product semantics',
+      source: 'doc.md',
+    });
   });
 
   it('detects pdac-scope: cited in YAML frontmatter', () => {
     const content = `---\npdac-scope: cited\n---\n\n# Body\n`;
     const result = extractScopeDeclaration(content, 'doc.md');
-    expect(result).toEqual({ raw: 'cited', value: 'cited', source: 'doc.md' });
+    expect(result).toEqual({ raw: 'cited', value: 'cited', reason: null, source: 'doc.md' });
   });
 
   it('detects pdac-scope: none as an HTML comment', () => {
     const content = `# Some doc\n\n<!-- pdac-scope: none -->\n\nText.`;
     const result = extractScopeDeclaration(content, 'doc.md');
-    expect(result).toEqual({ raw: 'none', value: 'none', source: 'doc.md' });
+    expect(result).toEqual({ raw: 'none', value: 'none', reason: null, source: 'doc.md' });
+  });
+
+  it('reads the exemption reason from the HTML comment form', () => {
+    const content = `# Some doc\n\n<!-- pdac-scope: none reason="release notes only" -->\n\nText.`;
+    const result = extractScopeDeclaration(content, 'doc.md');
+    expect(result).toEqual({
+      raw: 'none',
+      value: 'none',
+      reason: 'release notes only',
+      source: 'doc.md',
+    });
   });
 
   it('detects pdac-scope: cited as an HTML comment', () => {
     const content = `# Some doc\n\n<!-- pdac-scope: cited -->\n\nText.`;
     const result = extractScopeDeclaration(content, 'doc.md');
-    expect(result).toEqual({ raw: 'cited', value: 'cited', source: 'doc.md' });
+    expect(result).toEqual({ raw: 'cited', value: 'cited', reason: null, source: 'doc.md' });
   });
 
   it('reports an unrecognized pdac-scope value as an invalid declaration', () => {
@@ -60,6 +82,7 @@ describe('extractScopeDeclaration', () => {
     expect(extractScopeDeclaration(content, 'doc.md')).toEqual({
       raw: 'maybe',
       value: null,
+      reason: null,
       source: 'doc.md',
     });
   });
@@ -86,14 +109,16 @@ describe('classifyConsumerDocument', () => {
     form: 'inline' as const,
   };
 
-  it('binds a document that carries a citation without any declaration', () => {
+  it('leaves a document with citations but no declaration unclassified: citations never bind', () => {
     const result = classifyConsumerDocument(doc, null, [citation]);
-    expect(result.state).toBe('bound');
-    expect(result.diagnostics).toEqual([]);
+    expect(result.state).toBe('unclassified');
+    expect(result.diagnostics).toEqual([
+      expect.objectContaining({ severity: 'error', code: 'PRODUCT064', file: doc.path }),
+    ]);
   });
 
   it('binds a document declared cited, and fails it when it carries no citations', () => {
-    const declaration = { raw: 'cited', value: 'cited' as const, source: doc.path };
+    const declaration = { raw: 'cited', value: 'cited' as const, reason: null, source: doc.path };
     const withCitations = classifyConsumerDocument(doc, declaration, [citation]);
     expect(withCitations.state).toBe('bound');
     expect(withCitations.diagnostics).toEqual([]);
@@ -105,20 +130,47 @@ describe('classifyConsumerDocument', () => {
     ]);
   });
 
-  it('exempts a document declared none, and passes it without diagnostics', () => {
-    const declaration = { raw: 'none', value: 'none' as const, source: doc.path };
+  it('exempts a document declared none with a reason, and passes it without diagnostics', () => {
+    const declaration = {
+      raw: 'none',
+      value: 'none' as const,
+      reason: 'no product semantics',
+      source: doc.path,
+    };
     const result = classifyConsumerDocument(doc, declaration, []);
     expect(result.state).toBe('exempt');
     expect(result.diagnostics).toEqual([]);
   });
 
+  it('fails an exemption without a reason (PRODUCT066)', () => {
+    const declaration = { raw: 'none', value: 'none' as const, reason: null, source: doc.path };
+    const result = classifyConsumerDocument(doc, declaration, []);
+    expect(result.state).toBe('exempt');
+    expect(result.diagnostics).toEqual([
+      expect.objectContaining({ severity: 'error', code: 'PRODUCT066', file: doc.path }),
+    ]);
+  });
+
   it('fails an exemption contradicted by citations in the same document', () => {
-    const declaration = { raw: 'none', value: 'none' as const, source: doc.path };
+    const declaration = {
+      raw: 'none',
+      value: 'none' as const,
+      reason: 'says so',
+      source: doc.path,
+    };
     const result = classifyConsumerDocument(doc, declaration, [citation]);
     expect(result.state).toBe('exempt');
     expect(result.diagnostics).toEqual([
       expect.objectContaining({ severity: 'error', code: 'PRODUCT066', file: doc.path }),
     ]);
+  });
+
+  it('emits exactly one PRODUCT066 when the exemption has no reason and carries citations', () => {
+    const declaration = { raw: 'none', value: 'none' as const, reason: null, source: doc.path };
+    const result = classifyConsumerDocument(doc, declaration, [citation]);
+    expect(result.state).toBe('exempt');
+    expect(result.diagnostics).toHaveLength(1);
+    expect(result.diagnostics[0]).toMatchObject({ code: 'PRODUCT066', field: 'scope' });
   });
 
   it('leaves a document with neither declaration nor citations unclassified, and fails it', () => {
@@ -129,12 +181,12 @@ describe('classifyConsumerDocument', () => {
     ]);
   });
 
-  it('fails an invalid declaration value and classifies nothing from it', () => {
-    const declaration = { raw: 'maybe', value: null, source: doc.path };
+  it('leaves an unrecognized declaration value unclassified (PRODUCT064)', () => {
+    const declaration = { raw: 'maybe', value: null, reason: null, source: doc.path };
     const result = classifyConsumerDocument(doc, declaration, []);
     expect(result.state).toBe('unclassified');
     expect(result.diagnostics).toEqual([
-      expect.objectContaining({ severity: 'error', code: 'PRODUCT066', file: doc.path }),
+      expect.objectContaining({ severity: 'error', code: 'PRODUCT064', file: doc.path }),
     ]);
   });
 });
@@ -155,13 +207,13 @@ describe('enumerateOpenSpecDocuments + classifyConsumerDocuments', () => {
     // proposal.md: has a citation (bound)
     await writeFile(
       join(changeXDir, 'proposal.md'),
-      `## Why\n\nAdd feature X.\n\n{pdac:cite id="FR-X" digest="sha256:0000000000000000000000000000000000000000000000000000000000000000"}\n`,
+      `<!-- pdac-scope: cited -->\n\n## Why\n\nAdd feature X.\n\n{pdac:cite id="FR-X" digest="sha256:0000000000000000000000000000000000000000000000000000000000000000"}\n`,
       'utf8',
     );
     // design.md: declares pdac-scope: none (exempt)
     await writeFile(
       join(changeXDir, 'design.md'),
-      `---\npdac-scope: none\n---\n\n## Design\n\nNo citations needed.\n`,
+      `---\npdac-scope: none\npdac-scope-reason: design notes carry no product semantics\n---\n\n## Design\n\nNo citations needed.\n`,
       'utf8',
     );
     // tasks.md: no scope, no citations (unclassified)
@@ -174,7 +226,7 @@ describe('enumerateOpenSpecDocuments + classifyConsumerDocuments', () => {
     await mkdir(join(changeXDir, 'specs', 'foo'), { recursive: true });
     await writeFile(
       join(changeXDir, 'specs', 'foo', 'spec.md'),
-      `## Requirement\n\nFoo shall bar.\n\n{pdac:cite id="FR-Y" digest="sha256:1111111111111111111111111111111111111111111111111111111111111111"}\n`,
+      `<!-- pdac-scope: cited -->\n\n## Requirement\n\nFoo shall bar.\n\n{pdac:cite id="FR-Y" digest="sha256:1111111111111111111111111111111111111111111111111111111111111111"}\n`,
       'utf8',
     );
 
@@ -183,12 +235,12 @@ describe('enumerateOpenSpecDocuments + classifyConsumerDocuments', () => {
     await mkdir(changeYDir, { recursive: true });
     await writeFile(
       join(changeYDir, 'proposal.md'),
-      `---\npdac-scope: none\n---\n\n## Why\n\nAdd feature Y.\n`,
+      `---\npdac-scope: none\npdac-scope-reason: feature Y has no product-semantic dependency\n---\n\n## Why\n\nAdd feature Y.\n`,
       'utf8',
     );
     await writeFile(
       join(changeYDir, 'tasks.md'),
-      `<!-- pdac-scope: none -->\n## Tasks\n\n- [ ] Task 1\n`,
+      `<!-- pdac-scope: none reason="task list without product semantics" -->\n## Tasks\n\n- [ ] Task 1\n`,
       'utf8',
     );
 
@@ -206,7 +258,7 @@ describe('enumerateOpenSpecDocuments + classifyConsumerDocuments', () => {
     await mkdir(join(specsDir, 'bar'), { recursive: true });
     await writeFile(
       join(specsDir, 'bar', 'spec.md'),
-      `## Requirement\n\nBar shall baz.\n\n{pdac:cite id="FR-Z" digest="sha256:3333333333333333333333333333333333333333333333333333333333333333"}\n`,
+      `<!-- pdac-scope: cited -->\n\n## Requirement\n\nBar shall baz.\n\n{pdac:cite id="FR-Z" digest="sha256:3333333333333333333333333333333333333333333333333333333333333333"}\n`,
       'utf8',
     );
     // A spec with no citations and no scope (unclassified)

@@ -1,5 +1,7 @@
 # ai-skills Specification
 
+<!-- pdac-scope: cited -->
+
 ## Purpose
 
 The canonical AI skills, slash commands and hook descriptors rendered into provider-specific integrations.

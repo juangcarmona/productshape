@@ -40,7 +40,7 @@ Brownfield: if the product has no definition yet, recover one from the existing 
 3. Specify, plan and task natively with Spec Kit.
 4. Verify: `npx prodshape citations verify --provider speckit`.
 
-Verification enumerates the `spec.md`, `plan.md` and `tasks.md` of every feature directory under `specs/` and requires each to be bound (it carries citations) or exempt (a human declared `pdac-scope: none`). Zero discovered citations over enumerated documents is a set of failures, never a pass. Spec Kit has no archive lifecycle, so the whole population is current.
+Verification enumerates the `spec.md`, `plan.md` and `tasks.md` of every feature directory under `specs/` and requires each to carry exactly one explicit declaration: `pdac-scope: cited` with at least one citation (bound), or `pdac-scope: none` with a non-empty reason (exempt). Citations alone never bind. Zero discovered citations over enumerated documents is a set of failures, never a pass. Spec Kit has no archive lifecycle, so the whole population is current.
 
 When the accepted definition later changes through a Product Change, the citations in affected feature specs report `stale` (`PRODUCT061`), and CI points at exactly the features whose grounding moved. If a feature's goals contradict the definition, record drift with `<!-- pdac-drift ids="..." summary="..." -->` and review it with `prodshape drift --provider speckit`; the resolution is a human decision through the change process, never a quiet edit.
 

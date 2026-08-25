@@ -1,3 +1,5 @@
+<!-- pdac-scope: cited -->
+
 ## Purpose
 
 Specify the generation of the Product Snapshot: a static, self-contained, read-only HTML page projecting the whole product model for people without the repository, produced by `prodshape graph --format html` — self-containment, determinism, revision stamping, honest diagnostics, and readable by-kind rendering with status badges.

@@ -1,5 +1,7 @@
 # impact-analysis Specification
 
+<!-- pdac-scope: cited -->
+
 ## Purpose
 
 Structural impact traversal over the product graph in both directions.

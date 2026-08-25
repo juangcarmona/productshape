@@ -1,5 +1,7 @@
 # methodology-docs Specification
 
+<!-- pdac-scope: cited -->
+
 ## Purpose
 
 The manifesto and methodology documentation that explain Product Definition as Code to adopters.
