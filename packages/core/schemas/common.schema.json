@@ -89,9 +89,25 @@
       "pattern": "^[0-9a-f]{7,40}$"
     },
     "digest": {
-      "description": "SHA-256 over UTF-8 content with line endings normalized to LF.",
+      "description": "SHA-256 over raw file bytes after CRLF and CR byte-sequence normalization to LF; bytes are never decoded or BOM-stripped.",
       "type": "string",
       "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "citationAnchor": {
+      "description": "Stable verification scenario ID within the target artifact.",
+      "type": "string",
+      "pattern": "^[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "citationRecord": {
+      "description": "Citation to a whole Product Artifact, optionally scoped to a verification scenario anchor.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "digest"],
+      "properties": {
+        "id": { "$ref": "#/$defs/productArtifactId" },
+        "digest": { "$ref": "#/$defs/digest" },
+        "anchor": { "$ref": "#/$defs/citationAnchor" }
+      }
     },
     "verificationScenarios": {
       "type": "array",

@@ -192,7 +192,7 @@ What to read next:
 
 ## PDaC conformance
 
-The pinned conformance workflow builds and packs ProductShape, installs that tarball outside the workspace, and runs the spec's conformance tests via the external runner `pdac-lint` (`0.1.2`) against [PDaC spec commit `89b43b78a6547c9dea709b6d261212c2fe4f3c4b`](https://github.com/product-definition-as-code/spec/commit/89b43b78a6547c9dea709b6d261212c2fe4f3c4b) — the full published v0.1-draft profile: kernel, reference profile and reference workflow. The published tests are not yet a complete normative set, so the badge claims only this pinned executable profile; ProductShape's own fixtures, self-model and traceability checks run separately as **Internal contracts**.
+The pinned conformance workflow builds and packs ProductShape, installs that tarball outside the workspace, and runs the spec's conformance tests via the external runner `pdac-lint` (`0.2.0`) against [PDaC spec commit `9ff12dff4f50ae153bd79c66d8366ba2c37e9116`](https://github.com/product-definition-as-code/spec/commit/9ff12dff4f50ae153bd79c66d8366ba2c37e9116) — the full published v0.1-draft profile: kernel, reference profile and reference workflow. The published tests are not yet a complete normative set, so the badge claims only this pinned executable profile; ProductShape's own fixtures, self-model and traceability checks run separately as **Internal contracts**.
 
 ## Current status
 
