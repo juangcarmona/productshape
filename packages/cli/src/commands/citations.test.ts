@@ -435,6 +435,7 @@ describe('citations verify --provider openspec (scope model)', () => {
   interface ProviderPayload {
     schema: string;
     provider: string;
+    integrationVersion: string;
     documents: {
       path: string;
       state: string;
