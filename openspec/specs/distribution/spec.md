@@ -10,7 +10,7 @@ Repository scaffolding, managed provider assets, the installation lock and the d
 
 ### Requirement: Initialization creates the consumer structure without destroying content
 
-`product-definition init [--ai <providers>] [--sdd <provider>] [--force]` SHALL create the docs/product tree (model subdirectories, changes/active|completed|rejected), `.product/config.yaml` reflecting the chosen integrations, authoring templates under `.product/templates/`, and a concise next-step guide — and SHALL never overwrite an existing user file without explicit `--force`.
+`product-definition init [--full] [--ai <providers>] [--sdd <provider>] [--force]` SHALL create the kernel by default (the model home, the live-change home, `.product/config.yaml` reflecting the chosen integrations, and a concise next-step guide), SHALL scaffold the per-kind model subdirectories, the change archives and the authoring templates under `.product/templates/` when the full profile is selected (an AI selection implies it), and SHALL never overwrite an existing user file without explicit `--force`.
 
 #### Scenario: Fresh initialization
 
@@ -28,7 +28,7 @@ Repository scaffolding, managed provider assets, the installation lock and the d
 
 {pdac:cite id="FR-INIT-002" digest="sha256:48bd2d28649dc2079f8fd5d111740f588616da5695293e6e44e47f9c24617e0d"}
 
-{pdac:cite id="UC-INIT-001" digest="sha256:63e9c430be5d559c0c9101ba2bc0184ed31960be4839269d29e49434a5963a72"}
+{pdac:cite id="UC-INIT-001" digest="sha256:82f4a1b7f382d5f60b2c02257213e35c9e9e7ebb4f438123d2bd5f0e31a6f86c"}
 
 {pdac:cite id="FR-OPENSPEC-001" digest="sha256:11d4986f2a7277679cd3871f664c92136f541a9c1941b60edf9b4b70d62b7837"}
 

@@ -49,6 +49,7 @@ import {
   type RecoverStartOptions,
 } from './commands/recover.js';
 import { runSchema } from './commands/schema.js';
+import { runTemplate } from './commands/template.js';
 import { runValidate } from './commands/validate.js';
 import { CliError, exitCodes, type CliIo } from './context.js';
 
@@ -82,8 +83,12 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .description('Initialize Product Definition as Code in this repository')
     .option('--ai <providers>', 'comma-separated AI integrations: claude, copilot, codex')
     .option('--sdd <framework>', 'SDD framework: openspec, kiro, speckit, or none to skip')
+    .option(
+      '--full',
+      'install the full reference profile: per-kind model layout, change archives and templates',
+    )
     .option('--force', 'overwrite existing files')
-    .option('--flat', 'scaffold the model directory without per-kind subdirectories')
+    .option('--flat', 'with --full, scaffold the model directory without per-kind subdirectories')
     .option('--shorthand', 'also generate the /ps:<name> aliases for /product:<name>')
     .option(
       '--gitignore',
@@ -94,6 +99,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
       async (options: {
         ai?: string;
         sdd?: string;
+        full?: boolean;
         force?: boolean;
         flat?: boolean;
         shorthand?: boolean;
@@ -303,6 +309,14 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .option('--format <format>', 'output format: text or json', 'text')
     .action(async (options: { filenames?: boolean; dryRun?: boolean; format: 'text' | 'json' }) => {
       capture.code = await runFix(io, options);
+    });
+
+  program
+    .command('template')
+    .description('Print a bundled authoring template to stdout (no argument lists the kinds)')
+    .argument('[kind]', 'artifact kind (e.g. actor, functional-requirement, product-change)')
+    .action(async (kind: string | undefined) => {
+      capture.code = await runTemplate(io, kind);
     });
 
   program

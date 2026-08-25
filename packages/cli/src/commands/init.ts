@@ -33,6 +33,7 @@ import { CliError, exitCodes, type CliIo } from '../context.js';
 export interface InitCliOptions {
   ai?: string;
   sdd?: string;
+  full?: boolean;
   force?: boolean;
   flat?: boolean;
   shorthand?: boolean;
@@ -372,6 +373,7 @@ export async function runInit(io: CliIo, options: InitCliOptions): Promise<numbe
     existingShorthand: existing.config.prodshape.integrations['shorthand-commands'],
     gitignore,
     generatedRoot,
+    ...(options.full !== undefined ? { full: options.full } : {}),
     ...(options.force !== undefined ? { force: options.force } : {}),
     ...(options.flat !== undefined ? { flat: options.flat } : {}),
     ...(options.shorthand !== undefined ? { shorthand: options.shorthand } : {}),
