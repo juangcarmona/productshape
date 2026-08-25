@@ -53,7 +53,7 @@ Exit codes: `0` success (warnings allowed), `1` validation errors, `2` invalid i
 
 ## The governed citation-first walkthrough
 
-The smallest real adoption: one accepted artifact, one consumer that cites it, one stale dependency detected before merge. Every step is a copied command or a copied file; a first verified citation takes well under ten minutes. This is the governed path — the definition changes only through Product Changes — as opposed to the disposable sandbox demo in the repository README, which edits the model directly to show the mechanics.
+The smallest real adoption: one accepted artifact, one consumer that cites it, one stale dependency detected before merge. Every step is a copied command or a copied file; a first verified citation takes well under ten minutes. This is the governed path, where the definition changes only through Product Changes, as opposed to the disposable sandbox demo in the repository README, which edits the model directly to show the mechanics.
 
 `prodshape init` installs the kernel only (four files: the configuration, the model home, the live-change home and a README). Templates and schemas stay on demand: `prodshape template <kind>` prints a starting point, `prodshape schema <kind>` prints the allowed frontmatter. `prodshape init --full` installs the per-kind layout and the template library; `--ai <provider>` adds an AI integration and implies `--full`.
 

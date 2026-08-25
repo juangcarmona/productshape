@@ -19,7 +19,7 @@ Initialization gives a repository the full reference profile before it delivers 
 
 ## Intended Product Outcome
 
-Initialization installs the kernel by default: the repository configuration, the model home, the live-change home and guidance. Templates and schemas are discoverable on demand without a repository copy. The full reference profile — the per-kind layout, the change archives and the template library — and the AI and SDD integrations are explicit expansions, with an AI selection implying the full profile because its skills author from the templates and the per-kind layout. Validating an empty model states that no product definition exists yet and names the route to the first accepted baseline, instead of presenting emptiness as completed adoption.
+Initialization installs the kernel by default: the repository configuration, the model home, the live-change home and guidance. Templates and schemas are discoverable on demand without a repository copy. The full reference profile (the per-kind layout, the change archives and the template library) and the AI and SDD integrations are explicit expansions, with an AI selection implying the full profile because its skills author from the templates and the per-kind layout. Validating an empty model states that no product definition exists yet and names the route to the first accepted baseline, instead of presenting emptiness as completed adoption.
 
 ## Rationale
 
