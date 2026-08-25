@@ -49,6 +49,8 @@ async function makeRepo(files: Record<string, string> = {}): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), 'prodshape-recover-cli-'));
   scratchDirs.push(root);
   await mkdir(join(root, 'docs', 'product', 'model'), { recursive: true });
+  await mkdir(join(root, '.product'), { recursive: true });
+  await writeFile(join(root, '.product', 'config.yaml'), 'version: v1alpha1\n', 'utf8');
   for (const [rel, content] of Object.entries(files)) {
     const absolute = join(root, ...rel.split('/'));
     await mkdir(dirname(absolute), { recursive: true });

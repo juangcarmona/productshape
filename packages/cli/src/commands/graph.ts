@@ -5,7 +5,7 @@ import {
   buildGraphJson,
   buildMermaid,
   buildSnapshotHtml,
-  escalateWarnings,
+  blockingDiagnostics,
   gitHead,
   stableJson,
   validateBaseline,
@@ -19,13 +19,11 @@ export interface GraphOptions {
 
 export async function runGraph(io: CliIo, options: GraphOptions): Promise<number> {
   const repo = await resolveRepository(io);
-  const { artifacts, graph, diagnostics: reported } = await validateBaseline(repo);
-  const diagnostics = escalateWarnings(reported, repo.config.validation['warnings-as-errors']);
-
-  const errors = diagnostics.filter((d) => d.severity === 'error');
-  if (errors.length > 0) {
-    for (const diagnostic of errors) io.err(formatDiagnosticLine(diagnostic));
-    io.err(`Graph not generated: ${errors.length} validation error(s)`);
+  const { artifacts, graph, diagnostics } = await validateBaseline(repo);
+  const blocking = blockingDiagnostics(diagnostics, repo.config.validation['warnings-as-errors']);
+  if (blocking.length > 0) {
+    for (const diagnostic of blocking) io.err(formatDiagnosticLine(diagnostic));
+    io.err(`Graph not generated: ${blocking.length} blocking diagnostic(s)`);
     return exitCodes.validationErrors;
   }
 
@@ -42,7 +40,7 @@ export async function runGraph(io: CliIo, options: GraphOptions): Promise<number
       const revision = await gitHead(repo.root);
       const html = buildSnapshotHtml(graph, artifacts, revision);
       await writeFile(join(repo.generatedDir, 'snapshot.html'), html, 'utf8');
-      io.out(`Snapshot written to ${repo.config.generated.root}/snapshot.html`);
+      io.out(`Snapshot written to ${repo.config.prodshape.generated.root}/snapshot.html`);
       break;
     }
     default: {
@@ -50,7 +48,7 @@ export async function runGraph(io: CliIo, options: GraphOptions): Promise<number
       for (const node of graph.nodes) byType.set(node.type, (byType.get(node.type) ?? 0) + 1);
       io.out(`${graph.nodes.length} node(s), ${graph.edges.length} edge(s)`);
       for (const [type, count] of [...byType.entries()].sort()) io.out(`  ${type}: ${count}`);
-      io.out(`Generated outputs written to ${repo.config.generated.root}`);
+      io.out(`Generated outputs written to ${repo.config.prodshape.generated.root}`);
     }
   }
   return exitCodes.success;

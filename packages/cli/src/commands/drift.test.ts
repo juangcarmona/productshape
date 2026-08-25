@@ -60,8 +60,10 @@ async function installFakeOpenSpec(): Promise<void> {
 beforeEach(async () => {
   workDir = await mkdtemp(join(tmpdir(), 'prodshape-drift-'));
   await mkdir(join(workDir, 'docs', 'product'), { recursive: true });
+  await mkdir(join(workDir, '.product'), { recursive: true });
+  await writeFile(join(workDir, '.product', 'config.yaml'), 'version: v1alpha1\n', 'utf8');
   await cp(
-    join(repoRoot, 'examples', 'minimal', 'model'),
+    join(repoRoot, 'examples', 'minimal', 'product', 'model'),
     join(workDir, 'docs', 'product', 'model'),
     { recursive: true },
   );

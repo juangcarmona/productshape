@@ -3,7 +3,7 @@ import { extname, isAbsolute, resolve as resolvePath } from 'node:path';
 import {
   classifyConsumerDocuments,
   codes,
-  escalateWarnings,
+  blockingDiagnostics,
   parseCitations,
   scanCitations,
   sortDiagnostics,
@@ -115,7 +115,7 @@ async function scanCitationTarget(
       // the key so the fix is obvious in a repository whose consumers live somewhere else.
       throw new CliError(
         fromConfiguredRoots
-          ? `Configured citation consumer root not found: '${target}'; set 'citations.consumer-roots' in .product/config.yaml to the directories that hold your consumer documents, or pass a target explicitly`
+          ? `Configured citation consumer root not found: '${target}'; set 'extensions.prodshape.citations.consumer-roots' in .product/config.yaml to the directories that hold your consumer documents, or pass a target explicitly`
           : `Citation target not found: '${target}'`,
         exitCodes.invalidInvocation,
       );
@@ -161,7 +161,7 @@ export async function runCitationsVerify(
   target: string | undefined,
   options: CitationsVerifyOptions,
 ): Promise<number> {
-  const repo = await resolveRepository(io, options.root);
+  const repo = await resolveRepository(io, options.root, options.format);
   const { artifacts } = await validateBaseline(repo);
 
   if (options.provider !== undefined) {
@@ -189,7 +189,7 @@ export async function runCitationsVerify(
     artifacts,
     repo.config.validation['warnings-as-errors'],
     options,
-    repo.config.citations['consumer-roots'],
+    repo.config.prodshape.citations['consumer-roots'],
   );
 }
 
@@ -223,8 +223,8 @@ async function runRecursiveVerify(
   const verifications = verifyCitations(citations, artifacts);
 
   const allDiagnostics = verifications.flatMap((v) => v.diagnostics);
-  const diagnostics = sortDiagnostics(escalateWarnings(allDiagnostics, warningsAsErrors));
-
+  const diagnostics = sortDiagnostics(allDiagnostics);
+  const blocking = blockingDiagnostics(diagnostics, warningsAsErrors);
   const errors = diagnostics.filter((d) => d.severity === 'error');
   const warnings = diagnostics.filter((d) => d.severity === 'warning');
 
@@ -283,7 +283,7 @@ async function runRecursiveVerify(
     }
   }
 
-  return errors.length > 0 ? exitCodes.validationErrors : exitCodes.success;
+  return blocking.length > 0 ? exitCodes.validationErrors : exitCodes.success;
 }
 
 /**
@@ -382,7 +382,8 @@ async function runProviderVerify(
   );
   allDiagnostics.push(...citationDiagnostics);
 
-  const diagnostics = sortDiagnostics(escalateWarnings(allDiagnostics, warningsAsErrors));
+  const diagnostics = sortDiagnostics(allDiagnostics);
+  const blocking = blockingDiagnostics(diagnostics, warningsAsErrors);
   const errors = diagnostics.filter((d) => d.severity === 'error');
   const warnings = diagnostics.filter((d) => d.severity === 'warning');
 
@@ -447,5 +448,5 @@ async function runProviderVerify(
     );
   }
 
-  return errors.length > 0 ? exitCodes.validationErrors : exitCodes.success;
+  return blocking.length > 0 ? exitCodes.validationErrors : exitCodes.success;
 }

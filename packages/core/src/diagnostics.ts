@@ -58,18 +58,19 @@ export const codes = {
 } as const;
 
 /**
- * Apply the repository's warnings-as-errors escalation. One semantic for every validating
- * command: baseline validate, change validate, apply and graph generation all gate on the
- * escalated set.
+ * The diagnostics that make a command fail: every error, plus every warning when the repository
+ * escalates warnings to a failing result. One semantic for every validating command: baseline
+ * validate, change validate, apply and graph generation all gate on this set.
+ *
+ * `validation.warnings-as-errors` changes the command result only. The emitted severity stays
+ * `warning`, so a machine-readable report carries the same diagnostics with the option on or off;
+ * the configuration contract forbids rewriting severity.
  */
-export function escalateWarnings(
+export function blockingDiagnostics(
   diagnostics: Diagnostic[],
   warningsAsErrors: boolean,
 ): Diagnostic[] {
-  if (!warningsAsErrors) return diagnostics;
-  return diagnostics.map((d) =>
-    d.severity === 'warning' ? { ...d, severity: 'error' as const } : d,
-  );
+  return diagnostics.filter((d) => d.severity === 'error' || warningsAsErrors);
 }
 
 /** Compare strings lexicographically by UTF-16 code unit, independent of locale and ICU data. */

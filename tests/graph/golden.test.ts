@@ -14,7 +14,7 @@ import { repoRoot } from '../helpers.js';
 async function minimalGraph() {
   const registry = await SchemaRegistry.loadBundled();
   const exampleRoot = join(repoRoot, 'examples', 'minimal');
-  const model = await loadModel(join(exampleRoot, 'model'), exampleRoot, registry);
+  const model = await loadModel(join(exampleRoot, 'product', 'model'), exampleRoot, registry);
   expect(model.diagnostics).toEqual([]);
   return compileGraph(model.artifacts);
 }

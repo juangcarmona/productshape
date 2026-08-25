@@ -4,7 +4,10 @@ import { listFilesRecursive, repoRoot, validateMarkdownDocument } from '../helpe
 
 describe('examples', () => {
   it('every artifact in examples/minimal validates without diagnostics', async () => {
-    const files = await listFilesRecursive(join(repoRoot, 'examples', 'minimal', 'model'), '.md');
+    const files = await listFilesRecursive(
+      join(repoRoot, 'examples', 'minimal', 'product', 'model'),
+      '.md',
+    );
     expect(files).toHaveLength(9);
     for (const file of files) {
       const result = await validateMarkdownDocument(file);

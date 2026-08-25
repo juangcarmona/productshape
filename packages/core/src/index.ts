@@ -22,9 +22,9 @@ export type {
 export { checkRequiredBodySections } from './body-sections.js';
 export { discoverChanges, loadChange } from './changes.js';
 export type { ChangeOperations, LoadedChange } from './changes.js';
-export { configSchemaId, defaultConfig, loadConfig, parseConfig } from './config.js';
+export { configVersion, defaultConfig, loadConfig, parseConfig } from './config.js';
 export type { ConfigResult, ProductConfig } from './config.js';
-export { codes, compareCodeUnits, escalateWarnings, sortDiagnostics } from './diagnostics.js';
+export { blockingDiagnostics, codes, compareCodeUnits, sortDiagnostics } from './diagnostics.js';
 export type { Diagnostic, DiagnosticSeverity } from './diagnostics.js';
 export {
   buildArtifactIndex,
@@ -209,4 +209,3 @@ export type { BaselineValidation, ProductRepository } from './repository.js';
 export { SchemaRegistry } from './schema-registry.js';
 export type { RawSchema } from './schema-registry.js';
 export { validateModel } from './validate.js';
-export type { ValidateModelOptions } from './validate.js';

@@ -154,7 +154,7 @@ beforeEach(async () => {
   workDir = await mkdtemp(join(tmpdir(), 'prodshape-change-'));
   await mkdir(join(workDir, 'docs', 'product'), { recursive: true });
   await cp(
-    join(repoRoot, 'examples', 'minimal', 'model'),
+    join(repoRoot, 'examples', 'minimal', 'product', 'model'),
     join(workDir, 'docs', 'product', 'model'),
     {
       recursive: true,
@@ -1092,6 +1092,8 @@ describe('change create', () => {
 
   it('falls back to the CHG-INITIAL sentinel base-revision outside Git history', async () => {
     await rm(join(workDir, '.git'), { recursive: true, force: true });
+    await mkdir(join(workDir, '.product'), { recursive: true });
+    await writeFile(join(workDir, '.product', 'config.yaml'), 'version: v1alpha1\n', 'utf8');
     const result = await run(['change', 'create', 'CHG-SCAFFOLD-003']);
     expect(result.code).toBe(0);
     const content = await readFile(

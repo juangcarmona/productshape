@@ -21,17 +21,22 @@ describe('generated configuration round-trips through the parser', () => {
     expect(result.diagnostics).toEqual([]);
     expect(result.config).toEqual({
       ...defaultConfig(),
-      integrations: {
-        ai: ['claude', 'copilot'],
-        'shorthand-commands': true,
+      prodshape: {
+        ...defaultConfig().prodshape,
+        integrations: {
+          ai: ['claude', 'copilot'],
+          'shorthand-commands': true,
+        },
       },
     });
   });
 
   it('defaults the shorthand aliases off', () => {
-    expect(defaultConfig().integrations['shorthand-commands']).toBe(false);
+    expect(defaultConfig().prodshape.integrations['shorthand-commands']).toBe(false);
     expect(
-      parseConfig(configContent(['claude']), 'c').config.integrations['shorthand-commands'],
+      parseConfig(configContent(['claude']), 'c').config.prodshape.integrations[
+        'shorthand-commands'
+      ],
     ).toBe(false);
   });
 });

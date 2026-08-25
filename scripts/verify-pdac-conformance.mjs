@@ -201,6 +201,16 @@ async function assertCitationCoverage(report, digestReport, specDir, citationArg
   for (const testCase of report.cases) {
     const run = citationRun(testCase, citationArgv);
     const payload = parseJson(run.stdout, `${testCase.name} citation output`);
+    // An invalid-configuration fixture stops every command before its work: the run reports the
+    // PRODUCT050 diagnostics envelope with exit 2 instead of a citation scan. That is the
+    // contract, not missing coverage, so the case contributes no citations.
+    if (
+      run.exitCode === 2 &&
+      payload.schema === 'product-definition-as-code/diagnostics/v1alpha1' &&
+      payload.diagnostics?.some((diagnostic) => diagnostic.code === 'PRODUCT050')
+    ) {
+      continue;
+    }
     invariant(
       payload.schema === 'product-definition-as-code/citations/v1alpha1',
       `${testCase.name}: unexpected citation schema ${payload.schema}`,
@@ -502,9 +512,9 @@ async function main() {
   );
 
   const implementationArgv = [
-    [options.prodshape, 'validate'],
-    [options.prodshape, 'change', 'validate'],
-    [options.prodshape, 'citations', 'verify', '.'],
+    [options.prodshape, 'validate', '--root', '.'],
+    [options.prodshape, 'change', 'validate', '--root', '.'],
+    [options.prodshape, 'citations', 'verify', '.', '--root', '.'],
   ];
   const negativeArgv = implementationArgv.slice(0, 2);
   const implementationCommands = implementationArgv.map(runnerCommand);
