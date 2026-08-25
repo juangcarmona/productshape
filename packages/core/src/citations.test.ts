@@ -26,13 +26,15 @@ afterEach(async () => {
 });
 
 describe('YAML sidecar citation parsing', () => {
-  it('preserves support for a bare-array ledger', async () => {
-    const sidecar = join(workDir, 'citations.yaml');
+  it('preserves support for a bare-array ledger as a reader extension', async () => {
+    const sidecar = join(workDir, 'notes.citations.yaml');
+    await writeFile(join(workDir, 'notes.md'), '# Notes\n', 'utf8');
     await writeFile(sidecar, `- id: FR-ONE\n  digest: ${DIGEST_A}\n  anchor: S1\n`, 'utf8');
 
-    const citations = await parseCitations(sidecar, workDir);
+    const parsed = await parseCitations(sidecar, workDir);
 
-    expect(citations).toEqual([
+    expect(parsed.diagnostics).toEqual([]);
+    expect(parsed.records).toEqual([
       expect.objectContaining({
         id: 'FR-ONE',
         digest: DIGEST_A,
@@ -44,39 +46,137 @@ describe('YAML sidecar citation parsing', () => {
 
   it('returns multiple valid records from a citations mapping in source order', async () => {
     const sidecar = join(workDir, 'spec-fixture.citations.yml');
+    await writeFile(join(workDir, 'spec-fixture.md'), '# Fixture\n', 'utf8');
     await writeFile(
       sidecar,
       `citations:\n  - id: FR-ONE\n    digest: ${DIGEST_A}\n  - id: FR-TWO\n    digest: ${DIGEST_B}\n    anchor: S2\n`,
       'utf8',
     );
 
-    const citations = await parseCitations(sidecar, workDir);
+    const parsed = await parseCitations(sidecar, workDir);
 
-    expect(citations.map(({ id, digest, anchor }) => ({ id, digest, anchor }))).toEqual([
+    expect(parsed.diagnostics).toEqual([]);
+    expect(parsed.records.map(({ id, digest, anchor }) => ({ id, digest, anchor }))).toEqual([
       { id: 'FR-ONE', digest: DIGEST_A, anchor: undefined },
       { id: 'FR-TWO', digest: DIGEST_B, anchor: 'S2' },
     ]);
   });
 
-  it('ignores malformed entries and unrelated mapping properties', async () => {
-    const malformed = join(workDir, 'malformed.yaml');
+  it('reports one PRODUCT067 for a malformed sidecar, never one per defect', async () => {
+    const sidecar = join(workDir, 'broken.citations.yml');
+    await writeFile(join(workDir, 'broken.md'), '# Broken\n', 'utf8');
     await writeFile(
-      malformed,
-      `citations:\n  - id: FR-VALID\n    digest: ${DIGEST_A}\n  - id: FR-NO-DIGEST\n  - id: 42\n    digest: ${DIGEST_B}\n  - not-a-record\nunrelated:\n  - id: FR-UNRELATED\n    digest: ${DIGEST_B}\n`,
+      sidecar,
+      `citations:\n  - id: FR-VALID\n    digest: ${DIGEST_A}\n  - id: FR-NO-DIGEST\n  - not-a-record\nunrelated: true\n`,
       'utf8',
     );
 
-    const citations = await parseCitations(malformed, workDir);
-    expect(citations.map((citation) => citation.id)).toEqual(['FR-VALID']);
+    const parsed = await parseCitations(sidecar, workDir);
+    expect(parsed.records).toEqual([]);
+    expect(parsed.diagnostics).toEqual([
+      expect.objectContaining({ code: 'PRODUCT067', file: 'broken.citations.yml' }),
+    ]);
+  });
 
-    const unrelated = join(workDir, 'unrelated.yml');
+  it.each([
+    ['an empty citations sequence', 'citations: []\n', undefined],
+    [
+      'a mapping without the citations key',
+      `references:\n  - id: FR-X\n    digest: ${DIGEST_A}\n`,
+      undefined,
+    ],
+    [
+      'an extra top-level key',
+      `citations:\n  - id: FR-X\n    digest: ${DIGEST_A}\nnotes: hand-written\n`,
+      undefined,
+    ],
+    [
+      'a non-closed record',
+      `citations:\n  - id: FR-X\n    digest: ${DIGEST_A}\n    extra: field\n`,
+      1,
+    ],
+    [
+      'a YAML anchor and alias',
+      `citations:\n  - &a\n    id: FR-X\n    digest: ${DIGEST_A}\n  - *a\n`,
+      undefined,
+    ],
+    [
+      'two YAML documents',
+      `citations:\n  - id: FR-X\n    digest: ${DIGEST_A}\n---\ncitations: []\n`,
+      undefined,
+    ],
+  ])('rejects a sidecar with %s as one PRODUCT067', async (_label, content, entry) => {
+    const sidecar = join(workDir, 'case.citations.yml');
+    await writeFile(join(workDir, 'case.md'), '# Case\n', 'utf8');
+    await writeFile(sidecar, content, 'utf8');
+
+    const parsed = await parseCitations(sidecar, workDir);
+    expect(parsed.records).toEqual([]);
+    expect(parsed.diagnostics).toHaveLength(1);
+    expect(parsed.diagnostics[0]).toMatchObject({
+      code: 'PRODUCT067',
+      file: 'case.citations.yml',
+      ...(entry === undefined ? {} : { entry }),
+    });
+  });
+
+  it('reports a sidecar whose consumer file is missing', async () => {
+    const sidecar = join(workDir, 'orphan.citations.yml');
+    await writeFile(sidecar, `citations:\n  - id: FR-X\n    digest: ${DIGEST_A}\n`, 'utf8');
+
+    const parsed = await parseCitations(sidecar, workDir);
+    expect(parsed.records).toEqual([]);
+    expect(parsed.diagnostics).toEqual([
+      expect.objectContaining({
+        code: 'PRODUCT067',
+        file: 'orphan.citations.yml',
+        message: expect.stringContaining('no corresponding consumer file'),
+      }),
+    ]);
+  });
+
+  it('reads a consumer document through its adjacent sidecar', async () => {
+    const consumer = join(workDir, 'feature.md');
+    await writeFile(consumer, '# Feature with no payloads\n', 'utf8');
     await writeFile(
-      unrelated,
-      `references:\n  - id: FR-UNRELATED\n    digest: ${DIGEST_B}\nid: FR-ROOT\ndigest: ${DIGEST_A}\n`,
+      join(workDir, 'feature.citations.yml'),
+      `citations:\n  - id: FR-ONE\n    digest: ${DIGEST_A}\n`,
       'utf8',
     );
 
-    await expect(parseCitations(unrelated, workDir)).resolves.toEqual([]);
+    const parsed = await parseCitations(consumer, workDir);
+    expect(parsed.diagnostics).toEqual([]);
+    expect(parsed.suppressed).toBe(false);
+    expect(parsed.records).toEqual([
+      expect.objectContaining({
+        id: 'FR-ONE',
+        source: 'feature.citations.yml',
+        form: 'sidecar-ledger',
+        line: 1,
+      }),
+    ]);
+  });
+
+  it('reports a carrier conflict once and suppresses both carriers', async () => {
+    const consumer = join(workDir, 'both.md');
+    await writeFile(consumer, `<!-- pdac:cite id="FR-ONE" digest="${DIGEST_A}" -->\n`, 'utf8');
+    await writeFile(
+      join(workDir, 'both.citations.yml'),
+      `citations:\n  - id: FR-TWO\n    digest: ${DIGEST_B}\n`,
+      'utf8',
+    );
+
+    const parsed = await parseCitations(consumer, workDir);
+    expect(parsed.suppressed).toBe(true);
+    expect(parsed.diagnostics).toEqual([
+      expect.objectContaining({
+        code: 'PRODUCT067',
+        file: 'both.md',
+        message: expect.stringContaining('both carriers'),
+      }),
+    ]);
+    // The records stay listed so the document still counts as carrying citations.
+    expect(parsed.records.map((r) => r.id)).toEqual(['FR-ONE']);
   });
 });
 
@@ -122,12 +222,73 @@ describe('canonical payload parsing', () => {
       'utf8',
     );
 
-    const citations = await parseCitations(consumer, workDir);
-    expect(citations.map(({ id, anchor, line }) => ({ id, anchor, line }))).toEqual([
+    const parsed = await parseCitations(consumer, workDir);
+    expect(parsed.diagnostics).toEqual([]);
+    expect(parsed.records.map(({ id, anchor, line }) => ({ id, anchor, line }))).toEqual([
       { id: 'FR-ONE', anchor: undefined, line: 1 },
       { id: 'FR-TWO', anchor: 'S2', line: 2 },
       { id: 'BR-THREE', anchor: undefined, line: 3 },
     ]);
+  });
+
+  it('still reads a marker block with its embedded projection', async () => {
+    const consumer = join(workDir, 'block.md');
+    await writeFile(
+      consumer,
+      [
+        `<!-- pdac:cite id="FR-ONE" digest="${DIGEST_A}" -->`,
+        'embedded canonical text',
+        '<!-- /pdac:cite -->',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+
+    const parsed = await parseCitations(consumer, workDir);
+    expect(parsed.diagnostics).toEqual([]);
+    expect(parsed.records).toEqual([
+      expect.objectContaining({
+        id: 'FR-ONE',
+        form: 'marker-block',
+        embeddedText: 'embedded canonical text\n',
+      }),
+    ]);
+  });
+
+  it.each([
+    ['out-of-order attributes', `<!-- pdac:cite digest="${DIGEST_A}" id="FR-ONE" -->`],
+    ['a repeated attribute', `<!-- pdac:cite id="FR-ONE" id="FR-TWO" digest="${DIGEST_A}" -->`],
+    ['an unknown attribute', `<!-- pdac:cite id="FR-ONE" digest="${DIGEST_A}" note="x" -->`],
+    ['single-quoted values', `<!-- pdac:cite id='FR-ONE' digest='${DIGEST_A}' -->`],
+    ['a missing digest', '<!-- pdac:cite id="FR-ONE" -->'],
+  ])('reports a malformed payload candidate with %s as PRODUCT067', async (_label, line) => {
+    const consumer = join(workDir, 'bad.md');
+    await writeFile(consumer, `# Doc\n\n${line}\n`, 'utf8');
+
+    const parsed = await parseCitations(consumer, workDir);
+    expect(parsed.records).toEqual([]);
+    expect(parsed.diagnostics).toEqual([
+      expect.objectContaining({ code: 'PRODUCT067', file: 'bad.md', line: 3 }),
+    ]);
+  });
+
+  it('names the cited target when the malformed candidate still carries a parseable id', async () => {
+    const consumer = join(workDir, 'named.md');
+    await writeFile(consumer, `<!-- pdac:cite id="FR-ONE" anchor="S1" -->\n`, 'utf8');
+
+    const parsed = await parseCitations(consumer, workDir);
+    expect(parsed.diagnostics).toEqual([
+      expect.objectContaining({ code: 'PRODUCT067', target: 'FR-ONE', line: 1 }),
+    ]);
+  });
+
+  it('leaves the token without payload-like text as prose', async () => {
+    const consumer = join(workDir, 'prose.md');
+    await writeFile(consumer, 'The pdac:cite payload grammar is documented elsewhere.\n', 'utf8');
+
+    const parsed = await parseCitations(consumer, workDir);
+    expect(parsed.records).toEqual([]);
+    expect(parsed.diagnostics).toEqual([]);
   });
 });
 

@@ -99,7 +99,9 @@ async function scanCitationTarget(
           exitCodes.invalidInvocation,
         );
       }
-      return await parseCitations(absolutePath, repoRoot);
+      const parsed = await parseCitations(absolutePath, repoRoot);
+      // A carrier conflict suppresses citation statuses; the diagnostic explains why.
+      return { records: parsed.suppressed ? [] : parsed.records, diagnostics: parsed.diagnostics };
     }
     throw new CliError(
       `Citation target must be a directory or supported consumer file: '${target}'`,
@@ -215,15 +217,16 @@ async function runRecursiveVerify(
   const targets = target !== undefined ? [target] : consumerRoots;
 
   const citations = [];
+  const carrierDiagnostics: Diagnostic[] = [];
   for (const targetDir of targets) {
     const rootDir = isAbsolute(targetDir) ? targetDir : resolvePath(repoRoot, targetDir);
-    citations.push(
-      ...(await scanCitationTarget(targetDir, rootDir, repoRoot, target === undefined)),
-    );
+    const scan = await scanCitationTarget(targetDir, rootDir, repoRoot, target === undefined);
+    citations.push(...scan.records);
+    carrierDiagnostics.push(...scan.diagnostics);
   }
   const verifications = verifyCitations(citations, artifacts);
 
-  const allDiagnostics = verifications.flatMap((v) => v.diagnostics);
+  const allDiagnostics = [...carrierDiagnostics, ...verifications.flatMap((v) => v.diagnostics)];
   const diagnostics = sortDiagnostics(allDiagnostics);
   const blocking = blockingDiagnostics(diagnostics, warningsAsErrors);
   const errors = diagnostics.filter((d) => d.severity === 'error');
@@ -351,9 +354,13 @@ async function runProviderVerify(
   const verifications: ReturnType<typeof verifyCitations> = [];
   const citationDiagnostics: Diagnostic[] = [];
   for (const c of classified) {
-    const documentVerifications = verifyCitations(c.citations, artifacts);
+    // A carrier conflict suppresses this document's citation statuses; the records still bind it.
+    const documentVerifications = c.suppressed ? [] : verifyCitations(c.citations, artifacts);
     verifications.push(...documentVerifications);
-    const diagnostics = documentVerifications.flatMap((v) => v.diagnostics);
+    const diagnostics = [
+      ...c.carrierDiagnostics,
+      ...documentVerifications.flatMap((v) => v.diagnostics),
+    ];
     citationDiagnostics.push(
       ...(c.document.archived ? diagnostics.map(softenArchivedDiagnostic) : diagnostics),
     );

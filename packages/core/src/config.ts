@@ -1,10 +1,11 @@
 import { readFile } from 'node:fs/promises';
 import { Ajv2020 } from 'ajv/dist/2020.js';
-import { isAlias, isMap, isPair, isScalar, isSeq, parseAllDocuments } from 'yaml';
-import type { Node, Pair } from 'yaml';
+import { parseAllDocuments } from 'yaml';
 import { configSchema } from './config-schema.js';
 import type { Diagnostic } from './diagnostics.js';
 import { compareCodeUnits } from './diagnostics.js';
+import { collectForbiddenYamlFeatures } from './yaml-strict.js';
+import type { YamlFeatureViolation } from './yaml-strict.js';
 
 /**
  * ProductShape's own settings, carried under `extensions.prodshape` in `.product/config.yaml`.
@@ -110,49 +111,6 @@ interface Violation {
 }
 
 const validateKernelSchema = new Ajv2020({ allErrors: true }).compile(configSchema);
-
-/**
- * Collect the YAML features the configuration contract forbids: aliases, anchors, tags and merge
- * keys. Duplicate mapping keys are already a parse error under YAML 1.2 defaults.
- */
-function collectForbiddenYamlFeatures(node: unknown, path: string, out: Violation[]): void {
-  if (node === null || node === undefined) return;
-  if (isAlias(node)) {
-    out.push({ path, message: 'YAML aliases are not permitted in configuration' });
-    return;
-  }
-  const withAnchor = node as { anchor?: string; tag?: string };
-  if (typeof withAnchor.anchor === 'string' && withAnchor.anchor.length > 0) {
-    out.push({ path, message: 'YAML anchors are not permitted in configuration' });
-  }
-  if (typeof withAnchor.tag === 'string' && withAnchor.tag.length > 0) {
-    out.push({ path, message: 'YAML tags are not permitted in configuration' });
-  }
-  if (isMap(node)) {
-    for (const item of node.items as Pair[]) {
-      if (!isPair(item)) continue;
-      const key = item.key;
-      const keyText = isScalar(key) ? String(key.value) : undefined;
-      const childPath = keyText === undefined ? path : path ? `${path}.${keyText}` : keyText;
-      if (keyText === '<<') {
-        out.push({
-          path: childPath,
-          message: 'YAML merge keys are not permitted in configuration',
-        });
-      }
-      if (key !== null && key !== undefined && !isScalar(key)) {
-        collectForbiddenYamlFeatures(key, childPath, out);
-      }
-      collectForbiddenYamlFeatures(item.value, childPath, out);
-    }
-    return;
-  }
-  if (isSeq(node)) {
-    (node.items as Node[]).forEach((item, index) => {
-      collectForbiddenYamlFeatures(item, path ? `${path}.${index}` : String(index), out);
-    });
-  }
-}
 
 /** Convert an ajv error to a violation, naming the offending property like PRODUCT002 does. */
 function ajvViolation(error: {
@@ -318,7 +276,15 @@ export function parseConfig(content: string, file: string): ConfigResult {
 
   const violations: Violation[] = [];
   const document = documents[0];
-  if (document) collectForbiddenYamlFeatures(document.contents, '', violations);
+  const features: YamlFeatureViolation[] = [];
+  if (document) collectForbiddenYamlFeatures(document.contents, '', features);
+  for (const feature of features) {
+    const plural = feature.feature === 'alias' ? 'aliases' : `${feature.feature}s`;
+    violations.push({
+      path: feature.path,
+      message: `YAML ${plural} are not permitted in configuration`,
+    });
+  }
 
   const data: unknown = document ? document.toJS() : undefined;
   if (typeof data !== 'object' || data === null || Array.isArray(data)) {

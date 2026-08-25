@@ -5,17 +5,24 @@
  * an agent prompt file, a design doc) to canonical product text. It records the target
  * artifact `id`, a content `digest`, and an optional `anchor` (a verification scenario id).
  *
- * This module parses the canonical comment payload and adjacent mapping-form sidecar, preserves
- * legacy readers as compatibility extensions, resolves citations against a loaded product model,
- * and reports one status per citation: `current`, `stale`, `tampered` or `unresolved`.
+ * This module parses and enforces the citation carriers: the canonical comment payload with its
+ * closed attribute grammar, the adjacent mapping-form sidecar validated against the normative
+ * sidecar schema, and the legacy brace and bare-sequence forms as explicitly non-conforming
+ * reader extensions. A consumer document uses exactly one carrier; a malformed payload candidate,
+ * a malformed sidecar file, a sidecar without its consumer file, or a consumer using both
+ * carriers produces PRODUCT067 instead of disappearing as prose. It then resolves citations
+ * against a loaded product model and reports one status per citation: `current`, `stale`,
+ * `tampered` or `unresolved`.
  *
  * Diagnostics: PRODUCT042 (invalid digest), PRODUCT060 (unresolved), PRODUCT061 (stale),
- * PRODUCT062 (tampered), PRODUCT063 (anchor not found).
+ * PRODUCT062 (tampered), PRODUCT063 (anchor not found), PRODUCT067 (malformed carrier).
  */
-import { readFile } from 'node:fs/promises';
-import { relative, sep } from 'node:path';
+import { readFile, readdir } from 'node:fs/promises';
+import { basename, dirname, join, relative, sep } from 'node:path';
 import fg from 'fast-glob';
 import { parseAllDocuments } from 'yaml';
+import { collectForbiddenYamlFeatures } from './yaml-strict.js';
+import type { YamlFeatureViolation } from './yaml-strict.js';
 import { contentDigest, normalizeToLf } from './digest.js';
 import type { Diagnostic } from './diagnostics.js';
 import { codes, compareCodeUnits } from './diagnostics.js';
@@ -59,217 +66,248 @@ export interface CitationVerification {
 /** A digest pattern for quick validation. */
 const DIGEST_PATTERN = /^sha256:[0-9a-f]{64}$/;
 
-// --- Markdown marker-block parsing -------------------------------------------
+// --- Citation carriers ---------------------------------------------------------
 
 /**
- * Marker-block citations are HTML comment delimiters carrying the citation record,
- * optionally wrapping an embedded projection of the canonical text:
- *
- * ```md
- * <!-- pdac:cite id="FR-X" digest="sha256:..." anchor="S1" -->
- * embedded canonical text here
- * <!-- /pdac:cite -->
- * ```
+ * The closed payload attribute grammar (citation contract): `id`, `digest` and an optional
+ * `anchor`, in that order, double-quoted with no escape syntax, and nothing else. Unknown,
+ * repeated or out-of-order attributes are invalid.
  */
-const MARKER_OPEN = /<!--\s*pdac:cite\s+([^>]*?)\s*-->/g;
-const MARKER_CLOSE = /<!--\s*\/pdac:cite\s*-->/g;
+const STRICT_ATTRS = /^id="([^"\r\n]+)"[ \t]+digest="([^"\r\n]+)"(?:[ \t]+anchor="([^"\r\n]+)")?$/;
 
-interface ParsedAttributes {
-  id?: string;
-  digest?: string;
-  anchor?: string;
+const TOKEN = 'pdac:cite';
+
+const MARKER_CLOSE = /<!--\s*\/pdac:cite\s*-->/;
+
+/** One PRODUCT067: a carrier defect that must not disappear as prose. */
+function carrierDiagnostic(
+  file: string,
+  message: string,
+  location: { line?: number; entry?: number; target?: string } = {},
+): Diagnostic {
+  return { severity: 'error', code: codes.malformedCitationCarrier, message, file, ...location };
 }
 
-/** Parse the `key="value"` attributes from a marker-open comment. */
-function parseAttributes(attrString: string): ParsedAttributes {
-  const attrs: ParsedAttributes = {};
-  const pattern = /(\w+)="([^"]*)"/g;
-  for (const match of attrString.matchAll(pattern)) {
-    const key = match[1];
-    const value = match[2];
-    if (key === 'id' || key === 'digest' || key === 'anchor') {
-      attrs[key] = value;
-    }
-  }
-  return attrs;
+/** What payload scanning found in one consumer document. */
+interface PayloadScan {
+  records: CitationRecord[];
+  diagnostics: Diagnostic[];
 }
 
-/** Extract marker-block citations from a Markdown document. */
-function extractMarkerBlockCitations(content: string, source: string): CitationRecord[] {
+/**
+ * Scan text lines for the exact `pdac:cite` token followed by payload-like `id=` text. A valid
+ * candidate becomes a record: a comment payload followed by a `<!-- /pdac:cite -->` marker embeds
+ * a projection (marker block); any other valid payload is an inline record, including the legacy
+ * brace form `{pdac:cite ...}`, which stays an explicitly non-conforming reader extension. A
+ * malformed candidate produces PRODUCT067 rather than disappearing as prose.
+ */
+function extractPayloadCitations(content: string, source: string): PayloadScan {
   const records: CitationRecord[] = [];
+  const diagnostics: Diagnostic[] = [];
   const lines = content.split('\n');
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (line === undefined) continue;
-    MARKER_OPEN.lastIndex = 0;
-    const match = MARKER_OPEN.exec(line);
-    if (!match) continue;
-    const attrString = match[1];
-    if (attrString === undefined) continue;
+    if (line === undefined || !line.includes(TOKEN)) continue;
 
-    const attrs = parseAttributes(attrString);
-    const { id, digest } = attrs;
-    if (!id || !digest) continue;
+    let from = 0;
+    for (;;) {
+      const at = line.indexOf(TOKEN, from);
+      if (at === -1) break;
+      from = at + TOKEN.length;
 
-    let embeddedText: string | undefined;
-    let closeFound = false;
-    for (let j = i + 1; j < lines.length; j++) {
-      const closeLine = lines[j];
-      if (closeLine === undefined) continue;
-      MARKER_CLOSE.lastIndex = 0;
-      if (MARKER_CLOSE.test(closeLine)) {
-        closeFound = true;
-        // The line ending immediately before the closing marker belongs to the projection.
-        embeddedText = `${lines.slice(i + 1, j).join('\n')}\n`;
-        break;
+      const before = line.slice(0, at);
+      // The closing marker ('/pdac:cite', slash glued to the token) carries no payload of its
+      // own; a comment wrapper like '// ' keeps its trailing space and stays a candidate.
+      if (before.endsWith('/')) continue;
+      const after = line.slice(at + TOKEN.length);
+      // The token without payload-like text stays prose (e.g. this sentence).
+      if (!/id=/.test(after)) continue;
+
+      // Delimit the attribute text by the enclosing carrier syntax: the legacy brace form, the
+      // host comment closer, or the line end.
+      const braceForm = before.endsWith('{');
+      let attrText = after;
+      if (braceForm) {
+        const close = after.indexOf('}');
+        attrText = close === -1 ? after : after.slice(0, close);
+      } else {
+        const close = after.indexOf('-->');
+        attrText = close === -1 ? after : after.slice(0, close);
       }
-    }
-    if (!closeFound) continue;
 
-    records.push({
-      id,
-      digest,
-      anchor: attrs.anchor,
-      source,
-      line: i + 1,
-      form: 'marker-block',
-      embeddedText,
-    });
-  }
-  return records;
-}
+      const match = STRICT_ATTRS.exec(attrText.trim());
+      if (!match) {
+        const idGuess = /id="([^"\r\n]+)"/.exec(attrText)?.[1];
+        diagnostics.push(
+          carrierDiagnostic(
+            source,
+            'Malformed citation payload: the closed grammar is id="…" digest="…" with an optional anchor="…", in that order, double-quoted, and nothing else',
+            { line: i + 1, ...(idGuess ? { target: idGuess } : {}) },
+          ),
+        );
+        continue;
+      }
 
-// --- Inline structured-reference parsing -------------------------------------
+      const id = match[1] as string;
+      const digest = match[2] as string;
+      const anchor = match[3];
 
-/**
- * Inline structured references are YAML-like maps on a single line, prefixed with a marker
- * so they are distinguishable from prose:
- *
- * ```md
- * {pdac:cite id="FR-X" digest="sha256:..." anchor="S1"}
- * ```
- *
- * This form is for citations that do not embed canonical text.
- */
-const INLINE_PATTERN = /\{pdac:cite\s+([^}]*?)\}/g;
+      // A comment payload embeds a projection when a closing marker follows before the next
+      // payload; otherwise it is a plain payload citation.
+      let embeddedText: string | undefined;
+      let form: CitationRecord['form'] = 'inline';
+      if (!braceForm && before.includes('<!--')) {
+        for (let j = i + 1; j < lines.length; j++) {
+          const ahead = lines[j];
+          if (ahead === undefined) continue;
+          if (MARKER_CLOSE.test(ahead)) {
+            form = 'marker-block';
+            // The line ending immediately before the closing marker belongs to the projection.
+            embeddedText = `${lines.slice(i + 1, j).join('\n')}\n`;
+            break;
+          }
+          if (ahead.includes(TOKEN) && !MARKER_CLOSE.test(ahead)) break;
+        }
+      }
 
-function extractInlineCitations(content: string, source: string): CitationRecord[] {
-  const records: CitationRecord[] = [];
-  const lines = content.split('\n');
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (line === undefined) continue;
-    INLINE_PATTERN.lastIndex = 0;
-    for (const match of line.matchAll(INLINE_PATTERN)) {
-      const attrString = match[1];
-      if (attrString === undefined) continue;
-      const attrs = parseAttributes(attrString);
-      const { id, digest } = attrs;
-      if (!id || !digest) continue;
       records.push({
         id,
         digest,
-        anchor: attrs.anchor,
+        anchor,
         source,
         line: i + 1,
-        form: 'inline',
+        form,
+        ...(embeddedText === undefined ? {} : { embeddedText }),
       });
     }
   }
-  return records;
-}
 
-// --- Canonical carrier-independent payload parsing --------------------------
-
-const PAYLOAD_PATTERN =
-  /pdac:cite[ \t]+id="([^"\\\r\n]+)"[ \t]+digest="([^"\\\r\n]+)"(?:[ \t]+anchor="([^"\\\r\n]+)")?/g;
-
-/** Parse the canonical payload wherever the consumer format carries it in a native comment. */
-function extractPayloadCitations(content: string, source: string): CitationRecord[] {
-  const records: CitationRecord[] = [];
-  const lines = content.split('\n');
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (line === undefined) continue;
-    PAYLOAD_PATTERN.lastIndex = 0;
-    for (const match of line.matchAll(PAYLOAD_PATTERN)) {
-      // The brace form remains a reader extension and is parsed by its compatibility path below.
-      // Skipping it here prevents one legacy record from being counted twice.
-      if (match.index !== undefined && line[match.index - 1] === '{') continue;
-      const id = match[1];
-      const digest = match[2];
-      if (id === undefined || digest === undefined) continue;
-      records.push({
-        id,
-        digest,
-        anchor: match[3],
-        source,
-        line: i + 1,
-        form: 'inline',
-      });
-    }
-  }
-  return records;
+  return { records, diagnostics };
 }
 
 // --- YAML sidecar ledger parsing ---------------------------------------------
 
-/**
- * Canonical sidecar-ledger citations live in `<consumer-stem>.citations.yml` alongside the
- * consumer document and use a mapping whose `citations` property is the record array. The former
- * bare array remains accepted only as a non-conforming reader extension:
- *
- * Bare array:
- *
- * ```yaml
- * - id: FR-X
- *   digest: sha256:...
- *   anchor: S1
- * ```
- *
- * Mapping:
- *
- * ```yaml
- * citations:
- *   - id: FR-X
- *     digest: sha256:...
- *     anchor: S1
- * ```
- */
-function extractSidecarCitations(content: string, source: string): CitationRecord[] {
-  const docs = parseAllDocuments(content);
-  const records: CitationRecord[] = [];
-  for (const doc of docs) {
-    const data = doc.toJS();
-    let entries: unknown[];
-    if (Array.isArray(data)) {
-      entries = data;
-    } else if (typeof data === 'object' && data !== null) {
-      const mappedCitations = (data as Record<string, unknown>).citations;
-      if (!Array.isArray(mappedCitations)) continue;
-      entries = mappedCitations;
-    } else {
-      continue;
-    }
-    for (let i = 0; i < entries.length; i++) {
-      const entry = entries[i];
-      if (typeof entry !== 'object' || entry === null) continue;
-      const id = (entry as Record<string, unknown>).id;
-      const digest = (entry as Record<string, unknown>).digest;
-      const anchor = (entry as Record<string, unknown>).anchor;
-      if (typeof id !== 'string' || typeof digest !== 'string') continue;
-      records.push({
-        id,
-        digest,
-        anchor: typeof anchor === 'string' ? anchor : undefined,
-        source,
-        line: i + 1,
-        form: 'sidecar-ledger',
-      });
-    }
+const SIDECAR_SUFFIXES = ['.citations.yml', '.citations.yaml'];
+
+/** Whether a path names an adjacent citation sidecar (`<stem>.citations.yml`). */
+export function isCitationSidecar(path: string): boolean {
+  const name = basename(path);
+  return SIDECAR_SUFFIXES.some((suffix) => name.endsWith(suffix) && name.length > suffix.length);
+}
+
+/** The consumer files a sidecar could belong to: `<stem>` or `<stem>.<extension>` siblings. */
+async function consumerCandidatesFor(sidecarAbsolute: string): Promise<string[]> {
+  const name = basename(sidecarAbsolute);
+  const suffix = SIDECAR_SUFFIXES.find((candidate) => name.endsWith(candidate)) as string;
+  const stem = name.slice(0, -suffix.length);
+  const dir = dirname(sidecarAbsolute);
+  let siblings: string[];
+  try {
+    siblings = await readdir(dir);
+  } catch {
+    return [];
   }
-  return records;
+  return siblings
+    .filter(
+      (sibling) =>
+        (sibling === stem || sibling.startsWith(`${stem}.`)) &&
+        sibling !== name &&
+        !isCitationSidecar(sibling),
+    )
+    .map((sibling) => join(dir, sibling));
+}
+
+/**
+ * Parse and validate a sidecar ledger against the normative `citation-sidecar` schema: one YAML
+ * document, exactly one top-level `citations` key holding a non-empty sequence of closed records,
+ * with duplicate keys, aliases, anchors, tags and merge keys forbidden. The former bare sequence
+ * remains accepted as an explicitly non-conforming reader extension. A malformed sidecar file
+ * produces one PRODUCT067, never one per failed schema keyword, and contributes no records.
+ */
+function parseSidecarLedger(content: string, source: string): PayloadScan {
+  const invalid = (message: string, entry?: number): PayloadScan => ({
+    records: [],
+    diagnostics: [carrierDiagnostic(source, message, entry === undefined ? {} : { entry })],
+  });
+
+  let documents;
+  try {
+    documents = parseAllDocuments(content);
+  } catch (cause) {
+    return invalid(
+      `Sidecar is not valid YAML: ${cause instanceof Error ? cause.message : String(cause)}`,
+    );
+  }
+  const parseErrors = documents.flatMap((doc) => doc.errors);
+  if (parseErrors.length > 0) {
+    return invalid(`Sidecar is not valid YAML: ${parseErrors[0]?.message ?? 'parse error'}`);
+  }
+  if (documents.length !== 1) {
+    return invalid('Sidecar must be exactly one YAML document');
+  }
+  const document = documents[0];
+  const features: YamlFeatureViolation[] = [];
+  if (document) collectForbiddenYamlFeatures(document.contents, '', features);
+  const feature = features[0];
+  if (feature) {
+    const plural = feature.feature === 'alias' ? 'aliases' : `${feature.feature}s`;
+    return invalid(`Sidecar must not use YAML ${plural}`);
+  }
+
+  const data: unknown = document ? document.toJS() : undefined;
+  let entries: unknown[];
+  if (Array.isArray(data)) {
+    // The legacy bare sequence: accepted as a non-conforming reader extension.
+    entries = data;
+  } else if (typeof data === 'object' && data !== null) {
+    const record = data as Record<string, unknown>;
+    const keys = Object.keys(record);
+    if (keys.length !== 1 || keys[0] !== 'citations' || !Array.isArray(record.citations)) {
+      return invalid(
+        "Sidecar must be a mapping with exactly one 'citations' key holding a sequence of citation records",
+      );
+    }
+    entries = record.citations;
+  } else {
+    return invalid(
+      "Sidecar must be a mapping with exactly one 'citations' key holding a sequence of citation records",
+    );
+  }
+  if (entries.length === 0) {
+    return invalid("Sidecar 'citations' must be a non-empty sequence");
+  }
+
+  const records: CitationRecord[] = [];
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i];
+    if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
+      return invalid(`Sidecar entry ${i + 1} is not a citation record`, i + 1);
+    }
+    const record = entry as Record<string, unknown>;
+    const extraneous = Object.keys(record).filter(
+      (key) => key !== 'id' && key !== 'digest' && key !== 'anchor',
+    );
+    // Value validity (digest format, id resolution) belongs to verification, which reports
+    // PRODUCT042 and PRODUCT060 per record; the carrier gate checks record closure only.
+    if (
+      typeof record.id !== 'string' ||
+      typeof record.digest !== 'string' ||
+      (record.anchor !== undefined && typeof record.anchor !== 'string') ||
+      extraneous.length > 0
+    ) {
+      return invalid(`Sidecar entry ${i + 1} is not a closed citation record`, i + 1);
+    }
+    records.push({
+      id: record.id,
+      digest: record.digest,
+      anchor: record.anchor as string | undefined,
+      source,
+      line: i + 1,
+      form: 'sidecar-ledger',
+    });
+  }
+  return { records, diagnostics: [] };
 }
 
 // --- Scanning consumer documents --------------------------------------------
@@ -285,45 +323,130 @@ export async function discoverConsumerDocs(rootDir: string): Promise<string[]> {
   return entries.map((e) => e.split('/').join(sep)).sort();
 }
 
-/** Parse all citation records from a single consumer document. */
+/** One consumer's parsed citations plus the carrier diagnostics the parse produced. */
+export interface ParsedConsumer {
+  records: CitationRecord[];
+  diagnostics: Diagnostic[];
+  /**
+   * True when a carrier conflict (payloads and an adjacent sidecar at once) suppresses the
+   * citation-status verification of this consumer's records until the conflict is resolved.
+   * The records stay listed so the document still counts as carrying citations.
+   */
+  suppressed: boolean;
+}
+
+/**
+ * Parse one consumer document's citations under the carrier contract. A consumer uses exactly
+ * one carrier: payloads in the document, or the adjacent `<stem>.citations.yml` sidecar. Using
+ * both is one PRODUCT067 against the consumer file, with the records' statuses suppressed. A
+ * sidecar given directly must have its corresponding consumer file.
+ */
 export async function parseCitations(
   absolutePath: string,
   repoRoot: string,
-): Promise<CitationRecord[]> {
+): Promise<ParsedConsumer> {
   const source = relative(repoRoot, absolutePath).split(sep).join('/');
   const content = await readFile(absolutePath, 'utf8');
 
-  const records: CitationRecord[] = [];
+  if (isCitationSidecar(absolutePath)) {
+    const parsed = parseSidecarLedger(content, source);
+    const consumers = await consumerCandidatesFor(absolutePath);
+    if (consumers.length === 0) {
+      return {
+        records: [],
+        diagnostics: [
+          ...parsed.diagnostics,
+          carrierDiagnostic(source, 'Sidecar has no corresponding consumer file'),
+        ],
+        suppressed: false,
+      };
+    }
+    return { ...parsed, suppressed: false };
+  }
 
-  if (absolutePath.endsWith('.yaml') || absolutePath.endsWith('.yml')) {
-    // A YAML file is either a sidecar ledger or a consumer doc with inline citations.
-    // Try sidecar first (structured array); if that yields nothing, try inline (rare in YAML).
-    const sidecar = extractSidecarCitations(content, source);
-    if (sidecar.length > 0) {
-      records.push(...sidecar);
+  const payload = extractPayloadCitations(content, source);
+  const sidecarAbsolute = SIDECAR_SUFFIXES.map((suffix) => {
+    const dir = dirname(absolutePath);
+    const name = basename(absolutePath);
+    const dot = name.lastIndexOf('.');
+    const stem = dot > 0 ? name.slice(0, dot) : name;
+    return join(dir, `${stem}${suffix}`);
+  });
+  let sidecarPath: string | undefined;
+  for (const candidate of sidecarAbsolute) {
+    try {
+      await readFile(candidate, 'utf8');
+      sidecarPath = candidate;
+      break;
+    } catch {
+      // No sidecar under this suffix.
     }
   }
 
-  // Markdown and YAML files can both carry canonical payloads, compatibility inline citations,
-  // and embedded marker blocks. An embedded opening line also contains a payload, so keep only
-  // the marker-block record for that line.
-  records.push(...extractInlineCitations(content, source));
-  const markerBlocks = extractMarkerBlockCitations(content, source);
-  const markerLines = new Set(markerBlocks.map((record) => record.line));
-  records.push(...extractPayloadCitations(content, source).filter((r) => !markerLines.has(r.line)));
-  records.push(...markerBlocks);
+  if (sidecarPath !== undefined && payload.records.length > 0) {
+    // Exactly one carrier per consumer: the conflict is reported once against the consumer file
+    // and the citation statuses of both carriers stay suppressed until it is resolved.
+    return {
+      records: payload.records,
+      diagnostics: [
+        ...payload.diagnostics,
+        carrierDiagnostic(
+          source,
+          'Consumer document uses both carriers: comment payloads and an adjacent citation sidecar; keep exactly one',
+        ),
+      ],
+      suppressed: true,
+    };
+  }
 
-  return records;
+  if (sidecarPath !== undefined) {
+    const sidecarSource = relative(repoRoot, sidecarPath).split(sep).join('/');
+    const sidecarContent = await readFile(sidecarPath, 'utf8');
+    const parsed = parseSidecarLedger(sidecarContent, sidecarSource);
+    return {
+      records: parsed.records,
+      diagnostics: [...payload.diagnostics, ...parsed.diagnostics],
+      suppressed: false,
+    };
+  }
+
+  return { ...payload, suppressed: false };
 }
 
-/** Scan a directory tree for consumer documents and parse all citations. */
-export async function scanCitations(rootDir: string, repoRoot: string): Promise<CitationRecord[]> {
+/** A directory scan's citations and the carrier diagnostics found along the way. */
+export interface CitationScan {
+  records: CitationRecord[];
+  diagnostics: Diagnostic[];
+}
+
+/**
+ * Scan a directory tree for consumer documents and parse all citations. A sidecar whose consumer
+ * document is itself in the scan is read through that consumer, so its records count once; a
+ * sidecar whose consumer lives outside the scanned formats is read directly; a sidecar with no
+ * consumer at all is a carrier defect. A consumer in carrier conflict contributes its diagnostic
+ * but no verifiable records.
+ */
+export async function scanCitations(rootDir: string, repoRoot: string): Promise<CitationScan> {
   const docs = await discoverConsumerDocs(rootDir);
-  const allRecords: CitationRecord[] = [];
+  const docSet = new Set(docs);
+  const records: CitationRecord[] = [];
+  const diagnostics: Diagnostic[] = [];
+
   for (const doc of docs) {
-    allRecords.push(...(await parseCitations(doc, repoRoot)));
+    if (isCitationSidecar(doc)) {
+      const consumers = await consumerCandidatesFor(doc);
+      if (consumers.some((consumer) => docSet.has(consumer))) continue;
+      const parsed = await parseCitations(doc, repoRoot);
+      records.push(...parsed.records);
+      diagnostics.push(...parsed.diagnostics);
+      continue;
+    }
+    const parsed = await parseCitations(doc, repoRoot);
+    diagnostics.push(...parsed.diagnostics);
+    if (!parsed.suppressed) records.push(...parsed.records);
   }
-  return allRecords;
+
+  return { records, diagnostics };
 }
 
 // --- Verification ------------------------------------------------------------

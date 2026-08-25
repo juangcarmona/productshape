@@ -108,6 +108,7 @@ This is not the canonical requirement text.
     'verifies exactly one .%s sidecar when given a file target',
     async (ext) => {
       const target = join('specs', `spec-fixture.citations.${ext}`);
+      await writeFile(join(workDir, 'specs', 'spec-fixture.md'), '# Fixture consumer\n', 'utf8');
       await writeFile(
         join(workDir, target),
         `citations:\n  - id: FR-NOT-FOUND\n    digest: ${VALID_DIGEST}\n`,
@@ -150,6 +151,7 @@ This is not the canonical requirement text.
   });
 
   it('discovers and checks a specification-shaped citations mapping', async () => {
+    await writeFile(join(workDir, 'specs', 'spec-fixture.md'), '# Fixture consumer\n', 'utf8');
     await writeFile(
       join(workDir, 'specs', 'spec-fixture.citations.yml'),
       `citations:\n  - id: FR-NOT-FOUND\n    digest: ${VALID_DIGEST}\n    anchor: S1\n`,
