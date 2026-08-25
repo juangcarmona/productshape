@@ -29,17 +29,20 @@ context: >-
   never fix it quietly.
 
   Every current OpenSpec document (proposal, specs, design, tasks and
-  openspec/specs/) has exactly one scope state: bound (it carries at least one
-  citation, or declares `pdac-scope: cited`), exempt (a human declared
-  `pdac-scope: none` because the document has no product-semantic dependency),
-  or unclassified (neither declared — a verification failure). Binding and
-  exemption are human declarations: never declare `pdac-scope: none` merely
-  because citations are missing, and a `pdac-scope: cited` document with zero
-  citations fails. Verify with `npx prodshape citations verify --provider
-  openspec`: it enumerates the expected documents, so zero discovered citations
-  is a set of failures, never a pass. The scope gate applies to current
-  documents only; citations in archived changes are still checked, with problems
-  reported as warnings, because archived history cannot be edited.
+  openspec/specs/) carries exactly one explicit scope declaration: `pdac-scope:
+  cited` for a bound document that carries at least one citation, or
+  `pdac-scope: none` with a non-empty human-authored reason (`pdac-scope-reason:
+  <why>` in frontmatter, or `<!-- pdac-scope: none reason="<why>" -->`) for an
+  exempt one. Citations alone never bind: a document without a declaration is
+  unclassified and fails verification, a bound document with zero citations
+  fails, and an exemption without a reason or contradicted by citations fails.
+  Binding and exemption are human declarations: never declare an exemption
+  merely because citations are missing. Verify with `npx prodshape citations
+  verify --provider openspec`: it enumerates the expected current documents, so
+  zero discovered citations is a set of failures, never a pass. Archived changes
+  are excluded by default; `--include-archived` also verifies the citations
+  history carries, reported as warnings, because archived history cannot be
+  edited.
 
   The accepted Product Definition changes only through a Product Change under
   docs/product/changes/: validate it as an overlay while the baseline stays
@@ -59,11 +62,6 @@ rules:
       overlay-validated and human-approved Product Change exists yet, stop and
       ask for one instead of proceeding. The OpenSpec change is not the Product
       Change.
-    - "Every document of this change must end up bound or exempt: bind by citing
-      the canonical text it depends on, or declare `pdac-scope: none` on a line
-      of its own (frontmatter or `<!-- pdac-scope: none -->`) when a human
-      judges the document has no product-semantic dependency. Never declare an
-      exemption just because citations are missing."
     - "If this change's goals contradict the product definition, or need
       behaviour it does not describe, that is product-definition drift. Record
       it in the proposal under a 'Product definition drift' note naming the
@@ -86,6 +84,13 @@ rules:
       payload emitted by `npx prodshape cite --id <ID> --digest <digest>` and
       wrapped in the document native comment (`<!-- ... -->` in Markdown). Never
       write a citation record by hand.
+    - 'Every document of this change must end up bound or exempt, each with an
+      explicit declaration: declare `pdac-scope: cited` on a line of its own and
+      cite the canonical text the document depends on, or declare `pdac-scope:
+      none` with a non-empty reason (`pdac-scope-reason: <why>` in frontmatter,
+      or `<!-- pdac-scope: none reason="<why>" -->`) when a human judges the
+      document has no product-semantic dependency. Citations alone never bind,
+      and never declare an exemption just because citations are missing.'
   specs:
     - Cite a specific verification scenario with an anchor when the requirement
       maps to one (anchor="<scenario id>").
@@ -113,10 +118,10 @@ operations:
     guidance:
       - "Before finishing, run `npx prodshape citations verify --provider
         openspec` and fix every stale, tampered or unresolved citation, every
-        unclassified document and every bound document without citations.
-        Refresh a stale digest by re-running `npx prodshape inspect <ID>`; never
-        delete a citation or declare `pdac-scope: none` to silence a
-        diagnostic."
+        unclassified document, every bound document without citations and every
+        exemption without a reason. Refresh a stale digest by re-running `npx
+        prodshape inspect <ID>`; never delete a citation or declare `pdac-scope:
+        none` to silence a diagnostic."
   archive:
     guidance:
       - Run `npx prodshape citations verify --provider openspec` one final time.
