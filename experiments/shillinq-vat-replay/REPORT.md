@@ -3,6 +3,12 @@
 Companion to [PROTOCOL.md](PROTOCOL.md). Baseline, arms, outcome scale and
 validity threats are defined there and not repeated.
 
+> **Read [CANONICAL-DIVERGENCE.md](CANONICAL-DIVERGENCE.md) first.** The
+> evidence base was corrected after these arms ran: the contradiction is in
+> `openspec/specs/` — the layer that must not diverge — and not merely in an
+> archived change. That correction strengthens the case and adds the pilot's
+> most important limit (§ Conclusions, point 5).
+
 ## Verdict summary
 
 | Failure | Arm 1a change gate | Arm 1b citation gate | Arm 1c evasion | Arm 2a proposer | Arm 2b implementer |
@@ -203,8 +209,26 @@ matters for how PDaC is presented:
    took deliberate recovery work (11 artifacts, every one provenance-pinned
    to canonical text that already existed at the audited commit).
 
+5. **The failure mode PDaC's own machinery would miss is the one that
+   happened.** Per [CANONICAL-DIVERGENCE.md](CANONICAL-DIVERGENCE.md), the
+   contradiction lives inside the authoritative layer: one canonical file
+   forbids `VatReturnService` in REQ-VBTW-005 and mandates
+   `VATReturnService::deriveVATLines()` in REQ-VBTW-013, 380 lines apart.
+   Arm 1a establishes that `prodshape validate` has no
+   semantic-contradiction diagnostics, so an accepted PDaC baseline could
+   hold the same pair. Being one graph with typed edges makes such a pair
+   *reviewable together*, which the historical repo's 160 loose specs did
+   not — but reviewability is not enforcement, and this pilot should not be
+   read as claiming otherwise.
+
 **Cheap hardening this pilot motivates** (all falsifiable in a follow-up):
 
+- **Ranked first, added after the canonical-divergence review:** a
+  contradiction check between accepted artifacts — minimally, flag when a
+  new requirement's text names an implementation artifact that an accepted
+  business rule prohibits by name. Cheap, mechanical, and it would have
+  fired on REQ-VBTW-013 against REQ-VBTW-005. The semantic version belongs
+  in the `audit-product-model` skill.
 - A term-collision lint: warn when a proposed term/entity name is a
   case/spacing/language variant of an existing term or its synonyms.
   `VATReturn` vs `VatReturn` is case distance zero — this single diagnostic

@@ -13,10 +13,23 @@ the repository contained the canonical spec `bookkeeping-vat-btw-filing`
 corrected, "shillinq adds no per-app controller for BTW filing") **and** the
 implemented model `VATReturn` (17 fields, lifecycle draft→submitted→verified→
 filed, seven custom endpoints, `VATReturnService`), sharing only
-`administrationId`. The OpenSpec change that introduced the second model
-(`2026-06-14-bookkeeping-vat-btw-filing`) contradicts itself: its design.md
-forbids `VATReturnService.php`; its tasks.md orders it built. Deterministic
-validation stayed green throughout. The cross-tenant membership rule
+`administrationId`.
+
+**The divergence is in the canonical layer, not only in change history.**
+See [CANONICAL-DIVERGENCE.md](CANONICAL-DIVERGENCE.md): the same canonical
+spec file forbids a per-app controller and any `VatReturnService`
+(REQ-VBTW-001, REQ-VBTW-005) and then *mandates*
+`VATReturnService::deriveVATLines()` plus the
+`VATReturn`/`VATDeclaration`/`VATLine` cluster (REQ-VBTW-013/014); two
+further canonical specs (`bookkeeping-aansluitingen`, `accountant-portal`)
+are built on the forbidden model; and the file's own Notes admit the
+dual-schema situation while deferring to an archived `design.md` to explain
+it. An earlier framing of this pilot leaned on the archived change's
+internal design-vs-tasks contradiction — weaker evidence, since an archive
+is a historical record and may legitimately be stale — and that is now a
+supporting detail, not the case.
+
+Deterministic validation stayed green throughout. The cross-tenant membership rule
 (canonical in `bookkeeping-multi-administratie`) was not bound to the new
 endpoints, which later reproduced as a cross-tenant creation vulnerability.
 
@@ -109,6 +122,12 @@ Dutch/English names from the canonical spec's own text.
 2. **Hindsight baseline.** The baseline was recovered knowing the failure.
    Mitigation: every artifact is provenance-pinned to canonical text that
    existed at the audited commit; nothing in the baseline was invented.
+   **But (added after CANONICAL-DIVERGENCE.md): canon contradicted itself,
+   so the baseline is canon with that contradiction resolved in favour of
+   the stated product decision — not a neutral transcription.** The Arm 2
+   agents were therefore held to an internally consistent model that the
+   real repository never had. This is the pilot's largest interpretive
+   caveat.
 3. **Synonym leakage in TERM-VAT-RETURN.** Its synonyms ("BTW-aangifte",
    "VatReturn") make F1 easier to spot. Defense: recording the equivalence of
    statutory names is exactly what a domain term is for, and the canonical
