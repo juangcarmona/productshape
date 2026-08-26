@@ -7,43 +7,35 @@ This guide covers adopting Product Definition as Code for a new product: a fresh
 ## 1. Initialize the repository
 
 ```bash
-prodshape init --ai claude
+prodshape init
 ```
 
-`--ai` accepts a comma-separated list of `claude`, `copilot` and `codex` (`--ai claude,copilot`). It is optional: you can add integrations later with `prodshape integration add`.
-
-Initialize the product definition and wire OpenSpec in one command with `prodshape init --sdd openspec`, or initialize first and add an existing OpenSpec workspace with `prodshape integration add openspec`.
-
-`init` creates:
+The default is the kernel: four files, everything real adoption needs and nothing else.
 
 ```text
 docs/product/
+├── README.md               # what this directory is and how it changes
 ├── model/                  # the current product model (canonical, empty at first)
-│   ├── actors/
-│   ├── journeys/
-│   ├── use-cases/
-│   ├── business-rules/
-│   ├── domain/{terms,bounded-contexts}/
-│   └── requirements/{functional,quality,constraints}/
 └── changes/
-    ├── active/
-    ├── completed/
-    ├── rejected/
-    └── superseded/
+    └── active/             # live Product Changes; the archives materialize on first use
 .product/
-├── config.yaml             # repository configuration (canonical)
-├── installation.lock.json  # digests of the generated managed files; commit it
-└── templates/              # authoring templates, one per artifact kind
+└── config.yaml             # repository configuration (canonical)
 ```
 
-The model subdirectories are a **recommendation, not a rule**: artifact discovery walks the model directory recursively and keys on the frontmatter `type`, so any layout validates. Taking the recommended one means not having to invent a taxonomy; `--flat` opts out. Each directory gets a `.gitkeep` so the structure survives a commit — Git does not track empty directories.
+Authoring templates and schemas stay on demand: `prodshape template <kind>` prints a starting point for any artifact kind and `prodshape schema <kind>` prints its allowed frontmatter, so the first artifact costs one redirect rather than a copied file tree.
 
-`.product/generated/` and `.product/cache/` appear later, when a command writes them. They are regenerable and non-canonical, so they belong in your `.gitignore`: run `prodshape init --gitignore` to have the rules written, or accept the prompt when running interactively. `init` never touches that file unasked, and only ever appends to it. Everything else under `.product/` is committed, including the configuration, the installation lock, the templates and any integration records.
+Expand explicitly when you want more:
+
+- `prodshape init --full` installs the full reference profile: one model directory per artifact kind (a **recommendation, not a rule** — discovery walks the model directory recursively and keys on frontmatter `type`, and `--flat` opts out of the taxonomy), the change archives, and the template library under `.product/templates/`. Each scaffolded directory gets a `.gitkeep` so the structure survives a commit.
+- `prodshape init --ai claude` adds AI integrations and implies `--full` (the installed skills author from the templates and the per-kind layout). `--ai` accepts a comma-separated list of `claude`, `copilot` and `codex`; integrations can also be added later with `prodshape integration add`.
+- `prodshape init --sdd openspec` wires OpenSpec in the same run, or add an existing workspace later with `prodshape integration add openspec`.
+
+`.product/generated/` and `.product/cache/` appear later, when a command writes them. They are regenerable and non-canonical, so they belong in your `.gitignore`: run `prodshape init --gitignore` to have the rules written, or accept the prompt when running interactively. `init` never touches that file unasked, and only ever appends to it. Everything else under `.product/` is committed: the configuration always, plus the installation lock, the templates and any integration records when the expansions installed them.
 
 Preview all of this against your repository before running it for real:
 
 ```bash
-prodshape init --ai claude --dry-run
+prodshape init --full --dry-run
 ```
 
 If you requested AI integrations, `init` also generates managed files under `.claude/` or `.github/` (skills, `/product:*` commands, hooks). Those are generated from canonical assets and must never be edited by hand — see [Installing into an existing repository](existing-repository.md) for the authority rules.

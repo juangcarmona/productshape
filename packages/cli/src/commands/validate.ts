@@ -31,7 +31,11 @@ export async function runValidate(io: CliIo, options: ValidateOptions): Promise<
       stableJson({
         schema: 'product-definition-as-code/diagnostics/v1alpha1',
         diagnostics,
-        summary: { errors: errors.length, warnings: warnings.length },
+        summary: {
+          errors: errors.length,
+          warnings: warnings.length,
+          artifacts: graph.nodes.length,
+        },
       }).trimEnd(),
     );
   } else {
@@ -39,6 +43,13 @@ export async function runValidate(io: CliIo, options: ValidateOptions): Promise<
     io.out(
       `${errors.length} error(s), ${warnings.length} warning(s) across ${graph.nodes.length} artifact(s)`,
     );
+    if (graph.nodes.length === 0) {
+      // Valid and empty are different answers: an empty model must not read as completed
+      // adoption, so the zero-artifact case names the route to the first accepted baseline.
+      io.out(
+        'No product definition exists yet: 0 artifacts were found under the model directory. Create the first baseline through CHG-INITIAL (prodshape change create CHG-INITIAL); the citation-first walkthrough in the @prodshape/cli README walks the whole loop.',
+      );
+    }
   }
 
   // Generation is opt-in: validate is a read-only verdict, and writing generated files as a side

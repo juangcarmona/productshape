@@ -59,6 +59,12 @@ Every path has exactly one owner. The full authority model is in the [specificat
 
 Managed integration files are generated from canonical assets (skills, command definitions, hook descriptors) shipped with the toolkit. If a generated file is wrong, fix the canonical asset or open an issue — a hand edit will be flagged as drift and lost on the next `integration update`.
 
+## Migrating from the earlier init layout
+
+Repositories initialized before the kernel default carry the full profile: per-kind model directories with `.gitkeep` markers, the four change directories, and the template library under `.product/templates/`. Nothing about that layout stops working, and nothing requires migration: the kernel changed only what a fresh `prodshape init` writes.
+
+Optional cleanup, entirely your choice: `.gitkeep` markers in per-kind directories you do not use can be deleted (discovery keys on frontmatter `type`, not on directory names), and `.product/templates/` can be deleted if you prefer `prodshape template <kind>` on demand; `prodshape init --full` restores both at any time. Keep `.product/config.yaml`, `.product/installation.lock.json` and `.product/integrations/` exactly as before.
+
 ## Configuration
 
 `.product/config.yaml` follows the PDaC configuration contract: a versioned kernel of `version`, `product-root`, `validation.warnings-as-errors` and `extensions`, with every ProductShape-specific setting under the `extensions.prodshape` namespace:

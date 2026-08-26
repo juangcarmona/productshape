@@ -65,6 +65,8 @@ The CLI bundles every package below, so installing `@prodshape/cli` is all you n
 
 ## Quickstart
 
+> **This is a disposable sandbox, not the adoption path.** It writes into the accepted model directly to show the mechanics in two minutes and is deliberately non-governed. Real adoption changes the definition only through Product Changes: follow the governed citation-first walkthrough in the [`@prodshape/cli` README](packages/cli/README.md#the-governed-citation-first-walkthrough).
+
 Your model, rendered, in a couple of minutes:
 
 ```bash
@@ -72,6 +74,7 @@ mkdir my-product && cd my-product
 npm init -y && npm install --save-dev --save-exact @prodshape/cli@0.14.0
 npx --no-install prodshape init
 
+mkdir -p docs/product/model/business-rules
 cat > docs/product/model/business-rules/br-refund-001.md <<'EOF'
 ---
 id: BR-REFUND-001
@@ -102,7 +105,7 @@ npx --no-install prodshape graph --format html
 open .product/generated/snapshot.html   # xdg-open on Linux
 ```
 
-`validate` reports one warning — the rule has no consumers yet — which is the model telling you what to connect next. The snapshot is your product definition rendered as a browsable graph; add artifacts from `templates/` and re-run.
+`validate` reports one warning — the rule has no consumers yet — which is the model telling you what to connect next. The snapshot is your product definition rendered as a browsable graph; print a starting point for any kind with `prodshape template <kind>` and re-run.
 
 ### Release contract (what CI executes)
 

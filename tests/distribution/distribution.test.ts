@@ -536,7 +536,7 @@ describe('init and managed-file lifecycle (end to end)', () => {
     expect(result.code).toBe(0);
     expect(result.out).toContain('Next steps:');
     expect(result.out).toContain(
-      'Create CHG-INITIAL under docs/product/changes/active/chg-initial/',
+      'Scaffold the first change with: prodshape change create CHG-INITIAL',
     );
     expect(result.out).toContain('prodshape change validate CHG-INITIAL');
     expect(result.out).toContain('prodshape change apply CHG-INITIAL --dry-run');

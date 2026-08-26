@@ -18,7 +18,16 @@ export interface InitOptions {
   root: string;
   ai: string[];
   force?: boolean;
-  /** Scaffold the model directory without the per-kind subdirectories. */
+  /**
+   * Install the full reference profile: the per-kind model layout, the change archives and the
+   * authoring template library. Off by default: the kernel (configuration, model home, live-change
+   * home, guidance) is all a repository needs to reach its first verified citation, and templates
+   * and schemas stay discoverable on demand (`prodshape template <kind>`, `prodshape schema
+   * <kind>`). Selecting an AI integration implies the full profile, because the installed skills
+   * author from `.product/templates/` and the per-kind layout.
+   */
+  full?: boolean;
+  /** With the full profile, scaffold the model directory without the per-kind subdirectories. */
   flat?: boolean;
   /** Generate `/ps:<name>` shorthand aliases. Persisted into the generated configuration. */
   shorthand?: boolean;
@@ -91,6 +100,13 @@ export const changeScaffoldDirs = [
   'docs/product/changes/superseded',
 ];
 
+/**
+ * The kernel scaffold: the model home and the live-change home only. Archives materialize when
+ * `apply` or `archive` first files into them, and the per-kind taxonomy stays a recommendation an
+ * adopter opts into with the full profile.
+ */
+export const kernelScaffoldDirs = ['docs/product/model', 'docs/product/changes/active'];
+
 export type InitActionKind =
   'create' | 'preserve' | 'append' | 'overwrite' | 'regenerate' | 'conflict';
 
@@ -149,16 +165,17 @@ Product Definition as Code.
 - \`model/\` holds the accepted Product Definition (the baseline).
 - \`changes/active/\` holds live Product Changes, each with its complete proposed future state.
   \`changes/completed/\`, \`changes/rejected/\` and \`changes/superseded/\` hold the change history,
-  one directory per terminal status, and are inert.
+  one directory per terminal status, and are inert; they materialize when the first change is
+  applied or archived.
 
 The definition changes through exactly one mechanism: a Product Change, validated as an overlay,
 approved by a human, applied with \`prodshape change apply\`, and accepted when a human merges the
 pull request carrying the result. Product-definition work and implementation work may share that
 pull request or proceed at different times, but apply, acceptance and delivery remain distinct.
 
-Validate with \`prodshape validate\`. Authoring templates are under
-\`.product/templates/\`. The allowed frontmatter of every artifact kind is printed by
-\`prodshape schema <kind>\`.
+Validate with \`prodshape validate\`. Print an authoring template with
+\`prodshape template <kind>\` and the allowed frontmatter with \`prodshape schema <kind>\`;
+\`prodshape init --full\` installs the template library under \`.product/templates/\`.
 `;
 
 async function exists(path: string): Promise<boolean> {
@@ -186,6 +203,9 @@ export async function planInit(options: InitOptions): Promise<InitPlan> {
     gitignore = false,
     generatedRoot = defaultGeneratedRoot,
   } = options;
+  // The installed AI skills author from `.product/templates/` and the per-kind layout, so an AI
+  // selection implies the full profile rather than installing skills that point at nothing.
+  const full = (options.full ?? false) || ai.length > 0;
   const actions: InitAction[] = [];
 
   // Existing configuration wins over the flag unless --force. Otherwise `init --shorthand` in an
@@ -216,10 +236,9 @@ export async function planInit(options: InitOptions): Promise<InitPlan> {
   // are invisible to the tooling.
   // --flat still scaffolds the model directory itself: without it there is nothing for
   // `validate` to walk and `doctor` reports missing structure.
-  const scaffoldDirs = [
-    ...(flat ? ['docs/product/model'] : modelScaffoldDirs),
-    ...changeScaffoldDirs,
-  ];
+  const scaffoldDirs = full
+    ? [...(flat ? ['docs/product/model'] : modelScaffoldDirs), ...changeScaffoldDirs]
+    : kernelScaffoldDirs;
   for (const dir of scaffoldDirs) {
     // An existing marker is never rewritten, even with --force: it is an empty marker, so
     // reporting an overwrite would describe a change that does not happen.
@@ -230,8 +249,10 @@ export async function planInit(options: InitOptions): Promise<InitPlan> {
   await add('docs/product/README.md', 'readme', productReadme);
 
   const assets: CanonicalAssets = await loadBundledAssets();
-  for (const template of assets.templates) {
-    await add(`.product/templates/${template.name}`, 'template', template.content);
+  if (full) {
+    for (const template of assets.templates) {
+      await add(`.product/templates/${template.name}`, 'template', template.content);
+    }
   }
 
   for (const provider of ai) {
@@ -291,21 +312,29 @@ export async function planInit(options: InitOptions): Promise<InitPlan> {
     }
   }
 
-  const proposedModelHint = flat
-    ? 'docs/product/changes/active/chg-initial/proposed'
-    : "docs/product/changes/active/chg-initial/proposed (using the model's per-kind layout)";
+  const proposedModelHint =
+    full && !flat
+      ? "docs/product/changes/active/chg-initial/proposed (using the model's per-kind layout)"
+      : 'docs/product/changes/active/chg-initial/proposed';
+  // What to commit is asked on every adoption, and getting it wrong in the safe-looking direction
+  // (ignoring .product entirely) is what breaks the installation for everyone else who clones.
+  const commitTargets = [
+    '.product/config.yaml',
+    ...(full ? ['.product/templates/'] : []),
+    ...(ai.length > 0 ? ['.product/installation.lock.json', '.product/integrations/'] : []),
+  ];
   const nextSteps = [
-    'Create CHG-INITIAL under docs/product/changes/active/chg-initial/ from .product/templates/product-change.md.',
-    `Author its complete proposed artifacts under ${proposedModelHint} (templates: .product/templates/).`,
-    'Discover the allowed frontmatter for a kind with: prodshape schema <kind>',
+    'Scaffold the first change with: prodshape change create CHG-INITIAL',
+    `Author its complete proposed artifacts under ${proposedModelHint}.`,
+    full
+      ? 'Author from the installed templates under .product/templates/; the allowed frontmatter for a kind is printed by: prodshape schema <kind>'
+      : 'Print an authoring template with: prodshape template <kind> (and the allowed frontmatter with: prodshape schema <kind>)',
     'Validate the overlay with: prodshape change validate CHG-INITIAL',
     'After human product approval, set CHG-INITIAL to approved and dry-run: prodshape change apply CHG-INITIAL --dry-run',
     'Apply explicitly with: prodshape change apply CHG-INITIAL',
     'Open a pull request with the applied result; its merge accepts the initial baseline. Apply does not.',
     'Implementation may share that pull request or follow later; Product Change status never reports delivery.',
-    // What to commit is asked on every adoption, and getting it wrong in the safe-looking direction
-    // (ignoring .product entirely) is what breaks the installation for everyone else who clones.
-    'Commit .product/config.yaml, .product/installation.lock.json, .product/templates/ and .product/integrations/: every clone verifies the installation against them.',
+    `Commit ${commitTargets.join(', ')}: every clone ${ai.length > 0 ? 'verifies the installation against them' : 'reads the repository configuration from it'}.`,
     ...(gitignore
       ? []
       : [
@@ -313,6 +342,11 @@ export async function planInit(options: InitOptions): Promise<InitPlan> {
         ]),
     'Cite product artifacts from consumer docs with: prodshape cite',
     'Verify citations with: prodshape citations verify',
+    ...(full
+      ? []
+      : [
+          'Expand later on demand: prodshape init --full installs the per-kind layout and the template library; prodshape init --ai <provider> adds an AI integration.',
+        ]),
   ];
 
   return {
