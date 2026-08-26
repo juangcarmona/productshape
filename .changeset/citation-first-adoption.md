@@ -1,6 +1,0 @@
----
-'@prodshape/cli': minor
-'@prodshape/distribution': minor
----
-
-Make first adoption a minimal citation-first workflow. `prodshape init` now installs the kernel only: the configuration, the model home, the live-change home and a README, four files before the first artifact. The full reference profile (per-kind model layout, change archives, template library) installs with `prodshape init --full`, and selecting an AI integration implies it because the installed skills author from the templates. Templates stay discoverable on demand through the new `prodshape template <kind>` command; `prodshape schema <kind>` keeps printing the frontmatter contract. Validating an empty model now states that no product definition exists yet and names the CHG-INITIAL route, instead of presenting emptiness as completed adoption, and the JSON summary carries an `artifacts` count. The governed citation-first walkthrough is documented in the CLI README and exercised from the packed binary in CI; the repository quickstart is labelled as the disposable non-governed sandbox it is. Existing repositories need no migration: the earlier full layout remains valid, and the adoption guide documents the optional cleanup.
