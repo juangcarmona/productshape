@@ -187,7 +187,7 @@ html, body { height: 100%; }
 body { display: flex; flex-direction: column; overflow: hidden; }
 header.site { flex: none; }
 main { flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 1rem; display: flex; flex-direction: column; }
-main > section { flex: 1 1 auto; min-height: 0; }
+main > section { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
 #view-overview { overflow-y: auto; }
 section[hidden] { display: none; }
 h2.view { margin: 0 0 0.7rem; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
@@ -243,7 +243,7 @@ ul.plain li { padding: 0.18rem 0; border-bottom: 1px solid var(--line); }
 ul.idlist { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.3rem 0.5rem; }
 ul.idlist a { font-family: var(--mono); font-size: 0.8rem; border: 1px solid var(--line); border-radius: 2px; padding: 0.1rem 0.4rem; }
 
-.md { display: grid; grid-template-columns: minmax(16rem, 20rem) minmax(24rem, 46rem) minmax(0, 1fr); gap: 0; border: 1px solid var(--line-strong); height: 100%; min-height: 0; }
+.md { display: grid; grid-template-columns: minmax(16rem, 20rem) minmax(24rem, 46rem) minmax(0, 1fr); gap: 0; border: 1px solid var(--line-strong); flex: 1 1 auto; min-height: 0; }
 .master { border-right: 1px solid var(--line-strong); min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 .master .filters h3.findhead { margin: 0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
 .master .filters { padding: 0.5rem; border-bottom: 1px solid var(--line); background: var(--panel); display: grid; gap: 0.4rem; }
