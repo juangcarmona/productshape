@@ -15,7 +15,15 @@ import {
 } from './artifact.js';
 import type { RawSchema } from './schema-registry.js';
 
-export type FieldKind = 'string' | 'const' | 'enum' | 'array' | 'object' | 'boolean' | 'unknown';
+export type FieldKind =
+  | 'string'
+  | 'const'
+  | 'enum'
+  | 'array'
+  | 'object'
+  | 'boolean'
+  | 'one-of'
+  | 'unknown';
 
 export interface FieldDescriptor {
   /** Property name, as authored in the schema. */
@@ -38,6 +46,8 @@ export interface FieldDescriptor {
   items?: FieldDescriptor;
   /** For objects: the nested field contracts, in schema order. */
   properties?: FieldDescriptor[];
+  /** For `oneOf` fields: the alternative contracts, in schema order; exactly one must match. */
+  variants?: FieldDescriptor[];
 }
 
 export interface KindDescriptor {
@@ -62,37 +72,58 @@ function stringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : [];
 }
 
+/** A resolved schema fragment together with the document that owns it, for later local refs. */
+interface ResolvedFragment {
+  schema: RawSchema;
+  /** The schema document the fragment came from; a `#/...` ref inside it resolves here. */
+  base: RawSchema | undefined;
+}
+
 /**
  * Resolve a `$ref` against the loaded schemas, merging any sibling keywords over the target.
  * Sibling keywords are used today for local `description` overrides (domain-term.defined-in,
- * product-change.base-revision), and the local value wins.
+ * product-change.base-revision), and the local value wins. A document-local `#/...` ref
+ * resolves against `base`, the document the fragment came from; crossing into another document
+ * makes that document the new base, so its own local refs keep resolving.
  */
-function resolve(schema: RawSchema, schemas: ReadonlyMap<string, RawSchema>): RawSchema {
+function resolve(
+  schema: RawSchema,
+  schemas: ReadonlyMap<string, RawSchema>,
+  base: RawSchema | undefined,
+): ResolvedFragment {
   const ref = schema.$ref;
-  if (typeof ref !== 'string') return schema;
+  if (typeof ref !== 'string') return { schema, base };
 
   const [id, pointer] = ref.split('#');
   let target: unknown;
-  for (const candidate of schemas.values()) {
-    if (candidate.$id === id) {
-      target = candidate;
-      break;
+  let owner: RawSchema | undefined;
+  if (id === '') {
+    owner = base;
+    target = base;
+  } else {
+    for (const candidate of schemas.values()) {
+      if (candidate.$id === id) {
+        owner = candidate;
+        target = candidate;
+        break;
+      }
     }
   }
-  if (!isObject(target)) return schema;
+  if (!isObject(target)) return { schema, base };
 
   for (const segment of (pointer ?? '').split('/')) {
     if (segment === '') continue;
     const key = segment.replaceAll('~1', '/').replaceAll('~0', '~');
-    if (!isObject(target)) return schema;
+    if (!isObject(target)) return { schema, base };
     target = target[key];
   }
-  if (!isObject(target)) return schema;
+  if (!isObject(target)) return { schema, base };
 
   const siblings = { ...schema };
   delete siblings.$ref;
   // Resolve transitively in case the target is itself a reference, then let siblings win.
-  return { ...resolve(target, schemas), ...siblings };
+  const inner = resolve(target, schemas, owner);
+  return { schema: { ...inner.schema, ...siblings }, base: inner.base };
 }
 
 function fieldKind(schema: RawSchema): FieldKind {
@@ -117,11 +148,20 @@ function describeField(
   raw: unknown,
   required: boolean,
   schemas: ReadonlyMap<string, RawSchema>,
+  base: RawSchema | undefined,
 ): FieldDescriptor {
   if (!isObject(raw)) return { name, required, kind: 'unknown' };
-  const schema = resolve(raw, schemas);
+  const { schema, base: owner } = resolve(raw, schemas, base);
 
   const descriptor: FieldDescriptor = { name, required, kind: fieldKind(schema) };
+  // A oneOf field is a closed choice between alternative shapes; each branch is described in
+  // schema order so the reference can present every form instead of an opaque `unknown`.
+  if (Array.isArray(schema.oneOf)) {
+    descriptor.kind = 'one-of';
+    descriptor.variants = schema.oneOf.map((branch) =>
+      describeField(name, branch, required, schemas, owner),
+    );
+  }
   if (typeof schema.const === 'string') descriptor.constValue = schema.const;
   if (Array.isArray(schema.enum)) descriptor.values = schema.enum.map((v) => String(v));
   if (typeof schema.pattern === 'string') descriptor.pattern = schema.pattern;
@@ -130,12 +170,12 @@ function describeField(
   if (typeof schema.description === 'string') descriptor.description = schema.description;
 
   if (descriptor.kind === 'array' && schema.items !== undefined) {
-    descriptor.items = describeField(`${name}[]`, schema.items, true, schemas);
+    descriptor.items = describeField(`${name}[]`, schema.items, true, schemas, owner);
   }
   if (descriptor.kind === 'object' && isObject(schema.properties)) {
     const nestedRequired = new Set(stringArray(schema.required));
     descriptor.properties = Object.entries(schema.properties).map(([key, value]) =>
-      describeField(`${name}.${key}`, value, nestedRequired.has(key), schemas),
+      describeField(`${name}.${key}`, value, nestedRequired.has(key), schemas, owner),
     );
   }
   // A map keyed by pattern rather than by fixed names needs its entry shape documented too.
@@ -153,6 +193,7 @@ function describeField(
           value,
           false,
           schemas,
+          owner,
         ),
       ),
     ];
@@ -179,7 +220,7 @@ export function describeKind(
     // Schema property order, not required-first: it is stable, it matches the file, and it
     // makes the generated document byte-reproducible.
     fields: Object.entries(properties).map(([name, value]) =>
-      describeField(name, value, required.has(name), schemas),
+      describeField(name, value, required.has(name), schemas, schema),
     ),
   };
   if (typeof schema.description === 'string') descriptor.description = schema.description;
@@ -215,6 +256,20 @@ function flatten(fields: FieldDescriptor[]): FieldDescriptor[] {
     if (field.items && field.items.kind !== 'object') rows.push(...flatten([field.items]));
     if (field.items?.properties) rows.push(...flatten(field.items.properties));
     if (field.properties) rows.push(...flatten(field.properties));
+    // A oneOf's forms follow their field, each nested row labelled with its form number so a
+    // reader can tell which properties belong together and that the forms are exclusive.
+    if (field.variants) {
+      field.variants.forEach((variant, index) => {
+        const label = `Form ${index + 1}.`;
+        const inner = variant.properties ? flatten(variant.properties) : flatten([variant]);
+        rows.push(
+          ...inner.map((row) => ({
+            ...row,
+            description: row.description ? `${label} ${row.description}` : label,
+          })),
+        );
+      });
+    }
   }
   return rows;
 }
@@ -223,8 +278,11 @@ function typeLabel(field: FieldDescriptor): string {
   if (field.kind === 'array') {
     const item = field.items;
     if (!item) return 'array';
-    return item.kind === 'object' ? 'array of object' : `array of ${item.kind}`;
+    if (item.kind === 'object') return 'array of object';
+    if (item.kind === 'one-of') return `array of one of ${item.variants?.length ?? 0} forms`;
+    return `array of ${item.kind}`;
   }
+  if (field.kind === 'one-of') return `one of ${field.variants?.length ?? 0} forms`;
   return field.kind;
 }
 
@@ -238,6 +296,7 @@ function allowedLabel(field: FieldDescriptor): string {
 function notes(field: FieldDescriptor): string[] {
   const parts: string[] = [];
   if (field.description) parts.push(field.description);
+  if (field.kind === 'one-of') parts.push('Each value matches exactly one of the forms below.');
   if (field.minItems !== undefined) {
     parts.push(
       field.minItems === 1 ? 'At least one entry.' : `At least ${field.minItems} entries.`,

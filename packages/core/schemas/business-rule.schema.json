@@ -20,6 +20,10 @@
         "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/behaviourTargetId"
       }
     },
+    "uses-terms": {
+      "type": "array",
+      "items": { "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/domainTermId" }
+    },
     "provenance": {
       "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/provenance"
     }

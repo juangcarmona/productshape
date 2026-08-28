@@ -185,12 +185,14 @@ export function validateModel(artifacts: LoadedArtifact[], graph: ProductGraph):
       }
     }
     if (node.type === 'domain-term') {
+      // Usage is the incoming canonical `uses-terms` edge from any permitted source kind; a
+      // prose mention of the term's id or title never counts (RFC 0072).
       const used = incoming.some((e) => e.kind === 'uses-terms');
       if (!used) {
         diagnostics.push({
           severity: 'warning',
           code: 'PRODUCT106',
-          message: `Domain term '${node.id}' is not used by any artifact`,
+          message: `Domain term '${node.id}' has no incoming uses-terms relationship`,
           file: node.path,
           artifact: node.id,
         });

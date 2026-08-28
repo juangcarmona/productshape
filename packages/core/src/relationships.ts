@@ -21,14 +21,21 @@ export const relationshipSpecs: RelationshipSpec[] = [
   { source: 'use-case', field: 'governed-by', targets: ['business-rule'] },
   { source: 'use-case', field: 'uses-terms', targets: ['domain-term'] },
   { source: 'business-rule', field: 'applies-to', targets: behaviourTargets },
+  { source: 'business-rule', field: 'uses-terms', targets: ['domain-term'] },
   { source: 'domain-term', field: 'defined-in', targets: ['bounded-context'] },
+  // Definitional dependency: understanding one definition may require another named term
+  // (RFC 0072). Cycles between Domain Terms are representable and not diagnosed.
+  { source: 'domain-term', field: 'uses-terms', targets: ['domain-term'] },
   {
     source: 'functional-requirement',
     field: 'derived-from',
     targets: ['use-case', 'business-rule', 'constraint'],
   },
+  { source: 'functional-requirement', field: 'uses-terms', targets: ['domain-term'] },
   { source: 'quality-requirement', field: 'applies-to', targets: behaviourTargets },
+  { source: 'quality-requirement', field: 'uses-terms', targets: ['domain-term'] },
   { source: 'constraint', field: 'applies-to', targets: behaviourTargets },
+  { source: 'constraint', field: 'uses-terms', targets: ['domain-term'] },
 ];
 
 export interface Edge {

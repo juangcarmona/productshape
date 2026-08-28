@@ -4,6 +4,7 @@ type: business-rule
 title: Example Business Rule
 status: draft
 applies-to: []
+uses-terms: []
 ---
 
 <!--
@@ -11,6 +12,7 @@ Business rule: durable product knowledge that governs behaviour. A rule used by 
 use cases or requirements must be independently identifiable, not hidden in stories,
 acceptance criteria, UI validation, code or tests.
 applies-to: journeys, use cases or bounded contexts governed by this rule.
+uses-terms (optional): TERM ids whose definitions interpreting this rule requires.
 provenance (optional): the evidence behind recovered knowledge. Set it on recovered
 (brownfield) artifacts; leave it unset when authoring from intent. It records evidence,
 never authorship: git history remains the record of who changed what and when.

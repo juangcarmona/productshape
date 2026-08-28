@@ -5,11 +5,13 @@ title: Example Term
 status: draft
 defined-in: BC-EXAMPLE
 synonyms: []
+uses-terms: []
 ---
 
 <!--
 Domain term: establishes shared meaning inside a bounded context.
 defined-in is the canonical ownership direction; bounded contexts never author owns-terms.
+uses-terms (optional): TERM ids this definition depends on; term-to-term dependencies are permitted.
 The definition must not merely repeat the title.
 provenance (optional): the evidence behind recovered knowledge. Set it on recovered
 (brownfield) artifacts; leave it unset when authoring from intent. It records evidence,
