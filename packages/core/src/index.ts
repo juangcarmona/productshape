@@ -24,7 +24,7 @@ export { discoverChanges, loadChange } from './changes.js';
 export type { ChangeOperations, LoadedChange } from './changes.js';
 export { configVersion, defaultConfig, loadConfig, parseConfig } from './config.js';
 export type { ConfigResult, ProductConfig } from './config.js';
-export { blockingDiagnostics, codes, compareCodeUnits, sortDiagnostics } from './diagnostics.js';
+export { blockingDiagnostics, codes, compareCodePoints, sortDiagnostics } from './diagnostics.js';
 export type { Diagnostic, DiagnosticSeverity } from './diagnostics.js';
 export {
   buildArtifactIndex,

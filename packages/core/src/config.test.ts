@@ -120,6 +120,21 @@ describe('parseConfig', () => {
     expect(diagnostics[0]?.field).toBe('');
   });
 
+  it.each([
+    ['an empty file', ''],
+    ['a comment-only file', '# nothing here\n'],
+  ])('leaves field absent for %s: no document parsed', (_label, content) => {
+    const { diagnostics } = parseConfig(content, '.product/config.yaml');
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0]?.code).toBe('PRODUCT050');
+    expect(diagnostics[0]?.field).toBeUndefined();
+  });
+
+  it('points at a property literally named the empty string', () => {
+    const { diagnostics } = parseConfig(`${KERNEL}\n'': true\n`, '.product/config.yaml');
+    expect(diagnostics).toEqual([expect.objectContaining({ code: 'PRODUCT050', field: '/' })]);
+  });
+
   it('rejects more than one YAML document', () => {
     const { diagnostics } = parseConfig(
       'version: v1alpha1\n---\nversion: v1alpha1\n',

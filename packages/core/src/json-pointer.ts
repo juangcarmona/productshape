@@ -16,20 +16,3 @@ export function escapePointerToken(token: string): string {
 export function appendPointerToken(pointer: string, token: string): string {
   return `${pointer}/${escapePointerToken(token)}`;
 }
-
-/**
- * Compare strings by Unicode code point, the order the configuration contract mandates for
- * choosing the first invalid instance path. Plain `<` compares UTF-16 code units, which disagrees
- * with code-point order for astral characters.
- */
-export function compareCodePoints(left: string, right: string): number {
-  const leftPoints = [...left];
-  const rightPoints = [...right];
-  const length = Math.min(leftPoints.length, rightPoints.length);
-  for (let i = 0; i < length; i += 1) {
-    const l = leftPoints[i]?.codePointAt(0) as number;
-    const r = rightPoints[i]?.codePointAt(0) as number;
-    if (l !== r) return l < r ? -1 : 1;
-  }
-  return leftPoints.length - rightPoints.length;
-}

@@ -787,6 +787,18 @@ describe('citations verify on an invalid product model', () => {
         '',
         'Exercise the invalid-model refusal.',
         '',
+        '## Goals',
+        '',
+        'One schema defect and nothing else.',
+        '',
+        '## Responsibilities',
+        '',
+        'Carry the bogus frontmatter key.',
+        '',
+        '## Boundaries',
+        '',
+        'Not a real actor.',
+        '',
       ].join('\n'),
       'utf8',
     );
@@ -796,12 +808,13 @@ describe('citations verify on an invalid product model', () => {
       schema: string;
       citations?: unknown;
       diagnostics: { code: string; field?: string; severity: string }[];
+      summary: { errors: number; warnings: number };
     };
     expect(parsed.schema).toBe('product-definition-as-code/diagnostics/v1alpha1');
     expect(parsed.citations).toBeUndefined();
     expect(parsed.diagnostics.some((d) => d.code === 'PRODUCT002' && d.field === '/bogus')).toBe(
       true,
     );
-    expect(parsed.diagnostics.every((d) => d.severity === 'error')).toBe(true);
+    expect(parsed.summary).toMatchObject({ errors: 1, warnings: 0 });
   });
 });

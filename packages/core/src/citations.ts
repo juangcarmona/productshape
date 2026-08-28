@@ -25,7 +25,7 @@ import { collectForbiddenYamlFeatures } from './yaml-strict.js';
 import type { YamlFeatureViolation } from './yaml-strict.js';
 import { contentDigest, normalizeToLf } from './digest.js';
 import type { Diagnostic } from './diagnostics.js';
-import { codes, compareCodeUnits } from './diagnostics.js';
+import { codes, compareCodePoints } from './diagnostics.js';
 import type { LoadedArtifact } from './model.js';
 
 /** The four citation statuses, per the citation contract. */
@@ -634,10 +634,10 @@ export function computeAffectedCitations(
   }
   return affected.sort(
     (a, b) =>
-      compareCodeUnits(a.citation.source, b.citation.source) ||
+      compareCodePoints(a.citation.source, b.citation.source) ||
       a.citation.line - b.citation.line ||
-      compareCodeUnits(a.citation.id, b.citation.id) ||
-      compareCodeUnits(a.citation.anchor ?? '', b.citation.anchor ?? ''),
+      compareCodePoints(a.citation.id, b.citation.id) ||
+      compareCodePoints(a.citation.anchor ?? '', b.citation.anchor ?? ''),
   );
 }
 

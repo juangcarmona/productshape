@@ -133,9 +133,12 @@ export class SchemaRegistry {
               : undefined;
         const detail =
           typeof params.additionalProperty === 'string' ? ` ('${params.additionalProperty}')` : '';
-        const field = offending
-          ? appendPointerToken(error.instancePath, offending)
-          : error.instancePath;
+        // `!== undefined`, not truthiness: a property literally named '' still names a location
+        // one token below the instance path.
+        const field =
+          offending !== undefined
+            ? appendPointerToken(error.instancePath, offending)
+            : error.instancePath;
         if (reportedPaths.has(field)) continue;
         reportedPaths.add(field);
         diagnostics.push({

@@ -3,7 +3,8 @@ import { Ajv2020 } from 'ajv/dist/2020.js';
 import { parseAllDocuments } from 'yaml';
 import { configSchema } from './config-schema.js';
 import type { Diagnostic } from './diagnostics.js';
-import { appendPointerToken, compareCodePoints } from './json-pointer.js';
+import { compareCodePoints } from './diagnostics.js';
+import { appendPointerToken } from './json-pointer.js';
 import { collectForbiddenYamlFeatures } from './yaml-strict.js';
 import type { YamlFeatureViolation } from './yaml-strict.js';
 
@@ -126,10 +127,15 @@ function ajvViolation(error: {
       : typeof error.params.missingProperty === 'string'
         ? error.params.missingProperty
         : undefined;
-  const path = offending ? appendPointerToken(error.instancePath, offending) : error.instancePath;
+  // `!== undefined`, not truthiness: a property literally named '' still names a location one
+  // token below the instance path.
+  const path =
+    offending !== undefined
+      ? appendPointerToken(error.instancePath, offending)
+      : error.instancePath;
   return {
     path,
-    message: `${error.instancePath || 'configuration'} ${error.message ?? 'is invalid'}${offending ? ` ('${offending}')` : ''}`,
+    message: `${error.instancePath || 'configuration'} ${error.message ?? 'is invalid'}${offending !== undefined ? ` ('${offending}')` : ''}`,
   };
 }
 
@@ -137,7 +143,9 @@ function ajvViolation(error: {
 function parseProdshapeSettings(raw: unknown, out: Violation[]): ProdshapeSettings {
   const settings = defaultProdshapeSettings();
   const ns = 'extensions.prodshape';
-  const nsPointer = '/extensions/prodshape';
+  // Both name the same namespace: the dotted form reads naturally in messages, the pointer
+  // locates the field. Derived so they cannot drift apart (the segments are fixed identifiers).
+  const nsPointer = `/${ns.replaceAll('.', '/')}`;
   if (raw === undefined) return settings;
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
     out.push({ path: nsPointer, message: `'${ns}' must be a mapping` });
@@ -210,7 +218,7 @@ function parseProdshapeSettings(raw: unknown, out: Violation[]): ProdshapeSettin
     if (ai !== undefined) {
       if (!Array.isArray(ai) || ai.some((entry) => typeof entry !== 'string')) {
         out.push({
-          path: `${nsPointer}/integrations/ai`,
+          path: appendPointerToken(appendPointerToken(nsPointer, 'integrations'), 'ai'),
           message: `'${ns}.integrations.ai' must be a list of strings`,
         });
       } else {
@@ -234,14 +242,14 @@ function parseProdshapeSettings(raw: unknown, out: Violation[]): ProdshapeSettin
         roots.some((entry) => typeof entry !== 'string' || entry.length === 0)
       ) {
         out.push({
-          path: `${nsPointer}/citations/consumer-roots`,
+          path: appendPointerToken(appendPointerToken(nsPointer, 'citations'), 'consumer-roots'),
           message: `'${ns}.citations.consumer-roots' must be a list of non-empty strings`,
         });
       } else if (roots.length === 0) {
         // An empty list would make `citations verify` scan nothing and report success, which is
         // exactly the false green the configuration exists to prevent.
         out.push({
-          path: `${nsPointer}/citations/consumer-roots`,
+          path: appendPointerToken(appendPointerToken(nsPointer, 'citations'), 'consumer-roots'),
           message: `'${ns}.citations.consumer-roots' must name at least one directory`,
         });
       } else {
@@ -298,9 +306,14 @@ export function parseConfig(content: string, file: string): ConfigResult {
     });
   }
 
+  // Zero documents (an empty or comment-only file) means nothing parsed, so there is no
+  // instance to point into and `field` stays absent. One document that parsed to a scalar,
+  // null or sequence is a failure at the document root: the empty pointer.
+  if (documents.length === 0) {
+    return one('Configuration must be a YAML mapping');
+  }
   const data: unknown = document ? document.toJS() : undefined;
   if (typeof data !== 'object' || data === null || Array.isArray(data)) {
-    // The document parsed, so the failure has an instance path: the document root.
     return one('Configuration must be a YAML mapping', '');
   }
 

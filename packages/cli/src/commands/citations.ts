@@ -169,20 +169,22 @@ export async function runCitationsVerify(
 
   // Citation statuses are computed against artifact ids and content digests; an invalid Product
   // Definition offers neither reliably, so verification refuses before scanning a single consumer
-  // document, the way invalid configuration stops every command. Errors only: a model warning
-  // does not undermine what a citation is verified against.
+  // document, the way invalid configuration stops every command. Warnings alone never trigger the
+  // refusal, but once it fires the whole baseline report is emitted, the same shape the sibling
+  // commands print.
   const modelErrors = baseline.diagnostics.filter((d) => d.severity === 'error');
   if (modelErrors.length > 0) {
+    const warnings = baseline.diagnostics.length - modelErrors.length;
     if (options.format === 'json') {
       io.out(
         stableJson({
           schema: 'product-definition-as-code/diagnostics/v1alpha1',
-          diagnostics: modelErrors,
-          summary: { errors: modelErrors.length, warnings: 0 },
+          diagnostics: baseline.diagnostics,
+          summary: { errors: modelErrors.length, warnings },
         }).trimEnd(),
       );
     } else {
-      for (const diagnostic of modelErrors) io.out(formatDiagnosticLine(diagnostic));
+      for (const diagnostic of baseline.diagnostics) io.out(formatDiagnosticLine(diagnostic));
       io.out('error: Invalid product model; citations were not verified');
     }
     return exitCodes.validationErrors;
