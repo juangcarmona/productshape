@@ -191,7 +191,8 @@ export function validateModel(artifacts: LoadedArtifact[], graph: ProductGraph):
     }
     if (node.type === 'domain-term') {
       // Usage is the incoming canonical `uses-terms` edge from any permitted source kind; a
-      // prose mention of the term's id or title never counts (RFC 0072).
+      // prose mention of the term's id or title never counts (RFC 0072). A term's self-reference
+      // counts by the letter of the contract; that hole is spec#96, deferred to an 0.3.0 RFC.
       const used = incoming.some((e) => e.kind === 'uses-terms');
       if (!used) {
         diagnostics.push({
