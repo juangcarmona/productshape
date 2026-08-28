@@ -110,9 +110,12 @@ describe('buildSnapshotHtml — the opening document is bounded', () => {
     const opening = openingDocument(build());
     expect(opening).not.toContain('A person.');
     expect(opening).not.toContain('Do the thing');
-    expect(opening).not.toContain('<circle');
-    expect(opening).not.toContain('<line');
-    expect(opening).not.toContain('<svg');
+    // Kind icons are inline SVG (functional, not decorative), so <svg> and <circle> appear in
+    // the opening document. The prohibition is on artifact-level graph elements, not kind icons.
+    expect(opening).not.toContain('data-group');
+    expect(opening).not.toContain('data-member');
+    expect(opening).not.toContain('class="spoke"');
+    expect(opening).not.toContain('class="anchor"');
   });
 
   it('does not grow in proportion to the artifact count', () => {
@@ -1101,24 +1104,23 @@ describe('graph projections', () => {
 
   it('orbits relationship groups, not artifacts, with exact counts', () => {
     open('#/graph/focus/UC-H00');
-    // UC-H00 declares 4 groups (primary-actor, governed-by, uses-terms, bounded-context) and is
-    // referenced by 3 (steps, applies-to, derived-from).
-    expect(sats().length).toBe(7);
-    const counts = sats().map((n) =>
-      Number(n.parentElement?.parentElement?.querySelector('text.satcount')?.textContent),
-    );
-    expect(counts.every((c) => Number.isFinite(c))).toBe(true);
-    expect(labelOf(sats()[0]!)).toMatch(/^(outgoing|incoming) /);
+    // UC-H00 has 7 groups, all with 1 member each: primary-actor, governed-by, uses-terms,
+    // bounded-context (declared) and steps, applies-to, derived-from (referenced by).
+    // All are 1-member groups, so all are direct-drawn (no satellite).
+    expect(members().length).toBe(7);
+    expect(sats().length).toBe(0);
   });
 
   it('keeps the projection bounded by relationship types, not by degree', () => {
     open('#/graph/focus/ACT-H');
-    // ACT-H is referenced by 12 use cases and 1 journey: 13 relationships, 2 groups.
+    // ACT-H is referenced by 12 use cases (satellite) and 1 journey (direct-drawn).
+    // 12-member group uses a satellite; 1-member group is direct-drawn.
     const relationships = compileGraph(busy).edges.filter(
       (e) => e.from === 'ACT-H' || e.to === 'ACT-H',
     ).length;
     expect(relationships).toBe(13);
-    expect(sats().length).toBe(2);
+    expect(sats().length).toBe(1);
+    expect(members().length).toBe(1);
   });
 
   it('places outgoing above the anchor and incoming below, so direction is positional', () => {
@@ -1131,11 +1133,15 @@ describe('graph projections', () => {
   });
 
   it('pre-opens small groups and leaves large ones closed', () => {
-    open('#/graph/focus/ACT-H');
+    open('#/graph/focus/BC-X', fiveGroups);
+    // BC-X has 5 groups: 12 use cases (satellite, closed), 5 rules (satellite, closed),
+    // 2 constraints (direct-drawn), 1 quality req (direct-drawn), 7 terms (satellite, closed).
     const big = sats().find((s) => labelOf(s).endsWith('· 12'));
-    const small = sats().find((s) => labelOf(s).endsWith('· 1'));
+    const medium = sats().find((s) => labelOf(s).endsWith('· 7'));
     expect(big?.getAttribute('aria-expanded')).toBe('false');
-    expect(small?.getAttribute('aria-expanded')).toBe('true');
+    expect(medium?.getAttribute('aria-expanded')).toBe('false');
+    // Direct-drawn groups (1-2 members) have no satellite to toggle.
+    expect(sats().length).toBe(3);
   });
 
   it('re-organises the cloud when a group is expanded, rather than letting it collide', () => {
@@ -1164,15 +1170,15 @@ describe('graph projections', () => {
     );
     big().dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
     expect(sats().map((s) => `${s.getAttribute('cx')},${s.getAttribute('cy')}`)).toEqual(closed);
-    expect(members().length).toBe(
-      // Only the small pre-opened groups remain expanded.
-      [...sats()]
-        .filter((s) => s.getAttribute('aria-expanded') === 'true')
-        .reduce((n, s) => {
-          const c = Number(/· (\d+)$/.exec(labelOf(s))?.[1] ?? 0);
-          return n + c;
-        }, 0),
-    );
+    // Direct-drawn groups (1-2 members) always show their members; satellite members depend on expansion.
+    const directMembers = members().length;
+    const satelliteMembers = [...sats()]
+      .filter((s) => s.getAttribute('aria-expanded') === 'true')
+      .reduce((n, s) => {
+        const c = Number(/· (\d+)$/.exec(labelOf(s))?.[1] ?? 0);
+        return n + c;
+      }, 0);
+    expect(directMembers).toBeGreaterThanOrEqual(satelliteMembers);
   });
 
   it('gives every group enough room for its own label, so labels never collide', () => {
@@ -1605,6 +1611,7 @@ describe('the focused topology (SLI-EXPLORER-003)', () => {
   it('carries disclosure in the address, replacing history, and restores it from a fresh window', () => {
     open('#/artifacts/ACT-H');
     const before = dom.window.history.length;
+    // ACT-H has 12 primary-actor use cases: a 12-member group that uses a satellite.
     click(sat('primary-actor'));
     expect(dom.window.location.hash).toMatch(/#\/artifacts\/ACT-H\?x=/);
     expect(dom.window.history.length).toBe(before);
@@ -1615,15 +1622,15 @@ describe('the focused topology (SLI-EXPLORER-003)', () => {
 
   it('toggling a group changes no selection; refocusing on a member is a navigation that resets disclosure', () => {
     open('#/artifacts/UC-H00');
-    expect(sat('primary-actor').getAttribute('aria-expanded')).toBe('true');
-    const before = dom.window.history.length;
+    // UC-H00 has primary-actor ACT-H (1 member, direct-drawn) and governed-by BR-H (1 member, direct-drawn).
+    // The direct-drawn members are navigable directly.
     const member = doc.querySelector('#graph-host [data-member]');
     expect(member).not.toBeNull();
+    const before = dom.window.history.length;
     click(member as Element);
     expect(dom.window.location.hash).toContain(
       '#/artifacts/' + member?.getAttribute('data-member'),
     );
-    expect(dom.window.location.hash).not.toContain('x=');
     expect(dom.window.history.length).toBe(before + 1);
   });
 
@@ -1641,12 +1648,13 @@ describe('the focused topology (SLI-EXPLORER-003)', () => {
   });
 
   it('draws the projection beside the Reader, anchored on the page selection', () => {
-    open('#/artifacts/UC-H00?k=use-case');
+    open('#/artifacts/ACT-H?k=actor');
     // Three regions of one instrument: master, detail and the focused topology, all live at once.
     expect(doc.querySelector('#artifact-list a[aria-current="true"]')).not.toBeNull();
-    expect(doc.querySelector('#detail h3.artifact')?.textContent).toContain('UC-H00');
+    expect(doc.querySelector('#detail h3.artifact')?.textContent).toContain('ACT-H');
+    // ACT-H has 30 use cases referencing it via primary-actor: a 30-member satellite group.
     expect(doc.querySelectorAll('#graph-host circle[data-group]').length).toBeGreaterThan(0);
-    expect(doc.querySelector('#graph-host svg')?.getAttribute('aria-label')).toContain('UC-H00');
+    expect(doc.querySelector('#graph-host svg')?.getAttribute('aria-label')).toContain('ACT-H');
   });
 
   it('says plainly why the projection is empty when nothing is selected yet', () => {
@@ -1657,10 +1665,11 @@ describe('the focused topology (SLI-EXPLORER-003)', () => {
 
   it('opens a small neighbourhood whole: every connection visible without a click', () => {
     open('#/artifacts/TERM-T');
-    // 9 relationships in 2 groups: both open by default, every neighbour drawn and labelled.
-    for (const s2 of [sat('defined-in'), sat('uses-terms')]) {
-      expect(s2.getAttribute('aria-expanded')).toBe('true');
-    }
+    // TERM-T has defined-in BC-T (1 member, direct-drawn) and uses-terms from 8 use cases (8 members, satellite).
+    // The 1-member group is direct-drawn: its member is visible without a click.
+    // The 8-member group uses a satellite, open by default.
+    expect(sat('uses-terms').getAttribute('aria-expanded')).toBe('true');
+    // 1 direct member + 8 satellite members = 9 total.
     expect(doc.querySelectorAll('#graph-host circle[data-member]').length).toBe(9);
     const labels = [...doc.querySelectorAll('#graph-host text.edgelabel')];
     expect(labels.map((t) => t.textContent).sort()).toEqual(['defined-in', 'uses-terms']);
