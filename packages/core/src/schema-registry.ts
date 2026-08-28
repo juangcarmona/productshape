@@ -6,6 +6,7 @@ import addFormats from 'ajv-formats';
 import { idPrefixByType, isMarkdownDocumentType } from './artifact.js';
 import type { Diagnostic } from './diagnostics.js';
 import { codes } from './diagnostics.js';
+import { appendPointerToken } from './json-pointer.js';
 
 /** A loaded JSON Schema document, keyed by kind. Retained so the schemas can be described. */
 export type RawSchema = Record<string, unknown>;
@@ -118,11 +119,11 @@ export class SchemaRegistry {
       const reportedPaths = new Set<string>();
       for (const error of validator.errors ?? []) {
         if (prefixMismatch && error.instancePath === '/id') continue;
-        const path = error.instancePath.replace(/^\//, '').replaceAll('/', '.');
         // Property-level failures name their property only in `params`: without it, ajv's
         // "must NOT have additional properties" never says which field broke the closed
-        // contract. Appended for additionalProperties; a required-property message already
-        // carries its property name. Either way the offending property completes `field`.
+        // contract. A missing or additional property is identified as though it were present,
+        // so its escaped name is appended to ajv's instance path, which is already an escaped
+        // RFC 6901 JSON Pointer. The empty string is the pointer to the document root.
         const params: Record<string, unknown> = error.params;
         const offending =
           typeof params.additionalProperty === 'string'
@@ -132,9 +133,14 @@ export class SchemaRegistry {
               : undefined;
         const detail =
           typeof params.additionalProperty === 'string' ? ` ('${params.additionalProperty}')` : '';
-        const field = offending ? (path ? `${path}.${offending}` : offending) : path || undefined;
-        if (reportedPaths.has(field ?? '')) continue;
-        reportedPaths.add(field ?? '');
+        // `!== undefined`, not truthiness: a property literally named '' still names a location
+        // one token below the instance path.
+        const field =
+          offending !== undefined
+            ? appendPointerToken(error.instancePath, offending)
+            : error.instancePath;
+        if (reportedPaths.has(field)) continue;
+        reportedPaths.add(field);
         diagnostics.push({
           severity: 'error',
           code: codes.schemaViolation,

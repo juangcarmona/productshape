@@ -73,11 +73,22 @@ export function blockingDiagnostics(
   return diagnostics.filter((d) => d.severity === 'error' || warningsAsErrors);
 }
 
-/** Compare strings lexicographically by UTF-16 code unit, independent of locale and ICU data. */
-export function compareCodeUnits(left: string, right: string): number {
-  if (left < right) return -1;
-  if (left > right) return 1;
-  return 0;
+/**
+ * Compare strings lexicographically by Unicode code point, independent of locale and ICU data.
+ * The validation contract's deterministic ordering and the configuration contract's
+ * first-invalid-instance-path rule both mandate code-point order; plain `<` compares UTF-16 code
+ * units, which disagrees for astral characters.
+ */
+export function compareCodePoints(left: string, right: string): number {
+  const leftPoints = [...left];
+  const rightPoints = [...right];
+  const length = Math.min(leftPoints.length, rightPoints.length);
+  for (let i = 0; i < length; i += 1) {
+    const l = leftPoints[i]?.codePointAt(0) as number;
+    const r = rightPoints[i]?.codePointAt(0) as number;
+    if (l !== r) return l < r ? -1 : 1;
+  }
+  return leftPoints.length - rightPoints.length;
 }
 
 /** Compare optional one-based positions numerically, absent before present. */
@@ -95,13 +106,13 @@ function compareOptionalNumbers(left: number | undefined, right: number | undefi
 export function sortDiagnostics(diagnostics: Diagnostic[]): Diagnostic[] {
   return [...diagnostics].sort(
     (a, b) =>
-      compareCodeUnits(a.file ?? '', b.file ?? '') ||
+      compareCodePoints(a.file ?? '', b.file ?? '') ||
       compareOptionalNumbers(a.line, b.line) ||
       compareOptionalNumbers(a.entry, b.entry) ||
-      compareCodeUnits(a.code, b.code) ||
-      compareCodeUnits(a.field ?? '', b.field ?? '') ||
-      compareCodeUnits(a.target ?? '', b.target ?? '') ||
-      compareCodeUnits(a.artifact ?? '', b.artifact ?? '') ||
-      compareCodeUnits(a.change ?? '', b.change ?? ''),
+      compareCodePoints(a.code, b.code) ||
+      compareCodePoints(a.field ?? '', b.field ?? '') ||
+      compareCodePoints(a.target ?? '', b.target ?? '') ||
+      compareCodePoints(a.artifact ?? '', b.artifact ?? '') ||
+      compareCodePoints(a.change ?? '', b.change ?? ''),
   );
 }

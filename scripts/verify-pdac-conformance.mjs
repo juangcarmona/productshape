@@ -211,6 +211,16 @@ async function assertCitationCoverage(report, digestReport, specDir, citationArg
     ) {
       continue;
     }
+    // An invalid-baseline fixture refuses citation verification: the run reports the model's
+    // error diagnostics envelope with exit 1 instead of a citation scan. The refusal is the
+    // contract, so the case contributes no citations.
+    if (
+      run.exitCode === 1 &&
+      payload.schema === 'product-definition-as-code/diagnostics/v1alpha1' &&
+      payload.diagnostics?.some((diagnostic) => diagnostic.severity === 'error')
+    ) {
+      continue;
+    }
     invariant(
       payload.schema === 'product-definition-as-code/citations/v1alpha1',
       `${testCase.name}: unexpected citation schema ${payload.schema}`,

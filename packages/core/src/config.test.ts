@@ -31,14 +31,14 @@ describe('parseConfig', () => {
   it('requires the version key', () => {
     const { diagnostics } = parseConfig('product-root: docs/product\n', '.product/config.yaml');
     expect(diagnostics).toEqual([
-      expect.objectContaining({ code: 'PRODUCT050', field: 'version' }),
+      expect.objectContaining({ code: 'PRODUCT050', field: '/version' }),
     ]);
   });
 
   it('rejects an unsupported version', () => {
     const { diagnostics } = parseConfig('version: v2\n', '.product/config.yaml');
     expect(diagnostics).toEqual([
-      expect.objectContaining({ code: 'PRODUCT050', field: 'version' }),
+      expect.objectContaining({ code: 'PRODUCT050', field: '/version' }),
     ]);
   });
 
@@ -48,7 +48,17 @@ describe('parseConfig', () => {
       '.product/config.yaml',
     );
     expect(diagnostics).toEqual([
-      expect.objectContaining({ code: 'PRODUCT050', field: 'plugins' }),
+      expect.objectContaining({ code: 'PRODUCT050', field: '/plugins' }),
+    ]);
+  });
+
+  it('escapes slash and tilde in an unknown key pointer token', () => {
+    const { diagnostics } = parseConfig(
+      `${KERNEL}\n'recovered/by~': true\n`,
+      '.product/config.yaml',
+    );
+    expect(diagnostics).toEqual([
+      expect.objectContaining({ code: 'PRODUCT050', field: '/recovered~1by~0' }),
     ]);
   });
 
@@ -58,7 +68,7 @@ describe('parseConfig', () => {
       '.product/config.yaml',
     );
     expect(diagnostics).toEqual([
-      expect.objectContaining({ code: 'PRODUCT050', field: 'citations' }),
+      expect.objectContaining({ code: 'PRODUCT050', field: '/citations' }),
     ]);
   });
 
@@ -68,7 +78,7 @@ describe('parseConfig', () => {
       '.product/config.yaml',
     );
     expect(diagnostics).toEqual([
-      expect.objectContaining({ code: 'PRODUCT050', field: 'validation.warnings-as-errors' }),
+      expect.objectContaining({ code: 'PRODUCT050', field: '/validation/warnings-as-errors' }),
     ]);
   });
 
@@ -83,7 +93,7 @@ describe('parseConfig', () => {
       '.product/config.yaml',
     );
     expect(diagnostics).toEqual([
-      expect.objectContaining({ code: 'PRODUCT050', field: 'product-root' }),
+      expect.objectContaining({ code: 'PRODUCT050', field: '/product-root' }),
     ]);
   });
 
@@ -93,7 +103,7 @@ describe('parseConfig', () => {
       '.product/config.yaml',
     );
     expect(diagnostics).toHaveLength(1);
-    expect(diagnostics[0]).toMatchObject({ code: 'PRODUCT050', field: 'apple' });
+    expect(diagnostics[0]).toMatchObject({ code: 'PRODUCT050', field: '/apple' });
   });
 
   it('reports unparseable YAML with one PRODUCT050 and no field', () => {
@@ -101,6 +111,28 @@ describe('parseConfig', () => {
     expect(diagnostics).toHaveLength(1);
     expect(diagnostics[0]?.code).toBe('PRODUCT050');
     expect(diagnostics[0]?.field).toBeUndefined();
+  });
+
+  it('points a parsed non-mapping document at the root with the empty pointer', () => {
+    const { diagnostics } = parseConfig('- v1alpha1\n', '.product/config.yaml');
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0]?.code).toBe('PRODUCT050');
+    expect(diagnostics[0]?.field).toBe('');
+  });
+
+  it.each([
+    ['an empty file', ''],
+    ['a comment-only file', '# nothing here\n'],
+  ])('leaves field absent for %s: no document parsed', (_label, content) => {
+    const { diagnostics } = parseConfig(content, '.product/config.yaml');
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0]?.code).toBe('PRODUCT050');
+    expect(diagnostics[0]?.field).toBeUndefined();
+  });
+
+  it('points at a property literally named the empty string', () => {
+    const { diagnostics } = parseConfig(`${KERNEL}\n'': true\n`, '.product/config.yaml');
+    expect(diagnostics).toEqual([expect.objectContaining({ code: 'PRODUCT050', field: '/' })]);
   });
 
   it('rejects more than one YAML document', () => {
@@ -186,7 +218,7 @@ describe('parseConfig', () => {
     expect(diagnostics).toEqual([
       expect.objectContaining({
         code: 'PRODUCT050',
-        field: 'extensions.prodshape.citations.consumer-roots',
+        field: '/extensions/prodshape/citations/consumer-roots',
       }),
     ]);
   });
