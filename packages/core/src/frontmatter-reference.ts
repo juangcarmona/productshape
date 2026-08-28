@@ -16,14 +16,7 @@ import {
 import type { RawSchema } from './schema-registry.js';
 
 export type FieldKind =
-  | 'string'
-  | 'const'
-  | 'enum'
-  | 'array'
-  | 'object'
-  | 'boolean'
-  | 'one-of'
-  | 'unknown';
+  'string' | 'const' | 'enum' | 'array' | 'object' | 'boolean' | 'one-of' | 'unknown';
 
 export interface FieldDescriptor {
   /** Property name, as authored in the schema. */

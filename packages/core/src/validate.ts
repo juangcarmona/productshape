@@ -150,8 +150,13 @@ export function validateModel(artifacts: LoadedArtifact[], graph: ProductGraph):
     const reachable = undirectedReachabilityFromActors(graph);
     for (const node of graph.nodes) {
       if (!requirementTypes.has(node.type)) continue;
-      // A constraint without applies-to is product-wide: reachable by definition.
-      if (node.type === 'constraint' && (graph.outgoing.get(node.id) ?? []).length === 0) {
+      // A constraint without applies-to is product-wide: reachable by definition. The
+      // applies-to edges decide, never the total outgoing count: a uses-terms dependency
+      // says what the constraint needs, not where it applies.
+      if (
+        node.type === 'constraint' &&
+        !(graph.outgoing.get(node.id) ?? []).some((e) => e.kind === 'applies-to')
+      ) {
         continue;
       }
       if (!reachable.has(node.id)) {

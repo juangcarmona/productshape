@@ -89,12 +89,26 @@ describe('describeKind', () => {
       'status',
       'defined-in',
       'synonyms',
+      'uses-terms',
       'provenance',
     ]);
   });
 
   it('throws for an unknown kind', () => {
     expect(() => describeKind('nonsense', schemas)).toThrow(/nonsense/);
+  });
+
+  it('describes a oneOf field by its forms instead of as unknown', () => {
+    const fr = describeKind('functional-requirement', schemas);
+    const verification = fr.fields.find((f) => f.name === 'verification');
+    expect(verification?.items?.kind).toBe('one-of');
+    const variants = verification?.items?.variants ?? [];
+    expect(variants).toHaveLength(2);
+    expect(variants.flatMap((v) => v.properties?.map((p) => p.name) ?? [])).toEqual([
+      'verification[].scenario',
+      'verification[].id',
+      'verification[].scenario-ref',
+    ]);
   });
 });
 
