@@ -10,6 +10,22 @@ The supported published CLI baseline is `@prodshape/cli@0.15.0`. Every stable pu
 
 ## [0.15.0]
 
+Wave 2 alignment with the frozen PDaC kernel contracts, verified against spec revision `9ff12df` with `pdac-lint@0.2.0` (19 cases, 8 pinned digests).
+
+### Added
+
+- Kernel-first adoption: `prodshape init` installs four files (configuration, model home, live-change home, README); `--full` installs the per-kind layout, change archives and template library, and selecting an AI integration implies it. `prodshape template <kind>` prints any bundled authoring template, and validating an empty model names the `CHG-INITIAL` route instead of presenting emptiness as success.
+- `init --gitignore` writes the regenerable-output ignore rules it previously only recommended: append-only, idempotent, never unasked, following the configured `generated.root`.
+
+### Changed
+
+- Diagnostics align with the frozen validation contract: `change`, `line` and `entry` fields, a cited ID in `target` (never `artifact`), deterministic eight-key ordering, `PRODUCT002` once per distinct invalid instance path, `PRODUCT003` with `field: type`.
+- Configuration adopts the kernel `v1alpha1` contract: tool settings live under `extensions.prodshape`, an invalid file is exactly one `PRODUCT050` with exit `2` and no fallback to defaults, and `blockingDiagnostics` replaces `escalateWarnings` (severity stays `warning`).
+- Citation carriers are the two normative forms with the closed payload grammar and the sidecar schema; a consumer using both gets one `PRODUCT067` with both carriers' statuses suppressed, and `prodshape cite` writes the canonical payload or mapping-form sidecar.
+- Provider verification enforces population-aware scope declarations: every current document is `bound` (`pdac-scope: cited` with citations) or `exempt` (`pdac-scope: none` with a human-authored reason), citations alone never bind, archived history is excluded by default and verified as warnings under `--include-archived`.
+- Apply honors the exact `CHG-INITIAL`/`0000000` no-baseline sentinel; every ordinary `base-revision` must resolve, and an unresolved one is a `PRODUCT027`.
+- The vendored schemas and diagnostic registry track spec revision `9ff12df`, and the README certification claim names the current pins.
+
 ## [0.14.0]
 
 ### Added
