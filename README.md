@@ -36,12 +36,12 @@ Deterministic tools check structure and references, never truth; people decide w
 
 ## Install
 
-Requires Node.js >= 22. The supported published baseline is **`@prodshape/cli@0.14.0`**.
+Requires Node.js >= 22. The supported published baseline is **`@prodshape/cli@0.15.0`**.
 
 ```bash
-npm install -g @prodshape/cli@0.14.0
+npm install -g @prodshape/cli@0.15.0
 # or run it once, without installing
-pnpm dlx @prodshape/cli@0.14.0 --help
+pnpm dlx @prodshape/cli@0.15.0 --help
 ```
 
 `prodshape` is the canonical binary; `product-definition` is an identical v0.x compatibility alias scheduled for removal before v1.
@@ -71,7 +71,7 @@ Your model, rendered, in a couple of minutes:
 
 ```bash
 mkdir my-product && cd my-product
-npm init -y && npm install --save-dev --save-exact @prodshape/cli@0.14.0
+npm init -y && npm install --save-dev --save-exact @prodshape/cli@0.15.0
 npx --no-install prodshape init
 
 mkdir -p docs/product/model/business-rules
@@ -115,7 +115,7 @@ One business rule, one citation, one detected drift. CI runs this exact block ag
 
 ```bash
 set -eu
-PRODSHAPE_PACKAGE="${PRODSHAPE_PACKAGE:-@prodshape/cli@0.14.0}"
+PRODSHAPE_PACKAGE="${PRODSHAPE_PACKAGE:-@prodshape/cli@0.15.0}"
 
 mkdir productshape-quickstart
 cd productshape-quickstart
@@ -199,7 +199,7 @@ The pinned conformance workflow builds and packs ProductShape, installs that tar
 
 ## Current status
 
-`@prodshape/cli@0.14.0` is the supported published baseline. It includes deterministic brownfield recovery sessions, Product Change overlay validation and apply with the affected-citation report, citation emission and verification (including provider-aware OpenSpec population verification), snapshot generation, schema discovery, filename repair, SDD-aware initialization, `prodshape change create`, `prodshape drift`, `prodshape --version`, and generated AI/OpenSpec integrations. The [root changelog](CHANGELOG.md) records every stable CLI release; version `0.10.0` was prepared but never published, and its changes shipped in `0.11.0`.
+`@prodshape/cli@0.15.0` is the supported published baseline. It includes deterministic brownfield recovery sessions, Product Change overlay validation and apply with the affected-citation report, citation emission and verification (including provider-aware OpenSpec population verification), snapshot generation, schema discovery, filename repair, SDD-aware initialization, `prodshape change create`, `prodshape drift`, `prodshape --version`, and generated AI/OpenSpec integrations. The [root changelog](CHANGELOG.md) records every stable CLI release; version `0.10.0` was prepared but never published, and its changes shipped in `0.11.0`.
 
 Remaining open decisions are in [OPEN-DECISIONS.md](OPEN-DECISIONS.md). Deliberately out of scope, among others: graph databases, web UIs, MCP servers, Jira integration, multi-repository graphs, automatic brownfield recovery, roadmaps and OKRs, hosted services and telemetry — the full list, plus known design limitations, is in [Limitations](docs/limitations.md).
 

@@ -4,9 +4,11 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-The supported published CLI baseline is `@prodshape/cli@0.14.0`. Every stable public CLI release from `0.1.0` through that baseline is recorded below; package-specific dependency changes remain in each package's changelog.
+The supported published CLI baseline is `@prodshape/cli@0.15.0`. Every stable public CLI release from `0.1.0` through that baseline is recorded below; package-specific dependency changes remain in each package's changelog.
 
 ## [Unreleased]
+
+## [0.15.0]
 
 ## [0.14.0]
 
@@ -185,7 +187,8 @@ Published as `@prodshape/cli` 0.2.0, `core` and `distribution` 0.3.0, `integrati
 - Promotion applies its plan in two phases (preflight, then execute with the change-directory move last), so a failed promotion no longer leaves a partially promoted baseline.
 - `validation.warnings-as-errors` is enforced uniformly across baseline validate, change validate, handoff generation, graph generation and promotion.
 
-[unreleased]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.14.0...HEAD
+[unreleased]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.15.0...HEAD
+[0.15.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.14.0...@prodshape/cli@0.15.0
 [0.14.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.13.0...@prodshape/cli@0.14.0
 [0.13.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.12.0...@prodshape/cli@0.13.0
 [0.12.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.11.0...@prodshape/cli@0.12.0
