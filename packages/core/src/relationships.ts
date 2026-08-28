@@ -9,54 +9,108 @@ import type { ProductArtifactType } from './artifact.js';
  * `verification[].scenario-ref`); extraction reads the named member of each entry in the
  * enclosing frontmatter array.
  */
+/**
+ * Which end a relationship puts in question when the other end changes
+ * (spec/relationships.md, Polarity): `dependency` is authored on the artifact that builds on its
+ * target, so a changed target questions the source; `governance` (`applies-to`) couples both
+ * ends, so a change to either questions the other. Product Change operation edges have no
+ * polarity and are not part of this vocabulary.
+ */
+export type RelationshipPolarity = 'dependency' | 'governance';
+
 export interface RelationshipSpec {
   source: ProductArtifactType;
   field: string;
   targets: ProductArtifactType[];
+  polarity: RelationshipPolarity;
 }
 
 const behaviourTargets: ProductArtifactType[] = ['journey', 'use-case', 'bounded-context'];
 
 export const relationshipSpecs: RelationshipSpec[] = [
-  { source: 'journey', field: 'primary-actor', targets: ['actor'] },
-  { source: 'journey', field: 'steps[].use-case', targets: ['use-case'] },
-  { source: 'use-case', field: 'primary-actor', targets: ['actor'] },
-  { source: 'use-case', field: 'supporting-actors', targets: ['actor'] },
-  { source: 'use-case', field: 'bounded-context', targets: ['bounded-context'] },
-  { source: 'use-case', field: 'governed-by', targets: ['business-rule'] },
-  { source: 'use-case', field: 'uses-terms', targets: ['domain-term'] },
-  { source: 'business-rule', field: 'applies-to', targets: behaviourTargets },
-  { source: 'business-rule', field: 'uses-terms', targets: ['domain-term'] },
-  { source: 'domain-term', field: 'defined-in', targets: ['bounded-context'] },
+  { source: 'journey', field: 'primary-actor', targets: ['actor'], polarity: 'dependency' },
+  { source: 'journey', field: 'steps[].use-case', targets: ['use-case'], polarity: 'dependency' },
+  { source: 'use-case', field: 'primary-actor', targets: ['actor'], polarity: 'dependency' },
+  { source: 'use-case', field: 'supporting-actors', targets: ['actor'], polarity: 'dependency' },
+  {
+    source: 'use-case',
+    field: 'bounded-context',
+    targets: ['bounded-context'],
+    polarity: 'dependency',
+  },
+  { source: 'use-case', field: 'governed-by', targets: ['business-rule'], polarity: 'dependency' },
+  { source: 'use-case', field: 'uses-terms', targets: ['domain-term'], polarity: 'dependency' },
+  {
+    source: 'business-rule',
+    field: 'applies-to',
+    targets: behaviourTargets,
+    polarity: 'governance',
+  },
+  {
+    source: 'business-rule',
+    field: 'uses-terms',
+    targets: ['domain-term'],
+    polarity: 'dependency',
+  },
+  {
+    source: 'domain-term',
+    field: 'defined-in',
+    targets: ['bounded-context'],
+    polarity: 'dependency',
+  },
   // Definitional dependency: understanding one definition may require another named term
   // (RFC 0072). Cycles between Domain Terms are representable and not diagnosed.
-  { source: 'domain-term', field: 'uses-terms', targets: ['domain-term'] },
+  { source: 'domain-term', field: 'uses-terms', targets: ['domain-term'], polarity: 'dependency' },
   {
     source: 'functional-requirement',
     field: 'derived-from',
     targets: ['use-case', 'business-rule', 'constraint'],
+    polarity: 'dependency',
   },
   {
     source: 'functional-requirement',
     field: 'verification[].scenario-ref',
     targets: ['structured-behaviour'],
+    polarity: 'dependency',
   },
-  { source: 'functional-requirement', field: 'uses-terms', targets: ['domain-term'] },
-  { source: 'quality-requirement', field: 'applies-to', targets: behaviourTargets },
+  {
+    source: 'functional-requirement',
+    field: 'uses-terms',
+    targets: ['domain-term'],
+    polarity: 'dependency',
+  },
+  {
+    source: 'quality-requirement',
+    field: 'applies-to',
+    targets: behaviourTargets,
+    polarity: 'governance',
+  },
   {
     source: 'quality-requirement',
     field: 'verification[].scenario-ref',
     targets: ['structured-behaviour'],
+    polarity: 'dependency',
   },
-  { source: 'quality-requirement', field: 'uses-terms', targets: ['domain-term'] },
-  { source: 'constraint', field: 'applies-to', targets: behaviourTargets },
-  { source: 'constraint', field: 'uses-terms', targets: ['domain-term'] },
+  {
+    source: 'quality-requirement',
+    field: 'uses-terms',
+    targets: ['domain-term'],
+    polarity: 'dependency',
+  },
+  { source: 'constraint', field: 'applies-to', targets: behaviourTargets, polarity: 'governance' },
+  { source: 'constraint', field: 'uses-terms', targets: ['domain-term'], polarity: 'dependency' },
   {
     source: 'structured-behaviour',
     field: 'illustrates',
     targets: ['use-case', 'business-rule', 'constraint'],
+    polarity: 'dependency',
   },
-  { source: 'structured-behaviour', field: 'uses-terms', targets: ['domain-term'] },
+  {
+    source: 'structured-behaviour',
+    field: 'uses-terms',
+    targets: ['domain-term'],
+    polarity: 'dependency',
+  },
 ];
 
 export interface Edge {
@@ -104,4 +158,9 @@ export function extractEdges(
 export function allowedTargets(sourceType: string, field: string): ProductArtifactType[] {
   const spec = relationshipSpecs.find((s) => s.source === sourceType && s.field === field);
   return spec?.targets ?? [];
+}
+
+/** The polarity of one authored relationship, or undefined for a field outside the vocabulary. */
+export function polarityOf(sourceType: string, field: string): RelationshipPolarity | undefined {
+  return relationshipSpecs.find((s) => s.source === sourceType && s.field === field)?.polarity;
 }

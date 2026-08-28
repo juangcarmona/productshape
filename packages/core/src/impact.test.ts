@@ -37,3 +37,75 @@ describe('analyzeImpact', () => {
     expect(() => analyzeImpact(graph, 'UC-GHOST')).toThrow(/Unknown artifact ID/);
   });
 });
+
+describe('putInQuestionBy (impact polarity, RFC 0093)', () => {
+  // QR-A applies-to UC-A (governance); FR-A derived-from UC-A and scenario-refs SB-A
+  // (dependency); SB-A illustrates UC-A and uses TERM-A (dependency).
+  const polarityGraph = compileGraph([
+    artifact('ACT-A', 'actor', { 'actor-kind': 'human' }),
+    artifact('BC-A', 'bounded-context'),
+    artifact('TERM-A', 'domain-term', { 'defined-in': 'BC-A' }),
+    artifact('UC-A', 'use-case', { 'primary-actor': 'ACT-A' }),
+    artifact('QR-A-001', 'quality-requirement', {
+      'applies-to': ['UC-A'],
+      verification: [{ scenario: 'measured' }],
+    }),
+    artifact('SB-A', 'structured-behaviour', {
+      illustrates: ['UC-A'],
+      when: 'A stimulus occurs',
+      then: ['An outcome follows'],
+      'uses-terms': ['TERM-A'],
+    }),
+    artifact('FR-A-001', 'functional-requirement', {
+      'derived-from': ['UC-A'],
+      verification: [{ 'scenario-ref': 'SB-A' }],
+    }),
+  ]);
+  const questioned = (id: string) =>
+    analyzeImpact(polarityGraph, id).questioned.map((e) => `${e.id}:${e.polarity}`);
+
+  it('a changed governing artifact questions its outbound applies-to targets', () => {
+    // The reverse walk alone never reaches UC-A from QR-A-001; polarity does.
+    expect(questioned('QR-A-001')).toContain('UC-A:governance');
+  });
+
+  it('a changed governed artifact questions the artifact governing it', () => {
+    expect(questioned('UC-A')).toContain('QR-A-001:governance');
+  });
+
+  it('a changed dependency target questions every source that builds on it', () => {
+    expect(questioned('UC-A')).toEqual(
+      expect.arrayContaining(['FR-A-001:dependency', 'SB-A:dependency']),
+    );
+    expect(questioned('SB-A')).toContain('FR-A-001:dependency');
+    expect(questioned('TERM-A')).toEqual(['SB-A:dependency']);
+  });
+
+  it('a changed dependency source never questions what it cited', () => {
+    expect(questioned('FR-A-001')).toEqual([]);
+    expect(questioned('SB-A')).not.toContain('UC-A:dependency');
+    expect(questioned('SB-A')).not.toContain('TERM-A:dependency');
+  });
+
+  it('reports every distinct coupling for a pair authored both ways', () => {
+    // BR governs UC through applies-to while UC also authors governed-by: two couplings, both
+    // reported, so the governance edge this analysis exists to surface is never shadowed.
+    const both = compileGraph([
+      artifact('BR-B', 'business-rule', { 'applies-to': ['UC-B'] }),
+      artifact('UC-B', 'use-case', { 'primary-actor': 'ACT-A', 'governed-by': ['BR-B'] }),
+      artifact('ACT-A', 'actor', { 'actor-kind': 'human' }),
+    ]);
+    const entries = analyzeImpact(both, 'BR-B').questioned.map(
+      (e) => e.id + ':' + e.via.kind + ':' + e.polarity,
+    );
+    expect(entries).toEqual(['UC-B:applies-to:governance', 'UC-B:governed-by:dependency']);
+  });
+
+  it('is deterministic and one authored hop', () => {
+    const first = analyzeImpact(polarityGraph, 'UC-A').questioned;
+    const second = analyzeImpact(polarityGraph, 'UC-A').questioned;
+    expect(second).toEqual(first);
+    // ACT-A is two hops from QR-A-001; the questioned set never walks past the coupling edge.
+    expect(questioned('QR-A-001')).not.toContain('ACT-A:governance');
+  });
+});
