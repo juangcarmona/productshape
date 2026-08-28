@@ -3,12 +3,14 @@ id: CON-EXAMPLE
 type: constraint
 title: Example Constraint
 status: draft
+uses-terms: []
 ---
 
 <!--
 Constraint: an externally imposed or deliberately fixed boundary.
 applies-to (optional): journeys, use cases or bounded contexts constrained; when absent,
 the constraint applies to the entire product.
+uses-terms (optional): TERM ids whose definitions understanding this constraint requires.
 provenance (optional): the evidence behind recovered knowledge. Set it on recovered
 (brownfield) artifacts; leave it unset when authoring from intent. It records evidence,
 never authorship: git history remains the record of who changed what and when.

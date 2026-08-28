@@ -1,0 +1,6 @@
+---
+'@prodshape/core': minor
+'@prodshape/distribution': minor
+---
+
+`uses-terms` can be authored by every permitted semantic source per RFC 0072: Business Rules, Domain Terms, Functional Requirements, Quality Requirements and Constraints join Use Cases (Structured Behaviour arrives with its artifact kind). The relationship stays canonical from the consuming artifact to a Domain Term, reverse views stay derived, and `PRODUCT106` now reads "Domain term has no incoming uses-terms relationship", which is exactly what the graph checks; a prose mention still never counts. The new edges join the spec's undirected reachability definition, so `PRODUCT103` outcomes can change where unrelated artifacts share vocabulary (the specification defines reachability over every canonical relationship; raised upstream as spec#106), while a constraint's product-wide exemption now keys on `applies-to` edges alone so a term dependency never costs it. The vendored schemas track spec v0.2.0 (`5faef0e`): until the Structured Behaviour kind lands, a `verification[].scenario-ref` entry passes schema validation but creates no graph edge and no reference diagnostics. The authoring templates show the field on the five new kinds, and the frontmatter reference documents a `oneOf` field by its forms (the FR and QR `verification` entries) instead of as `unknown`.

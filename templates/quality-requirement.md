@@ -8,12 +8,14 @@ applies-to:
   - UC-EXAMPLE-001
 verification:
   - scenario: A measurable scenario demonstrating the quality level is met
+uses-terms: []
 ---
 
 <!--
 Quality requirement: a measurable quality obligation. "The system should be fast" does not
 satisfy this contract - Measurement must state how conformance is measured.
 quality-attribute: e.g. portability, determinism, explainability, extensibility.
+uses-terms (optional): TERM ids whose definitions understanding this requirement requires.
 provenance (optional): the evidence behind recovered knowledge. Set it on recovered
 (brownfield) artifacts; leave it unset when authoring from intent. It records evidence,
 never authorship: git history remains the record of who changed what and when.

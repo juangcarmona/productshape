@@ -7,11 +7,13 @@ derived-from:
   - UC-EXAMPLE-001
 verification:
   - scenario: An observable scenario demonstrating the obligation is met
+uses-terms: []
 ---
 
 <!--
 Functional requirement: a derived product obligation stating what the product must do.
 derived-from: the use cases, business rules or constraints it originates from (traceability).
+uses-terms (optional): TERM ids whose definitions understanding this requirement requires.
 A requirement is not a disguised implementation task.
 provenance (optional): the evidence behind recovered knowledge. Set it on recovered
 (brownfield) artifacts; leave it unset when authoring from intent. It records evidence,

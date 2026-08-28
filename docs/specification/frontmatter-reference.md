@@ -138,6 +138,8 @@ The nine artifact types of the current product model.
 | `status` | yes | enum | `draft`, `active`, `deprecated`, `retired` | Lifecycle of a product artifact. |
 | `applies-to` | no | array of string |  |  |
 | `applies-to[]` | yes | string | `^(JRN\|UC\|BC)-[A-Z0-9]+(-[A-Z0-9]+)*$` | A journey, use case or bounded context. |
+| `uses-terms` | no | array of string |  |  |
+| `uses-terms[]` | yes | string | `^TERM-[A-Z0-9]+(-[A-Z0-9]+)*$` |  |
 | `provenance` | no | object |  | Evidence behind recovered knowledge. Set on recovered (brownfield) artifacts only. |
 | `provenance.source` | yes | string |  | Where the knowledge came from: a file path, a URL, a ticket reference, or 'interview: <person>'. Must not be empty. |
 | `provenance.confidence` | yes | enum | `high`, `medium`, `low` | high: read directly from a specification scenario or a test. medium: inferred from structured prose. low: inferred from indirect evidence such as a variable name. |
@@ -160,6 +162,8 @@ The nine artifact types of the current product model.
 | `defined-in` | yes | string | `^BC-[A-Z0-9]+(-[A-Z0-9]+)*$` | Canonical direction of term ownership. Bounded contexts never author owns-terms. |
 | `synonyms` | no | array of string |  |  |
 | `synonyms[]` | yes | string |  | Must not be empty. |
+| `uses-terms` | no | array of string |  |  |
+| `uses-terms[]` | yes | string | `^TERM-[A-Z0-9]+(-[A-Z0-9]+)*$` |  |
 | `provenance` | no | object |  | Evidence behind recovered knowledge. Set on recovered (brownfield) artifacts only. |
 | `provenance.source` | yes | string |  | Where the knowledge came from: a file path, a URL, a ticket reference, or 'interview: <person>'. Must not be empty. |
 | `provenance.confidence` | yes | enum | `high`, `medium`, `low` | high: read directly from a specification scenario or a test. medium: inferred from structured prose. low: inferred from indirect evidence such as a variable name. |
@@ -200,9 +204,13 @@ The nine artifact types of the current product model.
 | `status` | yes | enum | `draft`, `active`, `deprecated`, `retired` | Lifecycle of a product artifact. |
 | `derived-from` | yes | array of string |  | Traceability to the use cases, business rules or constraints this requirement originates from. At least one entry. |
 | `derived-from[]` | yes | string | `^(UC\|BR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$` |  |
-| `verification` | yes | array of object |  | At least one entry. |
-| `verification[].scenario` | yes | string |  | Must not be empty. |
-| `verification[].id` | no | string | `^[A-Z0-9]+(-[A-Z0-9]+)*$` | Optional stable id, unique within the artifact. When present, the scenario is citable via anchor (see the Citation Contract). |
+| `verification` | yes | array of one of 2 forms |  | One or more inline verification scenarios or Structured Behaviour references. At least one entry. |
+| `verification[]` | yes | one of 2 forms |  | Each value matches exactly one of the forms below. |
+| `verification[].scenario` | yes | string |  | Form 1. Must not be empty. |
+| `verification[].id` | no | string | `^[A-Z0-9]+(-[A-Z0-9]+)*$` | Form 1. Optional stable id, unique within the artifact. When present, the inline scenario is citable via anchor (see the Citation Contract). |
+| `verification[].scenario-ref` | yes | string | `^SB-[A-Z0-9]+(-[A-Z0-9]+)*$` | Form 2. |
+| `uses-terms` | no | array of string |  |  |
+| `uses-terms[]` | yes | string | `^TERM-[A-Z0-9]+(-[A-Z0-9]+)*$` |  |
 | `provenance` | no | object |  | Evidence behind recovered knowledge. Set on recovered (brownfield) artifacts only. |
 | `provenance.source` | yes | string |  | Where the knowledge came from: a file path, a URL, a ticket reference, or 'interview: <person>'. Must not be empty. |
 | `provenance.confidence` | yes | enum | `high`, `medium`, `low` | high: read directly from a specification scenario or a test. medium: inferred from structured prose. low: inferred from indirect evidence such as a variable name. |
@@ -225,9 +233,13 @@ The nine artifact types of the current product model.
 | `quality-attribute` | yes | string |  | Must not be empty. |
 | `applies-to` | yes | array of string |  | At least one entry. |
 | `applies-to[]` | yes | string | `^(JRN\|UC\|BC)-[A-Z0-9]+(-[A-Z0-9]+)*$` | A journey, use case or bounded context. |
-| `verification` | yes | array of object |  | At least one entry. |
-| `verification[].scenario` | yes | string |  | Must not be empty. |
-| `verification[].id` | no | string | `^[A-Z0-9]+(-[A-Z0-9]+)*$` | Optional stable id, unique within the artifact. When present, the scenario is citable via anchor (see the Citation Contract). |
+| `verification` | yes | array of one of 2 forms |  | One or more inline verification scenarios or Structured Behaviour references. At least one entry. |
+| `verification[]` | yes | one of 2 forms |  | Each value matches exactly one of the forms below. |
+| `verification[].scenario` | yes | string |  | Form 1. Must not be empty. |
+| `verification[].id` | no | string | `^[A-Z0-9]+(-[A-Z0-9]+)*$` | Form 1. Optional stable id, unique within the artifact. When present, the inline scenario is citable via anchor (see the Citation Contract). |
+| `verification[].scenario-ref` | yes | string | `^SB-[A-Z0-9]+(-[A-Z0-9]+)*$` | Form 2. |
+| `uses-terms` | no | array of string |  |  |
+| `uses-terms[]` | yes | string | `^TERM-[A-Z0-9]+(-[A-Z0-9]+)*$` |  |
 | `provenance` | no | object |  | Evidence behind recovered knowledge. Set on recovered (brownfield) artifacts only. |
 | `provenance.source` | yes | string |  | Where the knowledge came from: a file path, a URL, a ticket reference, or 'interview: <person>'. Must not be empty. |
 | `provenance.confidence` | yes | enum | `high`, `medium`, `low` | high: read directly from a specification scenario or a test. medium: inferred from structured prose. low: inferred from indirect evidence such as a variable name. |
@@ -249,6 +261,8 @@ The nine artifact types of the current product model.
 | `status` | yes | enum | `draft`, `active`, `deprecated`, `retired` | Lifecycle of a product artifact. |
 | `applies-to` | no | array of string |  |  |
 | `applies-to[]` | yes | string | `^(JRN\|UC\|BC)-[A-Z0-9]+(-[A-Z0-9]+)*$` | A journey, use case or bounded context. |
+| `uses-terms` | no | array of string |  |  |
+| `uses-terms[]` | yes | string | `^TERM-[A-Z0-9]+(-[A-Z0-9]+)*$` |  |
 | `provenance` | no | object |  | Evidence behind recovered knowledge. Set on recovered (brownfield) artifacts only. |
 | `provenance.source` | yes | string |  | Where the knowledge came from: a file path, a URL, a ticket reference, or 'interview: <person>'. Must not be empty. |
 | `provenance.confidence` | yes | enum | `high`, `medium`, `low` | high: read directly from a specification scenario or a test. medium: inferred from structured prose. low: inferred from indirect evidence such as a variable name. |
@@ -275,11 +289,11 @@ The nine artifact types of the current product model.
 | `base-revision` | yes | string | `^[0-9a-f]{7,40}$` | The baseline Git revision this change was created against. The exact string 0000000 is the no-baseline sentinel only for CHG-INITIAL. |
 | `operations` | yes | object |  |  |
 | `operations.add` | yes | array of string |  |  |
-| `operations.add[]` | yes | string | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$` | Any artifact of the current product model. |
+| `operations.add[]` | yes | string | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON\|SB)-[A-Z0-9]+(-[A-Z0-9]+)*$` | Any artifact of the current product model. |
 | `operations.modify` | yes | array of string |  |  |
-| `operations.modify[]` | yes | string | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$` | Any artifact of the current product model. |
+| `operations.modify[]` | yes | string | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON\|SB)-[A-Z0-9]+(-[A-Z0-9]+)*$` | Any artifact of the current product model. |
 | `operations.remove` | yes | array of string |  |  |
-| `operations.remove[]` | yes | string | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$` | Any artifact of the current product model. |
+| `operations.remove[]` | yes | string | `^(ACT\|JRN\|UC\|BR\|TERM\|BC\|FR\|QR\|CON\|SB)-[A-Z0-9]+(-[A-Z0-9]+)*$` | Any artifact of the current product model. |
 
 <!-- END GENERATED: product-change -->
 

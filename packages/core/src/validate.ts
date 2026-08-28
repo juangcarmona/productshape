@@ -150,8 +150,13 @@ export function validateModel(artifacts: LoadedArtifact[], graph: ProductGraph):
     const reachable = undirectedReachabilityFromActors(graph);
     for (const node of graph.nodes) {
       if (!requirementTypes.has(node.type)) continue;
-      // A constraint without applies-to is product-wide: reachable by definition.
-      if (node.type === 'constraint' && (graph.outgoing.get(node.id) ?? []).length === 0) {
+      // A constraint without applies-to is product-wide: reachable by definition. The
+      // applies-to edges decide, never the total outgoing count: a uses-terms dependency
+      // says what the constraint needs, not where it applies.
+      if (
+        node.type === 'constraint' &&
+        !(graph.outgoing.get(node.id) ?? []).some((e) => e.kind === 'applies-to')
+      ) {
         continue;
       }
       if (!reachable.has(node.id)) {
@@ -185,12 +190,15 @@ export function validateModel(artifacts: LoadedArtifact[], graph: ProductGraph):
       }
     }
     if (node.type === 'domain-term') {
+      // Usage is the incoming canonical `uses-terms` edge from any permitted source kind; a
+      // prose mention of the term's id or title never counts (RFC 0072). A term's self-reference
+      // counts by the letter of the contract; that hole is spec#96, deferred to an 0.3.0 RFC.
       const used = incoming.some((e) => e.kind === 'uses-terms');
       if (!used) {
         diagnostics.push({
           severity: 'warning',
           code: 'PRODUCT106',
-          message: `Domain term '${node.id}' is not used by any artifact`,
+          message: `Domain term '${node.id}' has no incoming uses-terms relationship`,
           file: node.path,
           artifact: node.id,
         });

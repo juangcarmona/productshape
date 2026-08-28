@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { compileGraph } from './graph.js';
 import type { LoadedArtifact } from './model.js';
+import { buildTraceabilityJson } from './outputs.js';
 import { artifact } from './test-support.js';
 import { validateModel } from './validate.js';
 
@@ -129,6 +130,95 @@ describe('validateModel warnings', () => {
       const greenfield = artifact('ACT-C', 'actor', { status: 'draft' });
       const diagnostics = run([confident, accepted, greenfield]);
       expect(diagnostics.filter((d) => d.code === 'PRODUCT111')).toEqual([]);
+    });
+  });
+
+  describe('uses-terms authorship from every permitted source kind (RFC 0072)', () => {
+    const context = artifact('BC-CORE', 'bounded-context');
+    const term = artifact('TERM-UNITS', 'domain-term', { 'defined-in': 'BC-CORE' });
+
+    it.each([
+      ['use-case', 'UC-USER', { 'primary-actor': 'ACT-A' }],
+      ['business-rule', 'BR-USER', {}],
+      ['domain-term', 'TERM-USER', { 'defined-in': 'BC-CORE' }],
+      ['functional-requirement', 'FR-USER-001', {}],
+      ['quality-requirement', 'QR-USER-001', {}],
+      ['constraint', 'CON-USER', {}],
+    ])('%s usage suppresses PRODUCT106 on the used term', (type, id, extra) => {
+      const user = artifact(id, type, { ...extra, 'uses-terms': ['TERM-UNITS'] });
+      const flagged = run([baseActor, context, term, user])
+        .filter((d) => d.code === 'PRODUCT106')
+        .map((d) => d.artifact);
+      expect(flagged).not.toContain('TERM-UNITS');
+    });
+
+    it('term-to-term usage is definitional: the used term is covered, the using term is not', () => {
+      const user = artifact('TERM-USER', 'domain-term', {
+        'defined-in': 'BC-CORE',
+        'uses-terms': ['TERM-UNITS'],
+      });
+      const flagged = run([context, term, user])
+        .filter((d) => d.code === 'PRODUCT106')
+        .map((d) => d.artifact);
+      expect(flagged).toEqual(['TERM-USER']);
+    });
+
+    it('a prose mention is not usage: PRODUCT106 still fires and states the graph check', () => {
+      const admirer = artifact(
+        'BR-ADMIRER',
+        'business-rule',
+        {},
+        {
+          body: 'This rule leans on TERM-UNITS but never authors the edge.',
+        },
+      );
+      const diagnostics = run([context, term, admirer]).filter((d) => d.code === 'PRODUCT106');
+      expect(diagnostics).toEqual([
+        expect.objectContaining({
+          artifact: 'TERM-UNITS',
+          message: "Domain term 'TERM-UNITS' has no incoming uses-terms relationship",
+        }),
+      ]);
+    });
+
+    it('an unknown uses-terms target from a new source kind is PRODUCT006', () => {
+      const rule = artifact('BR-USER', 'business-rule', { 'uses-terms': ['TERM-GHOST'] });
+      const diagnostics = run([rule]).filter((d) => d.code === 'PRODUCT006');
+      expect(diagnostics).toEqual([
+        expect.objectContaining({ artifact: 'BR-USER', field: 'uses-terms', target: 'TERM-GHOST' }),
+      ]);
+    });
+
+    it('uses-terms stays out of the traceability sources projection', () => {
+      // A term dependency names vocabulary the requirement needs, not a source it traces to.
+      const uc = artifact('UC-A', 'use-case', { 'primary-actor': 'ACT-A' });
+      const fr = artifact('FR-USER-001', 'functional-requirement', {
+        'derived-from': ['UC-A'],
+        'uses-terms': ['TERM-UNITS'],
+      });
+      const graph = compileGraph([baseActor, context, term, uc, fr]);
+      const traceability = buildTraceabilityJson(graph) as {
+        requirements: Record<string, { sources: string[] }>;
+      };
+      expect(traceability.requirements['FR-USER-001']?.sources).toEqual(['UC-A']);
+    });
+
+    it('uses-terms never narrows a product-wide constraint: no PRODUCT103 appears', () => {
+      // The applies-to field decides where a constraint applies; a uses-terms dependency must
+      // not cost the constraint its product-wide reachability exemption.
+      const constraint = artifact('CON-USER', 'constraint', { 'uses-terms': ['TERM-UNITS'] });
+      const diagnostics = run([context, term, constraint]);
+      expect(diagnostics.filter((d) => d.code === 'PRODUCT103')).toEqual([]);
+    });
+
+    it('an active constraint using a retired term is PRODUCT008', () => {
+      const retired = artifact('TERM-OLD', 'domain-term', {
+        'defined-in': 'BC-CORE',
+        status: 'retired',
+      });
+      const constraint = artifact('CON-USER', 'constraint', { 'uses-terms': ['TERM-OLD'] });
+      const diagnostics = run([context, retired, constraint]);
+      expect(diagnostics.filter((d) => d.code === 'PRODUCT008')).toHaveLength(1);
     });
   });
 
