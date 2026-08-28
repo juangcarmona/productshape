@@ -3,6 +3,7 @@ import {
   classifyConsumerDocuments,
   codes,
   blockingDiagnostics,
+  dedupeDiagnostics,
   sortDiagnostics,
   stableJson,
   verifyCitations,
@@ -122,10 +123,14 @@ export async function runCitationsVerify(
     );
   }
   const { artifacts } = baseline;
-  // Live-change overlay defects join the verdict: every validation command reports an exit code
-  // for the whole repository. The overlay diagnostics ride in this command's report so the exit
-  // code is explainable from its own output.
-  const overlayDiagnostics = await liveChangeDiagnostics(repo, baseline);
+  // The rest of the repository's verdict joins this command's own: the baseline warnings that
+  // survived the refusal above and every live change's overlay diagnostics, deduped because an
+  // overlay re-derives each untouched baseline fact. Every validation command reports an exit
+  // code for the whole repository, explainable from its own output.
+  const repositoryDiagnostics = dedupeDiagnostics([
+    ...baseline.diagnostics,
+    ...(await liveChangeDiagnostics(repo, baseline)),
+  ]);
 
   if (options.provider !== undefined) {
     const provider = SDD_PROVIDERS[options.provider];
@@ -142,7 +147,7 @@ export async function runCitationsVerify(
       artifacts,
       repo.config.validation['warnings-as-errors'],
       options,
-      overlayDiagnostics,
+      repositoryDiagnostics,
     );
   }
 
@@ -154,7 +159,7 @@ export async function runCitationsVerify(
     repo.config.validation['warnings-as-errors'],
     options,
     repo.config.prodshape.citations['consumer-roots'],
-    overlayDiagnostics,
+    repositoryDiagnostics,
   );
 }
 
@@ -175,7 +180,7 @@ async function runRecursiveVerify(
   warningsAsErrors: boolean,
   options: CitationsVerifyOptions,
   consumerRoots: string[],
-  overlayDiagnostics: Diagnostic[],
+  repositoryDiagnostics: Diagnostic[],
 ): Promise<number> {
   const targets = target !== undefined ? [target] : consumerRoots;
 
@@ -190,7 +195,7 @@ async function runRecursiveVerify(
   const verifications = verifyCitations(citations, artifacts);
 
   const allDiagnostics = [
-    ...overlayDiagnostics,
+    ...repositoryDiagnostics,
     ...carrierDiagnostics,
     ...verifications.flatMap((v) => v.diagnostics),
   ];
@@ -289,9 +294,9 @@ async function runProviderVerify(
   artifacts: LoadedArtifact[],
   warningsAsErrors: boolean,
   options: CitationsVerifyOptions,
-  overlayDiagnostics: Diagnostic[],
+  repositoryDiagnostics: Diagnostic[],
 ): Promise<number> {
-  const allDiagnostics: Diagnostic[] = [...overlayDiagnostics];
+  const allDiagnostics: Diagnostic[] = [...repositoryDiagnostics];
   let root = provider.name;
   // The contract excludes archived or historical documents by default; --include-archived adds
   // them to the verified population, with their citation defects reported as warnings.

@@ -26,7 +26,7 @@ Four fields are common to every Markdown-authored kind: `id` (stable and immutab
 
 ## Provenance
 
-`provenance` is an optional object accepted by all nine artifact kinds. It records the **evidence** behind recovered knowledge: where a claim came from and how strongly the evidence supports it.
+`provenance` is an optional object accepted by every artifact kind. It records the **evidence** behind recovered knowledge: where a claim came from and how strongly the evidence supports it.
 
 Set it on recovered (brownfield) artifacts. Leave it unset on greenfield artifacts authored from intent — there is no evidence to cite, and an empty claim of provenance is worse than none.
 
@@ -53,7 +53,7 @@ provenance:
 
 ## Artifact frontmatter
 
-The nine artifact types of the current product model.
+The artifact types of the current product model.
 
 ### Actor
 

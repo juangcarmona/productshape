@@ -91,6 +91,34 @@ export function compareCodePoints(left: string, right: string): number {
   return leftPoints.length - rightPoints.length;
 }
 
+/**
+ * Collapse byte-identical diagnostics. An overlay carries every untouched baseline artifact, so
+ * overlay validation re-derives each pre-existing baseline fact; when a command combines the
+ * baseline report with one or more overlay reports, the same fact must count once, not once per
+ * live change. Only fully identical diagnostics collapse: an overlay-recoded duplicate
+ * (PRODUCT023/PRODUCT024) differs in code and message and is preserved.
+ */
+export function dedupeDiagnostics(diagnostics: Diagnostic[]): Diagnostic[] {
+  const seen = new Set<string>();
+  return diagnostics.filter((diagnostic) => {
+    const key = JSON.stringify([
+      diagnostic.severity,
+      diagnostic.code,
+      diagnostic.message,
+      diagnostic.file,
+      diagnostic.artifact ?? '',
+      diagnostic.change ?? '',
+      diagnostic.field ?? '',
+      diagnostic.target ?? '',
+      diagnostic.line ?? null,
+      diagnostic.entry ?? null,
+    ]);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 /** Compare optional one-based positions numerically, absent before present. */
 function compareOptionalNumbers(left: number | undefined, right: number | undefined): number {
   if (left === undefined) return right === undefined ? 0 : -1;

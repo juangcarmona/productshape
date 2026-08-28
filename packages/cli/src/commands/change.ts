@@ -12,6 +12,7 @@ import {
   preflightApply,
   requiredBodySections,
   scanCitations,
+  dedupeDiagnostics,
   sortDiagnostics,
   stableJson,
   validateBaseline,
@@ -83,7 +84,7 @@ export async function runChangeValidate(
     );
   }
 
-  const sorted = sortDiagnostics(diagnostics);
+  const sorted = sortDiagnostics(dedupeDiagnostics(diagnostics));
   const blocking = blockingDiagnostics(sorted, repo.config.validation['warnings-as-errors']);
   const errors = sorted.filter((d) => d.severity === 'error');
   const warnings = sorted.filter((d) => d.severity === 'warning');

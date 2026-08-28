@@ -1,6 +1,7 @@
 import {
   buildGeneratedOutputs,
   blockingDiagnostics,
+  dedupeDiagnostics,
   sortDiagnostics,
   stableJson,
   validateBaseline,
@@ -30,13 +31,17 @@ export async function runValidate(io: CliIo, options: ValidateOptions): Promise<
   // The verdict covers the whole repository, not only the baseline: a live change whose overlay
   // is invalid fails `validate` too, and a `--consumers` scope brings citation defects into the
   // exit code. Every validation command reports the same kind of answer.
-  const diagnostics = sortDiagnostics([
-    ...baseline.diagnostics,
-    ...(await liveChangeDiagnostics(repo, baseline)),
-    ...(options.consumers !== undefined
-      ? await consumerCitationDiagnostics(repo, baseline.artifacts, options.consumers)
-      : []),
-  ]);
+  // Deduped: each overlay re-derives every untouched baseline fact, and the same fact must
+  // count once, not once per live change.
+  const diagnostics = sortDiagnostics(
+    dedupeDiagnostics([
+      ...baseline.diagnostics,
+      ...(await liveChangeDiagnostics(repo, baseline)),
+      ...(options.consumers !== undefined
+        ? await consumerCitationDiagnostics(repo, baseline.artifacts, options.consumers)
+        : []),
+    ]),
+  );
   const blocking = blockingDiagnostics(diagnostics, repo.config.validation['warnings-as-errors']);
 
   const errors = diagnostics.filter((d) => d.severity === 'error');

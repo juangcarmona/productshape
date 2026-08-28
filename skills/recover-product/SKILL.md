@@ -95,6 +95,6 @@ Structural facts come from these commands, never from your own reading of state 
 
 ## Completion checks
 
-- `prodshape recover status` reports every completion criterion met: all sources classified, leads resolved, questions answered or explicitly deferred, all nine artifact families probed, duplicates reconciled, overlay validation passing and fresh, no stale evidence, model untouched, output confined to `CHG-INITIAL`.
+- `prodshape recover status` reports every completion criterion met: all sources classified, leads resolved, questions answered or explicitly deferred, every artifact family probed, duplicates reconciled, overlay validation passing and fresh, no stale evidence, model untouched, output confined to `CHG-INITIAL`.
 - `prodshape recover check` exits clean immediately before handover.
 - The handover to the human happened and nothing was applied, merged or accepted by you.

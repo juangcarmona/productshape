@@ -766,6 +766,52 @@ describe('citations verify --provider openspec (scope model)', () => {
   });
 });
 
+describe('citations verify carries the repository verdict', () => {
+  it('surfaces a baseline warning in the report without refusing', async () => {
+    // A model warning never triggers the refusal, but the verdict covers the whole repository,
+    // so the warning rides in this command's own report.
+    await writeFile(
+      join(workDir, 'docs', 'product', 'model', 'br-orphan-001.md'),
+      [
+        '---',
+        'id: BR-ORPHAN-001',
+        'type: business-rule',
+        'title: Nobody consumes this',
+        'status: active',
+        '---',
+        '',
+        '## Rule',
+        '',
+        'A rule without consumers.',
+        '',
+        '## Rationale',
+        '',
+        'Exercises the verdict surface.',
+        '',
+        '## Examples',
+        '',
+        'None needed.',
+        '',
+        '## Exceptions',
+        '',
+        'None.',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+    const result = await run(['citations', 'verify', 'specs', '--format', 'json']);
+    expect(result.code).toBe(0);
+    const parsed = JSON.parse(result.out.join('\n')) as {
+      diagnostics: { code: string; severity: string }[];
+      summary: { warnings: number };
+    };
+    expect(
+      parsed.diagnostics.filter((d) => d.code === 'PRODUCT105' && d.severity === 'warning'),
+    ).toHaveLength(1);
+    expect(parsed.summary.warnings).toBeGreaterThanOrEqual(1);
+  });
+});
+
 describe('citations verify on an invalid product model', () => {
   it('refuses to verify and reports the model errors instead of citation statuses', async () => {
     // Citation statuses are computed against artifact ids and digests; a model that fails

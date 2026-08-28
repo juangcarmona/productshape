@@ -7,7 +7,7 @@ Recovery is complete when `prodshape recover status` reports every criterion met
 | `sourcesClassified` | No pending, stale or missing evidence; every source is processed (each relevant section classified) or excluded with a reason |
 | `leadsResolved` | Every lead followed and closed with a resolution |
 | `questionsResolved` | Every question answered, or deferred with a reason the user agreed to |
-| `familiesProbed` | Each of the nine artifact families has candidates or an explicit none-found probe with a note |
+| `familiesProbed` | Every artifact family has candidates or an explicit none-found probe with a note |
 | `duplicatesReconciled` | Every duplicate finding maps to a candidate that exists |
 | `validationPasses` | The `CHG-INITIAL` overlay validates with zero errors |
 | `validationFresh` | Nothing under the change directory changed since validation last ran |

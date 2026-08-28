@@ -240,6 +240,15 @@ describe('validateModel warnings', () => {
       expect(flagged).toEqual(['BR-LONE']);
     });
 
+    it('a dangling applies-to is a broken reference, not consumption: PRODUCT105 still fires', () => {
+      const rule = artifact('BR-DANGLING', 'business-rule', { 'applies-to': ['UC-GHOST'] });
+      const diagnostics = run([rule]);
+      expect(diagnostics.filter((d) => d.code === 'PRODUCT006')).toHaveLength(1);
+      expect(diagnostics.filter((d) => d.code === 'PRODUCT105').map((d) => d.artifact)).toEqual([
+        'BR-DANGLING',
+      ]);
+    });
+
     it('a retired use case governed-by does not suppress PRODUCT105 for an active rule', () => {
       const rule = artifact('BR-LONE', 'business-rule');
       const retiredUc = artifact('UC-OLD', 'use-case', {

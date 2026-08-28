@@ -27,14 +27,14 @@
         ".claude/skills/define-product/SKILL.md": "sha256:60658227ab1d2f0df36d4d299aa0799098c024a917ee47f57e778e7bf6780884",
         ".claude/skills/explore-product/references/exploration-heuristics.md": "sha256:65d5101c91eb16960255fd2f330ff6e127ebc916ffe0c0ca52eb092f0dc231b4",
         ".claude/skills/explore-product/SKILL.md": "sha256:6da55f9b7046d45b64257747cb9837e7e6f81d2e163e21bce17096093703d544",
-        ".claude/skills/recover-product/references/artifact-extraction.md": "sha256:e37e521abdf8d4f1797f858f7765aff4a9bed4d1a49c632ed855f26f38c883e2",
-        ".claude/skills/recover-product/references/completion-criteria.md": "sha256:f385b12d0f6a9c00b8aa8262de83a12038c0a3d7527b940576d1b3ba88ce9ece",
+        ".claude/skills/recover-product/references/artifact-extraction.md": "sha256:77081b2ec26c5c0013f2ec0dde8eaa8eef9159ac42af1f499a53232664fc7cb1",
+        ".claude/skills/recover-product/references/completion-criteria.md": "sha256:cdc99eb3b0d1beed7995effc90fe1911de485d12081e3547e9a2dbbce2ee3016",
         ".claude/skills/recover-product/references/evidence-classification.md": "sha256:799eae5940003ec7d21c472d279f6e863caed1d92cc1201ceb93b893f6b13271",
         ".claude/skills/recover-product/references/evidence-sources.md": "sha256:50a9da013d39332f46a14674b47975a08c581ce61b65256298c1db1d11630767",
         ".claude/skills/recover-product/references/provenance-format.md": "sha256:2869f8a37743143c0bae014b8e69f1070ae57b57f7145be7c655c8ede74569ef",
         ".claude/skills/recover-product/references/reconciliation.md": "sha256:62fd4cacf9cf6db611632c8cddf44b5b75a19358cbe25fcfc4070d5a931dd4c1",
         ".claude/skills/recover-product/references/recovery-workflow.md": "sha256:8a2eea13a7a4b622248379497be20201b668741305421eb45d99c6dc8f0fa2b8",
-        ".claude/skills/recover-product/SKILL.md": "sha256:b35da67750eaecd4d7d04ce2c7063e01035f2374930d2bba131f9775030fce9c"
+        ".claude/skills/recover-product/SKILL.md": "sha256:4b791ce3528487c9ec04f7f05a6b02b9cf335c19609b3d817202055659e1fafc"
       }
     },
     "copilot": {
@@ -61,14 +61,14 @@
         ".github/skills/define-product/SKILL.md": "sha256:60658227ab1d2f0df36d4d299aa0799098c024a917ee47f57e778e7bf6780884",
         ".github/skills/explore-product/references/exploration-heuristics.md": "sha256:65d5101c91eb16960255fd2f330ff6e127ebc916ffe0c0ca52eb092f0dc231b4",
         ".github/skills/explore-product/SKILL.md": "sha256:6da55f9b7046d45b64257747cb9837e7e6f81d2e163e21bce17096093703d544",
-        ".github/skills/recover-product/references/artifact-extraction.md": "sha256:e37e521abdf8d4f1797f858f7765aff4a9bed4d1a49c632ed855f26f38c883e2",
-        ".github/skills/recover-product/references/completion-criteria.md": "sha256:f385b12d0f6a9c00b8aa8262de83a12038c0a3d7527b940576d1b3ba88ce9ece",
+        ".github/skills/recover-product/references/artifact-extraction.md": "sha256:77081b2ec26c5c0013f2ec0dde8eaa8eef9159ac42af1f499a53232664fc7cb1",
+        ".github/skills/recover-product/references/completion-criteria.md": "sha256:cdc99eb3b0d1beed7995effc90fe1911de485d12081e3547e9a2dbbce2ee3016",
         ".github/skills/recover-product/references/evidence-classification.md": "sha256:799eae5940003ec7d21c472d279f6e863caed1d92cc1201ceb93b893f6b13271",
         ".github/skills/recover-product/references/evidence-sources.md": "sha256:50a9da013d39332f46a14674b47975a08c581ce61b65256298c1db1d11630767",
         ".github/skills/recover-product/references/provenance-format.md": "sha256:2869f8a37743143c0bae014b8e69f1070ae57b57f7145be7c655c8ede74569ef",
         ".github/skills/recover-product/references/reconciliation.md": "sha256:62fd4cacf9cf6db611632c8cddf44b5b75a19358cbe25fcfc4070d5a931dd4c1",
         ".github/skills/recover-product/references/recovery-workflow.md": "sha256:8a2eea13a7a4b622248379497be20201b668741305421eb45d99c6dc8f0fa2b8",
-        ".github/skills/recover-product/SKILL.md": "sha256:b35da67750eaecd4d7d04ce2c7063e01035f2374930d2bba131f9775030fce9c"
+        ".github/skills/recover-product/SKILL.md": "sha256:4b791ce3528487c9ec04f7f05a6b02b9cf335c19609b3d817202055659e1fafc"
       }
     }
   }

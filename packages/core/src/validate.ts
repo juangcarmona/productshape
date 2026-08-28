@@ -185,11 +185,19 @@ export function validateModel(artifacts: LoadedArtifact[], graph: ProductGraph):
     if (node.type === 'business-rule' && node.status !== 'retired') {
       // Consumed iff a valid outgoing applies-to, incoming governed-by or incoming derived-from
       // exists with a non-retired author. An incoming illustrates edge never counts: an example
-      // demonstrates the rule, it does not establish where the rule governs.
+      // demonstrates the rule, it does not establish where the rule governs. Valid means valid:
+      // an applies-to whose target does not resolve, or resolves to a disallowed type, is a
+      // broken reference (PRODUCT006/PRODUCT007), not consumption.
+      const appliesToTargets = allowedTargets(node.type, 'applies-to') as readonly string[];
       const consumed =
         incoming.some(
           (e) => (e.kind === 'governed-by' || e.kind === 'derived-from') && nonRetiredSource(e),
-        ) || outgoing.some((e) => e.kind === 'applies-to');
+        ) ||
+        outgoing.some((e) => {
+          if (e.kind !== 'applies-to') return false;
+          const target = graph.nodeById.get(e.to);
+          return target !== undefined && appliesToTargets.includes(target.type);
+        });
       if (!consumed) {
         diagnostics.push({
           severity: 'warning',
