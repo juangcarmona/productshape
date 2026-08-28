@@ -8,6 +8,7 @@ export const productArtifactTypes = [
   'functional-requirement',
   'quality-requirement',
   'constraint',
+  'structured-behaviour',
 ] as const;
 
 export type ProductArtifactType = (typeof productArtifactTypes)[number];
@@ -28,6 +29,7 @@ export const idPrefixByType: Record<MarkdownDocumentType, string> = {
   'functional-requirement': 'FR',
   'quality-requirement': 'QR',
   constraint: 'CON',
+  'structured-behaviour': 'SB',
   'product-change': 'CHG',
 };
 
@@ -55,6 +57,7 @@ export const requiredBodySections: Record<MarkdownDocumentType, string[]> = {
   'functional-requirement': ['Requirement', 'Rationale'],
   'quality-requirement': ['Requirement', 'Measurement'],
   constraint: ['Constraint', 'Rationale', 'Consequences'],
+  'structured-behaviour': ['Intent', 'Boundaries'],
   'product-change': [
     'Problem',
     'Intended Product Outcome',
@@ -95,6 +98,7 @@ export const modelSubdirByType: Record<string, string> = {
   'functional-requirement': 'requirements/functional',
   'quality-requirement': 'requirements/quality',
   constraint: 'requirements/constraints',
+  'structured-behaviour': 'behaviours',
 };
 
 /**

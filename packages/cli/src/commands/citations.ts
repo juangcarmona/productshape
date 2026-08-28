@@ -1,11 +1,8 @@
-import { stat } from 'node:fs/promises';
-import { extname, isAbsolute, resolve as resolvePath } from 'node:path';
+import { isAbsolute, resolve as resolvePath } from 'node:path';
 import {
   classifyConsumerDocuments,
   codes,
   blockingDiagnostics,
-  parseCitations,
-  scanCitations,
   sortDiagnostics,
   stableJson,
   verifyCitations,
@@ -32,6 +29,7 @@ import {
   resolveRepository,
   type CliIo,
 } from '../context.js';
+import { liveChangeDiagnostics, scanCitationTarget } from './verdict.js';
 
 export interface CitationsVerifyOptions {
   format?: 'text' | 'json';
@@ -60,76 +58,6 @@ interface DocumentReport {
   state: ConsumerScopeState;
   declaration: string | null;
   citations: number;
-}
-
-const SUPPORTED_CONSUMER_EXTENSIONS = new Set(['.md', '.yaml', '.yml']);
-
-function filesystemErrorCode(error: unknown): string | undefined {
-  if (
-    error instanceof Error &&
-    'code' in error &&
-    typeof (error as { code?: unknown }).code === 'string'
-  ) {
-    return (error as { code: string }).code;
-  }
-  return undefined;
-}
-
-/**
- * Classify the command target before invoking core discovery. Path validity belongs at the CLI
- * boundary because it determines the documented invalid-invocation exit code; parsing and
- * recursive discovery remain core responsibilities.
- */
-async function scanCitationTarget(
-  target: string,
-  absolutePath: string,
-  repoRoot: string,
-  fromConfiguredRoots = false,
-) {
-  try {
-    const targetStat = await stat(absolutePath);
-    if (targetStat.isDirectory()) {
-      return await scanCitations(absolutePath, repoRoot);
-    }
-    if (targetStat.isFile()) {
-      const extension = extname(absolutePath);
-      if (!SUPPORTED_CONSUMER_EXTENSIONS.has(extension)) {
-        throw new CliError(
-          `Unsupported citation target file type '${extension || '(none)'}': '${target}'; expected .md, .yaml, or .yml`,
-          exitCodes.invalidInvocation,
-        );
-      }
-      const parsed = await parseCitations(absolutePath, repoRoot);
-      // A carrier conflict suppresses citation statuses; the diagnostic explains why.
-      return { records: parsed.suppressed ? [] : parsed.records, diagnostics: parsed.diagnostics };
-    }
-    throw new CliError(
-      `Citation target must be a directory or supported consumer file: '${target}'`,
-      exitCodes.invalidInvocation,
-    );
-  } catch (error) {
-    if (error instanceof CliError) throw error;
-
-    const code = filesystemErrorCode(error);
-    if (code === 'ENOENT' || code === 'ENOTDIR') {
-      // A configured root that does not exist is a setup defect, not an empty result: reporting
-      // "0 citations" for it would be the false green the configuration exists to prevent. Name
-      // the key so the fix is obvious in a repository whose consumers live somewhere else.
-      throw new CliError(
-        fromConfiguredRoots
-          ? `Configured citation consumer root not found: '${target}'; set 'extensions.prodshape.citations.consumer-roots' in .product/config.yaml to the directories that hold your consumer documents, or pass a target explicitly`
-          : `Citation target not found: '${target}'`,
-        exitCodes.invalidInvocation,
-      );
-    }
-    if (code) {
-      throw new CliError(
-        `Cannot access citation target '${target}' (${code})`,
-        exitCodes.invalidInvocation,
-      );
-    }
-    throw error;
-  }
 }
 
 /**
@@ -194,6 +122,10 @@ export async function runCitationsVerify(
     );
   }
   const { artifacts } = baseline;
+  // Live-change overlay defects join the verdict: every validation command reports an exit code
+  // for the whole repository. The overlay diagnostics ride in this command's report so the exit
+  // code is explainable from its own output.
+  const overlayDiagnostics = await liveChangeDiagnostics(repo, baseline);
 
   if (options.provider !== undefined) {
     const provider = SDD_PROVIDERS[options.provider];
@@ -210,6 +142,7 @@ export async function runCitationsVerify(
       artifacts,
       repo.config.validation['warnings-as-errors'],
       options,
+      overlayDiagnostics,
     );
   }
 
@@ -221,6 +154,7 @@ export async function runCitationsVerify(
     repo.config.validation['warnings-as-errors'],
     options,
     repo.config.prodshape.citations['consumer-roots'],
+    overlayDiagnostics,
   );
 }
 
@@ -241,6 +175,7 @@ async function runRecursiveVerify(
   warningsAsErrors: boolean,
   options: CitationsVerifyOptions,
   consumerRoots: string[],
+  overlayDiagnostics: Diagnostic[],
 ): Promise<number> {
   const targets = target !== undefined ? [target] : consumerRoots;
 
@@ -254,7 +189,11 @@ async function runRecursiveVerify(
   }
   const verifications = verifyCitations(citations, artifacts);
 
-  const allDiagnostics = [...carrierDiagnostics, ...verifications.flatMap((v) => v.diagnostics)];
+  const allDiagnostics = [
+    ...overlayDiagnostics,
+    ...carrierDiagnostics,
+    ...verifications.flatMap((v) => v.diagnostics),
+  ];
   const diagnostics = sortDiagnostics(allDiagnostics);
   const blocking = blockingDiagnostics(diagnostics, warningsAsErrors);
   const errors = diagnostics.filter((d) => d.severity === 'error');
@@ -350,8 +289,9 @@ async function runProviderVerify(
   artifacts: LoadedArtifact[],
   warningsAsErrors: boolean,
   options: CitationsVerifyOptions,
+  overlayDiagnostics: Diagnostic[],
 ): Promise<number> {
-  const allDiagnostics: Diagnostic[] = [];
+  const allDiagnostics: Diagnostic[] = [...overlayDiagnostics];
   let root = provider.name;
   // The contract excludes archived or historical documents by default; --include-archived adds
   // them to the verified population, with their citation defects reported as warnings.

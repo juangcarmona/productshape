@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:product-definition-as-code:schema:structured-behaviour:v1alpha1",
+  "title": "Structured behaviour frontmatter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "title", "status", "illustrates", "when", "then"],
+  "properties": {
+    "id": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/structuredBehaviourId"
+    },
+    "type": { "const": "structured-behaviour" },
+    "title": { "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/title" },
+    "status": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/artifactStatus"
+    },
+    "illustrates": {
+      "description": "Product semantics made concrete by this example.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/illustrationTargetId"
+      }
+    },
+    "given": {
+      "description": "Observable context or preconditions. Entries are ordered and conjunctive.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/structuredBehaviourClause"
+      }
+    },
+    "when": {
+      "description": "The single product-level stimulus, action or event.",
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/structuredBehaviourClause"
+    },
+    "then": {
+      "description": "Observable expected outcomes. Entries are ordered and conjunctive.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/structuredBehaviourClause"
+      }
+    },
+    "uses-terms": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/domainTermId"
+      }
+    },
+    "provenance": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha1#/$defs/provenance"
+    }
+  }
+}

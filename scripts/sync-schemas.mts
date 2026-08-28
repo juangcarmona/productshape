@@ -3,7 +3,7 @@
  * directory, pinned to the commit SHA recorded in `schemas/.source.json`.
  *
  * The spec repository (product-definition-as-code/spec) owns the normative schemas at
- * `schemas/v1alpha1`. This script copies the 11 files (9 artifact kinds, common and
+ * `schemas/v1alpha1`. This script copies the 12 files (10 artifact kinds, common and
  * product-change) into both the repository-root `schemas/` directory (consumed by
  * `generate-frontmatter-reference.mts` and the conformance tests) and the
  * `packages/core/schemas/` directory (consumed at runtime by `SchemaRegistry.loadBundled()`
@@ -37,6 +37,7 @@ const schemaFiles = [
   'journey.schema.json',
   'product-change.schema.json',
   'quality-requirement.schema.json',
+  'structured-behaviour.schema.json',
   'use-case.schema.json',
 ];
 

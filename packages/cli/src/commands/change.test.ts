@@ -422,11 +422,14 @@ describe('change validate', () => {
     expect(again.out.join('\n')).toContain('PRODUCT108');
   });
 
-  it('leaves the baseline alone: prodshape validate ignores live changes', async () => {
-    await writeChange({ add: ['BR-PROBE-001'] }); // PRODUCT026 under change validate.
+  it('carries live-change defects into the validate verdict without touching the baseline', async () => {
+    // The verdict covers the whole repository: an invalid overlay fails plain validate too
+    // (the conformance contract asserts the expected exit code for every configured command).
+    // The baseline itself stays untouched and its artifacts still validate clean.
+    await writeChange({ add: ['BR-PROBE-001'] }); // PRODUCT026 under overlay validation.
     const result = await run(['validate']);
-    expect(result.code).toBe(0);
-    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\)/);
+    expect(result.code).toBe(1);
+    expect(result.out.join('\n')).toContain('PRODUCT026');
   });
 
   it('exits 2 on an unknown change ID', async () => {

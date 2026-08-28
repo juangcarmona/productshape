@@ -17,7 +17,7 @@ const model = [
 describe('compileGraph', () => {
   it('compiles typed edges in canonical direction with reverse indexes', () => {
     const graph = compileGraph(model);
-    expect(graph.edges).toContainEqual({ from: 'JRN-A', kind: 'steps', to: 'UC-A' });
+    expect(graph.edges).toContainEqual({ from: 'JRN-A', kind: 'steps[].use-case', to: 'UC-A' });
     expect(
       graph.incoming
         .get('ACT-A')

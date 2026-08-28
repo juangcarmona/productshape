@@ -668,6 +668,7 @@ describe('brownfield recovery session (packed binary)', () => {
       'functional-requirement',
       'quality-requirement',
       'constraint',
+      'structured-behaviour',
     ]) {
       const probe = await prodshape(
         [

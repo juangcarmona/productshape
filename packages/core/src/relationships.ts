@@ -3,6 +3,11 @@ import type { ProductArtifactType } from './artifact.js';
 /**
  * The canonical relationship vocabulary (https://github.com/product-definition-as-code/spec/blob/main/spec/relationships.md).
  * One authored direction per relationship; every reverse view is derived.
+ *
+ * `field` is the vocabulary's canonical spelling and therefore the diagnostic attribution and
+ * the edge kind. An array-member relationship spells the member path (`steps[].use-case`,
+ * `verification[].scenario-ref`); extraction reads the named member of each entry in the
+ * enclosing frontmatter array.
  */
 export interface RelationshipSpec {
   source: ProductArtifactType;
@@ -14,7 +19,7 @@ const behaviourTargets: ProductArtifactType[] = ['journey', 'use-case', 'bounded
 
 export const relationshipSpecs: RelationshipSpec[] = [
   { source: 'journey', field: 'primary-actor', targets: ['actor'] },
-  { source: 'journey', field: 'steps', targets: ['use-case'] },
+  { source: 'journey', field: 'steps[].use-case', targets: ['use-case'] },
   { source: 'use-case', field: 'primary-actor', targets: ['actor'] },
   { source: 'use-case', field: 'supporting-actors', targets: ['actor'] },
   { source: 'use-case', field: 'bounded-context', targets: ['bounded-context'] },
@@ -31,11 +36,27 @@ export const relationshipSpecs: RelationshipSpec[] = [
     field: 'derived-from',
     targets: ['use-case', 'business-rule', 'constraint'],
   },
+  {
+    source: 'functional-requirement',
+    field: 'verification[].scenario-ref',
+    targets: ['structured-behaviour'],
+  },
   { source: 'functional-requirement', field: 'uses-terms', targets: ['domain-term'] },
   { source: 'quality-requirement', field: 'applies-to', targets: behaviourTargets },
+  {
+    source: 'quality-requirement',
+    field: 'verification[].scenario-ref',
+    targets: ['structured-behaviour'],
+  },
   { source: 'quality-requirement', field: 'uses-terms', targets: ['domain-term'] },
   { source: 'constraint', field: 'applies-to', targets: behaviourTargets },
   { source: 'constraint', field: 'uses-terms', targets: ['domain-term'] },
+  {
+    source: 'structured-behaviour',
+    field: 'illustrates',
+    targets: ['use-case', 'business-rule', 'constraint'],
+  },
+  { source: 'structured-behaviour', field: 'uses-terms', targets: ['domain-term'] },
 ];
 
 export interface Edge {
@@ -43,6 +64,9 @@ export interface Edge {
   kind: string;
   to: string;
 }
+
+/** `<array>[].<member>` vocabulary spellings; capture 1 is the array key, capture 2 the member. */
+const arrayMemberField = /^([a-z-]+)\[\]\.([a-z-]+)$/;
 
 /** Extract the canonical outgoing references of one artifact's frontmatter. */
 export function extractEdges(
@@ -53,19 +77,22 @@ export function extractEdges(
   const edges: Edge[] = [];
   for (const spec of relationshipSpecs) {
     if (spec.source !== type) continue;
-    const value = frontmatter[spec.field];
-    if (value === undefined || value === null) continue;
 
-    if (spec.field === 'steps') {
+    const arrayMember = arrayMemberField.exec(spec.field);
+    if (arrayMember) {
+      const [, key, member] = arrayMember;
+      const value = frontmatter[key as string];
       if (Array.isArray(value)) {
-        for (const step of value) {
-          const target = (step as Record<string, unknown>)?.['use-case'];
-          if (typeof target === 'string') edges.push({ from: id, kind: 'steps', to: target });
+        for (const entry of value) {
+          const target = (entry as Record<string, unknown> | null)?.[member as string];
+          if (typeof target === 'string') edges.push({ from: id, kind: spec.field, to: target });
         }
       }
       continue;
     }
 
+    const value = frontmatter[spec.field];
+    if (value === undefined || value === null) continue;
     const targets = Array.isArray(value) ? value : [value];
     for (const target of targets) {
       if (typeof target === 'string') edges.push({ from: id, kind: spec.field, to: target });

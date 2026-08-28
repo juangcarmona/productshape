@@ -131,7 +131,9 @@ export function validateModel(artifacts: LoadedArtifact[], graph: ProductGraph):
   {
     for (const node of graph.nodes) {
       if (node.type !== 'use-case' || node.status !== 'active') continue;
-      const inJourney = (graph.incoming.get(node.id) ?? []).some((e) => e.kind === 'steps');
+      const inJourney = (graph.incoming.get(node.id) ?? []).some(
+        (e) => e.kind === 'steps[].use-case',
+      );
       if (!inJourney) {
         diagnostics.push({
           severity: 'warning',
@@ -171,14 +173,23 @@ export function validateModel(artifacts: LoadedArtifact[], graph: ProductGraph):
     }
   }
 
-  // PRODUCT105-107: orphaned knowledge.
+  // PRODUCT105-107: orphaned knowledge. The PRODUCT105 and PRODUCT106 relationship sets are
+  // exact (spec/relationships.md, Knowledge warning relationship sets): the counting
+  // relationship must be authored by a non-retired artifact, and retired rules and terms are
+  // outside the warning populations entirely.
+  const nonRetiredSource = (edge: { from: string }): boolean =>
+    graph.nodeById.get(edge.from)?.status !== 'retired';
   for (const node of graph.nodes) {
     const incoming = graph.incoming.get(node.id) ?? [];
     const outgoing = graph.outgoing.get(node.id) ?? [];
-    if (node.type === 'business-rule') {
+    if (node.type === 'business-rule' && node.status !== 'retired') {
+      // Consumed iff a valid outgoing applies-to, incoming governed-by or incoming derived-from
+      // exists with a non-retired author. An incoming illustrates edge never counts: an example
+      // demonstrates the rule, it does not establish where the rule governs.
       const consumed =
-        incoming.some((e) => e.kind === 'governed-by' || e.kind === 'derived-from') ||
-        outgoing.some((e) => e.kind === 'applies-to');
+        incoming.some(
+          (e) => (e.kind === 'governed-by' || e.kind === 'derived-from') && nonRetiredSource(e),
+        ) || outgoing.some((e) => e.kind === 'applies-to');
       if (!consumed) {
         diagnostics.push({
           severity: 'warning',
@@ -189,11 +200,12 @@ export function validateModel(artifacts: LoadedArtifact[], graph: ProductGraph):
         });
       }
     }
-    if (node.type === 'domain-term') {
-      // Usage is the incoming canonical `uses-terms` edge from any permitted source kind; a
-      // prose mention of the term's id or title never counts (RFC 0072). A term's self-reference
-      // counts by the letter of the contract; that hole is spec#96, deferred to an 0.3.0 RFC.
-      const used = incoming.some((e) => e.kind === 'uses-terms');
+    if (node.type === 'domain-term' && node.status !== 'retired') {
+      // Usage is the incoming canonical `uses-terms` edge from a non-retired artifact of any
+      // permitted source kind; a prose mention of the term's id or title never counts
+      // (RFC 0072). A term's self-reference counts by the letter of the contract; that hole is
+      // spec#96, deferred to an 0.3.0 RFC.
+      const used = incoming.some((e) => e.kind === 'uses-terms' && nonRetiredSource(e));
       if (!used) {
         diagnostics.push({
           severity: 'warning',

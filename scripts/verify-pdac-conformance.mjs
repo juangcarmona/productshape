@@ -522,8 +522,8 @@ async function main() {
   );
 
   const implementationArgv = [
-    [options.prodshape, 'validate', '--root', '.'],
-    [options.prodshape, 'change', 'validate', '--root', '.'],
+    [options.prodshape, 'validate', '--root', '.', '--consumers', '.'],
+    [options.prodshape, 'change', 'validate', '--root', '.', '--consumers', '.'],
     [options.prodshape, 'citations', 'verify', '.', '--root', '.'],
   ];
   const negativeArgv = implementationArgv.slice(0, 2);

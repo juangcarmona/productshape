@@ -72,8 +72,17 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .option('--format <format>', 'output format: text or json', 'text')
     .option('--write-generated', 'refresh the generated outputs from this run')
     .option('--root <dir>', 'product repository root (default: discovered upward from cwd)')
+    .option(
+      '--consumers <path>',
+      'also verify the citations of the consumer documents under this path; their defects join the verdict',
+    )
     .action(
-      async (options: { format: 'text' | 'json'; writeGenerated?: boolean; root?: string }) => {
+      async (options: {
+        format: 'text' | 'json';
+        writeGenerated?: boolean;
+        root?: string;
+        consumers?: string;
+      }) => {
         capture.code = await runValidate(io, options);
       },
     );
@@ -170,9 +179,18 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .argument('[id]', 'change ID (e.g. CHG-ADD-CITE-001); omit to validate every live change')
     .option('--format <format>', 'output format: text or json', 'text')
     .option('--root <dir>', 'product repository root (default: discovered upward from cwd)')
-    .action(async (id: string | undefined, options: { format: 'text' | 'json'; root?: string }) => {
-      capture.code = await runChangeValidate(io, id, options);
-    });
+    .option(
+      '--consumers <path>',
+      'also verify the citations of the consumer documents under this path; their defects join the verdict',
+    )
+    .action(
+      async (
+        id: string | undefined,
+        options: { format: 'text' | 'json'; root?: string; consumers?: string },
+      ) => {
+        capture.code = await runChangeValidate(io, id, options);
+      },
+    );
   change
     .command('list')
     .description('List live Product Changes')
@@ -517,7 +535,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .description('Record that an artifact family was probed and yielded no candidates')
     .argument(
       '<family>',
-      'actor, journey, use-case, business-rule, domain-term, bounded-context, functional-requirement, quality-requirement or constraint',
+      'actor, journey, use-case, business-rule, domain-term, bounded-context, functional-requirement, quality-requirement, constraint or structured-behaviour',
     )
     .option('--none-found', 'the probe found no candidates of this family')
     .option('--note <text>', 'what was searched to conclude that')

@@ -74,3 +74,54 @@ describe('PRODUCT002 locates the failure with an RFC 6901 JSON Pointer', () => {
     ]);
   });
 });
+
+describe('structured behaviour schema (RFC 0084)', () => {
+  function behaviour(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    return {
+      id: 'SB-PROBE',
+      type: 'structured-behaviour',
+      title: 'Probe',
+      status: 'active',
+      illustrates: ['UC-PROBE'],
+      given: ['A context condition holds'],
+      when: 'A stimulus occurs',
+      then: ['An outcome follows'],
+      ...overrides,
+    };
+  }
+
+  it('accepts a conforming document', () => {
+    expect(registry.validate('structured-behaviour', behaviour(), 'sb.md')).toEqual([]);
+  });
+
+  it('rejects a leading clause keyword case-insensitively, at its exact pointer', () => {
+    const diagnostics = registry.validate(
+      'structured-behaviour',
+      behaviour({ given: ['Given a context exists'] }),
+      'sb.md',
+    );
+    expect(diagnostics).toEqual([
+      expect.objectContaining({ code: 'PRODUCT002', field: '/given/0' }),
+    ]);
+  });
+
+  it('keeps a clause whose first word merely starts with a keyword', () => {
+    const diagnostics = registry.validate(
+      'structured-behaviour',
+      behaviour({ given: ['Givens are recorded'] }),
+      'sb.md',
+    );
+    expect(diagnostics).toEqual([]);
+  });
+
+  it('requires illustrates to be non-empty', () => {
+    const diagnostics = registry.validate(
+      'structured-behaviour',
+      behaviour({ illustrates: [] }),
+      'sb.md',
+    );
+    expect(diagnostics).toEqual([
+      expect.objectContaining({ code: 'PRODUCT002', field: '/illustrates' }),
+    ]);
+  });
+});
