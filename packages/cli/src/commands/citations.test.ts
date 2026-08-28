@@ -799,9 +799,9 @@ describe('citations verify on an invalid product model', () => {
     };
     expect(parsed.schema).toBe('product-definition-as-code/diagnostics/v1alpha1');
     expect(parsed.citations).toBeUndefined();
-    expect(
-      parsed.diagnostics.some((d) => d.code === 'PRODUCT002' && d.field === '/bogus'),
-    ).toBe(true);
+    expect(parsed.diagnostics.some((d) => d.code === 'PRODUCT002' && d.field === '/bogus')).toBe(
+      true,
+    );
     expect(parsed.diagnostics.every((d) => d.severity === 'error')).toBe(true);
   });
 });
