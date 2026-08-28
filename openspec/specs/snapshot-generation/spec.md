@@ -363,7 +363,7 @@ Authored content SHALL NOT be able to become executable or structural, on either
 
 The generated page SHALL render in a single light appearance, with no dark variant and no theme or appearance control. Body and interface text SHALL use the reader's system sans-serif stack, and artifact identifiers and revision values SHALL render monospaced. Text contrast SHALL be strong; structure SHALL be carried by thin borders, deliberate alignment and consistent spacing rather than elevation or enclosure; controls SHALL be square or low-radius. Colour use SHALL be restrained to one accent plus a stable per-artifact-kind palette that does not change between artifacts, views or regenerations, and colour SHALL NOT be the sole carrier of any meaning. The interface SHALL be compact. The page SHALL NOT use gradients, glass or blur effects, decorative illustration, oversized hero typography, or a rounded-card dashboard treatment of its content.
 
-{pdac:cite id="QR-PRESENTATION-001" digest="sha256:b3b5b1e416251e2c9767240a0df454d662d93da74a9ecd06b6add3b53254665e"}
+{pdac:cite id="QR-PRESENTATION-001" digest="sha256:f7ec2b4906756e4d03f21602939fde59f3305cb40fb7c358ead3010e25919a01"}
 
 #### Scenario: One light appearance regardless of environment preference
 
@@ -389,7 +389,7 @@ The generated page SHALL render in a single light appearance, with no dark varia
 
 Every capability of the delivered surfaces SHALL be reachable and operable by keyboard alone — the orientation view, the artifact list, the artifact detail and the view navigation — with no trapped focus and no pointer-only control. The focused element SHALL always be visibly identifiable, and focus SHALL land on a meaningful element after every view and selection change. The page SHALL expose semantic landmarks for its regions and a heading hierarchy without skipped levels. The selected artifact SHALL be reported as current with `aria-current` in the list, and the active view SHALL be reported as current in the page navigation. Every icon-only control SHALL carry an accessible name stating what it does. All text SHALL meet WCAG 2.1 AA contrast. No information a reader needs SHALL require hover or pointer proximity to reveal. Where the reader's environment expresses a reduced-motion preference, no non-essential animation or transition SHALL run.
 
-{pdac:cite id="QR-ACCESSIBILITY-001" digest="sha256:04ff33f829373a868cd6a05a8b818e300441baa8467cd713e1783be83e9ac56b"}
+{pdac:cite id="QR-ACCESSIBILITY-001" digest="sha256:c3c90dd25c8e965530cadefb7cdb98892e738e619f96a9004a294b4ca92e0f82"}
 
 #### Scenario: Whole increment operable by keyboard
 
@@ -438,7 +438,7 @@ Artifact-selection latency SHALL be measured on an identified reference environm
 
 An artifact's relationships SHALL be presented grouped within each direction, by relationship type and by the artifact kind at the other end, rather than as one undifferentiated list. Every group SHALL state the exact number of relationships it contains. Grouping and ordering SHALL be derived from the compiled graph and SHALL be identical for identical model content.
 
-{pdac:cite id="FR-SNAPSHOT-002" digest="sha256:1be502387698dc60b2610b02c9ae99bf8ee10c196034a9049e0995cf1145beff"}
+{pdac:cite id="FR-SNAPSHOT-002" digest="sha256:55bc8d0825e5a65cf940f25fab06c3ad197e3a0eedbcd641104afd21807acd1a"}
 
 #### Scenario: Neighbours arrive grouped, not spilled
 
@@ -459,7 +459,7 @@ An artifact's relationships SHALL be presented grouped within each direction, by
 
 A relationship group large enough to overwhelm the view SHALL start collapsed, showing its exact count rather than its members, and SHALL reveal its members only when the reader expands it. Expansion SHALL be operable by keyboard, and the collapsed or expanded state SHALL be exposed to assistive technology as state rather than conveyed only by appearance. A group small enough to read at a glance SHALL be shown expanded, so nothing is hidden without reason.
 
-{pdac:cite id="FR-SNAPSHOT-002" digest="sha256:1be502387698dc60b2610b02c9ae99bf8ee10c196034a9049e0995cf1145beff"}
+{pdac:cite id="FR-SNAPSHOT-002" digest="sha256:55bc8d0825e5a65cf940f25fab06c3ad197e3a0eedbcd641104afd21807acd1a"}
 
 #### Scenario: A high-degree artifact stays readable
 
@@ -504,7 +504,7 @@ A satellite or member SHALL reveal its identity on hover, and SHALL reveal the s
 
 Placement SHALL remain a pure function of the model and of which groups are open: identical model content with identical groups open SHALL produce an identical arrangement.
 
-{pdac:cite id="FR-SNAPSHOT-009" digest="sha256:ab9721cb7fb71a07fa8a48789379024ecd0eeda9122267329ee3dcbc20718ff7"}
+{pdac:cite id="FR-SNAPSHOT-009" digest="sha256:a89bc268d5634199dee1670084272411d1700734ac8a3065c5606fcc0525f298"}
 
 {pdac:cite id="TERM-FOCUSED-TOPOLOGY" digest="sha256:0078e5754fc215a6bdde6b601ac543c391491356666cc36265c26e83fa134595"}
 
@@ -610,7 +610,7 @@ Each artifact kind on the orientation view SHALL be an entry point into the cata
 
 Relationship links on the artifact detail SHALL carry the active catalog state, so following an edge preserves the discovery in progress. The detail SHALL name the discovery it returns to — the active kind, status, context, filter and query — visibly and retraceably in one step; without an active discovery it SHALL offer the full catalog.
 
-{pdac:cite id="FR-SNAPSHOT-002" digest="sha256:1be502387698dc60b2610b02c9ae99bf8ee10c196034a9049e0995cf1145beff"}
+{pdac:cite id="FR-SNAPSHOT-002" digest="sha256:55bc8d0825e5a65cf940f25fab06c3ad197e3a0eedbcd641104afd21807acd1a"}
 
 #### Scenario: Following an edge keeps the discovery
 

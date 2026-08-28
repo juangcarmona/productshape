@@ -71,6 +71,56 @@ const kindTokens: Record<string, string> = {
   constraint: 'CON',
 };
 
+/**
+ * Meaningful inline-SVG icons per artifact kind, embedded directly in the generator source.
+ * Functional, not decorative: each carries kind meaning alongside the token text.
+ * Each icon is a 16x16 path using currentColor so it inherits the kind's colour.
+ */
+const kindIcons: Record<string, string> = {
+  actor: '<svg viewBox="0 0 16 16" class="kindicon" aria-hidden="true" focusable="false"><circle cx="8" cy="5" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  journey: '<svg viewBox="0 0 16 16" class="kindicon" aria-hidden="true" focusable="false"><path d="M2 8c0-3 2.5-5 6-5s6 2 6 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="2" cy="8" r="1.5" fill="currentColor"/><circle cx="14" cy="8" r="1.5" fill="currentColor"/><path d="M6 8h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  'use-case': '<svg viewBox="0 0 16 16" class="kindicon" aria-hidden="true" focusable="false"><ellipse cx="8" cy="8" rx="6" ry="4" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/></svg>',
+  'business-rule': '<svg viewBox="0 0 16 16" class="kindicon" aria-hidden="true" focusable="false"><path d="M3 2v12M3 2h8l-2 3 2 3H3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+  'domain-term': '<svg viewBox="0 0 16 16" class="kindicon" aria-hidden="true" focusable="false"><path d="M2 4h12M2 8h12M2 12h8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  'bounded-context': '<svg viewBox="0 0 16 16" class="kindicon" aria-hidden="true" focusable="false"><rect x="2" y="2" width="12" height="12" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2 6h12M6 2v12" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+  'functional-requirement': '<svg viewBox="0 0 16 16" class="kindicon" aria-hidden="true" focusable="false"><path d="M3 2l5 5 5-5M3 2v12h10V2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M6 9h4M6 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  'quality-requirement': '<svg viewBox="0 0 16 16" class="kindicon" aria-hidden="true" focusable="false"><path d="M8 1l2 4.5 5 .5-3.5 3.5 1 5L8 12l-4.5 2.5 1-5L1 6l5-.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+  constraint: '<svg viewBox="0 0 16 16" class="kindicon" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 5l6 6M11 5l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+};
+
+/**
+ * Kind-level structural ancestry: which kind each kind derives from or belongs to.
+ * Used by the Reader to surface where an artifact sits in the product's hierarchy.
+ * Derived from the model's canonical relationship types.
+ */
+const kindAncestry: Record<string, { via: string; parent: string }[]> = {
+  'functional-requirement': [
+    { via: 'derived-from', parent: 'use-case' },
+    { via: 'derived-from', parent: 'business-rule' },
+    { via: 'derived-from', parent: 'constraint' },
+  ],
+  'quality-requirement': [
+    { via: 'applies-to', parent: 'use-case' },
+    { via: 'applies-to', parent: 'bounded-context' },
+    { via: 'applies-to', parent: 'journey' },
+  ],
+  'use-case': [
+    { via: 'bounded-context', parent: 'bounded-context' },
+  ],
+  'business-rule': [
+    { via: 'applies-to', parent: 'bounded-context' },
+  ],
+  'domain-term': [
+    { via: 'defined-in', parent: 'bounded-context' },
+  ],
+  'constraint': [
+    { via: 'applies-to', parent: 'bounded-context' },
+  ],
+  'journey': [
+    { via: 'primary-actor', parent: 'actor' },
+  ],
+};
+
 const statusColors: Record<string, { fg: string; bg: string }> = {
   active: { fg: '#17512a', bg: '#e4efe6' },
   draft: { fg: '#6f5714', bg: '#f7efd6' },
@@ -161,11 +211,21 @@ ul.kinds { list-style: none; margin: 0; padding: 0; display: grid; grid-template
 ul.kinds li { display: flex; align-items: baseline; gap: 0.5rem; padding: 0.22rem 0; border-bottom: 1px solid var(--line); }
 ul.kinds .count { margin-left: auto; font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--muted); }
 
+.kindmark { display: inline-flex; align-items: baseline; gap: 0.25rem; }
+.kindicon-wrap { display: inline-flex; align-items: center; flex: none; }
+.kindicon { width: 14px; height: 14px; display: block; }
 .token {
   font-family: var(--mono); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em;
   border: 1px solid currentColor; border-radius: 2px; padding: 0 0.28em;
   display: inline-block; min-width: 2.9em; text-align: center; flex: none;
 }
+.structctx { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem; margin: 0 0 0.7rem; padding: 0.3rem 0.5rem; background: var(--panel); border-left: 2px solid var(--line-strong); border-radius: 0 2px 2px 0; }
+.structctx-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); flex: none; }
+.structctx-chain { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem; font-size: 0.8rem; }
+.structctx-via { font-family: var(--mono); font-size: 0.74rem; color: var(--muted); }
+.structctx-arrow { color: var(--muted); font-size: 0.75rem; }
+.structctx-parent { color: var(--text); }
+.structctx-sep { color: var(--line-strong); }
 .badge {
   font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
   border-radius: 2px; padding: 0.05em 0.4em; white-space: nowrap;
@@ -366,9 +426,20 @@ const script = String.raw`
     while (node.firstChild) node.removeChild(node.firstChild);
   };
   var tokenFor = function (kind) {
+    var wrap = el('span', 'kindmark');
+    var iconHtml = DATA.kindIcons ? DATA.kindIcons[kind] : null;
+    if (iconHtml) {
+      var iconSpan = el('span', 'kindicon-wrap');
+      iconSpan.style.color = COLORS[kind] || '#4f5560';
+      iconSpan.setAttribute('role', 'img');
+      iconSpan.setAttribute('aria-label', LABELS[kind] || kind);
+      iconSpan.innerHTML = iconHtml;
+      wrap.appendChild(iconSpan);
+    }
     var span = el('span', 'token', TOKENS[kind] || '?');
     span.style.color = COLORS[kind] || '#4f5560';
-    return span;
+    wrap.appendChild(span);
+    return wrap;
   };
   var badgeFor = function (status) {
     var span = el('span', 'badge', status || 'unknown');
@@ -801,6 +872,25 @@ const script = String.raw`
     }
     host.appendChild(header);
 
+    /* Kind-level structural context: where this artifact sits in the product's hierarchy. */
+    var ancestry = DATA.kindAncestry ? DATA.kindAncestry[a.kind] : null;
+    if (ancestry && ancestry.length > 0) {
+      var ctx = el('div', 'structctx');
+      var ctxLabel = el('span', 'structctx-label', 'Structure');
+      ctx.appendChild(ctxLabel);
+      var chain = el('span', 'structctx-chain');
+      for (var ai = 0; ai < ancestry.length; ai += 1) {
+        if (ai > 0) chain.appendChild(el('span', 'structctx-sep', ' · '));
+        var entry = ancestry[ai];
+        chain.appendChild(el('span', 'structctx-via', entry.via));
+        chain.appendChild(el('span', 'structctx-arrow', ' → '));
+        var parentLabel = LABELS[entry.parent] || entry.parent;
+        chain.appendChild(el('span', 'structctx-parent', parentLabel));
+      }
+      ctx.appendChild(chain);
+      host.appendChild(ctx);
+    }
+
     var body = el('div', 'body');
     /* a.body is Markdown already rendered and escaped at generation time. */
     body.innerHTML = a.body;
@@ -875,7 +965,7 @@ const script = String.raw`
   var focusXFor = function (groups) {
     var indices = [];
     for (var i = 0; i < groups.length; i += 1) {
-      if (groups[i].open) indices.push(i);
+      if (groups[i].open && !groups[i].direct) indices.push(i);
     }
     return indices.length === 0 ? '-' : indices.join('.');
   };
@@ -951,8 +1041,10 @@ const script = String.raw`
       return text.length * perChar + 14;
     };
 
-    /* How much angular room each group wants: one unit closed, more when open. */
+    /* How much angular room each group wants: one unit closed, more when open. Direct groups
+       (1-2 members) are always open and sized to hold their members. */
     var weigh = function (group) {
+      if (group.direct) return Math.max(1, Math.min(6, group.edges.length / 2));
       if (!group.open || group.listed) return 1;
       return Math.max(1, Math.min(6, group.edges.length / 2));
     };
@@ -1003,7 +1095,9 @@ const script = String.raw`
     var all = out.concat(inc);
     var openNow = focusOpenSet(all);
     for (var gi = 0; gi < all.length; gi += 1) {
-      all[gi].open = Boolean(openNow[gi]);
+      /* Groups with 1-2 members are drawn directly: no satellite, members connected to anchor. */
+      all[gi].direct = all[gi].edges.length <= 2;
+      all[gi].open = all[gi].direct || Boolean(openNow[gi]);
       all[gi].listed = all[gi].open && all[gi].edges.length > FOCUS_LIST_ABOVE;
     }
     allocate(out, 'out');
@@ -1069,6 +1163,60 @@ const script = String.raw`
     for (var g = 0; g < all.length; g += 1) {
       var group = all[g];
       var count = group.edges.length;
+
+      if (group.direct) {
+        /* Direct-draw for 1-2 member groups: no satellite, members connected to anchor. */
+        var dMid = 0.62;
+        var dPerp = 10;
+        var dPerpX = -Math.sin(group.angle) * dPerp;
+        var dPerpY = Math.cos(group.angle) * dPerp;
+        var dlx = CX + group.radius * dMid * Math.cos(group.angle) + dPerpX;
+        var dly = CY + group.radius * dMid * Math.sin(group.angle) + dPerpY;
+        var dLabelAnchor = dPerpX < -2 ? 'end' : dPerpX > 2 ? 'start' : 'middle';
+        /* Edge label for the relationship type. */
+        nodeLayer.appendChild(svgText(dlx, dly + 4, group.relKind, 'edgelabel', dLabelAnchor));
+        extend(dlx, dly + 4, 7.2 * group.relKind.length, 10);
+
+        /* Draw each member directly at the group position, fanning slightly for 2. */
+        for (var dm = 0; dm < group.edges.length; dm += 1) {
+          var dt = group.edges.length === 1 ? 0.5 : dm / (group.edges.length - 1);
+          var da = group.angle + (dt - 0.5) * group.sector * (group.edges.length === 1 ? 0 : 0.5);
+          var dmx = CX + group.radius * Math.cos(da);
+          var dmy = CY + group.radius * Math.sin(da);
+          var dEdge = group.edges[dm];
+          var dOtherId = group.direction === 'out' ? dEdge.to : dEdge.from;
+          var dOther = byId[dOtherId];
+          /* Spoke from anchor to member, trimmed to rims. */
+          var dUx = Math.cos(da);
+          var dUy = Math.sin(da);
+          var dFromAnchor = group.direction === 'out';
+          var dStartR = dFromAnchor ? 33 : 12;
+          var dEndR = dFromAnchor ? 12 : 33;
+          var dsx = dFromAnchor ? CX + dUx * dStartR : dmx - dUx * dStartR;
+          var dsy = dFromAnchor ? CY + dUy * dStartR : dmy - dUy * dStartR;
+          var dex = dFromAnchor ? dmx - dUx * dEndR : CX + dUx * dEndR;
+          var dey = dFromAnchor ? dmy - dUy * dEndR : CY + dUy * dEndR;
+          edgeLayer.appendChild(svgEl('line', {
+            x1: dsx, y1: dsy, x2: dex, y2: dey,
+            class: 'spoke', stroke: '#47536b', 'stroke-width': 2.5,
+            'vector-effect': 'non-scaling-stroke', 'marker-end': 'url(#spoke-arrow)',
+          }));
+          /* Member node. */
+          var dDot = svgEl('circle', {
+            cx: dmx, cy: dmy, r: 12, class: 'satellite',
+            'data-member': dOtherId, tabindex: '0', role: 'link',
+            fill: COLORS[dOther ? dOther.kind : ''] || '#4f5560',
+          });
+          describe(dDot, (dOther && dOther.title ? dOther.title + ' — ' : '') + dOtherId);
+          nodeLayer.appendChild(dDot);
+          var dBelow = group.direction === 'in';
+          nodeLayer.appendChild(svgText(dmx, dmy + (dBelow ? 24 : -18), dOtherId, 'mlabel'));
+          extend(dmx, dmy + (dBelow ? 24 : -18), 3 * dOtherId.length + 4, 10);
+          extend(dmx, dmy, 14, 14);
+        }
+        continue;
+      }
+
       /* The relationship type annotates the spoke; the satellite carries the kind and the count. */
       /* The type annotates its edge from beside it: horizontal for readability, offset on the
          perpendicular and anchored away from the line so the text never crosses it. */
@@ -1632,7 +1780,12 @@ const script = String.raw`
 
 function token(kind: string): string {
   const color = kindColors[kind] ?? '#4f5560';
-  return `<span class="token" style="color:${color}">${escapeHtml(kindTokens[kind] ?? '?')}</span>`;
+  const icon = kindIcons[kind] ?? '';
+  const label = kindLabels[kind] ?? kind;
+  const iconHtml = icon
+    ? `<span class="kindicon-wrap" style="color:${color}" role="img" aria-label="${escapeHtml(label)}">${icon}</span>`
+    : '';
+  return `${iconHtml}<span class="token" style="color:${color}">${escapeHtml(kindTokens[kind] ?? '?')}</span>`;
 }
 
 function metaValue(value: unknown): string {
@@ -1708,6 +1861,8 @@ function snapshotDataJson(graph: ProductGraph, groups: Map<string, LoadedArtifac
     kindLabels: Object.fromEntries([...groups.keys()].map((k) => [k, kindLabels[k] ?? k])),
     kindColors: Object.fromEntries([...groups.keys()].map((k) => [k, kindColors[k] ?? '#5f6673'])),
     kindTokens: Object.fromEntries([...groups.keys()].map((k) => [k, kindTokens[k] ?? '?'])),
+    kindIcons: Object.fromEntries([...groups.keys()].map((k) => [k, kindIcons[k] ?? ''])),
+    kindAncestry,
     statusColors,
     artifacts,
     edges: graph.edges.map((edge) => ({ from: edge.from, to: edge.to, kind: edge.kind })),

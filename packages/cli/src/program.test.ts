@@ -286,8 +286,11 @@ describe('prodshape graph / inspect / impact', () => {
     const opening = html.slice(html.indexOf('<body'), html.indexOf('<script id='));
     expect(opening).toContain('Product Snapshot');
     expect(opening).toContain('Relationships by kind');
-    expect(opening).not.toContain('<circle');
-    expect(opening).not.toContain('<svg');
+    // Kind icons are inline SVG (functional), so <svg> and <circle> appear in the opening document.
+    // The prohibition is on artifact-level graph elements, not kind icons.
+    expect(opening).not.toContain('data-group');
+    expect(opening).not.toContain('data-member');
+    expect(opening).not.toContain('class="spoke"');
     // Self-contained and read-only: the inert data block and the application block, nothing else.
     expect((html.match(/<script/g) ?? []).length).toBe(2);
     expect(html).toContain(open);
