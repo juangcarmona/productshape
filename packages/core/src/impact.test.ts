@@ -87,6 +87,20 @@ describe('putInQuestionBy (impact polarity, RFC 0093)', () => {
     expect(questioned('SB-A')).not.toContain('TERM-A:dependency');
   });
 
+  it('reports every distinct coupling for a pair authored both ways', () => {
+    // BR governs UC through applies-to while UC also authors governed-by: two couplings, both
+    // reported, so the governance edge this analysis exists to surface is never shadowed.
+    const both = compileGraph([
+      artifact('BR-B', 'business-rule', { 'applies-to': ['UC-B'] }),
+      artifact('UC-B', 'use-case', { 'primary-actor': 'ACT-A', 'governed-by': ['BR-B'] }),
+      artifact('ACT-A', 'actor', { 'actor-kind': 'human' }),
+    ]);
+    const entries = analyzeImpact(both, 'BR-B').questioned.map(
+      (e) => e.id + ':' + e.via.kind + ':' + e.polarity,
+    );
+    expect(entries).toEqual(['UC-B:applies-to:governance', 'UC-B:governed-by:dependency']);
+  });
+
   it('is deterministic and one authored hop', () => {
     const first = analyzeImpact(polarityGraph, 'UC-A').questioned;
     const second = analyzeImpact(polarityGraph, 'UC-A').questioned;

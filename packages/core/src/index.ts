@@ -97,7 +97,13 @@ export { gitHead, gitRevisionExists, gitShow, gitShowBytes } from './git.js';
 export { compileGraph, ownedTerms } from './graph.js';
 export type { GraphNode, ProductGraph } from './graph.js';
 export { analyzeImpact } from './impact.js';
-export type { ImpactDirection, ImpactEntry, ImpactOptions, ImpactReport } from './impact.js';
+export type {
+  ImpactDirection,
+  ImpactEntry,
+  ImpactOptions,
+  ImpactReport,
+  QuestionedEntry,
+} from './impact.js';
 export { inspectArtifact } from './inspect.js';
 export type { InspectReport } from './inspect.js';
 export { discoverModelFiles, loadArtifactFile, loadModel, toPosixRelative } from './model.js';
@@ -209,7 +215,7 @@ export { buildSnapshotHtml } from './snapshot.js';
 export { parseArtifactDocument } from './parse.js';
 export type { ParseResult } from './parse.js';
 export { allowedTargets, extractEdges, relationshipSpecs } from './relationships.js';
-export type { Edge, RelationshipSpec } from './relationships.js';
+export type { Edge, RelationshipPolarity, RelationshipSpec } from './relationships.js';
 export { findRepositoryRoot, openRepository, validateBaseline } from './repository.js';
 export type { BaselineValidation, ProductRepository } from './repository.js';
 export { SchemaRegistry } from './schema-registry.js';
