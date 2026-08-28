@@ -22,26 +22,41 @@ function actor(overrides: Record<string, unknown> = {}): Record<string, unknown>
   };
 }
 
-describe('PRODUCT002 names the offending field', () => {
+describe('PRODUCT002 locates the failure with an RFC 6901 JSON Pointer', () => {
   it('appends the property behind an additional-properties violation', () => {
     const diagnostics = registry.validate('actor', actor({ 'bogus-field': true }), 'act.md');
     expect(diagnostics).toEqual([
       expect.objectContaining({
         code: 'PRODUCT002',
         message: "document must NOT have additional properties ('bogus-field')",
-        field: 'bogus-field',
+        field: '/bogus-field',
       }),
     ]);
   });
 
-  it('dots the instance path into field for a nested additional property', () => {
+  it('points at a nested additional property as though it were present', () => {
     const provenance = { source: 'docs/spec.md', confidence: 'medium', 'recovered-by': 'x' };
     const diagnostics = registry.validate('actor', actor({ provenance }), 'act.md');
     expect(diagnostics).toEqual([
       expect.objectContaining({
         code: 'PRODUCT002',
         message: "/provenance must NOT have additional properties ('recovered-by')",
-        field: 'provenance.recovered-by',
+        field: '/provenance/recovered-by',
+      }),
+    ]);
+  });
+
+  it('escapes slash and tilde in a pointer token', () => {
+    const provenance = {
+      source: 'docs/spec.md',
+      confidence: 'medium',
+      'recovered/by~': 'intentionally invalid',
+    };
+    const diagnostics = registry.validate('actor', actor({ provenance }), 'act.md');
+    expect(diagnostics).toEqual([
+      expect.objectContaining({
+        code: 'PRODUCT002',
+        field: '/provenance/recovered~1by~0',
       }),
     ]);
   });
@@ -54,7 +69,7 @@ describe('PRODUCT002 names the offending field', () => {
       expect.objectContaining({
         code: 'PRODUCT002',
         message: "document must have required property 'status'",
-        field: 'status',
+        field: '/status',
       }),
     ]);
   });

@@ -165,7 +165,29 @@ export async function runCitationsVerify(
   options: CitationsVerifyOptions,
 ): Promise<number> {
   const repo = await resolveRepository(io, options.root, options.format);
-  const { artifacts } = await validateBaseline(repo);
+  const baseline = await validateBaseline(repo);
+
+  // Citation statuses are computed against artifact ids and content digests; an invalid Product
+  // Definition offers neither reliably, so verification refuses before scanning a single consumer
+  // document, the way invalid configuration stops every command. Errors only: a model warning
+  // does not undermine what a citation is verified against.
+  const modelErrors = baseline.diagnostics.filter((d) => d.severity === 'error');
+  if (modelErrors.length > 0) {
+    if (options.format === 'json') {
+      io.out(
+        stableJson({
+          schema: 'product-definition-as-code/diagnostics/v1alpha1',
+          diagnostics: modelErrors,
+          summary: { errors: modelErrors.length, warnings: 0 },
+        }).trimEnd(),
+      );
+    } else {
+      for (const diagnostic of modelErrors) io.out(formatDiagnosticLine(diagnostic));
+      io.out('error: Invalid product model; citations were not verified');
+    }
+    return exitCodes.validationErrors;
+  }
+  const { artifacts } = baseline;
 
   if (options.provider !== undefined) {
     const provider = SDD_PROVIDERS[options.provider];

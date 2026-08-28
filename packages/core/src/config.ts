@@ -3,7 +3,7 @@ import { Ajv2020 } from 'ajv/dist/2020.js';
 import { parseAllDocuments } from 'yaml';
 import { configSchema } from './config-schema.js';
 import type { Diagnostic } from './diagnostics.js';
-import { compareCodeUnits } from './diagnostics.js';
+import { appendPointerToken, compareCodePoints } from './json-pointer.js';
 import { collectForbiddenYamlFeatures } from './yaml-strict.js';
 import type { YamlFeatureViolation } from './yaml-strict.js';
 
@@ -103,9 +103,9 @@ export interface ConfigResult {
   diagnostics: Diagnostic[];
 }
 
-/** One contract violation found in the document, located by its dot-form instance path. */
+/** One contract violation found in the document, located by its JSON Pointer instance path. */
 interface Violation {
-  /** Dot-form instance path; empty string for the document itself. */
+  /** RFC 6901 JSON Pointer instance path; empty string for the document itself. */
   path: string;
   message: string;
 }
@@ -118,16 +118,17 @@ function ajvViolation(error: {
   message?: string;
   params: Record<string, unknown>;
 }): Violation {
-  const path = error.instancePath.replace(/^\//, '').replaceAll('/', '.');
+  // ajv's instancePath is already an escaped JSON Pointer; a missing or additional property is
+  // identified as though it were present, so its escaped name is appended.
   const offending =
     typeof error.params.additionalProperty === 'string'
       ? error.params.additionalProperty
       : typeof error.params.missingProperty === 'string'
         ? error.params.missingProperty
         : undefined;
-  const fullPath = offending ? (path ? `${path}.${offending}` : offending) : path;
+  const path = offending ? appendPointerToken(error.instancePath, offending) : error.instancePath;
   return {
-    path: fullPath,
+    path,
     message: `${error.instancePath || 'configuration'} ${error.message ?? 'is invalid'}${offending ? ` ('${offending}')` : ''}`,
   };
 }
@@ -136,16 +137,17 @@ function ajvViolation(error: {
 function parseProdshapeSettings(raw: unknown, out: Violation[]): ProdshapeSettings {
   const settings = defaultProdshapeSettings();
   const ns = 'extensions.prodshape';
+  const nsPointer = '/extensions/prodshape';
   if (raw === undefined) return settings;
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
-    out.push({ path: ns, message: `'${ns}' must be a mapping` });
+    out.push({ path: nsPointer, message: `'${ns}' must be a mapping` });
     return settings;
   }
   const record = raw as Record<string, unknown>;
   const knownKeys = new Set(['generated', 'integrations', 'citations']);
   for (const key of Object.keys(record)) {
     if (!knownKeys.has(key)) {
-      out.push({ path: `${ns}.${key}`, message: `Unknown key '${ns}.${key}'` });
+      out.push({ path: appendPointerToken(nsPointer, key), message: `Unknown key '${ns}.${key}'` });
     }
   }
 
@@ -153,7 +155,10 @@ function parseProdshapeSettings(raw: unknown, out: Violation[]): ProdshapeSettin
     const value = record[name];
     if (value === undefined) return undefined;
     if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-      out.push({ path: `${ns}.${name}`, message: `'${ns}.${name}' must be a mapping` });
+      out.push({
+        path: appendPointerToken(nsPointer, name),
+        message: `'${ns}.${name}' must be a mapping`,
+      });
       return undefined;
     }
     return value as Record<string, unknown>;
@@ -168,7 +173,7 @@ function parseProdshapeSettings(raw: unknown, out: Violation[]): ProdshapeSettin
     if (value === undefined) return;
     if (typeof value !== 'string' || value.length === 0) {
       out.push({
-        path: `${ns}.${name}.${key}`,
+        path: appendPointerToken(appendPointerToken(nsPointer, name), key),
         message: `'${ns}.${name}.${key}' must be a non-empty string`,
       });
       return;
@@ -185,7 +190,7 @@ function parseProdshapeSettings(raw: unknown, out: Violation[]): ProdshapeSettin
     if (value === undefined) return;
     if (typeof value !== 'boolean') {
       out.push({
-        path: `${ns}.${name}.${key}`,
+        path: appendPointerToken(appendPointerToken(nsPointer, name), key),
         message: `'${ns}.${name}.${key}' must be a boolean`,
       });
       return;
@@ -205,7 +210,7 @@ function parseProdshapeSettings(raw: unknown, out: Violation[]): ProdshapeSettin
     if (ai !== undefined) {
       if (!Array.isArray(ai) || ai.some((entry) => typeof entry !== 'string')) {
         out.push({
-          path: `${ns}.integrations.ai`,
+          path: `${nsPointer}/integrations/ai`,
           message: `'${ns}.integrations.ai' must be a list of strings`,
         });
       } else {
@@ -229,14 +234,14 @@ function parseProdshapeSettings(raw: unknown, out: Violation[]): ProdshapeSettin
         roots.some((entry) => typeof entry !== 'string' || entry.length === 0)
       ) {
         out.push({
-          path: `${ns}.citations.consumer-roots`,
+          path: `${nsPointer}/citations/consumer-roots`,
           message: `'${ns}.citations.consumer-roots' must be a list of non-empty strings`,
         });
       } else if (roots.length === 0) {
         // An empty list would make `citations verify` scan nothing and report success, which is
         // exactly the false green the configuration exists to prevent.
         out.push({
-          path: `${ns}.citations.consumer-roots`,
+          path: `${nsPointer}/citations/consumer-roots`,
           message: `'${ns}.citations.consumer-roots' must name at least one directory`,
         });
       } else {
@@ -261,7 +266,14 @@ export function parseConfig(content: string, file: string): ConfigResult {
   const one = (message: string, field?: string): ConfigResult => ({
     config: defaultConfig(),
     diagnostics: [
-      { severity: 'error', code: 'PRODUCT050', message, file, ...(field ? { field } : {}) },
+      // The empty string is the pointer to the document root and is a present field.
+      {
+        severity: 'error',
+        code: 'PRODUCT050',
+        message,
+        file,
+        ...(field !== undefined ? { field } : {}),
+      },
     ],
   });
 
@@ -288,7 +300,8 @@ export function parseConfig(content: string, file: string): ConfigResult {
 
   const data: unknown = document ? document.toJS() : undefined;
   if (typeof data !== 'object' || data === null || Array.isArray(data)) {
-    return one('Configuration must be a YAML mapping');
+    // The document parsed, so the failure has an instance path: the document root.
+    return one('Configuration must be a YAML mapping', '');
   }
 
   if (!validateKernelSchema(data)) {
@@ -312,8 +325,8 @@ export function parseConfig(content: string, file: string): ConfigResult {
   }
 
   if (violations.length > 0) {
-    const first = [...violations].sort((a, b) => compareCodeUnits(a.path, b.path))[0] as Violation;
-    return one(first.message, first.path || undefined);
+    const first = [...violations].sort((a, b) => compareCodePoints(a.path, b.path))[0] as Violation;
+    return one(first.message, first.path);
   }
 
   return { config: withDerived(config), diagnostics: [] };

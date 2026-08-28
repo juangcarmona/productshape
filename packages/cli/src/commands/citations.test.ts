@@ -765,3 +765,43 @@ describe('citations verify --provider openspec (scope model)', () => {
     ]);
   });
 });
+
+describe('citations verify on an invalid product model', () => {
+  it('refuses to verify and reports the model errors instead of citation statuses', async () => {
+    // Citation statuses are computed against artifact ids and digests; a model that fails
+    // validation offers neither reliably, so the command reports the model errors and exits 1
+    // without scanning a single consumer document.
+    await writeFile(
+      join(workDir, 'docs', 'product', 'model', 'act-broken.md'),
+      [
+        '---',
+        'id: ACT-BROKEN',
+        'type: actor',
+        'title: Broken on purpose',
+        'status: active',
+        'actor-kind: human',
+        'bogus: true',
+        '---',
+        '',
+        '## Purpose',
+        '',
+        'Exercise the invalid-model refusal.',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+    const result = await run(['citations', 'verify', 'specs', '--format', 'json']);
+    expect(result.code).toBe(1);
+    const parsed = JSON.parse(result.out.join('\n')) as {
+      schema: string;
+      citations?: unknown;
+      diagnostics: { code: string; field?: string; severity: string }[];
+    };
+    expect(parsed.schema).toBe('product-definition-as-code/diagnostics/v1alpha1');
+    expect(parsed.citations).toBeUndefined();
+    expect(
+      parsed.diagnostics.some((d) => d.code === 'PRODUCT002' && d.field === '/bogus'),
+    ).toBe(true);
+    expect(parsed.diagnostics.every((d) => d.severity === 'error')).toBe(true);
+  });
+});

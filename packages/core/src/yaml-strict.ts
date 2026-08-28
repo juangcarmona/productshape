@@ -1,9 +1,10 @@
 import { isAlias, isMap, isPair, isScalar, isSeq } from 'yaml';
 import type { Node, Pair } from 'yaml';
+import { appendPointerToken } from './json-pointer.js';
 
-/** One YAML-feature violation, located by its dot-form instance path. */
+/** One YAML-feature violation, located by its RFC 6901 JSON Pointer instance path. */
 export interface YamlFeatureViolation {
-  /** Dot-form instance path; empty string for the document itself. */
+  /** JSON Pointer instance path; empty string for the document itself. */
   path: string;
   /** The forbidden feature, for message composition. */
   feature: 'alias' | 'anchor' | 'tag' | 'merge key';
@@ -35,7 +36,7 @@ export function collectForbiddenYamlFeatures(
       if (!isPair(item)) continue;
       const key = item.key;
       const keyText = isScalar(key) ? String(key.value) : undefined;
-      const childPath = keyText === undefined ? path : path ? `${path}.${keyText}` : keyText;
+      const childPath = keyText === undefined ? path : appendPointerToken(path, keyText);
       if (keyText === '<<') {
         out.push({ path: childPath, feature: 'merge key' });
       }
@@ -48,7 +49,7 @@ export function collectForbiddenYamlFeatures(
   }
   if (isSeq(node)) {
     (node.items as Node[]).forEach((item, index) => {
-      collectForbiddenYamlFeatures(item, path ? `${path}.${index}` : String(index), out);
+      collectForbiddenYamlFeatures(item, appendPointerToken(path, String(index)), out);
     });
   }
 }

@@ -138,7 +138,7 @@ describe('prodshape validate', () => {
         diagnostics: { code: string; field?: string }[];
       };
       expect(parsed.diagnostics).toEqual([
-        expect.objectContaining({ code: 'PRODUCT050', field: 'version' }),
+        expect.objectContaining({ code: 'PRODUCT050', field: '/version' }),
       ]);
     } finally {
       await rm(broken, { recursive: true, force: true });
