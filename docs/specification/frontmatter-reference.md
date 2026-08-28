@@ -26,7 +26,7 @@ Four fields are common to every Markdown-authored kind: `id` (stable and immutab
 
 ## Provenance
 
-`provenance` is an optional object accepted by all nine artifact kinds. It records the **evidence** behind recovered knowledge: where a claim came from and how strongly the evidence supports it.
+`provenance` is an optional object accepted by every artifact kind. It records the **evidence** behind recovered knowledge: where a claim came from and how strongly the evidence supports it.
 
 Set it on recovered (brownfield) artifacts. Leave it unset on greenfield artifacts authored from intent — there is no evidence to cite, and an empty claim of provenance is worse than none.
 
@@ -53,7 +53,7 @@ provenance:
 
 ## Artifact frontmatter
 
-The nine artifact types of the current product model.
+The artifact types of the current product model.
 
 ### Actor
 
@@ -269,6 +269,34 @@ The nine artifact types of the current product model.
 | `provenance.recovered-from` | no | enum | `observation`, `inference`, `interview`, `documentation` | How the knowledge was recovered from the evidence. |
 
 <!-- END GENERATED: constraint -->
+
+### Structured Behaviour
+
+`SB-`. One concrete, implementation-independent example of accepted observable product behaviour: context (`given`), a single stimulus (`when`) and observable outcomes (`then`), illustrating the use cases, business rules or constraints it makes concrete. Clause values never start with a literal GIVEN, WHEN, THEN or AND keyword in any letter case. See [Artifacts -> Structured Behaviour](artifacts.md#structured-behaviour-structured-behaviour-sb-).
+
+<!-- BEGIN GENERATED: structured-behaviour -->
+
+| Field | Required | Type | Allowed values | Notes |
+| --- | --- | --- | --- | --- |
+| `id` | yes | string | `^SB-[A-Z0-9]+(-[A-Z0-9]+)*$` |  |
+| `type` | yes | const | `structured-behaviour` |  |
+| `title` | yes | string |  | Must not be empty. |
+| `status` | yes | enum | `draft`, `active`, `deprecated`, `retired` | Lifecycle of a product artifact. |
+| `illustrates` | yes | array of string |  | Product semantics made concrete by this example. At least one entry. |
+| `illustrates[]` | yes | string | `^(UC\|BR\|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$` | A use case, business rule or constraint. |
+| `given` | no | array of string |  | Observable context or preconditions. Entries are ordered and conjunctive. At least one entry. |
+| `given[]` | yes | string |  | A format-neutral product-level clause without a leading GIVEN, WHEN, THEN or AND keyword in any letter case. Must not be empty. |
+| `when` | yes | string |  | The single product-level stimulus, action or event. Must not be empty. |
+| `then` | yes | array of string |  | Observable expected outcomes. Entries are ordered and conjunctive. At least one entry. |
+| `then[]` | yes | string |  | A format-neutral product-level clause without a leading GIVEN, WHEN, THEN or AND keyword in any letter case. Must not be empty. |
+| `uses-terms` | no | array of string |  |  |
+| `uses-terms[]` | yes | string | `^TERM-[A-Z0-9]+(-[A-Z0-9]+)*$` |  |
+| `provenance` | no | object |  | Evidence behind recovered knowledge. Set on recovered (brownfield) artifacts only. |
+| `provenance.source` | yes | string |  | Where the knowledge came from: a file path, a URL, a ticket reference, or 'interview: <person>'. Must not be empty. |
+| `provenance.confidence` | yes | enum | `high`, `medium`, `low` | high: read directly from a specification scenario or a test. medium: inferred from structured prose. low: inferred from indirect evidence such as a variable name. |
+| `provenance.recovered-from` | no | enum | `observation`, `inference`, `interview`, `documentation` | How the knowledge was recovered from the evidence. |
+
+<!-- END GENERATED: structured-behaviour -->
 
 ---
 

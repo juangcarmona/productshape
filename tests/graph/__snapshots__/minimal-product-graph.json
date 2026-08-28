@@ -97,7 +97,7 @@
     },
     {
       "from": "JRN-SHARE-001",
-      "kind": "steps",
+      "kind": "steps[].use-case",
       "to": "UC-SHORTEN-001"
     },
     {

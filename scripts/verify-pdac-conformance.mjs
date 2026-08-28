@@ -522,11 +522,17 @@ async function main() {
   );
 
   const implementationArgv = [
-    [options.prodshape, 'validate', '--root', '.'],
-    [options.prodshape, 'change', 'validate', '--root', '.'],
+    [options.prodshape, 'validate', '--root', '.', '--consumers', '.'],
+    [options.prodshape, 'change', 'validate', '--root', '.', '--consumers', '.'],
     [options.prodshape, 'citations', 'verify', '.', '--root', '.'],
   ];
-  const negativeArgv = implementationArgv.slice(0, 2);
+  // The negative control proves the suite depends on citation verification by removing it
+  // entirely. `--consumers` re-adds citation detection to the retained commands, so it must be
+  // stripped here too or the control stops controlling anything.
+  const negativeArgv = [
+    [options.prodshape, 'validate', '--root', '.'],
+    [options.prodshape, 'change', 'validate', '--root', '.'],
+  ];
   const implementationCommands = implementationArgv.map(runnerCommand);
   const negativeCommands = negativeArgv.map(runnerCommand);
 

@@ -55,11 +55,11 @@ describe('bundled assets', () => {
     }
   });
 
-  it('loads five skills, six commands and ten templates', async () => {
+  it('loads five skills, six commands and eleven templates', async () => {
     const assets = await loadBundledAssets();
     expect(assets.skills).toHaveLength(5);
     expect(assets.commands).toHaveLength(6);
-    expect(assets.templates).toHaveLength(10);
+    expect(assets.templates).toHaveLength(11);
     expect(assets.version).toMatch(/^\d+\.\d+\.\d+$/);
   });
 });

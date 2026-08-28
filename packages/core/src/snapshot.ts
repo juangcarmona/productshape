@@ -27,6 +27,7 @@ const kindOrder = [
   'functional-requirement',
   'quality-requirement',
   'constraint',
+  'structured-behaviour',
 ];
 
 const kindLabels: Record<string, string> = {
@@ -39,6 +40,7 @@ const kindLabels: Record<string, string> = {
   'functional-requirement': 'Functional Requirements',
   'quality-requirement': 'Quality Requirements',
   constraint: 'Constraints',
+  'structured-behaviour': 'Structured Behaviours',
 };
 
 /**
@@ -56,6 +58,7 @@ const kindColors: Record<string, string> = {
   'functional-requirement': '#b8305f',
   'quality-requirement': '#5f6673',
   constraint: '#872f2f',
+  'structured-behaviour': '#5f7318',
 };
 
 /** The non-colour signal for kind: the artifact family's identifier prefix, shown as text. */
@@ -69,6 +72,7 @@ const kindTokens: Record<string, string> = {
   'functional-requirement': 'FR',
   'quality-requirement': 'QR',
   constraint: 'CON',
+  'structured-behaviour': 'SB',
 };
 
 const statusColors: Record<string, { fg: string; bg: string }> = {

@@ -82,6 +82,7 @@ export const modelScaffoldDirs = [
   'docs/product/model/requirements/functional',
   'docs/product/model/requirements/quality',
   'docs/product/model/requirements/constraints',
+  'docs/product/model/behaviours',
 ];
 
 /**

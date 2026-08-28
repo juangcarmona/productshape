@@ -8,14 +8,14 @@ flowchart LR
   QR_RESOLVE_001["QR-RESOLVE-001"]
   TERM_SHORT_LINK["TERM-SHORT-LINK"]
   UC_SHORTEN_001["UC-SHORTEN-001"]
-  BR_VALID_URL_001 -- applies-to --> UC_SHORTEN_001
-  FR_SHORTEN_001 -- derived-from --> BR_VALID_URL_001
-  FR_SHORTEN_001 -- derived-from --> UC_SHORTEN_001
-  JRN_SHARE_001 -- primary-actor --> ACT_VISITOR
-  JRN_SHARE_001 -- steps --> UC_SHORTEN_001
-  QR_RESOLVE_001 -- applies-to --> UC_SHORTEN_001
-  TERM_SHORT_LINK -- defined-in --> BC_SHORTENING
-  UC_SHORTEN_001 -- bounded-context --> BC_SHORTENING
-  UC_SHORTEN_001 -- governed-by --> BR_VALID_URL_001
-  UC_SHORTEN_001 -- primary-actor --> ACT_VISITOR
-  UC_SHORTEN_001 -- uses-terms --> TERM_SHORT_LINK
+  BR_VALID_URL_001 -- "applies-to" --> UC_SHORTEN_001
+  FR_SHORTEN_001 -- "derived-from" --> BR_VALID_URL_001
+  FR_SHORTEN_001 -- "derived-from" --> UC_SHORTEN_001
+  JRN_SHARE_001 -- "primary-actor" --> ACT_VISITOR
+  JRN_SHARE_001 -- "steps[].use-case" --> UC_SHORTEN_001
+  QR_RESOLVE_001 -- "applies-to" --> UC_SHORTEN_001
+  TERM_SHORT_LINK -- "defined-in" --> BC_SHORTENING
+  UC_SHORTEN_001 -- "bounded-context" --> BC_SHORTENING
+  UC_SHORTEN_001 -- "governed-by" --> BR_VALID_URL_001
+  UC_SHORTEN_001 -- "primary-actor" --> ACT_VISITOR
+  UC_SHORTEN_001 -- "uses-terms" --> TERM_SHORT_LINK

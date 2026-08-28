@@ -28,7 +28,7 @@ Each artifact declares its relationships in frontmatter: a use case names its `p
 - **[Recover](recover.md)** — brownfield. Reconstruct candidate product knowledge from an existing system, with provenance and confidence, for a human to validate.
 - **Explore** — pre-change. A product-graph-aware thinking partner (`ps:explore`) that helps clarify a fuzzy idea against the existing model before committing to a change.
 - **[Change](change.md)** — the mechanism. A Product Change is the semantic delta that carries the definition from one accepted state to the next: elaborate it, validate it as an overlay, approve it, apply it.
-- **Validate** — the structural gate. `prodshape validate` checks the Product Definition and `prodshape change validate` checks a live change as an overlay on it; a proposal that fails validation MUST NOT be merged (CI gate).
+- **Validate** — the structural gate. `prodshape validate` reports the whole repository's verdict: the Product Definition, every live change as an overlay on it, and (with `--consumers <path>`) the citations of a consumer scope. `prodshape change validate` is the change-focused view of the same verdict. A proposal that fails validation MUST NOT be merged (CI gate).
 - **Cite** — emit a citation record from a consumer document to a product artifact, carrying the artifact ID, a content digest, and an optional scenario anchor.
 - **Verify citations** — `prodshape citations verify` recomputes digests and reports one status per citation: `current`, `stale`, `tampered` or `unresolved`.
 

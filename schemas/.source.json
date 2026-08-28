@@ -2,5 +2,5 @@
   "repo": "product-definition-as-code/spec",
   "path": "schemas/v1alpha1",
   "ref": "5faef0ede79e141fd9e16856dd35c747d2385ebb",
-  "note": "The normative JSON Schemas live in the spec repository. This pin records the exact tree they were vendored from. Run pnpm schemas:sync to re-copy after bumping ref. The sync script copies 11 of the 12 normative schemas at v0.2.0: 9 artifact kinds, common.schema.json and product-change.schema.json; structured-behaviour.schema.json is vendored when the Structured Behaviour kind is implemented."
+  "note": "The normative JSON Schemas live in the spec repository. This pin records the exact tree they were vendored from. Run pnpm schemas:sync to re-copy after bumping ref. The sync script copies all 12 normative schemas at v0.2.0: 10 artifact kinds, common.schema.json and product-change.schema.json."
 }

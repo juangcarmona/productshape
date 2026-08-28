@@ -12,6 +12,7 @@ import {
   preflightApply,
   requiredBodySections,
   scanCitations,
+  dedupeDiagnostics,
   sortDiagnostics,
   stableJson,
   validateBaseline,
@@ -23,19 +24,14 @@ import {
   type ProductRepository,
 } from '@prodshape/core';
 import { exitCodes, formatDiagnosticLine, resolveRepository, type CliIo } from '../context.js';
+import { consumerCitationDiagnostics, loadActiveChanges } from './verdict.js';
 
 export interface ChangeFormatOptions {
   format?: 'text' | 'json';
   /** Explicit repository root; replaces upward discovery from the working directory. */
   root?: string;
-}
-
-/** Load every live change under changes/active. Archived changes are inert and never loaded. */
-async function loadActiveChanges(repo: ProductRepository): Promise<LoadedChange[]> {
-  const dirs = await discoverChanges(join(repo.changesDir, 'active'));
-  const changes: LoadedChange[] = [];
-  for (const dir of dirs) changes.push(await loadChange(dir, repo.root, repo.registry));
-  return changes;
+  /** Consumer scope whose citation diagnostics join the verdict (validate only). */
+  consumers?: string;
 }
 
 /** Match a change by its ID, case-insensitively, or by its directory name. */
@@ -80,8 +76,15 @@ export async function runChangeValidate(
   for (const change of targets) {
     diagnostics.push(...validateChange(change, baseline.artifacts, changes).diagnostics);
   }
+  // With a consumer scope, citation defects join the verdict: every validation command reports
+  // an exit code for the whole repository, not only its own focus.
+  if (options.consumers !== undefined) {
+    diagnostics.push(
+      ...(await consumerCitationDiagnostics(repo, baseline.artifacts, options.consumers)),
+    );
+  }
 
-  const sorted = sortDiagnostics(diagnostics);
+  const sorted = sortDiagnostics(dedupeDiagnostics(diagnostics));
   const blocking = blockingDiagnostics(sorted, repo.config.validation['warnings-as-errors']);
   const errors = sorted.filter((d) => d.severity === 'error');
   const warnings = sorted.filter((d) => d.severity === 'warning');

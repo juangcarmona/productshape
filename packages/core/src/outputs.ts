@@ -83,8 +83,11 @@ export function buildMermaid(graph: ProductGraph): string {
     lines.push(`  ${node.id.replaceAll('-', '_')}["${node.id}"]`);
   }
   for (const edge of graph.edges) {
+    // Edge labels are quoted: the canonical array-member spellings (`steps[].use-case`,
+    // `verification[].scenario-ref`) carry brackets that collide with Mermaid's unquoted
+    // vertex-shape syntax.
     lines.push(
-      `  ${edge.from.replaceAll('-', '_')} -- ${edge.kind} --> ${edge.to.replaceAll('-', '_')}`,
+      `  ${edge.from.replaceAll('-', '_')} -- "${edge.kind}" --> ${edge.to.replaceAll('-', '_')}`,
     );
   }
   return `${lines.join('\n')}\n`;

@@ -422,11 +422,42 @@ describe('change validate', () => {
     expect(again.out.join('\n')).toContain('PRODUCT108');
   });
 
-  it('leaves the baseline alone: prodshape validate ignores live changes', async () => {
-    await writeChange({ add: ['BR-PROBE-001'] }); // PRODUCT026 under change validate.
+  it('reports a pre-existing baseline fact once, not once per live change', async () => {
+    // The overlay re-derives every untouched baseline fact; with one valid unrelated change the
+    // orphaned rule's PRODUCT105 must still count exactly once in the validate verdict.
+    await writeFile(
+      join(workDir, 'docs', 'product', 'model', 'business-rules', 'br-orphan-001.md'),
+      businessRule('BR-ORPHAN-001', 'Nobody consumes this', 'UC-SHORTEN-001').replace(
+        'applies-to:\n  - UC-SHORTEN-001\n',
+        '',
+      ),
+      'utf8',
+    );
+    const dir = await writeChange({ add: ['BR-PROBE-001'] });
+    await proposeArtifact(
+      dir,
+      'business-rules',
+      'BR-PROBE-001',
+      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN-001'),
+    );
+    const result = await run(['validate', '--format', 'json']);
+    const parsed = JSON.parse(result.out.join('\n')) as {
+      diagnostics: { code: string; artifact?: string }[];
+    };
+    const orphanWarnings = parsed.diagnostics.filter(
+      (d) => d.code === 'PRODUCT105' && d.artifact === 'BR-ORPHAN-001',
+    );
+    expect(orphanWarnings).toHaveLength(1);
+  });
+
+  it('carries live-change defects into the validate verdict without touching the baseline', async () => {
+    // The verdict covers the whole repository: an invalid overlay fails plain validate too
+    // (the conformance contract asserts the expected exit code for every configured command).
+    // The baseline itself stays untouched and its artifacts still validate clean.
+    await writeChange({ add: ['BR-PROBE-001'] }); // PRODUCT026 under overlay validation.
     const result = await run(['validate']);
-    expect(result.code).toBe(0);
-    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\)/);
+    expect(result.code).toBe(1);
+    expect(result.out.join('\n')).toContain('PRODUCT026');
   });
 
   it('exits 2 on an unknown change ID', async () => {

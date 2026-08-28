@@ -17,6 +17,7 @@ docs/product/changes/active/chg-initial/
     requirements/functional/fr-<slug>.md
     requirements/quality/qr-<slug>.md
     requirements/constraints/con-<slug>.md
+    behaviours/sb-<slug>.md
 ```
 
 File names are the lowercase artifact ID plus `.md`. Author from the templates under `.product/templates/` and check the exact allowed frontmatter with `prodshape schema <kind>` before inventing anything.
@@ -31,7 +32,7 @@ The change document describes the recovery itself: the problem (no product defin
 
 1. State observed behaviour first. What does this evidence verifiably say the system does? Each observation cites its exact evidence: file and path, test name, endpoint, table and column, document section, person.
 2. Record implications separately. A hypothesis about why ("requires approval because of fraud risk") is inference, labelled as such in the candidate body, never merged into an observed statement.
-3. Choose the artifact kind by what the knowledge is, not by where it was found: who acts (actor), an end-to-end path with an outcome (journey), one interaction with a trigger and flows (use case), a constraint the business imposes (business rule), a word with a precise meaning (domain term), a language boundary (bounded context), something the product must do (functional requirement), how well (quality requirement), an imposed limitation (constraint).
+3. Choose the artifact kind by what the knowledge is, not by where it was found: who acts (actor), an end-to-end path with an outcome (journey), one interaction with a trigger and flows (use case), a constraint the business imposes (business rule), a word with a precise meaning (domain term), a language boundary (bounded context), something the product must do (functional requirement), how well (quality requirement), an imposed limitation (constraint), one concrete observable example of accepted behaviour with context, stimulus and outcomes (structured behaviour).
 4. Reuse before creating. Search the existing candidates first (ids, titles, the brief's synonyms). Evidence that lands on an existing candidate strengthens it: extend its `provenance.source`, raise or lower its confidence, note the corroboration in the body, and classify the source as `duplicate` against it.
 5. Every candidate carries `provenance` (see `references/provenance-format.md`) and `status: draft`. A candidate you cannot give a source is an opinion; do not write it.
 6. Respect the brief's `confirm` list: candidates in those areas are proposed to the user in conversation before the files are written.

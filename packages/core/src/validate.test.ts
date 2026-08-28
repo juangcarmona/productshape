@@ -42,7 +42,7 @@ describe('validateModel errors', () => {
     });
     const diagnostics = run([baseActor, uc, journey]).filter((d) => d.code === 'PRODUCT007');
     expect(diagnostics).toEqual([
-      expect.objectContaining({ artifact: 'JRN-A', field: 'steps', target: 'ACT-A' }),
+      expect.objectContaining({ artifact: 'JRN-A', field: 'steps[].use-case', target: 'ACT-A' }),
     ]);
   });
 
@@ -219,6 +219,144 @@ describe('validateModel warnings', () => {
       const constraint = artifact('CON-USER', 'constraint', { 'uses-terms': ['TERM-OLD'] });
       const diagnostics = run([context, retired, constraint]);
       expect(diagnostics.filter((d) => d.code === 'PRODUCT008')).toHaveLength(1);
+    });
+  });
+
+  describe('structured behaviour semantics (RFC 0084)', () => {
+    const context = artifact('BC-CORE', 'bounded-context');
+    const term = artifact('TERM-UNITS', 'domain-term', { 'defined-in': 'BC-CORE' });
+
+    it('illustrates never counts as a business rule consumer: PRODUCT105 still fires', () => {
+      // An example demonstrates the rule; it does not establish where the rule governs.
+      const rule = artifact('BR-LONE', 'business-rule');
+      const behaviour = artifact('SB-DEMO', 'structured-behaviour', {
+        illustrates: ['BR-LONE'],
+        when: 'A stimulus occurs',
+        then: ['An outcome follows'],
+      });
+      const flagged = run([rule, behaviour])
+        .filter((d) => d.code === 'PRODUCT105')
+        .map((d) => d.artifact);
+      expect(flagged).toEqual(['BR-LONE']);
+    });
+
+    it('a dangling applies-to is a broken reference, not consumption: PRODUCT105 still fires', () => {
+      const rule = artifact('BR-DANGLING', 'business-rule', { 'applies-to': ['UC-GHOST'] });
+      const diagnostics = run([rule]);
+      expect(diagnostics.filter((d) => d.code === 'PRODUCT006')).toHaveLength(1);
+      expect(diagnostics.filter((d) => d.code === 'PRODUCT105').map((d) => d.artifact)).toEqual([
+        'BR-DANGLING',
+      ]);
+    });
+
+    it('a retired use case governed-by does not suppress PRODUCT105 for an active rule', () => {
+      const rule = artifact('BR-LONE', 'business-rule');
+      const retiredUc = artifact('UC-OLD', 'use-case', {
+        status: 'retired',
+        'primary-actor': 'ACT-A',
+        'governed-by': ['BR-LONE'],
+      });
+      const flagged = run([baseActor, rule, retiredUc])
+        .filter((d) => d.code === 'PRODUCT105')
+        .map((d) => d.artifact);
+      expect(flagged).toEqual(['BR-LONE']);
+    });
+
+    it('a retired structured behaviour uses-terms does not suppress PRODUCT106', () => {
+      const retiredBehaviour = artifact('SB-OLD', 'structured-behaviour', {
+        status: 'retired',
+        illustrates: ['UC-A'],
+        when: 'A stimulus occurs',
+        then: ['An outcome follows'],
+        'uses-terms': ['TERM-UNITS'],
+      });
+      const uc = artifact('UC-A', 'use-case', { 'primary-actor': 'ACT-A' });
+      const flagged = run([baseActor, context, term, uc, retiredBehaviour])
+        .filter((d) => d.code === 'PRODUCT106')
+        .map((d) => d.artifact);
+      expect(flagged).toEqual(['TERM-UNITS']);
+    });
+
+    it('a non-retired structured behaviour uses-terms suppresses PRODUCT106', () => {
+      const behaviour = artifact('SB-DEMO', 'structured-behaviour', {
+        illustrates: ['UC-A'],
+        when: 'A stimulus occurs',
+        then: ['An outcome follows'],
+        'uses-terms': ['TERM-UNITS'],
+      });
+      const uc = artifact('UC-A', 'use-case', { 'primary-actor': 'ACT-A' });
+      const flagged = run([baseActor, context, term, uc, behaviour])
+        .filter((d) => d.code === 'PRODUCT106')
+        .map((d) => d.artifact);
+      expect(flagged).not.toContain('TERM-UNITS');
+    });
+
+    it('retired rules and terms are outside the warning populations; referencing them is PRODUCT008', () => {
+      const retiredRule = artifact('BR-OLD', 'business-rule', { status: 'retired' });
+      const retiredTerm = artifact('TERM-OLD', 'domain-term', {
+        status: 'retired',
+        'defined-in': 'BC-CORE',
+      });
+      const behaviour = artifact('SB-DEMO', 'structured-behaviour', {
+        illustrates: ['BR-OLD'],
+        when: 'A stimulus occurs',
+        then: ['An outcome follows'],
+        'uses-terms': ['TERM-OLD'],
+      });
+      const diagnostics = run([context, retiredRule, retiredTerm, behaviour]);
+      expect(diagnostics.filter((d) => d.code === 'PRODUCT008')).toHaveLength(2);
+      expect(diagnostics.filter((d) => d.code === 'PRODUCT105')).toEqual([]);
+      expect(diagnostics.filter((d) => d.code === 'PRODUCT106')).toEqual([]);
+    });
+
+    it('an unknown scenario-ref is PRODUCT006 with the exact array-member field', () => {
+      const fr = artifact('FR-REF-001', 'functional-requirement', {
+        'derived-from': ['UC-A'],
+        verification: [{ scenario: 'inline stays valid' }, { 'scenario-ref': 'SB-GHOST' }],
+      });
+      const uc = artifact('UC-A', 'use-case', { 'primary-actor': 'ACT-A' });
+      const diagnostics = run([baseActor, uc, fr]).filter((d) => d.code === 'PRODUCT006');
+      expect(diagnostics).toEqual([
+        expect.objectContaining({
+          artifact: 'FR-REF-001',
+          field: 'verification[].scenario-ref',
+          target: 'SB-GHOST',
+        }),
+      ]);
+    });
+
+    it('an active requirement referencing a retired structured behaviour is PRODUCT008', () => {
+      const retiredBehaviour = artifact('SB-OLD', 'structured-behaviour', {
+        status: 'retired',
+        illustrates: ['UC-A'],
+        when: 'A stimulus occurs',
+        then: ['An outcome follows'],
+      });
+      const uc = artifact('UC-A', 'use-case', { 'primary-actor': 'ACT-A' });
+      const qr = artifact('QR-REF-001', 'quality-requirement', {
+        'applies-to': ['UC-A'],
+        verification: [{ 'scenario-ref': 'SB-OLD' }],
+      });
+      const diagnostics = run([baseActor, uc, retiredBehaviour, qr]);
+      expect(
+        diagnostics.filter(
+          (d) => d.code === 'PRODUCT008' && d.field === 'verification[].scenario-ref',
+        ),
+      ).toHaveLength(1);
+    });
+
+    it('scenario-ref and illustrates edges join reachability: the requirement connects to the actor', () => {
+      const uc = artifact('UC-A', 'use-case', { 'primary-actor': 'ACT-A' });
+      const behaviour = artifact('SB-DEMO', 'structured-behaviour', {
+        illustrates: ['UC-A'],
+        when: 'A stimulus occurs',
+        then: ['An outcome follows'],
+      });
+      const fr = artifact('FR-REF-001', 'functional-requirement', {
+        verification: [{ 'scenario-ref': 'SB-DEMO' }],
+      });
+      const diagnostics = run([baseActor, uc, behaviour, fr]);
+      expect(diagnostics.filter((d) => d.code === 'PRODUCT103')).toEqual([]);
     });
   });
 

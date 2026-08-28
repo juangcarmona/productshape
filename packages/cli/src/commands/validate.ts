@@ -1,11 +1,14 @@
 import {
   buildGeneratedOutputs,
   blockingDiagnostics,
+  dedupeDiagnostics,
+  sortDiagnostics,
   stableJson,
   validateBaseline,
   writeGeneratedOutputs,
 } from '@prodshape/core';
 import { exitCodes, formatDiagnosticLine, resolveRepository, type CliIo } from '../context.js';
+import { consumerCitationDiagnostics, liveChangeDiagnostics } from './verdict.js';
 
 export interface ValidateOptions {
   format?: 'text' | 'json';
@@ -16,11 +19,29 @@ export interface ValidateOptions {
   writeGenerated?: boolean;
   /** Explicit repository root; replaces upward discovery from the working directory. */
   root?: string;
+  /** Consumer scope whose citation diagnostics join the verdict. */
+  consumers?: string;
 }
 
 export async function runValidate(io: CliIo, options: ValidateOptions): Promise<number> {
   const repo = await resolveRepository(io, options.root, options.format);
-  const { graph, diagnostics } = await validateBaseline(repo);
+  const baseline = await validateBaseline(repo);
+  const { graph } = baseline;
+
+  // The verdict covers the whole repository, not only the baseline: a live change whose overlay
+  // is invalid fails `validate` too, and a `--consumers` scope brings citation defects into the
+  // exit code. Every validation command reports the same kind of answer.
+  // Deduped: each overlay re-derives every untouched baseline fact, and the same fact must
+  // count once, not once per live change.
+  const diagnostics = sortDiagnostics(
+    dedupeDiagnostics([
+      ...baseline.diagnostics,
+      ...(await liveChangeDiagnostics(repo, baseline)),
+      ...(options.consumers !== undefined
+        ? await consumerCitationDiagnostics(repo, baseline.artifacts, options.consumers)
+        : []),
+    ]),
+  );
   const blocking = blockingDiagnostics(diagnostics, repo.config.validation['warnings-as-errors']);
 
   const errors = diagnostics.filter((d) => d.severity === 'error');
@@ -55,9 +76,13 @@ export async function runValidate(io: CliIo, options: ValidateOptions): Promise<
   // Generation is opt-in: validate is a read-only verdict, and writing generated files as a side
   // effect left untracked `.product/` directories behind wherever it ran — including inside other
   // repositories' conformance fixtures. `--write-generated` refreshes them on request, and
-  // `prodshape graph` remains the dedicated generator.
+  // `prodshape graph` remains the dedicated generator. Generated outputs stay a baseline
+  // projection, so they embed the baseline diagnostics rather than this run's full verdict.
   if (options.writeGenerated) {
-    await writeGeneratedOutputs(repo.generatedDir, buildGeneratedOutputs(graph, diagnostics));
+    await writeGeneratedOutputs(
+      repo.generatedDir,
+      buildGeneratedOutputs(graph, baseline.diagnostics),
+    );
   }
 
   return blocking.length > 0 ? exitCodes.validationErrors : exitCodes.success;
