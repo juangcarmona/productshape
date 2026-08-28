@@ -186,8 +186,8 @@ nav.views a[aria-current='page'] {
 html, body { height: 100%; }
 body { display: flex; flex-direction: column; overflow: hidden; }
 header.site { flex: none; }
-main { flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 1rem; }
-main > section { height: 100%; min-height: 0; }
+main { flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 1rem; display: flex; flex-direction: column; }
+main > section { flex: 1 1 auto; min-height: 0; }
 #view-overview { overflow-y: auto; }
 section[hidden] { display: none; }
 h2.view { margin: 0 0 0.7rem; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
