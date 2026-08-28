@@ -25,7 +25,7 @@ The specification SHALL define, using RFC-style normative language (MUST, MUST N
 
 The specification SHALL define stable immutable IDs with the fixed artifact prefixes ACT-, JRN-, UC-, BR-, TERM-, BC-, FR-, QR- and CON-, and the Product Change prefix CHG-. It SHALL state that artifact IDs become immutable after first acceptance into the current model, are never reused, and are never inferred from file paths, and that file-name alignment is a warning, not an identity mechanism. Retired prefixes SLI- and HOF- are never reused.
 
-{pdac:cite id="BR-IDENTITY-001" digest="sha256:561bfedd988fa65ab2348c39024eff969bfba11d448034a2df0fbf87b020da03"}
+{pdac:cite id="BR-IDENTITY-001" digest="sha256:4260c4babe1b49464e1ebe6c6aa2f1001c59b2e4c6e8e9d81781e112bfee47c4"}
 
 #### Scenario: Renaming an artifact file
 
@@ -47,7 +47,7 @@ The specification SHALL define the canonical relationship fields per source arti
 
 The specification SHALL distinguish accepted current semantics (`docs/product/model/**/*.md` on the canonical branch) from a Product Change overlay and from generated non-canonical outputs (graph files, indexes, diagrams, traceability reports). `docs/product/model/index.md` SHALL be defined as a human navigation document that never duplicates relationships. Apply MAY write the approved proposal into `docs/product/model` on a working branch, but only a human merge of the reviewed result changes the accepted baseline.
 
-{pdac:cite id="BR-CANONICAL-001" digest="sha256:19d9d0ad750bfb13d1929853dd2f4c8c680b88f54c5a79dee8133336c770fef1"}
+{pdac:cite id="BR-CANONICAL-001" digest="sha256:7ed6dc7c588e0b79da8e6036548cf2fd2c6a1b02a9393f467f50cb0cb02475d6"}
 
 {pdac:cite id="TERM-CURRENT-PRODUCT-MODEL" digest="sha256:0699a1113e526f3a566b52b3f409e68933cfc23a5ac64387bc4b4a72c6211175"}
 
@@ -86,7 +86,7 @@ The specification SHALL define a citation as a machine-verifiable reference from
 
 {pdac:cite id="TERM-CITATION" digest="sha256:3451ef0f31f948a5f3fe1a228e699cf5677aa7e6906ac48faaf48f97c1b00dcf"}
 
-{pdac:cite id="FR-CITATIONS-VERIFY-001" digest="sha256:42ed644eddf854c1dc7af1b818713d4a405074c47ab93b5ecef361e885d7d629"}
+{pdac:cite id="FR-CITATIONS-VERIFY-001" digest="sha256:850eeca68d751eee955a82ceab2c42fa12aaa7d6aab22dbd62296c3716c8ab6c"}
 
 #### Scenario: A consumer document cites an artifact
 
