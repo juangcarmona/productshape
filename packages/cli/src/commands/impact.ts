@@ -41,6 +41,10 @@ export async function runImpact(io: CliIo, id: string, options: ImpactCliOptions
 
   io.out(`Structural impact of ${id} (direction: ${direction}${depth ? `, depth: ${depth}` : ''})`);
   io.out('Structural reachability only - no semantic claim.');
+  io.out(`  put in question by a change to ${id} (${report.questioned.length}):`);
+  for (const entry of report.questioned) {
+    io.out(`    ${entry.id} (${entry.type}) via ${entry.via.kind} [${entry.polarity}]`);
+  }
   io.out(`  direct (${report.direct.length}):`);
   for (const entry of report.direct) {
     io.out(`    [${entry.direction}] ${entry.id} (${entry.type}) via ${entry.via.kind}`);
