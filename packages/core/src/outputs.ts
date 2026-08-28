@@ -43,7 +43,11 @@ export function buildTraceabilityJson(graph: ProductGraph): Record<string, unkno
   const requirementTypes = new Set(['functional-requirement', 'quality-requirement', 'constraint']);
   for (const node of graph.nodes) {
     if (!requirementTypes.has(node.type)) continue;
-    const sources = (graph.outgoing.get(node.id) ?? []).map((e) => e.to);
+    // Derivation edges only: a uses-terms dependency names vocabulary the requirement needs,
+    // not a source it traces to, so it stays out of the traceability projection.
+    const sources = (graph.outgoing.get(node.id) ?? [])
+      .filter((e) => e.kind === 'derived-from' || e.kind === 'applies-to')
+      .map((e) => e.to);
     const actors = new Set<string>();
     // Walk outward through sources to find the actors behind them (bounded scan).
     const queue = [...sources];

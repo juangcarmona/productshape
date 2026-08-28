@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { compileGraph } from './graph.js';
 import type { LoadedArtifact } from './model.js';
+import { buildTraceabilityJson } from './outputs.js';
 import { artifact } from './test-support.js';
 import { validateModel } from './validate.js';
 
@@ -186,6 +187,20 @@ describe('validateModel warnings', () => {
       expect(diagnostics).toEqual([
         expect.objectContaining({ artifact: 'BR-USER', field: 'uses-terms', target: 'TERM-GHOST' }),
       ]);
+    });
+
+    it('uses-terms stays out of the traceability sources projection', () => {
+      // A term dependency names vocabulary the requirement needs, not a source it traces to.
+      const uc = artifact('UC-A', 'use-case', { 'primary-actor': 'ACT-A' });
+      const fr = artifact('FR-USER-001', 'functional-requirement', {
+        'derived-from': ['UC-A'],
+        'uses-terms': ['TERM-UNITS'],
+      });
+      const graph = compileGraph([baseActor, context, term, uc, fr]);
+      const traceability = buildTraceabilityJson(graph) as {
+        requirements: Record<string, { sources: string[] }>;
+      };
+      expect(traceability.requirements['FR-USER-001']?.sources).toEqual(['UC-A']);
     });
 
     it('uses-terms never narrows a product-wide constraint: no PRODUCT103 appears', () => {
