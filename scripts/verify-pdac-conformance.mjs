@@ -134,8 +134,14 @@ function sameMultiset(left, right) {
 }
 
 function assertPinnedSpec(report, expectedSha, name) {
-  invariant(report?.spec?.revision === expectedSha, `${name} used spec ${report?.spec?.revision}`);
-  invariant(report.spec.dirty === false, `${name} used a dirty spec checkout`);
+  const observed = report?.provenance?.observed?.spec;
+  invariant(observed?.revision === expectedSha, `${name} used spec ${observed?.revision}`);
+  invariant(observed.dirty === false, `${name} used a dirty spec checkout`);
+  const claimed = report?.provenance?.claimed?.spec;
+  invariant(
+    claimed?.version === '0.2.0' && claimed?.serializationVersion === 'v1alpha1',
+    `${name} claims (${claimed?.version}, ${claimed?.serializationVersion}); expected (0.2.0, v1alpha1)`,
+  );
 }
 
 function assertRuns(report, expectedArgv, name) {
@@ -554,7 +560,21 @@ async function main() {
   const implementationCommands = implementationArgv.map(runnerCommand);
   const negativeCommands = negativeArgv.map(runnerCommand);
 
-  const provenanceArgs = ['--spec-version', '0.2.0', '--serialization-version', 'v1alpha1'];
+  const tarballDigest = await sha256(options.tarball);
+  // Claimed provenance rides every runner invocation: the version pair the claim names, and the
+  // implementation identity the runner records without verification.
+  const provenanceArgs = [
+    '--spec-version',
+    '0.2.0',
+    '--serialization-version',
+    'v1alpha1',
+    '--implementation-name',
+    packageJson.name,
+    '--implementation-version',
+    packageJson.version,
+    '--implementation-artifact',
+    `sha256:${tarballDigest}`,
+  ];
   const runArgs = ['run', '--spec', specDir, ...provenanceArgs];
   for (const command of implementationCommands) runArgs.push('--command', command);
   runArgs.push('--format', 'json');
@@ -612,7 +632,7 @@ async function main() {
       version: packageJson.version,
       sourceSha: options['source-sha'],
       tarball: basename(options.tarball),
-      tarballSha256: await sha256(options.tarball),
+      tarballSha256: tarballDigest,
     },
     spec: {
       repository: 'product-definition-as-code/spec',
