@@ -88,7 +88,7 @@ function changelogSection(changelog: string, heading: string): string {
 // completed for it, so no such package exists. Presenting the bump as a release is exactly the
 // defect this gate exists to catch, so membership here is a deliberate, reviewed exception, not a
 // default. `0.10.0`: prepared, never published; its changes shipped in `0.11.0` instead.
-const neverPublished = new Set(['0.10.0']);
+const neverPublished = new Set(['0.10.0', '0.15.0']);
 
 for (const match of cliChangelog.matchAll(/^## (\d+\.\d+\.\d+)$/gm)) {
   const version = match[1];

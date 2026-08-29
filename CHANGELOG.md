@@ -4,20 +4,38 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-The supported published CLI baseline is `@prodshape/cli@0.15.0`. Every stable public CLI release from `0.1.0` through that baseline is recorded below; package-specific dependency changes remain in each package's changelog.
+The supported published CLI baseline is `@prodshape/cli@0.16.0`. Every stable public CLI release from `0.1.0` through that baseline is recorded below; package-specific dependency changes remain in each package's changelog.
 
 ## [Unreleased]
 
-## [0.15.0]
+## [0.16.0]
 
-Wave 2 alignment with the frozen PDaC kernel contracts, verified against spec revision `9ff12df` with `pdac-lint@0.2.0` (19 cases, 8 pinned digests).
+Version 0.15.0 was prepared but never published: the release-contract gate refused its empty root-changelog section (the issue #120 defect class), so no `0.15.0` package ever reached npm. Its changes are included in this release, published directly after `0.14.0`, together with the v0.2.0 specification alignment below.
+
+PDaC v0.2.0 alignment, certified by the pinned gate: all 44 conformance cases pass and all 12 pinned digests verify against spec revision `7feb4ec` with `pdac-conformance@1.0.0`, claimed as specification `0.2.0` on serialization `v1alpha1`.
 
 ### Added
+
+- Structured Behaviour (`SB-`, `model/behaviours/`), the tenth artifact kind per RFC 0084: one implementation-independent example with required `illustrates`, one `when`, one or more `then` outcomes, optional `given` and `uses-terms`, `Intent` and `Boundaries` body sections, and a schema-level ban on leading GIVEN, WHEN, THEN or AND keywords in any letter case. Functional and Quality Requirement `verification[]` entries accept a `scenario-ref` alongside the unchanged inline form; anchors into a Structured Behaviour report `PRODUCT063`. The snapshot renders the kind with its own hue, `prodshape template structured-behaviour` prints the authoring template, `init --full` scaffolds `behaviours/`, and recovery treats structured behaviours as a probeable family.
+- `--consumers <path>` on `validate` and `change validate`: the citation defects of a consumer scope join the command's verdict, which is how the pinned conformance harness invokes them.
+- Impact polarity per RFC 0093: every canonical relationship row carries `dependency` or `governance`, and `prodshape impact` reports the artifacts one authored hop away that a change puts in question, so a changed Quality Requirement's constrained use cases surface even though a reverse walk never reaches them.
+
+### Changed
+
+- Every validation command reports the whole repository's verdict: `validate` and `citations verify` include live-change overlay diagnostics (deduped against the baseline report), `citations verify` refuses on model errors the way invalid configuration stops every command, and baseline warnings ride its report.
+- `PRODUCT002` and parsed-configuration `PRODUCT050` locate failures with escaped RFC 6901 JSON Pointers per RFC 0085; the deterministic diagnostic ordering compares by Unicode code point.
+- `uses-terms` is authored by every permitted semantic source per RFC 0072 (Business Rules, Domain Terms, Functional and Quality Requirements, Constraints join Use Cases and Structured Behaviours), and `PRODUCT106` reads "Domain term has no incoming uses-terms relationship".
+- The journey step relationship reports its canonical `steps[].use-case` spelling everywhere an edge kind appears, and the `PRODUCT105`/`PRODUCT106` relationship sets are exact: counting relationships need non-retired authors, an incoming `illustrates` never consumes a rule, and retired rules and terms leave the warning populations.
+- The self-model adopts the new kind through `CHG-SB-ADOPT-001`: three Structured Behaviours, one verification scenario converted to a `scenario-ref`, and every affected consumer citation re-cited.
+
+The 0.15.0 release train's own changes, first published here:
+
+#### From the 0.15.0 train, added
 
 - Kernel-first adoption: `prodshape init` installs four files (configuration, model home, live-change home, README); `--full` installs the per-kind layout, change archives and template library, and selecting an AI integration implies it. `prodshape template <kind>` prints any bundled authoring template, and validating an empty model names the `CHG-INITIAL` route instead of presenting emptiness as success.
 - `init --gitignore` writes the regenerable-output ignore rules it previously only recommended: append-only, idempotent, never unasked, following the configured `generated.root`.
 
-### Changed
+#### From the 0.15.0 train, changed
 
 - Diagnostics align with the frozen validation contract: `change`, `line` and `entry` fields, a cited ID in `target` (never `artifact`), deterministic eight-key ordering, `PRODUCT002` once per distinct invalid instance path, `PRODUCT003` with `field: type`.
 - Configuration adopts the kernel `v1alpha1` contract: tool settings live under `extensions.prodshape`, an invalid file is exactly one `PRODUCT050` with exit `2` and no fallback to defaults, and `blockingDiagnostics` replaces `escalateWarnings` (severity stays `warning`).
@@ -203,7 +221,8 @@ Published as `@prodshape/cli` 0.2.0, `core` and `distribution` 0.3.0, `integrati
 - Promotion applies its plan in two phases (preflight, then execute with the change-directory move last), so a failed promotion no longer leaves a partially promoted baseline.
 - `validation.warnings-as-errors` is enforced uniformly across baseline validate, change validate, handoff generation, graph generation and promotion.
 
-[unreleased]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.15.0...HEAD
+[unreleased]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.16.0...HEAD
+[0.16.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.15.0...@prodshape/cli@0.16.0
 [0.15.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.14.0...@prodshape/cli@0.15.0
 [0.14.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.13.0...@prodshape/cli@0.14.0
 [0.13.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.12.0...@prodshape/cli@0.13.0
