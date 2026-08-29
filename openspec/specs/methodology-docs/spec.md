@@ -45,7 +45,7 @@ The Define documentation SHALL state that `CHG-INITIAL` proposes the complete fi
 
 The repository SHALL contain `docs/manifesto.md` stating the central assertions — the relationships are the methodology; authored artifacts are the source of truth and the graph is compiled from them — without marketing claims or invented benchmarks.
 
-{pdac:cite id="BR-CANONICAL-001" digest="sha256:19d9d0ad750bfb13d1929853dd2f4c8c680b88f54c5a79dee8133336c770fef1"}
+{pdac:cite id="BR-CANONICAL-001" digest="sha256:7ed6dc7c588e0b79da8e6036548cf2fd2c6a1b02a9393f467f50cb0cb02475d6"}
 
 {pdac:cite id="BR-RELATIONSHIPS-001" digest="sha256:a6f9d40c2c1ac926149fe171660e5715b66b4e82ce8129f128eab0e6c1c7de8c"}
 

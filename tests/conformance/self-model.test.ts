@@ -128,6 +128,12 @@ const expectedIds: Record<string, string[]> = {
     // Added by CHG-BRAND-001 (ProductShape brand adoption).
     'CON-BRAND-001',
   ],
+  'structured-behaviour': [
+    // Added by CHG-SB-ADOPT-001 (Structured Behaviour adoption).
+    'SB-ID-REUSE-REJECTED',
+    'SB-REGENERATION-RESTORES',
+    'SB-TAMPERED-BEATS-STALE',
+  ],
 };
 
 /** Canonical relationship fields and their allowed target types (https://github.com/product-definition-as-code/spec/blob/main/spec/relationships.md). */
@@ -140,6 +146,10 @@ const referenceFields: Record<string, { types: string[]; onlyOn?: string[] }> = 
   'applies-to': { types: ['journey', 'use-case', 'bounded-context'] },
   'defined-in': { types: ['bounded-context'] },
   'derived-from': { types: ['use-case', 'business-rule', 'constraint'] },
+  illustrates: {
+    types: ['use-case', 'business-rule', 'constraint'],
+    onlyOn: ['structured-behaviour'],
+  },
 };
 
 async function loadModel() {

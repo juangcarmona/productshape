@@ -27,6 +27,12 @@ Adoption: [UC-INIT-001](use-cases/uc-init-001.md), [UC-DEFINE-001](use-cases/uc-
 - [BR-SDD-001](business-rules/br-sdd-001.md) — consumers cite, never own semantics.
 - [BR-AI-001](business-rules/br-ai-001.md) — deterministic validation is never delegated to AI.
 
+## Structured behaviours
+
+- [SB-ID-REUSE-REJECTED](behaviours/sb-id-reuse-rejected.md) — a retired ID is never reused for a different artifact.
+- [SB-REGENERATION-RESTORES](behaviours/sb-regeneration-restores.md) — rebuilding derived outputs restores them identically.
+- [SB-TAMPERED-BEATS-STALE](behaviours/sb-tampered-beats-stale.md) — a tampered embedding is reported even when its target also moved.
+
 ## Domain language
 
 Bounded contexts: [BC-PRODUCT-DEFINITION](domain/bounded-contexts/bc-product-definition.md), [BC-DELIVERY-INTEGRATION](domain/bounded-contexts/bc-delivery-integration.md).
