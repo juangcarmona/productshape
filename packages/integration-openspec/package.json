@@ -1,6 +1,6 @@
 {
   "name": "@prodshape/integration-openspec",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "OpenSpec integration for Product Definition as Code: configures OpenSpec workspaces with PDaC citation rules and verifies citations against the OpenSpec population.",
   "license": "Apache-2.0",
   "type": "module",
