@@ -1,5 +1,11 @@
 # @prodshape/integration-speckit
 
+## 0.3.3
+
+### Patch Changes
+
+- 12ada16: Spec Kit population enumeration now reads the feature directory recorded in `.specify/feature.json`, closing a case where verification passed while real documents went ungated. Spec Kit's specify command resolves a feature directory under `specs/` by default, but uses an explicitly provided `SPECIFY_FEATURE_DIRECTORY` "as-is", so a feature can live anywhere in the repository; whatever it resolved is persisted to `.specify/feature.json` for the downstream plan and tasks commands. Enumeration looked only under `specs/`, so such a workspace reported `0 document(s)` and exited 0 while its `spec.md`, `plan.md` and `tasks.md` carried no scope declaration and no citations. The recorded directory is now enumerated when it falls outside `specs/`, and skipped when it is already in-tree so its documents are never counted twice. That file records one feature, the latest, so this narrows the hole rather than closing it: features placed outside `specs/` by earlier runs leave no record to enumerate. An absent, malformed or repository-escaping record falls back to `specs/` alone, which is what Spec Kit's own commands already fail loudly on. The reported `root` stays `specs`, the conventional document root, and every out-of-tree document is listed by its real repository-relative path.
+
 ## 0.3.2
 
 ### Patch Changes
