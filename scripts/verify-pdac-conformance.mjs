@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 
-// CI evidence harness only: pdac-lint owns case execution and diagnostic comparison.
+// CI evidence harness only: pdac-conformance owns case execution and diagnostic comparison.
 
 import { spawn } from 'node:child_process';
+import { closeSync, openSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
 import { sameDiagnosticMultiset } from './pdac-conformance-diagnostics.mjs';
 
 const profile =
-  'full published v0.1-draft suite (kernel, reference profile and reference workflow)';
+  'full published v0.2.0 conformance tests (kernel, reference profile and reference workflow)';
 const citationDiagnosticCodes = new Set([
   'PRODUCT042',
   'PRODUCT060',
@@ -29,8 +30,8 @@ function parseOptions(argv) {
     'prodshape',
     'productshape-package',
     'tarball',
-    'pdac-lint',
-    'pdac-lint-version',
+    'runner',
+    'runner-version',
     'reports',
     'source-sha',
     'evidence-url',
@@ -53,8 +54,8 @@ function parseOptions(argv) {
     'prodshape',
     'productshape-package',
     'tarball',
-    'pdac-lint',
-    'pdac-lint-version',
+    'runner',
+    'runner-version',
     'reports',
     'source-sha',
   ]) {
@@ -80,20 +81,34 @@ function runnerCommand(argv) {
   return argv.map((value) => (/\s/.test(value) ? `"${value}"` : value)).join(' ');
 }
 
-async function execute(file, args) {
-  return await new Promise((resolvePromise, rejectPromise) => {
-    const child = spawn(file, args, { stdio: ['ignore', 'pipe', 'pipe'] });
+/**
+ * Run a command. With `stdoutFile` the command writes stdout straight to that file and the
+ * result reads it back: pdac-conformance@1.0.0 exits before a piped stdout drains, so a JSON
+ * report larger than the pipe buffer truncates mid-string (pdac-conformance#22); file writes
+ * are synchronous on both platforms and immune. Drop the redirect once a fixed runner is pinned.
+ */
+async function execute(file, args, stdoutFile) {
+  const fd = stdoutFile === undefined ? 'pipe' : openSync(stdoutFile, 'w');
+  const result = await new Promise((resolvePromise, rejectPromise) => {
+    const child = spawn(file, args, { stdio: ['ignore', fd, 'pipe'] });
     let stdout = '';
     let stderr = '';
-    child.stdout.setEncoding('utf8');
+    if (stdoutFile === undefined) {
+      child.stdout.setEncoding('utf8');
+      child.stdout.on('data', (chunk) => (stdout += chunk));
+    }
     child.stderr.setEncoding('utf8');
-    child.stdout.on('data', (chunk) => (stdout += chunk));
     child.stderr.on('data', (chunk) => (stderr += chunk));
     child.on('error', rejectPromise);
     child.on('close', (code, signal) => {
       resolvePromise({ code: code ?? (signal ? 3 : 0), stdout, stderr });
     });
   });
+  if (stdoutFile !== undefined) {
+    closeSync(fd);
+    result.stdout = await readFile(stdoutFile, 'utf8');
+  }
+  return result;
 }
 
 function parseJson(text, source) {
@@ -119,8 +134,14 @@ function sameMultiset(left, right) {
 }
 
 function assertPinnedSpec(report, expectedSha, name) {
-  invariant(report?.spec?.revision === expectedSha, `${name} used spec ${report?.spec?.revision}`);
-  invariant(report.spec.dirty === false, `${name} used a dirty spec checkout`);
+  const observed = report?.provenance?.observed?.spec;
+  invariant(observed?.revision === expectedSha, `${name} used spec ${observed?.revision}`);
+  invariant(observed.dirty === false, `${name} used a dirty spec checkout`);
+  const claimed = report?.provenance?.claimed?.spec;
+  invariant(
+    claimed?.version === '0.2.0' && claimed?.serializationVersion === 'v1alpha1',
+    `${name} claims (${claimed?.version}, ${claimed?.serializationVersion}); expected (0.2.0, v1alpha1)`,
+  );
 }
 
 function assertRuns(report, expectedArgv, name) {
@@ -142,8 +163,11 @@ function assertRuns(report, expectedArgv, name) {
 }
 
 function assertPositive(report, result, specSha, expectedArgv) {
-  invariant(result.code === 0, `pdac-lint run exited ${result.code}`);
-  invariant(result.stderr.trim() === '', `pdac-lint run wrote to stderr: ${result.stderr.trim()}`);
+  invariant(result.code === 0, `pdac-conformance run exited ${result.code}`);
+  invariant(
+    result.stderr.trim() === '',
+    `pdac-conformance run wrote to stderr: ${result.stderr.trim()}`,
+  );
   assertPinnedSpec(report, specSha, 'conformance report');
   const summary = report.summary;
   invariant(summary?.total > 0, 'No conformance cases were reported');
@@ -163,10 +187,10 @@ function assertPositive(report, result, specSha, expectedArgv) {
 }
 
 function assertDigests(report, result, specSha, caseCount) {
-  invariant(result.code === 0, `pdac-lint digests exited ${result.code}`);
+  invariant(result.code === 0, `pdac-conformance digests exited ${result.code}`);
   invariant(
     result.stderr.trim() === '',
-    `pdac-lint digests wrote to stderr: ${result.stderr.trim()}`,
+    `pdac-conformance digests wrote to stderr: ${result.stderr.trim()}`,
   );
   assertPinnedSpec(report, specSha, 'digest report');
   invariant(report.summary?.total > 0, 'No pinned digests were verified');
@@ -247,7 +271,7 @@ async function assertCitationCoverage(report, digestReport, specDir, citationArg
   invariant(citations.length > 0, 'The citation command discovered zero citations');
   invariant(
     citations.length === digestReport.pins.length,
-    `ProductShape discovered ${citations.length} citations but pdac-lint found ${digestReport.pins.length} pins`,
+    `ProductShape discovered ${citations.length} citations but pdac-conformance found ${digestReport.pins.length} pins`,
   );
 
   const citationCounts = multiset(
@@ -276,7 +300,7 @@ async function assertCitationCoverage(report, digestReport, specDir, citationArg
   );
   invariant(
     sameMultiset(citationCounts, pinCounts),
-    'ProductShape citation discovery does not match the pins independently found by pdac-lint',
+    'ProductShape citation discovery does not match the pins independently found by pdac-conformance',
   );
 
   const mappedLedgerFiles = new Set();
@@ -340,6 +364,7 @@ function assertNegativeControl(
   const positiveByName = new Map(positiveReport.cases.map((entry) => [entry.name, entry]));
   let expectedFailures = 0;
   let missingDiagnostics = 0;
+  let failedPinGuards = 0;
 
   for (const testCase of report.cases) {
     invariant(positiveByName.has(testCase.name), `Negative control added case ${testCase.name}`);
@@ -361,7 +386,19 @@ function assertNegativeControl(
         `${testCase.name}: negative control failed for a non-citation diagnostic`,
       );
     } else {
-      invariant(testCase.status === 'pass', `${testCase.name}: unrelated negative-control failure`);
+      // A zero-diagnostic citation case carries the runner's vacuous-pass mutation guard: the
+      // runner mutates the cited artifact and demands a stale or tampered diagnostic appear.
+      // With citation checking removed that guard fails, which is the control demonstrating the
+      // suite depends on citation verification, so it counts as an expected failure too.
+      const failedGuards = (testCase.exercises ?? []).filter((entry) => entry.status === 'fail');
+      if (testCase.status === 'fail') {
+        invariant(
+          failedGuards.length > 0 && failedGuards.every((entry) => entry.kind === 'citation-pin'),
+          `${testCase.name}: unrelated negative-control failure`,
+        );
+        expectedFailures += 1;
+        failedPinGuards += failedGuards.length;
+      }
       invariant(testCase.missing.length === 0, `${testCase.name}: unexpected missing diagnostics`);
     }
 
@@ -387,7 +424,7 @@ function assertNegativeControl(
     'Negative-control counts differ',
   );
 
-  return { failedCases: expectedFailures, missingDiagnostics };
+  return { failedCases: expectedFailures, missingDiagnostics, failedPinGuards };
 }
 
 function renderConformanceText(metadata, report) {
@@ -396,7 +433,7 @@ function renderConformanceText(metadata, report) {
     `ProductShape: @prodshape/cli ${metadata.productshape.version} from ${metadata.productshape.sourceSha}`,
     `Tarball: ${metadata.productshape.tarball} (sha256:${metadata.productshape.tarballSha256})`,
     `Specification: ${metadata.spec.repository}@${metadata.spec.commit}`,
-    `Runner: pdac-lint ${metadata.runner.version}`,
+    `Runner: pdac-conformance ${metadata.runner.version}`,
     `Profile: ${metadata.profile}`,
     '',
     'Commands:',
@@ -425,7 +462,7 @@ function renderDigestText(report) {
 function renderNegativeText(report, control) {
   const lines = [
     'Citation omission negative control',
-    'Expected result: pdac-lint exits 1 only because citation diagnostics are missing.',
+    'Expected result: pdac-conformance exits 1 only because citation diagnostics are missing.',
     '',
   ];
   for (const testCase of report.cases) {
@@ -455,7 +492,7 @@ function renderSummary(metadata) {
 | ProductShape | \`@prodshape/cli ${metadata.productshape.version}\` built from \`${metadata.productshape.sourceSha}\` |
 | Packaged artifact | \`${metadata.productshape.tarball}\` (\`sha256:${metadata.productshape.tarballSha256}\`) |
 | PDaC specification | [\`${metadata.spec.commit}\`](https://github.com/${metadata.spec.repository}/commit/${metadata.spec.commit}) |
-| pdac-lint | \`${metadata.runner.version}\` |
+| pdac-conformance | \`${metadata.runner.version}\` |
 | Profile | ${metadata.profile} |
 
 Commands:
@@ -472,9 +509,9 @@ ${metadata.commands.digests}
 
 Citation coverage: ${metadata.citations.total} citation(s) across ${metadata.citations.cases} case(s), including ${metadata.citations.sidecars} sidecar-ledger record(s) from ${metadata.citations.mappedLedgerFiles} mapping-shaped ledger(s) and ${metadata.citations.markers} marker-block record(s).
 
-Negative control: removing \`prodshape citations verify .\` makes ${metadata.negativeControl.failedCases} case(s) fail with ${metadata.negativeControl.missingDiagnostics} expected missing citation diagnostic(s); 0 cases errored or skipped.
+Negative control: removing citation verification makes ${metadata.negativeControl.failedCases} case(s) fail: ${metadata.negativeControl.missingDiagnostics} expected citation diagnostic(s) go missing and ${metadata.negativeControl.failedPinGuards} mutation guard(s) exercise nothing; 0 cases errored or skipped.
 ${evidence}
-Limitation: the published tests are not yet a complete normative set. Repository-only clauses and currently unexpressed apply cases remain outside this executable profile.
+Limitation: the published tests are not a complete normative set. Repository-only clauses and currently unexpressed apply cases remain outside this executable profile.
 `;
 }
 
@@ -494,7 +531,7 @@ async function main() {
     access(options.prodshape),
     access(options['productshape-package']),
     access(options.tarball),
-    access(options['pdac-lint']),
+    access(options['runner']),
   ]);
 
   const packageJson = parseJson(
@@ -503,12 +540,12 @@ async function main() {
   );
   invariant(packageJson.name === '@prodshape/cli', `Installed package is ${packageJson.name}`);
 
-  const runnerVersionResult = await execute(options['pdac-lint'], ['--version']);
-  invariant(runnerVersionResult.code === 0, 'Cannot read pdac-lint version');
+  const runnerVersionResult = await execute(options['runner'], ['--version']);
+  invariant(runnerVersionResult.code === 0, 'Cannot read pdac-conformance version');
   const runnerVersion = runnerVersionResult.stdout.trim();
   invariant(
-    runnerVersion === options['pdac-lint-version'],
-    `Expected pdac-lint ${options['pdac-lint-version']}, got ${runnerVersion}`,
+    runnerVersion === options['runner-version'],
+    `Expected pdac-conformance ${options['runner-version']}, got ${runnerVersion}`,
   );
 
   const specRevisionResult = await execute('git', ['-C', specDir, 'rev-parse', 'HEAD']);
@@ -536,26 +573,50 @@ async function main() {
   const implementationCommands = implementationArgv.map(runnerCommand);
   const negativeCommands = negativeArgv.map(runnerCommand);
 
-  const runArgs = ['run', '--spec', specDir];
+  const tarballDigest = await sha256(options.tarball);
+  // Claimed provenance rides every runner invocation: the version pair the claim names, and the
+  // implementation identity the runner records without verification.
+  const provenanceArgs = [
+    '--spec-version',
+    '0.2.0',
+    '--serialization-version',
+    'v1alpha1',
+    '--implementation-name',
+    packageJson.name,
+    '--implementation-version',
+    packageJson.version,
+    '--implementation-artifact',
+    `sha256:${tarballDigest}`,
+  ];
+  const runArgs = ['run', '--spec', specDir, ...provenanceArgs];
   for (const command of implementationCommands) runArgs.push('--command', command);
   runArgs.push('--format', 'json');
 
-  const negativeArgs = ['run', '--spec', specDir];
+  const negativeArgs = ['run', '--spec', specDir, ...provenanceArgs];
   for (const command of negativeCommands) negativeArgs.push('--command', command);
   negativeArgs.push('--format', 'json');
 
-  const digestArgs = ['digests', '--spec', specDir, '--format', 'json'];
+  const digestArgs = ['digests', '--spec', specDir, ...provenanceArgs, '--format', 'json'];
 
-  const digestResult = await execute(options['pdac-lint'], digestArgs);
-  await writeFile(join(reportsDir, 'digests.json'), digestResult.stdout);
+  const digestResult = await execute(
+    options['runner'],
+    digestArgs,
+    join(reportsDir, 'digests.json'),
+  );
   const digestReport = parseJson(digestResult.stdout, 'digests.json');
 
-  const conformanceResult = await execute(options['pdac-lint'], runArgs);
-  await writeFile(join(reportsDir, 'conformance.json'), conformanceResult.stdout);
+  const conformanceResult = await execute(
+    options['runner'],
+    runArgs,
+    join(reportsDir, 'conformance.json'),
+  );
   const conformanceReport = parseJson(conformanceResult.stdout, 'conformance.json');
 
-  const negativeResult = await execute(options['pdac-lint'], negativeArgs);
-  await writeFile(join(reportsDir, 'negative-control.json'), negativeResult.stdout);
+  const negativeResult = await execute(
+    options['runner'],
+    negativeArgs,
+    join(reportsDir, 'negative-control.json'),
+  );
   const negativeReport = parseJson(negativeResult.stdout, 'negative-control.json');
 
   assertPositive(conformanceReport, conformanceResult, options['spec-sha'], implementationArgv);
@@ -584,22 +645,22 @@ async function main() {
       version: packageJson.version,
       sourceSha: options['source-sha'],
       tarball: basename(options.tarball),
-      tarballSha256: await sha256(options.tarball),
+      tarballSha256: tarballDigest,
     },
     spec: {
       repository: 'product-definition-as-code/spec',
       commit: options['spec-sha'],
     },
-    runner: { package: 'pdac-lint', version: runnerVersion },
+    runner: { package: 'pdac-conformance', version: runnerVersion },
     commands: {
       implementation: implementationArgv.map((argv) =>
         renderCommand(['prodshape', ...argv.slice(1)]),
       ),
-      digests: 'pdac-lint digests --spec pdac-spec',
+      digests: 'pdac-conformance digests --spec pdac-spec',
       actual: {
-        conformance: renderCommand([options['pdac-lint'], ...runArgs]),
-        negativeControl: renderCommand([options['pdac-lint'], ...negativeArgs]),
-        digests: renderCommand([options['pdac-lint'], ...digestArgs]),
+        conformance: renderCommand([options['runner'], ...runArgs]),
+        negativeControl: renderCommand([options['runner'], ...negativeArgs]),
+        digests: renderCommand([options['runner'], ...digestArgs]),
       },
     },
     conformance: conformanceReport.summary,

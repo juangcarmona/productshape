@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 env:
-  PDAC_SPEC_SHA: 9ff12dff4f50ae153bd79c66d8366ba2c37e9116
-  PDAC_LINT_VERSION: 0.2.0
+  PDAC_SPEC_SHA: 7feb4ec9081443740caa597fa3a695ea4e9d049f
+  PDAC_RUNNER_VERSION: 1.0.0
   PDAC_REPORTS_DIR: ${{ github.workspace }}/pdac-conformance-reports
 
 jobs:
@@ -59,13 +59,13 @@ jobs:
           test -f "$cli_tarball"
 
           npm install --prefix "$toolchain_dir" --save-exact --ignore-scripts \
-            "$cli_tarball" "pdac-lint@$PDAC_LINT_VERSION"
+            "$cli_tarball" "pdac-conformance@$PDAC_RUNNER_VERSION"
 
           prodshape_bin="$toolchain_dir/node_modules/.bin/prodshape"
-          pdac_lint_bin="$toolchain_dir/node_modules/.bin/pdac-lint"
+          runner_bin="$toolchain_dir/node_modules/.bin/pdac-conformance"
           productshape_package="$toolchain_dir/node_modules/@prodshape/cli/package.json"
           test -x "$prodshape_bin"
-          test -x "$pdac_lint_bin"
+          test -x "$runner_bin"
           test -f "$productshape_package"
 
           installed_cli="$(realpath "$toolchain_dir/node_modules/@prodshape/cli")"
@@ -78,14 +78,14 @@ jobs:
 
           cp "$cli_tarball" "$reports_dir/"
           cp "$toolchain_dir/package-lock.json" "$reports_dir/isolated-install-lock.json"
-          npm ls --prefix "$toolchain_dir" @prodshape/cli pdac-lint --json \
+          npm ls --prefix "$toolchain_dir" @prodshape/cli pdac-conformance --json \
             > "$reports_dir/isolated-install.json"
 
           {
             echo "PRODSHAPE_BIN=$prodshape_bin"
             echo "PRODSHAPE_PACKAGE=$productshape_package"
             echo "PRODSHAPE_TARBALL=$reports_dir/$(basename "$cli_tarball")"
-            echo "PDAC_LINT_BIN=$pdac_lint_bin"
+            echo "PDAC_RUNNER_BIN=$runner_bin"
           } >> "$GITHUB_ENV"
 
       - name: run pinned PDaC conformance
@@ -96,8 +96,8 @@ jobs:
             --prodshape "$PRODSHAPE_BIN" \
             --productshape-package "$PRODSHAPE_PACKAGE" \
             --tarball "$PRODSHAPE_TARBALL" \
-            --pdac-lint "$PDAC_LINT_BIN" \
-            --pdac-lint-version "$PDAC_LINT_VERSION" \
+            --runner "$PDAC_RUNNER_BIN" \
+            --runner-version "$PDAC_RUNNER_VERSION" \
             --reports "$PDAC_REPORTS_DIR" \
             --source-sha "$GITHUB_SHA" \
             --evidence-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
