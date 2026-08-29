@@ -651,7 +651,7 @@ async function main() {
       repository: 'product-definition-as-code/spec',
       commit: options['spec-sha'],
     },
-    runner: { package: 'runner', version: runnerVersion },
+    runner: { package: 'pdac-conformance', version: runnerVersion },
     commands: {
       implementation: implementationArgv.map((argv) =>
         renderCommand(['prodshape', ...argv.slice(1)]),
