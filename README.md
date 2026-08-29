@@ -23,7 +23,7 @@ Product Definition as Code keeps the agreed product definition in versioned Mark
 
 <p align="center"><strong><a href="https://juangcarmona.github.io/productshape/">See a real product definition, live</a></strong> — this repository's own model, republished on every merge to <code>main</code>.</p>
 
-The methodology belongs to the [specification repository](https://github.com/product-definition-as-code/spec): the normative contracts, the conformance tests and [the manifesto](https://github.com/product-definition-as-code/spec/blob/main/MANIFESTO.md), which states the founding position. ProductShape is the Product Definition as Code CLI: `prodshape` lets you author actors, journeys, use cases, business rules, domain terms and product requirements in Markdown, then keeps that definition validated, evolvable and citable:
+The methodology belongs to the [specification repository](https://github.com/product-definition-as-code/spec): the normative contracts, the conformance tests and [the manifesto](https://github.com/product-definition-as-code/spec/blob/main/MANIFESTO.md), which states the founding position. ProductShape is the Product Definition as Code CLI: `prodshape` lets you author actors, journeys, use cases, business rules, domain terms, product requirements and structured behaviours in Markdown, then keeps that definition validated, evolvable and citable:
 
 - `prodshape init` — scaffold a product definition (and optional AI, OpenSpec and Spec Kit integrations) in any repository.
 - `prodshape validate` — validate the product definition deterministically: schemas, IDs, relationships and lifecycles, with stable diagnostic codes.
@@ -195,7 +195,7 @@ What to read next:
 
 ## PDaC conformance
 
-The pinned conformance workflow builds and packs ProductShape, installs that tarball outside the workspace, and runs the spec's conformance tests via the external runner `pdac-lint` (`0.2.0`) against [PDaC spec commit `9ff12dff4f50ae153bd79c66d8366ba2c37e9116`](https://github.com/product-definition-as-code/spec/commit/9ff12dff4f50ae153bd79c66d8366ba2c37e9116) — the full published v0.1-draft profile: kernel, reference profile and reference workflow. The published tests are not yet a complete normative set, so the badge claims only this pinned executable profile; ProductShape's own fixtures, self-model and traceability checks run separately as **Internal contracts**.
+The pinned conformance workflow builds and packs ProductShape, installs that tarball outside the workspace, and runs the spec's conformance tests via the external runner [`pdac-conformance`](https://www.npmjs.com/package/pdac-conformance) (`1.0.0`) against [PDaC spec commit `7feb4ec9081443740caa597fa3a695ea4e9d049f`](https://github.com/product-definition-as-code/spec/commit/7feb4ec9081443740caa597fa3a695ea4e9d049f), the v0.2.0 specification content: all 44 cases pass and all 12 pinned digests verify, claimed as specification `0.2.0` on serialization `v1alpha1`. The published tests are not a complete normative set, so the badge claims only this pinned executable profile; ProductShape's own fixtures, self-model and traceability checks run separately as **Internal contracts**.
 
 ## Current status
 

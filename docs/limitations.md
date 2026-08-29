@@ -2,11 +2,11 @@
 
 An honest account of what the toolkit does not do: where the implemented scope has operational limits, what is deliberately excluded, and where the design has known limits. Genuinely open decisions are tracked separately in [OPEN-DECISIONS.md](../OPEN-DECISIONS.md).
 
-> Supported published baseline: `@prodshape/cli@0.15.0`. This file is deliberately unversioned: a limitations document named after one release stops describing the product at the next one. Items explicitly labelled **Unreleased** describe the next release candidate on `main`, not the published baseline.
+> Supported baseline: `@prodshape/cli@0.15.0`, the version `main` is prepared to release; the latest version actually on npm can trail it until the release workflow completes. This file is deliberately unversioned: a limitations document named after one release stops describing the product at the next one. Items explicitly labelled **Unreleased** describe the next release candidate on `main`, not the published packages.
 
 ## Implementation status
 
-The supported `0.13.0` baseline includes the `prodshape` CLI (with its `product-definition` v0.x alias and `--version`), graph compilation, Product Change overlay validation and apply with the affected-citation report, citation emission and verification (including provider-aware OpenSpec population verification), Product Snapshot generation, deterministic brownfield recovery sessions, SDD-aware initialization, `prodshape change create` and `prodshape drift`, and generated AI and OpenSpec integrations. The current packages are published under `@prodshape/*`; the current OpenSpec library is `@prodshape/integration-openspec`, while `@prodshape/adapter-openspec` is a legacy name retained only for older consumers. Version `0.10.0` was prepared but never published; its changes shipped in `0.11.0` (see the [root changelog](../CHANGELOG.md)).
+The supported baseline includes the `prodshape` CLI (with its `product-definition` v0.x alias and `--version`), graph compilation, Product Change overlay validation and apply with the affected-citation report, citation emission and verification (including provider-aware OpenSpec and Spec Kit population verification), Structured Behaviour authoring with scenario references, Product Snapshot generation, deterministic brownfield recovery sessions, SDD-aware initialization, `prodshape change create` and `prodshape drift`, and generated AI, OpenSpec and Spec Kit integrations. The current packages are published under `@prodshape/*`; the current OpenSpec library is `@prodshape/integration-openspec`, while `@prodshape/adapter-openspec` is a legacy name retained only for older consumers. Version `0.10.0` was prepared but never published; its changes shipped in `0.11.0` (see the [root changelog](../CHANGELOG.md)).
 
 Honest operational limitations within that scope:
 
@@ -26,7 +26,6 @@ These are scope decisions, not gaps. None of them is on the current path:
 - MCP server
 - Jira integration
 - Automatic GitHub issue creation
-- Spec Kit integration (OpenSpec is the only SDD adapter)
 - Multi-repository product graphs
 - Organization-wide catalogs and remote registries
 - Automatic brownfield recovery (the Recover workflow is human-driven; see [the brownfield guide](adoption/brownfield.md))
