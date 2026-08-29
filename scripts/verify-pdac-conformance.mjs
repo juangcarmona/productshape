@@ -3,6 +3,7 @@
 // CI evidence harness only: pdac-conformance owns case execution and diagnostic comparison.
 
 import { spawn } from 'node:child_process';
+import { closeSync, openSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
@@ -80,20 +81,34 @@ function runnerCommand(argv) {
   return argv.map((value) => (/\s/.test(value) ? `"${value}"` : value)).join(' ');
 }
 
-async function execute(file, args) {
-  return await new Promise((resolvePromise, rejectPromise) => {
-    const child = spawn(file, args, { stdio: ['ignore', 'pipe', 'pipe'] });
+/**
+ * Run a command. With `stdoutFile` the command writes stdout straight to that file and the
+ * result reads it back: pdac-conformance@1.0.0 exits before a piped stdout drains, so a JSON
+ * report larger than the pipe buffer truncates mid-string (pdac-conformance#22); file writes
+ * are synchronous on both platforms and immune. Drop the redirect once a fixed runner is pinned.
+ */
+async function execute(file, args, stdoutFile) {
+  const fd = stdoutFile === undefined ? 'pipe' : openSync(stdoutFile, 'w');
+  const result = await new Promise((resolvePromise, rejectPromise) => {
+    const child = spawn(file, args, { stdio: ['ignore', fd, 'pipe'] });
     let stdout = '';
     let stderr = '';
-    child.stdout.setEncoding('utf8');
+    if (stdoutFile === undefined) {
+      child.stdout.setEncoding('utf8');
+      child.stdout.on('data', (chunk) => (stdout += chunk));
+    }
     child.stderr.setEncoding('utf8');
-    child.stdout.on('data', (chunk) => (stdout += chunk));
     child.stderr.on('data', (chunk) => (stderr += chunk));
     child.on('error', rejectPromise);
     child.on('close', (code, signal) => {
       resolvePromise({ code: code ?? (signal ? 3 : 0), stdout, stderr });
     });
   });
+  if (stdoutFile !== undefined) {
+    closeSync(fd);
+    result.stdout = await readFile(stdoutFile, 'utf8');
+  }
+  return result;
 }
 
 function parseJson(text, source) {
@@ -550,16 +565,25 @@ async function main() {
 
   const digestArgs = ['digests', '--spec', specDir, ...provenanceArgs, '--format', 'json'];
 
-  const digestResult = await execute(options['runner'], digestArgs);
-  await writeFile(join(reportsDir, 'digests.json'), digestResult.stdout);
+  const digestResult = await execute(
+    options['runner'],
+    digestArgs,
+    join(reportsDir, 'digests.json'),
+  );
   const digestReport = parseJson(digestResult.stdout, 'digests.json');
 
-  const conformanceResult = await execute(options['runner'], runArgs);
-  await writeFile(join(reportsDir, 'conformance.json'), conformanceResult.stdout);
+  const conformanceResult = await execute(
+    options['runner'],
+    runArgs,
+    join(reportsDir, 'conformance.json'),
+  );
   const conformanceReport = parseJson(conformanceResult.stdout, 'conformance.json');
 
-  const negativeResult = await execute(options['runner'], negativeArgs);
-  await writeFile(join(reportsDir, 'negative-control.json'), negativeResult.stdout);
+  const negativeResult = await execute(
+    options['runner'],
+    negativeArgs,
+    join(reportsDir, 'negative-control.json'),
+  );
   const negativeReport = parseJson(negativeResult.stdout, 'negative-control.json');
 
   assertPositive(conformanceReport, conformanceResult, options['spec-sha'], implementationArgv);
