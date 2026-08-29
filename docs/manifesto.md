@@ -13,7 +13,7 @@ AI-assisted engineering changes the constraint. When implementation accelerates,
 - Which requirements follow from all of that, and why?
 - When something changes, what else is affected?
 - What is a coherent increment of the product, as opposed to a convenient increment of the code?
-- And when an AI agent implements an increment, what context does it actually need — precisely, and nothing else?
+- And when an AI agent implements an increment, what context does it actually need, precisely and nothing else?
 
 An agent that writes code in minutes amplifies whatever understanding it is given. Give it a vague ticket and it produces confident, fast, plausible software for a product nobody defined. The scarce asset is no longer implementation capacity. It is a product definition worth implementing.
 
@@ -21,7 +21,7 @@ An agent that writes code in minutes amplifies whatever understanding it is give
 
 Backlogs are queues of work. They are good at ordering effort and bad at holding knowledge.
 
-A user story describes a delivery increment — one step, for one actor, at one moment in the product's history. It says what to add or change next. It does not say what the product _is_. Sum every story ever completed and you still do not get a product definition; you get an archaeology problem. The rules are scattered across acceptance criteria that were true at the time. The language drifts from ticket to ticket. The actors are implied. Closed tickets are where product knowledge goes to die.
+A user story describes a delivery increment: one step, for one actor, at one moment in the product's history. It says what to add or change next. It does not say what the product _is_. Sum every story ever completed and you still do not get a product definition; you get an archaeology problem. The rules are scattered across acceptance criteria that were true at the time. The language drifts from ticket to ticket. The actors are implied. Closed tickets are where product knowledge goes to die.
 
 Teams know this, which is why the real product definition usually lives somewhere else: in the heads of the two people who have been around longest.
 
@@ -29,7 +29,7 @@ Teams know this, which is why the real product definition usually lives somewher
 
 Spec-Driven Development is a real improvement: it makes an implementation increment explicit, reviewable and verifiable before code is written. We build on it, not against it.
 
-But an SDD spec answers a bounded question: _how does this one increment change the software?_ It is scoped to a change, owned by a delivery workflow, and archived when the change ships. It inherits the backlog's shape — a sequence of deltas — with better rigor per delta. What is still missing is the thing the deltas are deltas _of_: a canonical, current, validated description of the product that every increment reads from and, once verified, writes back to.
+But an SDD spec answers a bounded question: _how does this one increment change the software?_ It is scoped to a change, owned by a delivery workflow and archived when the change ships. It inherits the backlog's shape, a sequence of deltas, with better rigor per delta. What is still missing is the thing the deltas are deltas _of_: a canonical, current, validated description of the product that every increment reads from and, once verified, writes back to.
 
 Product Definition as Code adds that layer in front. The product is defined first; each change to it is an explicit, validated delta that a human accepts by merge, and from that baseline the native SDD workflow drives implementation and verification. The loop closes.
 
@@ -66,6 +66,6 @@ The methodology divides responsibility deliberately, and the division is not neg
 
 A methodology and a toolkit for keeping a product definition the way we learned to keep code: versioned, reviewed, validated, and changed only through explicit, traceable deltas. Files you own, in a repository you already have, checked by tools that never guess.
 
-Two names carry this deliberately. **Product Definition as Code** is the methodology — the long-lived, implementation-independent concept and its normative specification. **ProductShape** is its reference implementation — the first shipped toolkit that realizes the methodology, exactly as OpenSpec is an implementation of Spec-Driven Development. The two names coexist on purpose: a methodology can have more than one implementation, and binding the ideas to one tool's name would quietly narrow both.
+Two names carry this deliberately. **Product Definition as Code** is the methodology, the long-lived, implementation-independent concept and its normative specification. **ProductShape** is its reference implementation, the first shipped toolkit that realizes the methodology, just as OpenSpec is an implementation of Spec-Driven Development. The two names coexist on purpose. A methodology can have more than one implementation, and binding the ideas to one tool's name would quietly narrow both.
 
 The methodology starts in the [overview](methodology/overview.md). The contracts live in the [specification](https://github.com/product-definition-as-code/spec/blob/main/spec/index.md).
