@@ -364,6 +364,7 @@ function assertNegativeControl(
   const positiveByName = new Map(positiveReport.cases.map((entry) => [entry.name, entry]));
   let expectedFailures = 0;
   let missingDiagnostics = 0;
+  let failedPinGuards = 0;
 
   for (const testCase of report.cases) {
     invariant(positiveByName.has(testCase.name), `Negative control added case ${testCase.name}`);
@@ -385,7 +386,19 @@ function assertNegativeControl(
         `${testCase.name}: negative control failed for a non-citation diagnostic`,
       );
     } else {
-      invariant(testCase.status === 'pass', `${testCase.name}: unrelated negative-control failure`);
+      // A zero-diagnostic citation case carries the runner's vacuous-pass mutation guard: the
+      // runner mutates the cited artifact and demands a stale or tampered diagnostic appear.
+      // With citation checking removed that guard fails, which is the control demonstrating the
+      // suite depends on citation verification, so it counts as an expected failure too.
+      const failedGuards = (testCase.exercises ?? []).filter((entry) => entry.status === 'fail');
+      if (testCase.status === 'fail') {
+        invariant(
+          failedGuards.length > 0 && failedGuards.every((entry) => entry.kind === 'citation-pin'),
+          `${testCase.name}: unrelated negative-control failure`,
+        );
+        expectedFailures += 1;
+        failedPinGuards += failedGuards.length;
+      }
       invariant(testCase.missing.length === 0, `${testCase.name}: unexpected missing diagnostics`);
     }
 
@@ -411,7 +424,7 @@ function assertNegativeControl(
     'Negative-control counts differ',
   );
 
-  return { failedCases: expectedFailures, missingDiagnostics };
+  return { failedCases: expectedFailures, missingDiagnostics, failedPinGuards };
 }
 
 function renderConformanceText(metadata, report) {
@@ -496,7 +509,7 @@ ${metadata.commands.digests}
 
 Citation coverage: ${metadata.citations.total} citation(s) across ${metadata.citations.cases} case(s), including ${metadata.citations.sidecars} sidecar-ledger record(s) from ${metadata.citations.mappedLedgerFiles} mapping-shaped ledger(s) and ${metadata.citations.markers} marker-block record(s).
 
-Negative control: removing \`prodshape citations verify .\` makes ${metadata.negativeControl.failedCases} case(s) fail with ${metadata.negativeControl.missingDiagnostics} expected missing citation diagnostic(s); 0 cases errored or skipped.
+Negative control: removing citation verification makes ${metadata.negativeControl.failedCases} case(s) fail: ${metadata.negativeControl.missingDiagnostics} expected citation diagnostic(s) go missing and ${metadata.negativeControl.failedPinGuards} mutation guard(s) exercise nothing; 0 cases errored or skipped.
 ${evidence}
 Limitation: the published tests are not a complete normative set. Repository-only clauses and currently unexpressed apply cases remain outside this executable profile.
 `;
