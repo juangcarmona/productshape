@@ -30,6 +30,8 @@ interface ExtensionManifest {
     description: string;
     repository: string;
     license: string;
+    category: string;
+    effect: string;
   };
   requires: { speckit_version: string };
   provides: { commands: Array<{ name: string; file: string; description: string }> };
@@ -48,6 +50,25 @@ describe('pdac Spec Kit extension manifest', () => {
     expect(manifest.extension.id).toBe('pdac');
     expect(manifest.extension.license).toBe('Apache-2.0');
     expect(manifest.extension.repository).toBe('https://github.com/juangcarmona/productshape');
+  });
+
+  /**
+   * The community catalog and `specify extension info` display these two facets, and the release
+   * updater copies them into the catalog entry, so a missing one ships an incomplete entry.
+   * Both are closed vocabularies in Spec Kit's community documentation.
+   */
+  it('declares the catalog facets with values from the documented vocabularies', async () => {
+    const manifest = await loadManifest();
+    expect(['docs', 'code', 'process', 'integration', 'visibility']).toContain(
+      manifest.extension.category,
+    );
+    expect(['read-only', 'read-write']).toContain(manifest.extension.effect);
+  });
+
+  it('ships a changelog covering the declared version', async () => {
+    const manifest = await loadManifest();
+    const changelog = await readFile(join(extensionDir, 'CHANGELOG.md'), 'utf8');
+    expect(changelog).toContain(`## ${manifest.extension.version}`);
   });
 
   it('provides command files that exist and carry frontmatter descriptions', async () => {

@@ -45,6 +45,8 @@ catalog.extensions.pdac = {
   author: manifest.extension.author,
   repository: manifest.extension.repository,
   license: manifest.extension.license,
+  category: manifest.extension.category,
+  effect: manifest.extension.effect,
   download_url: `https://github.com/juangcarmona/productshape/releases/download/speckit-pdac-v${version}/speckit-pdac.zip`,
   sha256: `sha256:${sha256}`,
   requires: manifest.requires,

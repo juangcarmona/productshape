@@ -3,14 +3,24 @@ schema_version: '1.0'
 extension:
   id: pdac
   name: 'Product Definition as Code (PDaC)'
-  version: '0.1.0'
+  version: '0.2.0'
   description: 'Ground Spec Kit features in an accepted product definition: fetch the cited context projection before specifying, and verify citations after specify, plan and tasks with ProductShape'
   author: juangcarmona
   repository: https://github.com/juangcarmona/productshape
   license: Apache-2.0
+  # Catalog facets the community catalog and `specify extension info` display.
+  # docs: the commands read, validate and repair the feature spec artifacts.
+  # read-write: speckit.pdac.verify repairs what verification reports. It never
+  # writes docs/product/model, which changes only through a Product Change.
+  category: docs
+  effect: read-write
 
 requires:
-  speckit_version: '>=0.2.0'
+  # The floor with evidence behind it, not a guess: the extension is markdown commands
+  # and a manifest, and both surfaces it depends on (schema_version 1.0 and the
+  # after_specify/after_plan/after_tasks hook names) are identical on 0.7.2 and 1.0.1.
+  # Verified installing and running on 1.0.1, and installed in a real 0.7.2 workspace.
+  speckit_version: '>=0.7.2'
 
 provides:
   commands:
