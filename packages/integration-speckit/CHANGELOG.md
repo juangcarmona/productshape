@@ -1,5 +1,11 @@
 # @prodshape/integration-speckit
 
+## 0.3.2
+
+### Patch Changes
+
+- d2dd524: The Spec Kit guidance now names the carrier a scope declaration is actually read from, so an agent following it produces a bound document instead of an unclassified one. `extractScopeDeclaration` recognizes a declaration in exactly two places: an HTML comment carrying a `pdac-scope` key, or a `pdac-scope` key in YAML frontmatter. The guidance in `.specify/memory/pdac.md` said only to declare `pdac-scope: cited` "on a line of its own", naming neither carrier for the bound case, and the three managed Product Grounding template blocks mentioned the exemption alone and never said a bound document needs a declaration at all. Spec Kit's generated `spec.md`, `plan.md` and `tasks.md` carry no frontmatter, so the comment is the only available carrier there; an agent that dutifully added citations still landed on `PRODUCT064` with the message "carries 1 citation(s) but no scope declaration", and the cheapest way out of that message is to declare an exemption or delete the section, which is the outcome the gate exists to prevent. The blocks still contain no parseable declaration of their own, so an unfilled template stays unclassified.
+
 ## 0.3.1
 
 ### Patch Changes
