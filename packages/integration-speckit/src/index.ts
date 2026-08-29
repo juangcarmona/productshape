@@ -107,12 +107,18 @@ widen the result with \`npx prodshape impact <ID>\`.
 - When a plan decision depends on canonical product text, cite the artifact it depends on.
 - A task that changes cited behaviour includes a follow-up task to refresh the affected citations.
 - Every gated document (spec.md, plan.md, tasks.md) of a feature must end up bound or exempt,
-  each with an explicit declaration: declare \`pdac-scope: cited\` on a line of its own and cite
-  the canonical text the document depends on, or declare \`pdac-scope: none\` with a non-empty
-  reason (\`pdac-scope-reason: <why>\` in frontmatter, or
-  \`<!-- pdac-scope: none reason="<why>" -->\`) when a human judges the document has no
-  product-semantic dependency. Citations alone never bind, and never declare an exemption just
-  because citations are missing.
+  each with an explicit declaration. A declaration is only read from one of two carriers: an HTML
+  comment on a line of its own, or a key in the document's YAML frontmatter. A bare
+  \`pdac-scope: cited\` line in the body is not a declaration and leaves the document
+  unclassified. Spec Kit's generated documents have no frontmatter, so the HTML comment is the
+  form to write:
+  - Bound: \`<!-- pdac-scope: cited -->\`, plus a citation of the canonical text the document
+    depends on. Citations alone never bind, and the declaration alone never binds either.
+  - Exempt: \`<!-- pdac-scope: none reason="<why>" -->\` with a non-empty reason, when a human
+    judges the document has no product-semantic dependency. Never declare an exemption just
+    because citations are missing.
+  In a document that does carry frontmatter, \`pdac-scope: <value>\` with \`pdac-scope-reason:
+  <why>\` as frontmatter keys is equivalent.
 
 ## Drift
 
