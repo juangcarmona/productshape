@@ -87,6 +87,117 @@ describe('enumerateSpecKitDocuments', () => {
     expect(enumeration.diagnostics).toEqual([]);
   });
 
+  /**
+   * Spec Kit's specify command uses an explicitly provided `SPECIFY_FEATURE_DIRECTORY` "as-is",
+   * so a feature can live outside `specs/`, and persists whatever it resolved to
+   * `.specify/feature.json` for the plan and tasks commands. Enumerating `specs/` alone would
+   * report zero documents and exit 0 while the feature's real documents went ungated.
+   */
+  describe('a feature directory recorded outside specs/', () => {
+    async function record(featureDirectory: string): Promise<void> {
+      await mkdir(join(workDir, '.specify'), { recursive: true });
+      await writeFile(
+        join(workDir, '.specify', 'feature.json'),
+        JSON.stringify({ feature_directory: featureDirectory }),
+        'utf8',
+      );
+    }
+
+    async function outOfTreeFeature(relativeDir: string): Promise<void> {
+      const dir = join(workDir, ...relativeDir.split('/'));
+      await mkdir(dir, { recursive: true });
+      await writeFile(join(dir, 'spec.md'), '# Spec\n', 'utf8');
+      await writeFile(join(dir, 'plan.md'), '# Plan\n', 'utf8');
+    }
+
+    it('enumerates it instead of reporting a vacuous empty population', async () => {
+      await outOfTreeFeature('experiments/003-pricing');
+      await record('experiments/003-pricing');
+
+      const enumeration = await enumerateSpecKitDocuments(workDir);
+      expect(enumeration.documents.map((d) => d.path)).toEqual([
+        'experiments/003-pricing/spec.md',
+        'experiments/003-pricing/plan.md',
+      ]);
+      expect(enumeration.documents.map((d) => d.change)).toEqual(['003-pricing', '003-pricing']);
+      expect(enumeration.documents.every((d) => !d.archived)).toBe(true);
+    });
+
+    it('accepts the absolute form its resolver also normalizes', async () => {
+      await outOfTreeFeature('experiments/003-pricing');
+      await record(join(workDir, 'experiments', '003-pricing'));
+
+      const enumeration = await enumerateSpecKitDocuments(workDir);
+      expect(enumeration.documents.map((d) => d.path)).toEqual([
+        'experiments/003-pricing/spec.md',
+        'experiments/003-pricing/plan.md',
+      ]);
+    });
+
+    it('enumerates it alongside the in-tree features, and honours the change option', async () => {
+      await feature('001-first', { 'spec.md': '# Spec\n' });
+      await outOfTreeFeature('experiments/003-pricing');
+      await record('experiments/003-pricing');
+
+      const all = await enumerateSpecKitDocuments(workDir);
+      expect(all.documents.map((d) => d.path)).toEqual([
+        'specs/001-first/spec.md',
+        'experiments/003-pricing/spec.md',
+        'experiments/003-pricing/plan.md',
+      ]);
+
+      const one = await enumerateSpecKitDocuments(workDir, { change: '003-pricing' });
+      expect(one.documents.map((d) => d.path)).toEqual([
+        'experiments/003-pricing/spec.md',
+        'experiments/003-pricing/plan.md',
+      ]);
+    });
+
+    it('never double-counts a recorded feature that is already under specs/', async () => {
+      await feature('001-first', { 'spec.md': '# Spec\n' });
+      await record('specs/001-first');
+
+      const enumeration = await enumerateSpecKitDocuments(workDir);
+      expect(enumeration.documents.map((d) => d.path)).toEqual(['specs/001-first/spec.md']);
+    });
+
+    it('does not mistake a specs-prefixed sibling directory for an in-tree feature', async () => {
+      await outOfTreeFeature('specs-archive/003-pricing');
+      await record('specs-archive/003-pricing');
+
+      const enumeration = await enumerateSpecKitDocuments(workDir);
+      expect(enumeration.documents.map((d) => d.path)).toEqual([
+        'specs-archive/003-pricing/spec.md',
+        'specs-archive/003-pricing/plan.md',
+      ]);
+    });
+
+    it('falls back to specs/ when the record is absent, malformed or escapes the repository', async () => {
+      await feature('001-first', { 'spec.md': '# Spec\n' });
+      const expected = ['specs/001-first/spec.md'];
+
+      expect((await enumerateSpecKitDocuments(workDir)).documents.map((d) => d.path)).toEqual(
+        expected,
+      );
+
+      await mkdir(join(workDir, '.specify'), { recursive: true });
+      await writeFile(join(workDir, '.specify', 'feature.json'), '{ not json', 'utf8');
+      expect((await enumerateSpecKitDocuments(workDir)).documents.map((d) => d.path)).toEqual(
+        expected,
+      );
+
+      await writeFile(join(workDir, '.specify', 'feature.json'), '{}', 'utf8');
+      expect((await enumerateSpecKitDocuments(workDir)).documents.map((d) => d.path)).toEqual(
+        expected,
+      );
+
+      await record('../outside-the-repo');
+      expect((await enumerateSpecKitDocuments(workDir)).documents.map((d) => d.path)).toEqual(
+        expected,
+      );
+    });
+  });
+
   it('limits enumeration to one feature with the change option', async () => {
     await feature('001-first', { 'spec.md': '# Spec\n' });
     await feature('002-later', { 'spec.md': '# Spec\n' });
