@@ -11,7 +11,7 @@ permissions:
 
 env:
   PDAC_SPEC_SHA: 7feb4ec9081443740caa597fa3a695ea4e9d049f
-  PDAC_RUNNER_VERSION: 1.0.0
+  PDAC_RUNNER_VERSION: 1.0.1
   PDAC_REPORTS_DIR: ${{ github.workspace }}/pdac-conformance-reports
 
 jobs:

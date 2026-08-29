@@ -195,7 +195,7 @@ What to read next:
 
 ## PDaC conformance
 
-The pinned conformance workflow builds and packs ProductShape, installs that tarball outside the workspace, and runs the spec's conformance tests via the external runner [`pdac-conformance`](https://www.npmjs.com/package/pdac-conformance) (`1.0.0`) against [PDaC spec commit `7feb4ec9081443740caa597fa3a695ea4e9d049f`](https://github.com/product-definition-as-code/spec/commit/7feb4ec9081443740caa597fa3a695ea4e9d049f), the v0.2.0 specification content: all 44 cases pass and all 12 pinned digests verify, claimed as specification `0.2.0` on serialization `v1alpha1`. The published tests are not a complete normative set, so the badge claims only this pinned executable profile; ProductShape's own fixtures, self-model and traceability checks run separately as **Internal contracts**.
+The pinned conformance workflow builds and packs ProductShape, installs that tarball outside the workspace, and runs the spec's conformance tests via the external runner [`pdac-conformance`](https://www.npmjs.com/package/pdac-conformance) (`1.0.1`) against [PDaC spec commit `7feb4ec9081443740caa597fa3a695ea4e9d049f`](https://github.com/product-definition-as-code/spec/commit/7feb4ec9081443740caa597fa3a695ea4e9d049f), the v0.2.0 specification content: all 44 cases pass and all 12 pinned digests verify, claimed as specification `0.2.0` on serialization `v1alpha1`. The published tests are not a complete normative set, so the badge claims only this pinned executable profile; ProductShape's own fixtures, self-model and traceability checks run separately as **Internal contracts**.
 
 ## Current status
 
