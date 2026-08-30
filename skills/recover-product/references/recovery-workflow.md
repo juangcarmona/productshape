@@ -29,6 +29,7 @@ Before any extraction:
 - Repository files matching the brief's roots, includes and excludes, minus forbidden paths, always minus `docs/product/` and `.product/` (the output side is never evidence).
 - External sources declared in the brief, registered but not fetched.
 - Every item gets a stable id (`E-0001`, ...) and, where bytes exist, a content hash.
+- The brief's `tiers` order the ids, so the first batches hold the declared dense sources (SDD specs, product docs) and source code comes last. When the brief declares `git.branch`, start also creates that branch and records the first checkpoint commit.
 
 The inventory survives restarts. Later additions go through `recover evidence add`; never edit session files by hand.
 
@@ -39,8 +40,9 @@ The inventory survives restarts. Later additions go through `recover evidence ad
 1. Read the complete in-scope content, not a sample. Skimming produces confident nonsense.
 2. Identify explicit product claims (what the source states the product does or must do) and implications (what the source suggests but does not state) separately.
 3. Extract or update candidates per `references/artifact-extraction.md`.
-4. Classify every relevant section and record it: `prodshape recover mark --source E-0001 --as represented --artifacts UC-CHECKOUT-001,BR-LIMIT-001`. One source usually accumulates several findings across multiple `mark` calls.
+4. Classify every relevant section and record it: `prodshape recover mark --source E-0001 --as represented --artifacts "UC-CHECKOUT-001,BR-LIMIT-001"` (quote the list). One source usually accumulates several findings across multiple `mark` calls. A wrong finding is retracted with `recover unmark`, never by editing session files.
 5. When nothing relevant remains unclassified, add `--complete` to the final mark. A source is not processed because it was opened; it is processed when every relevant section is accounted for.
+6. When a whole class of remaining sources carries the identical verdict (typically implementation code that only corroborates existing candidates), record it in one call: `prodshape recover mark --glob 'src/**' --as no-product-intent --reason "<why>" --complete`. One command, one state write; never a shell loop over the single-source form.
 
 Reading a source may also surface leads (unseen modules, referenced documents, named people) and questions (uncertain meaning). Record them immediately; do not hold them in memory.
 
@@ -71,7 +73,7 @@ Ask when interpretation genuinely forks: code and documentation disagree, the pr
 
 ## 8. Checkpoint and resume
 
-Every `recover` command checkpoints atomically. To resume after any interruption (new conversation, new agent, days later):
+Every `recover` command checkpoints its state atomically; with the brief's `git.branch` declared, the CLI also records one commit per state-mutating command on the recovery branch, so the working tree matches persisted state at every boundary. To resume after any interruption (new conversation, new agent, days later):
 
 1. `prodshape recover status --format json`: where things stand, including `nextAction`.
 2. `prodshape recover check`: detect anything that changed while nobody was looking (edited files, new files matching the brief, a touched model, stale snapshots, schema drift surfacing as validation errors).

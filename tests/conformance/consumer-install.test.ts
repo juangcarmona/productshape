@@ -134,9 +134,11 @@ describe('Claude-only installation', () => {
       [
         'analyze-product-change',
         'audit-product-model',
+        'bind-consumers',
         'define-product',
         'explore-product',
         'recover-product',
+        'refine-product',
       ].sort(),
     );
     for (const name of entries) {
@@ -157,7 +159,7 @@ describe('Claude-only installation', () => {
     const commandsDir = join(claudeDir, '.claude', 'commands', 'product');
     const entries = await readdir(commandsDir);
     expect(entries.map((e) => e.replace('.md', '')).sort()).toEqual(
-      ['audit', 'change', 'define', 'explore', 'impact', 'recover'].sort(),
+      ['audit', 'bind', 'change', 'define', 'explore', 'impact', 'recover', 'refine'].sort(),
     );
   });
 
@@ -226,9 +228,11 @@ describe('Copilot-only installation', () => {
       [
         'analyze-product-change',
         'audit-product-model',
+        'bind-consumers',
         'define-product',
         'explore-product',
         'recover-product',
+        'refine-product',
       ].sort(),
     );
     for (const name of entries) {
@@ -271,9 +275,11 @@ describe('Codex-compatible installation', () => {
       [
         'analyze-product-change',
         'audit-product-model',
+        'bind-consumers',
         'define-product',
         'explore-product',
         'recover-product',
+        'refine-product',
       ].sort(),
     );
     for (const name of entries) {

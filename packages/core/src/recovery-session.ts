@@ -1,7 +1,8 @@
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { isAbsolute, join } from 'node:path';
 import fg from 'fast-glob';
-import { productArtifactTypes } from './artifact.js';
+import picomatch from 'picomatch';
+import { productArtifactIdPattern, productArtifactTypes } from './artifact.js';
 import { discoverChanges, loadChange } from './changes.js';
 import { contentDigest, contentDigestBytes } from './digest.js';
 import type { Diagnostic } from './diagnostics.js';
@@ -167,7 +168,25 @@ export async function discoverRepositoryEvidence(
     onlyFiles: true,
     followSymbolicLinks: false,
   });
-  return files.sort();
+  // Sessions persisted before tiers existed carry briefs without the field.
+  const tiers = brief.tiers ?? [];
+  if (tiers.length === 0) return files.sort();
+
+  // Evidence ids follow enumeration order, so ordering by tier here is what makes
+  // `recover next` serve the declared dense sources first. First matching tier wins;
+  // unmatched paths sort after every tier, and path order breaks ties, so the result is
+  // as deterministic as the untiered enumeration.
+  const matchers = tiers.map((tier) => picomatch(tier.globs, { dot: true }));
+  const tierIndex = new Map<string, number>();
+  for (const file of files) {
+    const index = matchers.findIndex((isMatch) => isMatch(file));
+    tierIndex.set(file, index === -1 ? matchers.length : index);
+  }
+  return files.sort(
+    (a, b) =>
+      (tierIndex.get(a) ?? matchers.length) - (tierIndex.get(b) ?? matchers.length) ||
+      (a < b ? -1 : a > b ? 1 : 0),
+  );
 }
 
 async function digestFile(absolute: string): Promise<string | undefined> {
@@ -412,47 +431,37 @@ async function currentDigestOf(
   return undefined;
 }
 
-export async function markEvidence(
-  repo: ProductRepository,
-  session: LoadedRecoverySession,
-  options: MarkEvidenceOptions,
-): Promise<EvidenceItem> {
-  const clock = options.clock ?? systemClock;
-  const item = findEvidence(session, options.source);
-
-  if (options.exclude) {
-    if (options.reason === undefined || options.reason.length === 0) {
-      throw new RecoveryUsageError(`Excluding ${item.id} requires --reason`);
-    }
-    item.status = 'excluded';
-    item.reason = options.reason;
-    touch(session, clock);
-    await writeRecoverySessionFiles(session);
-    await writeCoverage(repo, session, await scanCandidates(repo, session.state), clock);
-    return item;
-  }
-
-  if (item.status === 'missing') {
+/**
+ * Reject artifact IDs that cannot possibly resolve, before they are persisted. The space-joined
+ * shape is called out because it is what an unquoted comma list becomes on the PowerShell path
+ * to a npm-installed CLI (issue #196): failing here keeps the broken value out of the findings
+ * instead of leaving it for `recover check` to trip over later.
+ */
+function assertValidArtifactIds(artifacts: string[]): void {
+  const invalid = artifacts.filter((id) => !productArtifactIdPattern.test(id));
+  if (invalid.length > 0) {
     throw new RecoveryUsageError(
-      `${item.id} is missing from disk; restore it and run: prodshape recover check, or exclude it with a reason`,
+      `Invalid artifact id(s): ${invalid.map((id) => `'${id}'`).join(', ')}. ` +
+        `IDs look like UC-CHECKOUT or BR-REFUND-001. On PowerShell, quote the list: --artifacts "UC-A,UC-B"`,
     );
   }
+}
 
-  // Hash guard: findings recorded against different bytes than the current ones are not
-  // trustworthy, so marking over changed content requires an explicit acknowledgement.
-  const currentDigest = await currentDigestOf(repo, session, item);
-  if (item.digest !== undefined && currentDigest !== undefined && currentDigest !== item.digest) {
-    if (!options.acceptChanged) {
-      throw new RecoveryUsageError(
-        `${item.id} changed since it was inventoried (digest mismatch); re-read it and mark with --accept-changed to refresh the digest and drop the invalidated findings`,
-      );
-    }
-    item.digest = currentDigest;
-    item.findings = [];
-    item.status = 'pending';
-    delete item.processedAt;
-  }
+type FindingOptions = Pick<
+  MarkEvidenceOptions,
+  'classification' | 'artifacts' | 'question' | 'reason' | 'note' | 'complete'
+>;
 
+/**
+ * Record one finding (and the optional completion) on an already-guarded item. Shared by the
+ * single and bulk mark paths so their validation and semantics cannot drift apart.
+ */
+function applyFinding(
+  session: LoadedRecoverySession,
+  item: EvidenceItem,
+  options: FindingOptions,
+  clock: RecoveryClock,
+): void {
   if (options.classification !== undefined) {
     const finding: EvidenceFinding = {
       classification: options.classification,
@@ -466,6 +475,7 @@ export async function markEvidence(
       }
       finding.artifacts = [...options.artifacts].sort();
     }
+    if (options.artifacts !== undefined) assertValidArtifactIds(options.artifacts);
     if (options.classification === 'question' || options.classification === 'contradiction') {
       if (options.question !== undefined) {
         if (!session.questions.questions.some((q) => q.id === options.question)) {
@@ -511,6 +521,208 @@ export async function markEvidence(
   } else if (options.classification !== undefined && item.status === 'stale') {
     item.status = 'pending';
   }
+}
+
+export async function markEvidence(
+  repo: ProductRepository,
+  session: LoadedRecoverySession,
+  options: MarkEvidenceOptions,
+): Promise<EvidenceItem> {
+  const clock = options.clock ?? systemClock;
+  const item = findEvidence(session, options.source);
+
+  if (options.exclude) {
+    if (options.reason === undefined || options.reason.length === 0) {
+      throw new RecoveryUsageError(`Excluding ${item.id} requires --reason`);
+    }
+    item.status = 'excluded';
+    item.reason = options.reason;
+    touch(session, clock);
+    await writeRecoverySessionFiles(session);
+    await writeCoverage(repo, session, await scanCandidates(repo, session.state), clock);
+    return item;
+  }
+
+  if (item.status === 'missing') {
+    throw new RecoveryUsageError(
+      `${item.id} is missing from disk; restore it and run: prodshape recover check, or exclude it with a reason`,
+    );
+  }
+
+  // Hash guard: findings recorded against different bytes than the current ones are not
+  // trustworthy, so marking over changed content requires an explicit acknowledgement.
+  const currentDigest = await currentDigestOf(repo, session, item);
+  if (item.digest !== undefined && currentDigest !== undefined && currentDigest !== item.digest) {
+    if (!options.acceptChanged) {
+      throw new RecoveryUsageError(
+        `${item.id} changed since it was inventoried (digest mismatch); re-read it and mark with --accept-changed to refresh the digest and drop the invalidated findings`,
+      );
+    }
+    item.digest = currentDigest;
+    item.findings = [];
+    item.status = 'pending';
+    delete item.processedAt;
+  }
+
+  applyFinding(session, item, options, clock);
+
+  touch(session, clock);
+  await writeRecoverySessionFiles(session);
+  await writeCoverage(repo, session, await scanCandidates(repo, session.state), clock);
+  return item;
+}
+
+export interface MarkEvidenceBulkOptions extends FindingOptions {
+  /** Globs matched against inventoried repository-relative paths; selects pending sources. */
+  globs?: string[];
+  /** Explicit evidence ids (or exact paths, urls, titles), any resolvable status. */
+  sources?: string[];
+  clock?: RecoveryClock;
+}
+
+/**
+ * Apply one identical finding to a whole selection of sources in a single state write.
+ *
+ * Validation runs over the complete selection before anything is touched: a bulk mark either
+ * lands everywhere or nowhere, because a half-applied bulk over a thousand sources is harder to
+ * reason about than a refused one. Globs select pending sources only; stale, missing and
+ * excluded evidence needs the individual attention `mark` gives it (`--accept-changed`,
+ * restoration, re-scoping), which a bulk operation cannot honestly provide.
+ */
+export async function markEvidenceBulk(
+  repo: ProductRepository,
+  session: LoadedRecoverySession,
+  options: MarkEvidenceBulkOptions,
+): Promise<EvidenceItem[]> {
+  const clock = options.clock ?? systemClock;
+  const globs = options.globs ?? [];
+  const sources = options.sources ?? [];
+  if (globs.length === 0 && sources.length === 0) {
+    throw new RecoveryUsageError('Bulk mark needs a selection: pass --glob and/or --sources');
+  }
+  if (options.classification === undefined && !options.complete) {
+    throw new RecoveryUsageError('Nothing to record: pass --as <classification> or --complete');
+  }
+
+  const selected = new Map<string, EvidenceItem>();
+  for (const source of sources) {
+    const item = findEvidence(session, source);
+    selected.set(item.id, item);
+  }
+  if (globs.length > 0) {
+    const isMatch = picomatch(globs, { dot: true });
+    for (const item of session.inventory.items) {
+      if (item.status !== 'pending') continue;
+      if (item.path !== undefined && isMatch(item.path)) selected.set(item.id, item);
+    }
+  }
+  if (selected.size === 0) {
+    throw new RecoveryUsageError(
+      'The bulk selection matches no markable evidence; nothing was changed',
+    );
+  }
+
+  // All-or-nothing: collect every problem first, then apply only when the whole selection is
+  // markable. The digest guard mirrors the single-source mark, without an --accept-changed
+  // escape: accepting changed content is a per-source decision.
+  const problems: string[] = [];
+  for (const item of selected.values()) {
+    if (item.status === 'missing') {
+      problems.push(`${item.id} is missing from disk`);
+      continue;
+    }
+    if (item.status === 'excluded') {
+      problems.push(
+        `${item.id} is excluded; re-scope it individually with: prodshape recover mark`,
+      );
+      continue;
+    }
+    const currentDigest = await currentDigestOf(repo, session, item);
+    if (item.digest !== undefined && currentDigest !== undefined && currentDigest !== item.digest) {
+      problems.push(
+        `${item.id} changed since it was inventoried; mark it individually with --accept-changed`,
+      );
+      continue;
+    }
+    if (options.classification === undefined && options.complete && item.findings.length === 0) {
+      problems.push(`${item.id} has no findings to complete`);
+    }
+  }
+  if (problems.length > 0) {
+    throw new RecoveryUsageError(
+      `Bulk mark refused; nothing was changed:\n${problems.map((p) => `  ${p}`).join('\n')}`,
+    );
+  }
+
+  for (const item of selected.values()) {
+    applyFinding(session, item, options, clock);
+  }
+
+  touch(session, clock);
+  await writeRecoverySessionFiles(session);
+  await writeCoverage(repo, session, await scanCandidates(repo, session.state), clock);
+  return [...selected.values()];
+}
+
+export interface UnmarkEvidenceOptions {
+  source: string;
+  /** Remove the most recently recorded finding. */
+  last?: boolean;
+  /** Remove the finding at this 1-based position. */
+  index?: number;
+  /** Remove every finding. */
+  all?: boolean;
+  clock?: RecoveryClock;
+}
+
+/**
+ * Retract findings through the CLI instead of by hand-editing session state. Any retraction
+ * returns the source to `pending`: whatever completion claim the old findings supported is void
+ * once they change, and re-completing is a deliberate `mark --complete` away.
+ */
+export async function unmarkEvidence(
+  repo: ProductRepository,
+  session: LoadedRecoverySession,
+  options: UnmarkEvidenceOptions,
+): Promise<EvidenceItem> {
+  const clock = options.clock ?? systemClock;
+  const item = findEvidence(session, options.source);
+  const selectors = [options.last, options.index !== undefined, options.all].filter(Boolean);
+  if (selectors.length !== 1) {
+    throw new RecoveryUsageError('Pass exactly one of --last, --index <n> or --all');
+  }
+  if (item.status === 'missing') {
+    throw new RecoveryUsageError(
+      `${item.id} is missing from disk; restore it and run: prodshape recover check`,
+    );
+  }
+  if (item.status === 'excluded') {
+    throw new RecoveryUsageError(
+      `${item.id} is excluded and carries no findings to retract; re-scope it with: prodshape recover mark`,
+    );
+  }
+  if (item.findings.length === 0) {
+    throw new RecoveryUsageError(`${item.id} has no findings to retract`);
+  }
+
+  if (options.all) {
+    item.findings = [];
+  } else if (options.last) {
+    item.findings.pop();
+  } else {
+    const index = options.index ?? 0;
+    if (!Number.isInteger(index) || index < 1 || index > item.findings.length) {
+      throw new RecoveryUsageError(
+        `--index must be between 1 and ${item.findings.length} for ${item.id}`,
+      );
+    }
+    item.findings.splice(index - 1, 1);
+  }
+
+  // Stale means the content changed behind the findings; retracting some of them does not make
+  // the remainder trustworthy, so staleness survives the retraction.
+  if (item.status !== 'stale') item.status = 'pending';
+  delete item.processedAt;
 
   touch(session, clock);
   await writeRecoverySessionFiles(session);

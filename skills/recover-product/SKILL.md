@@ -20,7 +20,7 @@ Do not use this skill for greenfield intent (use `define-product`) or to review 
 
 ## Required inputs
 
-- A recovery brief agreed with the user before any extraction: source roots, include and exclude globs, forbidden directories, documentation languages, product scope, known actors and terminology, synonyms and obsolete names, source authority rules, known contradictions, material to ignore, secondary evidence policy, batch size, areas requiring confirmation, and any external sources. Authoring guidance and the full template are in `references/evidence-classification.md`.
+- A recovery brief agreed with the user before any extraction: source roots, include and exclude globs, forbidden directories, documentation languages, product scope, known actors and terminology, synonyms and obsolete names, source authority rules, ordered evidence tiers (SDD specs and product documentation before source code), known contradictions, material to ignore, secondary evidence policy, batch size, areas requiring confirmation, optional git checkpoint discipline, and any external sources. Authoring guidance and the full template are in `references/evidence-classification.md`.
 - Explicit user authorisation, in this conversation, for every external file or online resource before it is read. Listing a source in the brief the user reviewed counts; assuming access does not.
 - Whether a session already exists: `prodshape recover status` resumes; `prodshape recover start` begins.
 
@@ -40,7 +40,9 @@ Do not use this skill for greenfield intent (use `define-product`) or to review 
 - `prodshape recover start --brief <file>`: create the session, inventory the authorised evidence, hash it, checkpoint.
 - `prodshape recover status --format json`: coverage, open work, completion criteria. The single source of truth for progress; never track coverage from memory or chat history.
 - `prodshape recover next --format json`: the next bounded batch of pending evidence.
-- `prodshape recover mark --source <id> --as <classification> ...`: record how each relevant section of a source was classified.
+- `prodshape recover mark --source <id> --as <classification> ...`: record how each relevant section of a source was classified. Always quote the `--artifacts` list (`--artifacts "UC-A,UC-B"`); some shells mangle an unquoted comma list.
+- `prodshape recover mark --glob '<glob>' ...` (or `--sources <ids>`): apply one identical finding to a whole pending selection in a single call, for corroborating material like implementation code. Never loop the single-source form over hundreds of files.
+- `prodshape recover unmark --source <id> --last|--index <n>|--all`: retract a wrong finding. Session state is corrected only through this command, never by editing session files.
 - `prodshape recover evidence add|snapshot|list`: register and freeze external or user-provided evidence.
 - `prodshape recover lead add|resolve|list` and `prodshape recover question add|answer|defer|list`: persist every lead and every user question with its answer.
 - `prodshape recover family <kind> --none-found --note <what was searched>`: record a probed family that yielded nothing.
@@ -71,7 +73,7 @@ Structural facts come from these commands, never from your own reading of state 
 
 - Writing to `docs/product/model` in any way; initial recovery proposes, it never touches the accepted model.
 - Targeting any change other than `CHG-INITIAL`, or starting recovery when a baseline exists.
-- Marking candidates `active`, applying the change, committing, merging or pushing anything.
+- Marking candidates `active`, applying the change, merging or pushing anything. Committing is equally forbidden, with one bounded exception: when the brief declares the git checkpoint discipline, the CLI itself records checkpoint commits on the declared recovery branch; you still never run version-control commands yourself.
 - Reading paths the brief forbids, or any credential and secret material; they are never evidence.
 - Fetching an external file or URL the user has not explicitly authorised.
 - Resolving contradictions between sources yourself; they stay open questions until the user decides.

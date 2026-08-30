@@ -21,6 +21,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { basename, dirname, join, relative, sep } from 'node:path';
 import fg from 'fast-glob';
 import { parseAllDocuments } from 'yaml';
+import { productArtifactIdPattern } from './artifact.js';
 import { collectForbiddenYamlFeatures } from './yaml-strict.js';
 import type { YamlFeatureViolation } from './yaml-strict.js';
 import { contentDigest, normalizeToLf } from './digest.js';
@@ -663,9 +664,9 @@ export interface CiteOptions {
 
 /** Emit a citation record in the requested form. */
 export function emitCitation(options: CiteOptions): string {
-  const artifactId = /^(ACT|JRN|UC|BR|TERM|BC|FR|QR|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$/;
   const anchorId = /^[A-Z0-9]+(-[A-Z0-9]+)*$/;
-  if (!artifactId.test(options.id)) throw new Error(`Invalid citation artifact id '${options.id}'`);
+  if (!productArtifactIdPattern.test(options.id))
+    throw new Error(`Invalid citation artifact id '${options.id}'`);
   if (!DIGEST_PATTERN.test(options.digest))
     throw new Error(`Invalid citation digest '${options.digest}'`);
   if (options.anchor !== undefined && !anchorId.test(options.anchor)) {

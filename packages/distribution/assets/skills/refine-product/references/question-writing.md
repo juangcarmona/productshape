@@ -1,0 +1,34 @@
+# Writing refinement questions
+
+The interview is the product. A question that wastes the human's attention costs more than the thin artifact it was about, so every question earns its slot.
+
+## What makes a question worth asking
+
+- It names one artifact and one uncertainty. "Is BR-REFUND-001's ninety-day window calendar days or business days?" is a question; "can you review the refund rules?" is a delegation.
+- The evidence genuinely forks. If the repository already answers it, cite the answer into the artifact instead of asking.
+- The answer changes product text. A question whose every answer leaves the model byte-identical is curiosity, not refinement.
+- It is decidable by this user, now. Questions for absent stakeholders are parked with a name attached, not asked into the void.
+
+## Ranking heuristics
+
+Rank by the cost of the artifact being wrong, not by how easy the fix is:
+
+1. Business rules and constraints whose text contradicts drift markers or low-confidence provenance: wrong rules mislead every consumer that cites them.
+2. Use cases and structured behaviours with `provenance.confidence: low` (the PRODUCT111 queue): recovered guesses a human never confirmed.
+3. Terms whose Distinguish From section is empty or circular: vocabulary defects multiply through every artifact that uses the term.
+4. Thin boilerplate sections anywhere else.
+
+## The question shape
+
+Every question carries, in this order: the artifact's current text (quoted, not paraphrased), the uncertainty and where it came from, two to four concrete interpretation options with the consequence of each, and a recommendation when the evidence supports one. Then stop and wait.
+
+## Recording discipline
+
+- The answer is recorded verbatim in the change document's Rationale, next to the edit it produced. Summarising an answer is how meaning drifts on day one.
+- "I think so", silence, or a shrug is not an answer. Ask once more, plainly, or park it.
+- A parked question goes under Open Questions with the reason and, when known, who can answer it.
+- When an answer contradicts an earlier one from the same sitting, say so immediately and let the user pick; never reconcile silently.
+
+## Sitting discipline
+
+Agree the sitting's size up front and stop there. Refinement is a practice, not a purge: a model gets good through many short sittings that each end with a clean, reviewable change, not one interrogation that ends with fatigue and a hundred-file diff.

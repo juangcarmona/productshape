@@ -207,6 +207,15 @@ describe('canonical citation writing', () => {
       'Invalid citation digest',
     );
   });
+
+  it('accepts every product artifact kind, structured behaviours included (issue #206)', () => {
+    expect(emitCitation({ id: 'SB-CHECKOUT-HAPPY-PATH', digest: DIGEST_A, form: 'payload' })).toBe(
+      `pdac:cite id="SB-CHECKOUT-HAPPY-PATH" digest="${DIGEST_A}"`,
+    );
+    expect(() => emitCitation({ id: 'CHG-INITIAL', digest: DIGEST_A, form: 'payload' })).toThrow(
+      'Invalid citation artifact id',
+    );
+  });
 });
 
 describe('canonical payload parsing', () => {

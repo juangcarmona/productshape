@@ -44,7 +44,7 @@ const PDAC_CONTEXT_END = '<!-- pdac:context end -->';
 
 /** The PDaC authority context block injected into openspec/config.yaml `context:`. */
 export const PDAC_CONTEXT_BLOCK = `${PDAC_CONTEXT_BEGIN}
-This repository uses Product Definition as Code (PDaC). The canonical product definition lives in docs/product/model (actors, journeys, use cases, business rules, domain terms, requirements). OpenSpec artifacts consume it and are never a second source of truth.
+This repository uses Product Definition as Code (PDaC). The canonical product definition lives in docs/product/model (actors, journeys, use cases, business rules, domain terms, bounded contexts, structured behaviours, and functional, quality and constraint requirements). OpenSpec artifacts consume it and are never a second source of truth.
 A citation binds consumer text to a canonical artifact: it records the artifact id, a sha256 content digest and an optional verification scenario anchor. Verification reports one status per citation: current, stale, tampered or unresolved.
 To cite: run \`npx prodshape inspect <ID>\` to read the current digest, then \`npx prodshape cite --id <ID> --digest <digest>\` to emit the canonical payload. Wrap it in the document's native comment (\`<!-- ... -->\` in Markdown) on its own line directly under the text it grounds.
 To find which artifacts a change impacts, compare the change's intent with the whole product definition first, then widen the result with \`npx prodshape impact <ID>\`. When the intent contradicts or goes beyond the definition, record that drift in the proposal with the marker \`<!-- pdac-drift ids="..." summary="..." -->\` (listed by \`npx prodshape drift\`) and let humans decide — never fix it quietly.

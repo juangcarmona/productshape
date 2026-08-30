@@ -41,12 +41,14 @@ import {
   runRecoverReport,
   runRecoverStart,
   runRecoverStatus,
+  runRecoverUnmark,
   type RecoverEvidenceAddOptions,
   type RecoverFamilyOptions,
   type RecoverFormatOptions,
   type RecoverMarkOptions,
   type RecoverNextOptions,
   type RecoverStartOptions,
+  type RecoverUnmarkOptions,
 } from './commands/recover.js';
 import { runSchema } from './commands/schema.js';
 import { runTemplate } from './commands/template.js';
@@ -385,12 +387,21 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
   recover
     .command('mark')
     .description('Record how a source (or one of its sections) was classified')
-    .requiredOption('--source <id-or-path>', 'evidence id, path, url or title')
+    .option('--source <id-or-path>', 'evidence id, path, url or title')
+    .option('--sources <ids>', 'comma-separated evidence ids for one identical bulk finding')
+    .option(
+      '--glob <glob>',
+      'glob over inventoried paths selecting pending sources for one identical bulk finding (repeatable)',
+      (value: string, previous: string[] = []) => [...previous, value],
+    )
     .option(
       '--as <classification>',
       'represented, duplicate, contradiction, question, out-of-scope or no-product-intent',
     )
-    .option('--artifacts <ids>', 'comma-separated candidate artifact IDs (represented, duplicate)')
+    .option(
+      '--artifacts <ids>',
+      'comma-separated candidate artifact IDs (represented, duplicate); quote the list on PowerShell',
+    )
     .option('--question <id>', 'linked question id (question, contradiction)')
     .option('--reason <text>', 'required for out-of-scope, no-product-intent and --exclude')
     .option('--note <text>', 'free-form note; required for contradiction')
@@ -404,6 +415,18 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .option(...formatOption)
     .action(async (options: RecoverMarkOptions) => {
       capture.code = await runRecoverMark(io, options);
+    });
+  recover
+    .command('unmark')
+    .description('Retract findings recorded on a source, returning it to pending')
+    .requiredOption('--source <id-or-path>', 'evidence id, path, url or title')
+    .option('--last', 'retract the most recently recorded finding')
+    .option('--index <n>', 'retract the finding at this 1-based position')
+    .option('--all', 'retract every finding')
+    .option(...sessionOption)
+    .option(...formatOption)
+    .action(async (options: RecoverUnmarkOptions) => {
+      capture.code = await runRecoverUnmark(io, options);
     });
   const evidence = recover
     .command('evidence')

@@ -1,0 +1,27 @@
+# Spec Kit placement
+
+What the Spec Kit provider enumerates, and where citations and declarations go. The authority for the grammar is the injected guidance the integration installs; this file pins the placement decisions that recur.
+
+## Population
+
+`prodshape citations verify --provider speckit` enumerates every feature directory's documents: `spec.md`, `plan.md` and `tasks.md` where present. Every enumerated current document needs exactly one scope declaration.
+
+## Scope declaration
+
+Spec Kit documents usually carry no YAML frontmatter, so the comment carriers are the reliable form:
+
+- Bound: `<!-- pdac-scope: cited -->` on its own line near the top of the document, plus at least one citation.
+- Exempt: `<!-- pdac-scope: none reason="<human-approved reason>" -->` and zero citations.
+
+Put the declaration inside the document body, never in a sidecar or a README: the declaration binds the document that carries it, and only that document.
+
+## Citation placement
+
+- In `spec.md`, cite under the requirement or user story the canonical text grounds, one payload per governing artifact, each wrapped in a Markdown comment on its own line.
+- In `plan.md`, cite next to the design decision that depends on canonical text.
+- `tasks.md` is often exempt; when a task restates cited behaviour, cite it there too.
+- Emit every payload with `prodshape cite --id <ID> --digest <digest>`; never write one by hand.
+
+## Drift markers
+
+`<!-- pdac-drift ids="<ID>[, <ID>...]" summary="<one line>" -->` next to the conflicting text, listed by `prodshape drift`. Recording is yours; resolving is human.

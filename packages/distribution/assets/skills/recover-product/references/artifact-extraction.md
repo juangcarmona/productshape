@@ -20,7 +20,9 @@ docs/product/changes/active/chg-initial/
     behaviours/sb-<slug>.md
 ```
 
-File names are the lowercase artifact ID plus `.md`. Author from the templates under `.product/templates/` and check the exact allowed frontmatter with `prodshape schema <kind>` before inventing anything.
+File names are the lowercase artifact ID plus `.md`. Create every candidate by copying the template, then editing the copy: `prodshape template <kind> > <path>` (or copy `.product/templates/<kind>.md`). Never type frontmatter or section headings from memory; the required headings are `##` sections exactly as the template spells them, and freehand writing is how a batch of 29 candidates ends up with 29 copies of the same schema error. Check the exact allowed frontmatter with `prodshape schema <kind>` before inventing anything.
+
+Run `prodshape recover check` immediately after the first candidate file you write, before the rest of the batch: a format mistake caught at one file is a fix, at thirty it is a repair project.
 
 ## change.md
 
@@ -35,11 +37,12 @@ The change document describes the recovery itself: the problem (no product defin
 3. Choose the artifact kind by what the knowledge is, not by where it was found: who acts (actor), an end-to-end path with an outcome (journey), one interaction with a trigger and flows (use case), a constraint the business imposes (business rule), a word with a precise meaning (domain term), a language boundary (bounded context), something the product must do (functional requirement), how well (quality requirement), an imposed limitation (constraint), one concrete observable example of accepted behaviour with context, stimulus and outcomes (structured behaviour).
 4. Reuse before creating. Search the existing candidates first (ids, titles, the brief's synonyms). Evidence that lands on an existing candidate strengthens it: extend its `provenance.source`, raise or lower its confidence, note the corroboration in the body, and classify the source as `duplicate` against it.
 5. Every candidate carries `provenance` (see `references/provenance-format.md`) and `status: draft`. A candidate you cannot give a source is an opinion; do not write it.
-6. Respect the brief's `confirm` list: candidates in those areas are proposed to the user in conversation before the files are written.
+6. Creating a candidate and recording its evidence mapping are one step, not two: the `recover mark --artifacts` call naming the new candidate happens in the same breath as writing its file. A candidate without a mapped source surfaces later as an unmapped-candidate warning you then have to chase.
+7. Respect the brief's `confirm` list: candidates in those areas are proposed to the user in conversation before the files are written.
 
 ## Naming and identity
 
-- IDs are uppercase with the kind's prefix (`ACT-`, `JRN-`, `UC-`, `BR-`, `TERM-`, `BC-`, `FR-`, `QR-`, `CON-`) followed by a stable, meaningful slug. Use the current vocabulary from the brief's `synonyms`, not the obsolete names found in old evidence.
+- IDs are uppercase with the kind's prefix (`ACT-`, `JRN-`, `UC-`, `BR-`, `TERM-`, `BC-`, `FR-`, `QR-`, `CON-`, `SB-`) followed by a stable, meaningful slug. Use the current vocabulary from the brief's `synonyms`, not the obsolete names found in old evidence.
 - One candidate per concept. Two names for the same thing is a reconciliation case, not two candidates; one name for two things is two candidates and usually a domain term clarifying the split.
 
 ## Relationships

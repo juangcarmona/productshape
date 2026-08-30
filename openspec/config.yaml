@@ -8,7 +8,8 @@ context: >-
 
   This repository uses Product Definition as Code (PDaC). The canonical product
   definition lives in docs/product/model (actors, journeys, use cases, business
-  rules, domain terms, requirements). OpenSpec artifacts consume it and are
+  rules, domain terms, bounded contexts, structured behaviours, and functional,
+  quality and constraint requirements). OpenSpec artifacts consume it and are
   never a second source of truth.
 
   A citation binds consumer text to a canonical artifact: it records the

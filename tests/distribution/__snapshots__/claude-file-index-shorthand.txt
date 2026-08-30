@@ -1,15 +1,19 @@
 .claude/commands/product/audit.md
+.claude/commands/product/bind.md
 .claude/commands/product/change.md
 .claude/commands/product/define.md
 .claude/commands/product/explore.md
 .claude/commands/product/impact.md
 .claude/commands/product/recover.md
+.claude/commands/product/refine.md
 .claude/commands/ps/audit.md
+.claude/commands/ps/bind.md
 .claude/commands/ps/change.md
 .claude/commands/ps/define.md
 .claude/commands/ps/explore.md
 .claude/commands/ps/impact.md
 .claude/commands/ps/recover.md
+.claude/commands/ps/refine.md
 .claude/hooks/product-definition.json
 .claude/skills/analyze-product-change/references/change-template-guide.md
 .claude/skills/analyze-product-change/references/operations-checklist.md
@@ -17,6 +21,9 @@
 .claude/skills/audit-product-model/references/diagnostic-codes.md
 .claude/skills/audit-product-model/references/finding-classification.md
 .claude/skills/audit-product-model/SKILL.md
+.claude/skills/bind-consumers/references/openspec.md
+.claude/skills/bind-consumers/references/speckit.md
+.claude/skills/bind-consumers/SKILL.md
 .claude/skills/define-product/references/authoring-order.md
 .claude/skills/define-product/SKILL.md
 .claude/skills/explore-product/references/exploration-heuristics.md
@@ -29,3 +36,5 @@
 .claude/skills/recover-product/references/reconciliation.md
 .claude/skills/recover-product/references/recovery-workflow.md
 .claude/skills/recover-product/SKILL.md
+.claude/skills/refine-product/references/question-writing.md
+.claude/skills/refine-product/SKILL.md
