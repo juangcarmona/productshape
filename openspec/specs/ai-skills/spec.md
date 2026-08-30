@@ -10,7 +10,7 @@ The canonical AI skills, slash commands and hook descriptors rendered into provi
 
 ### Requirement: Canonical skills are complete and provider-independent
 
-The repository SHALL provide the five canonical skills (define-product, recover-product, explore-product, analyze-product-change, audit-product-model), each defining purpose, when to use it, required inputs, files to read, deterministic commands to execute, reasoning procedure, allowed modifications, forbidden actions, human approval points, expected outputs and completion checks, with no provider-specific content.
+The repository SHALL provide the seven canonical skills (define-product, recover-product, explore-product, analyze-product-change, audit-product-model, bind-consumers, refine-product), each defining purpose, when to use it, required inputs, files to read, deterministic commands to execute, reasoning procedure, allowed modifications, forbidden actions, human approval points, expected outputs and completion checks, with no provider-specific content.
 
 {pdac:cite id="FR-DISTRIBUTION-001" digest="sha256:2388424fc21af195bb6e33c569651407ca86fe5701ff663426325037f54caa5e"}
 
@@ -23,7 +23,7 @@ The repository SHALL provide the five canonical skills (define-product, recover-
 
 ### Requirement: Commands are thin wrappers
 
-The six `/product:*` commands (define, recover, explore, change, impact, audit) SHALL reference their skill and the deterministic CLI operations without duplicating the full skill instructions.
+The eight `/product:*` commands (define, recover, explore, change, impact, audit, bind, refine) SHALL reference their skill and the deterministic CLI operations without duplicating the full skill instructions.
 
 #### Scenario: Command brevity
 

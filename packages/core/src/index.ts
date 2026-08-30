@@ -1,5 +1,6 @@
 export {
   productArtifactTypes,
+  productArtifactIdPattern,
   markdownDocumentTypes,
   idPrefixByType,
   idPrefixFor,
@@ -188,6 +189,7 @@ export {
   listRecoverySessions,
   loadRecoverySession,
   markEvidence,
+  markEvidenceBulk,
   markFamilyProbe,
   nextBatch,
   RecoveryUsageError,
@@ -197,6 +199,7 @@ export {
   sessionDirRel,
   snapshotEvidence,
   startRecoverySession,
+  unmarkEvidence,
   writeRecoveryReport,
 } from './recovery-session.js';
 export type {
@@ -204,6 +207,8 @@ export type {
   CandidateArtifact,
   CompletionCriteria,
   MarkEvidenceOptions,
+  MarkEvidenceBulkOptions,
+  UnmarkEvidenceOptions,
   RecoveryCheckResult,
   RecoveryClock,
   RecoveryCoverage,

@@ -1,0 +1,31 @@
+# OpenSpec placement
+
+What the OpenSpec provider enumerates as the current population, and where citations and declarations go inside each document kind. The authority for the grammar itself is the injected guidance in `openspec/config.yaml`; this file only pins the placement decisions that recur.
+
+## Population
+
+`prodshape citations verify --provider openspec` enumerates every current OpenSpec document: each active change's `proposal.md`, `design.md`, `tasks.md` and `specs/**`, plus the accepted capability specs under `openspec/specs/`. Archived changes are excluded by default; their drift is reported as warnings under `--include-archived` and is never yours to edit.
+
+## Scope declaration
+
+One explicit declaration per document:
+
+- Bound: `<!-- pdac-scope: cited -->` on a line of its own near the top (after frontmatter when the document has any), plus at least one citation.
+- Exempt: `<!-- pdac-scope: none reason="<human-approved reason>" -->` (or `pdac-scope: none` with `pdac-scope-reason:` in frontmatter) and zero citations.
+
+## Citation placement in specs
+
+- A requirement derived from canonical product text carries one citation per governing artifact, each on its own line, after the requirement text and before the first `#### Scenario:`. Never between the requirement heading and the requirement text; OpenSpec reads the first paragraph as the requirement.
+- Cite a specific verification scenario with an anchor when the requirement maps to one: `anchor="<scenario id>"`.
+- Emit every payload with `prodshape cite --id <ID> --digest <digest>` and wrap it in the Markdown comment form the repository already uses (`{pdac:cite ...}` where that is the established carrier, `<!-- pdac:cite ... -->` otherwise); follow the carrier the surrounding documents use.
+- Keep a blank line between adjacent citation lines when a formatter runs over the repository; some formatters fold adjacent comment lines into one paragraph.
+
+## Proposal, design and tasks
+
+- `proposal.md` states which artifacts the change touches and cites each.
+- `design.md` cites the artifacts a design decision depends on, next to the decision.
+- `tasks.md` is often exempt (work items, no product semantics); when a task restates cited behaviour, cite it there too.
+
+## Drift markers
+
+`<!-- pdac-drift ids="<ID>[, <ID>...]" summary="<one line>" -->` sits on its own line next to the conflicting text; `prodshape drift` lists every marker. The marker records the conflict; humans decide the resolution.

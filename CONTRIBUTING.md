@@ -22,7 +22,7 @@ pnpm build
 pnpm test
 ```
 
-`pnpm build` before `pnpm test`: one test packs the CLI tarball and needs `dist/`. If you changed a JSON Schema, also run `pnpm docs:frontmatter`. If you changed anything under `skills/`, `commands/`, `hooks/` or `templates/`, mirror it into `packages/distribution/assets/` and run `prodshape integration update`, or CI's drift check will fail.
+`pnpm build` before `pnpm test`: one test packs the CLI tarball and needs `dist/`. If you changed a JSON Schema, also run `pnpm docs:frontmatter`. If you changed anything under `skills/`, `commands/` or `templates/`, run `pnpm sync:assets` to mirror it into `packages/distribution/assets/` and then `prodshape integration update`, or CI's drift check will fail.
 
 Node >= 22 (the current Node.js LTS lines) and pnpm (see `packageManager` in `package.json`) are required.
 

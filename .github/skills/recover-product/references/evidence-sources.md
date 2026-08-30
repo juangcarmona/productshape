@@ -3,18 +3,7 @@
 
 # Evidence sources
 
-Reliability differs by source. Typical confidence assumes the evidence is current and directly examined; adjust down when it is stale, partial or second-hand.
-
-`provenance.confidence` accepts exactly `high`, `medium` or `low` — the values below are those values, not a scale to interpolate on. `provenance.recovered-from` classifies how the knowledge was obtained; the mapping from these sources is:
-
-| Source                                                 | `recovered-from` |
-| ------------------------------------------------------ | ---------------- |
-| Source code, tests, API surfaces, production behaviour | `observation`    |
-| Database schemas, user interfaces                      | `inference`      |
-| Documentation, tickets and history                     | `documentation`  |
-| Stakeholder knowledge                                  | `interview`      |
-
-A claim drawn from more than one kind of source is often genuinely more than one of these; the field is optional precisely so it is not guessed. Omit it rather than pick arbitrarily.
+Reliability differs by source. Typical confidence assumes the evidence is current and directly examined; adjust down when it is stale, partial or second-hand. The `provenance` contract itself (the exact `confidence` values and the `recovered-from` classification each source maps to) is owned by `references/provenance-format.md`; this file ranks the sources.
 
 - **Source code** — what the system actually does, including behaviour nobody remembers deciding. Good for observed behaviour and enforced rules. Typical confidence: high (observed), but says nothing about intent.
 - **Tests** — behaviour someone cared enough to pin down; often the closest artifact to intent. Good for rules and expected flows. Typical confidence: high.

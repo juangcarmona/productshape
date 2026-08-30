@@ -177,6 +177,17 @@ export interface RecoveryBrief {
   batchSize: number;
   /** Areas where the user requires explicit confirmation before candidates are recorded. */
   confirm: string[];
+  /**
+   * Ordered evidence tiers: the inventory is enumerated tier by tier (path order within a
+   * tier, unmatched sources last), so `recover next` serves the densest sources first instead
+   * of relying on path order. Free-form `authority` stays the reasoning-side counterpart.
+   */
+  tiers: { name: string; globs: string[] }[];
+  /**
+   * Opt-in git discipline: the session runs on this dedicated branch and every state-mutating
+   * recover command records a checkpoint commit. Absent, the tool never touches git.
+   */
+  git?: { branch: string };
   externalSources: { url?: string; file?: string; title: string }[];
 }
 
@@ -270,6 +281,7 @@ export function defaultRecoveryBrief(): RecoveryBrief {
     },
     batchSize: 10,
     confirm: [],
+    tiers: [],
     externalSources: [],
   };
 }
@@ -302,6 +314,8 @@ const knownBriefKeys = new Set([
   'synonyms',
   'secondary-evidence',
   'batch-size',
+  'tiers',
+  'git',
   'external-sources',
 ]);
 
@@ -420,6 +434,55 @@ export function parseRecoveryBrief(content: string, file: string): RecoveryBrief
       errors.push(`'batch-size' must be an integer between 1 and 500`);
     } else {
       brief.batchSize = value;
+    }
+  }
+
+  if (record.tiers !== undefined) {
+    const value = record.tiers;
+    if (!Array.isArray(value)) {
+      errors.push(`'tiers' must be a list`);
+    } else {
+      const tiers: RecoveryBrief['tiers'] = [];
+      value.forEach((entry, index) => {
+        if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
+          errors.push(`'tiers[${index}]' must be a mapping`);
+          return;
+        }
+        const tier = entry as Record<string, unknown>;
+        for (const key of Object.keys(tier)) {
+          if (!['name', 'globs'].includes(key)) {
+            errors.push(`Unknown 'tiers[${index}]' key '${key}'`);
+          }
+        }
+        if (typeof tier.name !== 'string' || tier.name.length === 0) {
+          errors.push(`'tiers[${index}].name' is required`);
+          return;
+        }
+        const globs = readStringList(tier.globs, `tiers[${index}].globs`, errors);
+        if (globs === undefined || globs.length === 0) {
+          if (globs !== undefined) errors.push(`'tiers[${index}].globs' must not be empty`);
+          return;
+        }
+        tiers.push({ name: tier.name, globs });
+      });
+      brief.tiers = tiers;
+    }
+  }
+
+  if (record.git !== undefined) {
+    const value = record.git;
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+      errors.push(`'git' must be a mapping`);
+    } else {
+      const git = value as Record<string, unknown>;
+      for (const key of Object.keys(git)) {
+        if (key !== 'branch') errors.push(`Unknown 'git' key '${key}'`);
+      }
+      if (typeof git.branch !== 'string' || git.branch.length === 0) {
+        errors.push(`'git.branch' is required when 'git' is declared`);
+      } else {
+        brief.git = { branch: git.branch };
+      }
     }
   }
 

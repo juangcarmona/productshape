@@ -33,6 +33,15 @@ export const idPrefixByType: Record<MarkdownDocumentType, string> = {
   'product-change': 'CHG',
 };
 
+/**
+ * Matches the ID of any product artifact kind (never a Product Change). Derived from
+ * {@link idPrefixByType} so a new artifact kind can never be forgotten here, the way `SB` was
+ * when this pattern lived as a literal (issue #206).
+ */
+export const productArtifactIdPattern = new RegExp(
+  `^(${productArtifactTypes.map((type) => idPrefixByType[type]).join('|')})-[A-Z0-9]+(-[A-Z0-9]+)*$`,
+);
+
 export const requiredBodySections: Record<MarkdownDocumentType, string[]> = {
   actor: ['Purpose', 'Goals', 'Responsibilities', 'Boundaries'],
   journey: [

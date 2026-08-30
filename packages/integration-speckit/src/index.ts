@@ -75,8 +75,9 @@ export const PDAC_SPECKIT_GUIDANCE = `# Product Definition as Code (PDaC) guidan
 <!-- Managed by \`prodshape integration add speckit\`. Do not edit; changes are overwritten by \`prodshape integration update\`. -->
 
 This repository uses Product Definition as Code. The canonical product definition lives in
-docs/product/model (actors, journeys, use cases, business rules, domain terms, requirements).
-Spec Kit artifacts consume it and are never a second source of truth. The constitution
+docs/product/model (actors, journeys, use cases, business rules, domain terms, bounded contexts,
+structured behaviours, and functional, quality and constraint requirements). Spec Kit artifacts
+consume it and are never a second source of truth. The constitution
 (.specify/memory/constitution.md) governs how software is built here; it never carries product
 intent, and this file never modifies it.
 

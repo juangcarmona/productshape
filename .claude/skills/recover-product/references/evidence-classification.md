@@ -29,6 +29,15 @@ authority:
   - Tests over code comments
   - Code over documentation
   - The user over everything
+tiers:
+  - name: sdd-specs
+    globs: ['openspec/specs/**', 'specs/**']
+  - name: product-docs
+    globs: ['docs/**/*.md', '*.md']
+  - name: source
+    globs: ['src/**', 'tests/**']
+git:
+  branch: recovery/chg-initial
 secondary-evidence:
   code: true
   tests: true
@@ -53,6 +62,8 @@ Field notes:
 - `ignore` is for generated or historical material the user wants out: recorded separately so the report can say what was deliberately skipped.
 - `synonyms` maps obsolete names to current ones so evidence written in the old vocabulary still lands on the right candidate.
 - `authority` states which source wins when sources disagree at the same confidence. Contradictions are still recorded; authority informs your recommendation, not a silent resolution.
+- `tiers` orders the inventory: evidence matching the first tier is served first by `recover next`, unmatched sources come last. Declare the dense primary sources first: SDD consumer documents (OpenSpec `openspec/specs/`, Spec Kit `specs/`) where an integration exists, then product and domain documentation, then source code, which mostly corroborates what the documents already establish.
+- `git` opts into the checkpoint discipline: the CLI creates the named branch at session start (refusing a working tree with modified tracked files) and records one commit per state-mutating recovery command, `recover(CHG-INITIAL): <step>`. Undoing an experiment is then deleting a branch. Leave the block out and the tool never touches version control.
 - `secondary-evidence` switches whole evidence classes on or off. With `external: false`, never propose an online source at all.
 - `confirm` lists areas where the user wants to approve candidates before you record them.
 - `external-sources` pre-authorises the listed items and nothing else. Anything discovered later needs fresh authorisation.
@@ -71,6 +82,10 @@ A source is processed only when every relevant section is classified. The six cl
 | `no-product-intent` | Contains nothing about what the product is or must do | `--reason <why>` |
 
 The last two require a reason because "nothing to see here" is itself a claim a reviewer must be able to audit. `--complete` on the final mark declares the source fully classified; the CLI refuses it when no findings exist.
+
+Always quote the `--artifacts` list (`--artifacts "UC-A,UC-B"`): some shells split or space-join an unquoted comma list, and the CLI will reject the mangled result.
+
+Whole classes of corroborating material take one bulk call instead of a loop: `prodshape recover mark --glob 'src/**' --as no-product-intent --reason "<why>" --complete` applies the identical finding to every pending match in a single state write, all or nothing. A wrong finding is retracted with `prodshape recover unmark --source <id> --last|--index <n>|--all`, which returns the source to pending; session files are never edited by hand.
 
 If a source changed since it was inventoried, `mark` refuses until you re-read it and pass `--accept-changed`, which refreshes the hash and drops the invalidated findings. Never mark content you have not re-read.
 

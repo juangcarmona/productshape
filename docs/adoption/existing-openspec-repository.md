@@ -36,7 +36,7 @@ Add `--dry-run` first to see every file the command would write. Check the resul
 
 ## The AI integrations
 
-Every provider gets the same six commands and five skills, rendered where that tool looks for them. The commands are thin prompts; the skills carry the procedure, so the behaviour is identical across providers.
+Every provider gets the same command and skill set, rendered where that tool looks for them. The commands are thin prompts; the skills carry the procedure, so the behaviour is identical across providers.
 
 | Provider | Files generated | You trigger |
 | --- | --- | --- |
@@ -44,7 +44,7 @@ Every provider gets the same six commands and five skills, rendered where that t
 | `claude` | `.claude/commands/product/*.md` and `.claude/skills/<name>/` | `/product:recover`, `/product:define`, `/product:change`, ... |
 | `codex` | `.agents/commands/product/*.md` and `.agents/skills/<name>/` | the Agent Skills open standard layout; works with any tool that reads it |
 
-The six commands: `recover` (rebuild the definition from an existing system), `define` (author new product intent), `change` (elaborate a Product Change), `explore` (think through a fuzzy idea against the model), `impact` (structural impact of touching an artifact), `audit` (review model quality). All of them propose; none of them can accept, apply to the baseline, commit or merge. `--shorthand` adds `/ps:` aliases.
+The commands: `recover` (rebuild the definition from an existing system), `define` (author new product intent), `change` (elaborate a Product Change), `explore` (think through a fuzzy idea against the model), `impact` (structural impact of touching an artifact), `audit` (review model quality), `bind` (backfill scope declarations and citations into existing SDD documents once a baseline exists), `refine` (interview you through the model's weak spots and turn the answers into a Product Change). All of them propose; none of them can accept, apply to the baseline, or merge. `--shorthand` adds `/ps:` aliases.
 
 ## Step 2: recover the definition with the agent
 
@@ -58,9 +58,9 @@ Tell it what it cannot discover on its own: where documentation lives, which ext
 
 What happens, in order:
 
-1. **The brief comes first.** Before reading anything, the agent drafts a recovery brief and puts it to you: product scope, known terminology, source authority order (for example User > Tests > Code > Documentation), which secondary evidence to use, batch size, and the areas where it must confirm with you instead of deciding. Nothing is read until you approve.
+1. **The brief comes first.** Before reading anything, the agent drafts a recovery brief and puts it to you: product scope, known terminology, source authority order (for example User > Tests > Code > Documentation), ordered evidence tiers that drive the batch order (`openspec/specs/` and product documentation first, source code last, instead of alphabetical luck), which secondary evidence to use, batch size, the areas where it must confirm with you instead of deciding, and optionally a `git.branch` declaration: with it, the session runs on that dedicated branch and the CLI records one checkpoint commit per step, so undoing the whole experiment is deleting a branch. Nothing is read until you approve.
 2. **You decide what counts as evidence.** Expect targeted questions. Your `openspec/specs/` directory is the highest-value evidence in the repository, since it already states behaviour in product terms and has survived review; include it. Proposed changes under `openspec/changes/` are speculative rather than current truth; usually exclude them.
-3. **The session runs in bounded batches.** `prodshape recover start` inventories and hashes every authorised source; the agent processes them through `recover next`, classifies every relevant section, and persists every lead, contradiction and question through `recover` commands. Progress lives in the session state, not in the chat, so the session survives interruption and resumes from `prodshape recover status`. `prodshape recover check` re-hashes evidence and verifies nothing escaped.
+3. **The session runs in bounded batches.** `prodshape recover start` inventories and hashes every authorised source in the brief's tier order; the agent processes them through `recover next`, classifies every relevant section, and persists every lead, contradiction and question through `recover` commands. Whole classes of corroborating material (typically implementation code) are classified in one bulk call, `recover mark --glob 'src/**' ...`, instead of a thousand single marks, and a wrong finding is retracted with `recover unmark` rather than by editing session state. Progress lives in the session state, not in the chat, so the session survives interruption and resumes from `prodshape recover status`. `prodshape recover check` re-hashes evidence and verifies nothing escaped.
 4. **Everything lands inside `CHG-INITIAL`.** Candidates arrive under `docs/product/changes/active/chg-initial/proposed/`, each carrying `provenance` (the evidence behind it) and a confidence level, with observed behaviour and inferred intent labelled apart. The accepted model under `docs/product/model` is never touched; the agent never applies, commits or merges.
 5. **You accept, or you do not.** The session ends with a report, the candidate list with confidence, the contradictions and the open questions. Review `CHG-INITIAL`, decide, set it to `approved`, then:
 
@@ -69,17 +69,21 @@ npx prodshape change validate CHG-INITIAL
 npx prodshape change apply CHG-INITIAL
 ```
 
-Apply materializes the model on your working branch and archives the change; it never commits. Open a pull request; the merge is what accepts the baseline.
+Apply materializes the model on your working branch and archives the change; it never commits. Open a pull request; the merge is what accepts the baseline. Once accepted, `/product-refine` picks up where recovery stopped: it interviews you through the low-confidence queue (`PRODUCT111`), the deferred questions and any recorded drift, one question at a time, and turns your answers into an ordinary Product Change.
 
 As a scale reference: recovering [DomusMind](https://github.com/juangcarmona/domusmind), a family-organizer with OpenSpec specs for areas, calendar, family, lists, meal planning, tasks and its web app, inventoried 1103 evidence sources and processed them in batches of ten, with the OpenSpec specs included as evidence and one proposed change under `openspec/changes/` excluded as speculative.
 
 Greenfield instead? If there is no built system to recover from, skip recovery: author intent with `/product-define`, or scaffold `CHG-INITIAL` by hand with `prodshape change create CHG-INITIAL`. The [greenfield guide](greenfield.md) covers that path.
 
-The recovery workflow is the part of the toolchain evolving fastest: the skills are being reshaped to tell the agent where to look first and to spend fewer tokens getting there. If you run a recovery, [open an issue](https://github.com/juangcarmona/productshape/issues) with what the session produced and where it struggled; real sessions are the evidence the next iteration is shaped from.
+That first session's lessons are what shaped the current workflow: the brief's evidence tiers, bulk classification, retractable findings and the opt-in git checkpoint discipline all come from where it struggled. If you run a recovery, [open an issue](https://github.com/juangcarmona/productshape/issues) with what the session produced and where it struggled; real sessions are the evidence the next iteration is shaped from.
 
-## Step 3: cite instead of restating
+## Step 3: bind the documents you already have
 
-An OpenSpec document that depends on product knowledge cites it rather than restating it. Print a citation record (the digest is computed for you) and paste it into the spec inside a Markdown comment, after the requirement text, never between the heading and the text, because OpenSpec reads the first paragraph under a requirement heading as the requirement itself:
+Recovery reads your OpenSpec documents as evidence; it never writes into them. So the moment the baseline lands, every existing document under `openspec/specs/` (and in any active change) is still `unclassified`: it declares no scope and cites nothing, and Step 4's verification will fail on all of them, by design. That gap is the point: it forces the binding to actually happen instead of being assumed.
+
+`/product-bind` (the `bind-consumers` skill) drives the backfill. Per current document, the agent finds the governing artifacts, inserts citations under the text they ground, and declares `pdac-scope: cited`; where a document contradicts the model it records a drift marker for you instead of quietly fixing either side, where the document knows something the model does not it proposes a Product Change candidate, and exemptions (`pdac-scope: none`) are written only with a reason you approved. Done means the Step 4 command exits clean. Ship the applied `CHG-INITIAL` and the bindings in the same pull request when you can: the baseline and the documents grounded on it are one reviewable decision.
+
+For the documents you write afterwards, the rule is the same in the small: cite instead of restating. Print a citation record (the digest is computed for you) and paste it into the spec inside a Markdown comment, after the requirement text, never between the heading and the text, because OpenSpec reads the first paragraph under a requirement heading as the requirement itself:
 
 ```bash
 prodshape cite --id BR-REFUND-001 --file docs/product/model/business-rules/br-refund-001.md

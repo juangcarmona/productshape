@@ -11,6 +11,7 @@ import {
   deferQuestion,
   loadRecoverySession,
   markEvidence,
+  markEvidenceBulk,
   markFamilyProbe,
   nextBatch,
   resolveLead,
@@ -19,6 +20,7 @@ import {
   startRecoverySession,
   buildRecoveryReport,
   computeCoverage,
+  unmarkEvidence,
   writeRecoveryReport,
 } from './recovery-session.js';
 import {
@@ -661,5 +663,202 @@ describe('report', () => {
       await scanCandidates(repo, session.state),
     );
     expect(rendered).toContain('Complete:');
+  });
+});
+
+describe('artifact id validation at mark time', () => {
+  it('rejects the space-joined shape an unquoted PowerShell list produces, persisting nothing', async () => {
+    const repo = await makeRepo({ 'src/a.ts': 'a\n' });
+    const session = await startRecoverySession(repo, { cliVersion: '0.0.0-test', clock });
+    await expect(
+      markEvidence(repo, session, {
+        source: 'E-0001',
+        classification: 'represented',
+        artifacts: ['ACT-SHOPPER TERM-ORDER BR-LIMIT'],
+        clock,
+      }),
+    ).rejects.toThrow(/quote the list/);
+    const reloaded = await loadRecoverySession(repo, session.state.sessionId);
+    expect(reloaded.inventory.items[0]?.findings).toHaveLength(0);
+  });
+
+  it('accepts every artifact kind prefix, structured behaviours included', async () => {
+    const repo = await makeRepo({ 'src/a.ts': 'a\n' });
+    const session = await startRecoverySession(repo, { cliVersion: '0.0.0-test', clock });
+    const marked = await markEvidence(repo, session, {
+      source: 'E-0001',
+      classification: 'represented',
+      artifacts: ['SB-CHECKOUT-HAPPY-PATH', 'UC-CHECKOUT'],
+      clock,
+    });
+    expect(marked.findings[0]?.artifacts).toEqual(['SB-CHECKOUT-HAPPY-PATH', 'UC-CHECKOUT']);
+  });
+});
+
+describe('bulk marking', () => {
+  it('applies one identical finding to every pending glob match in a single write', async () => {
+    const repo = await makeRepo({
+      'src/a.cs': 'a\n',
+      'src/b.cs': 'b\n',
+      'docs/readme.md': 'docs\n',
+    });
+    const session = await startRecoverySession(repo, { cliVersion: '0.0.0-test', clock });
+    const items = await markEvidenceBulk(repo, session, {
+      globs: ['src/**'],
+      classification: 'no-product-intent',
+      reason: 'Implementation code: corroborates candidates, defines no product behaviour',
+      complete: true,
+      clock,
+    });
+    expect(items.map((i) => i.path).sort()).toEqual(['src/a.cs', 'src/b.cs']);
+    const reloaded = await loadRecoverySession(repo, session.state.sessionId);
+    expect(
+      reloaded.inventory.items
+        .filter((i) => i.status === 'processed')
+        .map((i) => i.path)
+        .sort(),
+    ).toEqual(['src/a.cs', 'src/b.cs']);
+    expect(reloaded.inventory.items.find((i) => i.path === 'docs/readme.md')?.status).toBe(
+      'pending',
+    );
+  });
+
+  it('is all-or-nothing: one unmarkable source refuses the whole selection', async () => {
+    const repo = await makeRepo({ 'src/a.ts': 'a\n', 'src/b.ts': 'b\n' });
+    const session = await startRecoverySession(repo, { cliVersion: '0.0.0-test', clock });
+    await markEvidence(repo, session, {
+      source: 'E-0001',
+      exclude: true,
+      reason: 'Out of the product boundary',
+      clock,
+    });
+    await expect(
+      markEvidenceBulk(repo, session, {
+        sources: ['E-0001', 'E-0002'],
+        classification: 'no-product-intent',
+        reason: 'Plumbing',
+        complete: true,
+        clock,
+      }),
+    ).rejects.toThrow(/nothing was changed/);
+    const reloaded = await loadRecoverySession(repo, session.state.sessionId);
+    expect(reloaded.inventory.items.find((i) => i.id === 'E-0002')?.findings).toHaveLength(0);
+  });
+
+  it('refuses a selection that matches nothing instead of succeeding vacuously', async () => {
+    const repo = await makeRepo({ 'src/a.ts': 'a\n' });
+    const session = await startRecoverySession(repo, { cliVersion: '0.0.0-test', clock });
+    await expect(
+      markEvidenceBulk(repo, session, {
+        globs: ['nowhere/**'],
+        classification: 'no-product-intent',
+        reason: 'Plumbing',
+        clock,
+      }),
+    ).rejects.toThrow(/matches no markable evidence/);
+  });
+});
+
+describe('unmark', () => {
+  it('retracts the last finding and returns the source to pending', async () => {
+    const repo = await makeRepo({ 'src/a.ts': 'a\n' });
+    const session = await startRecoverySession(repo, { cliVersion: '0.0.0-test', clock });
+    await markEvidence(repo, session, {
+      source: 'E-0001',
+      classification: 'no-product-intent',
+      reason: 'Plumbing',
+      complete: true,
+      clock,
+    });
+    const item = await unmarkEvidence(repo, session, { source: 'E-0001', last: true, clock });
+    expect(item.status).toBe('pending');
+    expect(item.findings).toHaveLength(0);
+    expect(item.processedAt).toBeUndefined();
+    const reloaded = await loadRecoverySession(repo, session.state.sessionId);
+    expect(reloaded.inventory.items[0]?.status).toBe('pending');
+  });
+
+  it('retracts by 1-based index and validates the selector contract', async () => {
+    const repo = await makeRepo({ 'src/a.ts': 'a\n' });
+    const session = await startRecoverySession(repo, { cliVersion: '0.0.0-test', clock });
+    await markEvidence(repo, session, {
+      source: 'E-0001',
+      classification: 'no-product-intent',
+      reason: 'First finding',
+      clock,
+    });
+    await markEvidence(repo, session, {
+      source: 'E-0001',
+      classification: 'represented',
+      artifacts: ['ACT-SHOPPER'],
+      clock,
+    });
+    await expect(unmarkEvidence(repo, session, { source: 'E-0001', clock })).rejects.toThrow(
+      /exactly one of/,
+    );
+    await expect(
+      unmarkEvidence(repo, session, { source: 'E-0001', last: true, all: true, clock }),
+    ).rejects.toThrow(/exactly one of/);
+    await expect(
+      unmarkEvidence(repo, session, { source: 'E-0001', index: 3, clock }),
+    ).rejects.toThrow(/between 1 and 2/);
+    const item = await unmarkEvidence(repo, session, { source: 'E-0001', index: 1, clock });
+    expect(item.findings).toHaveLength(1);
+    expect(item.findings[0]?.classification).toBe('represented');
+  });
+
+  it('refuses sources with nothing to retract and keeps staleness visible', async () => {
+    const repo = await makeRepo({ 'src/a.ts': 'a\n', 'src/b.ts': 'b\n' });
+    const session = await startRecoverySession(repo, { cliVersion: '0.0.0-test', clock });
+    await expect(
+      unmarkEvidence(repo, session, { source: 'E-0001', all: true, clock }),
+    ).rejects.toThrow(/no findings/);
+
+    await markEvidence(repo, session, {
+      source: 'E-0001',
+      classification: 'no-product-intent',
+      reason: 'Plumbing',
+      complete: true,
+      clock,
+    });
+    await writeFile(join(repo.root, 'src', 'a.ts'), 'changed\n', 'utf8');
+    await checkRecoverySession(repo, session);
+    expect(session.inventory.items[0]?.status).toBe('stale');
+    const item = await unmarkEvidence(repo, session, { source: 'E-0001', all: true, clock });
+    expect(item.status).toBe('stale');
+    expect(item.findings).toHaveLength(0);
+  });
+});
+
+describe('evidence tiers', () => {
+  it('orders the inventory tier by tier, unmatched sources last', async () => {
+    const repo = await makeRepo({
+      'src/a.ts': 'a\n',
+      'docs/spec.md': 'spec\n',
+      'readme.md': 'readme\n',
+      'openspec/specs/checkout.md': 'checkout\n',
+    });
+    const session = await startRecoverySession(repo, {
+      cliVersion: '0.0.0-test',
+      clock,
+      brief: brief({
+        tiers: [
+          { name: 'sdd-specs', globs: ['openspec/**'] },
+          { name: 'docs', globs: ['docs/**', '*.md'] },
+        ],
+      }),
+    });
+    expect(session.inventory.items.map((i) => i.path)).toEqual([
+      'openspec/specs/checkout.md',
+      'docs/spec.md',
+      'readme.md',
+      'src/a.ts',
+    ]);
+  });
+
+  it('a brief without tiers keeps the plain path order', async () => {
+    const repo = await makeRepo({ 'src/a.ts': 'a\n', 'docs/spec.md': 'spec\n' });
+    const session = await startRecoverySession(repo, { cliVersion: '0.0.0-test', clock });
+    expect(session.inventory.items.map((i) => i.path)).toEqual(['docs/spec.md', 'src/a.ts']);
   });
 });

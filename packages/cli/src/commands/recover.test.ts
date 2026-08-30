@@ -1,6 +1,8 @@
+import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { promisify } from 'node:util';
 import { afterAll, describe, expect, it } from 'vitest';
 import { CliError } from '../context.js';
 import {
@@ -12,7 +14,10 @@ import {
   runRecoverReport,
   runRecoverStart,
   runRecoverStatus,
+  runRecoverUnmark,
 } from './recover.js';
+
+const execFileAsync = promisify(execFile);
 
 const scratchDirs: string[] = [];
 
@@ -215,4 +220,149 @@ describe('the session loop through the command layer', () => {
     );
     expect(allowed.code).toBe(0);
   });
+});
+
+describe('mark id lists and bulk selection through the command layer', () => {
+  it('understands a space-joined --artifacts value (the PowerShell shim shape)', async () => {
+    const root = await makeRepo({ 'src/a.ts': 'a\n' });
+    await run(root, (io) => runRecoverStart(io, {}));
+    const result = await run(root, (io) =>
+      runRecoverMark(io, {
+        source: 'E-0001',
+        as: 'represented',
+        artifacts: 'UC-CHECKOUT SB-CHECKOUT-HAPPY-PATH',
+        format: 'json',
+      }),
+    );
+    expect(result.code, result.err).toBe(0);
+    const parsed = JSON.parse(result.out) as { marked: { findings: { artifacts?: string[] }[] } };
+    expect(parsed.marked.findings[0]?.artifacts).toEqual(['SB-CHECKOUT-HAPPY-PATH', 'UC-CHECKOUT']);
+  });
+
+  it('rejects an unparseable artifact id with the quoting hint and exit code 2', async () => {
+    const root = await makeRepo({ 'src/a.ts': 'a\n' });
+    await run(root, (io) => runRecoverStart(io, {}));
+    const result = await run(root, (io) =>
+      runRecoverMark(io, { source: 'E-0001', as: 'represented', artifacts: 'not an id,UC-OK' }),
+    );
+    expect(result.code).toBe(2);
+    expect(result.err).toContain('quote the list');
+  });
+
+  it('marks a glob selection in bulk and refuses mixing --source with it', async () => {
+    const root = await makeRepo({
+      'src/a.cs': 'a\n',
+      'src/b.cs': 'b\n',
+      'docs/help.md': 'help\n',
+    });
+    await run(root, (io) => runRecoverStart(io, {}));
+    const mixed = await run(root, (io) =>
+      runRecoverMark(io, { source: 'E-0001', glob: ['src/**'], as: 'no-product-intent' }),
+    );
+    expect(mixed.code).toBe(2);
+
+    const result = await run(root, (io) =>
+      runRecoverMark(io, {
+        glob: ['src/**'],
+        as: 'no-product-intent',
+        reason: 'Implementation code only',
+        complete: true,
+      }),
+    );
+    expect(result.code, result.err).toBe(0);
+    expect(result.out).toContain('Marked 2 source(s)');
+
+    const status = await run(root, (io) => runRecoverStatus(io, { format: 'json' }));
+    const parsed = JSON.parse(status.out) as {
+      coverage: { sources: { processed: number; pending: number } };
+    };
+    expect(parsed.coverage.sources.processed).toBe(2);
+    expect(parsed.coverage.sources.pending).toBe(1);
+  });
+
+  it('unmark retracts a wrong finding without hand-editing session state', async () => {
+    const root = await makeRepo({ 'src/a.ts': 'a\n' });
+    await run(root, (io) => runRecoverStart(io, {}));
+    await run(root, (io) =>
+      runRecoverMark(io, {
+        source: 'E-0001',
+        as: 'no-product-intent',
+        reason: 'Wrong call',
+        complete: true,
+      }),
+    );
+    const result = await run(root, (io) =>
+      runRecoverUnmark(io, { source: 'E-0001', all: true, format: 'json' }),
+    );
+    expect(result.code, result.err).toBe(0);
+    const parsed = JSON.parse(result.out) as { unmarked: { status: string; findings: unknown[] } };
+    expect(parsed.unmarked.status).toBe('pending');
+    expect(parsed.unmarked.findings).toHaveLength(0);
+  });
+});
+
+describe('git discipline through the command layer', () => {
+  async function git(cwd: string, args: string[]): Promise<string> {
+    const { stdout } = await execFileAsync('git', args, { cwd });
+    return stdout.trim();
+  }
+
+  async function makeGitRepo(files: Record<string, string> = {}): Promise<string> {
+    const root = await makeRepo(files);
+    await git(root, ['init', '-b', 'main']);
+    await git(root, ['config', 'user.email', 'test@example.test']);
+    await git(root, ['config', 'user.name', 'Test']);
+    await git(root, ['add', '-A']);
+    await git(root, ['commit', '-m', 'base']);
+    return root;
+  }
+
+  const briefWithGit = ['git:', '  branch: recovery/chg-initial'].join('\n');
+
+  // Real git subprocesses under full-suite load overrun the default test timeout.
+  it(
+    'creates the declared branch and checkpoints every mutating step',
+    { timeout: 30_000 },
+    async () => {
+      const root = await makeGitRepo({ 'src/a.ts': 'a\n', 'brief.yaml': briefWithGit });
+      const start = await run(root, (io) => runRecoverStart(io, { brief: 'brief.yaml' }));
+      expect(start.code, start.err).toBe(0);
+      expect(await git(root, ['rev-parse', '--abbrev-ref', 'HEAD'])).toBe('recovery/chg-initial');
+      expect(await git(root, ['log', '-1', '--format=%s'])).toBe(
+        'recover(CHG-INITIAL): start session-001 (2 sources)',
+      );
+
+      const mark = await run(root, (io) =>
+        runRecoverMark(io, {
+          source: 'E-0002',
+          as: 'no-product-intent',
+          reason: 'Plumbing',
+          complete: true,
+        }),
+      );
+      expect(mark.code, mark.err).toBe(0);
+      expect(await git(root, ['log', '-1', '--format=%s'])).toBe(
+        'recover(CHG-INITIAL): mark E-0002 (processed)',
+      );
+    },
+  );
+
+  it(
+    'refuses to start over modified tracked files, and without the declaration never touches git',
+    { timeout: 30_000 },
+    async () => {
+      const root = await makeGitRepo({ 'src/a.ts': 'a\n', 'brief.yaml': briefWithGit });
+      await writeFile(join(root, 'src', 'a.ts'), 'changed\n', 'utf8');
+      const refused = await run(root, (io) => runRecoverStart(io, { brief: 'brief.yaml' }));
+      expect(refused.code).toBe(2);
+      expect(refused.err).toContain('modified tracked file');
+
+      await git(root, ['add', '-A']);
+      await git(root, ['commit', '-m', 'settle']);
+      const plain = await run(root, (io) => runRecoverStart(io, {}));
+      expect(plain.code, plain.err).toBe(0);
+      expect(await git(root, ['rev-parse', '--abbrev-ref', 'HEAD'])).toBe('main');
+      expect(await git(root, ['log', '-1', '--format=%s'])).toBe('settle');
+    },
+  );
 });

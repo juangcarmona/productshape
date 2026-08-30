@@ -10,6 +10,8 @@ const skillNames = [
   'explore-product',
   'analyze-product-change',
   'audit-product-model',
+  'bind-consumers',
+  'refine-product',
 ];
 
 const mandatorySections = [
@@ -26,7 +28,16 @@ const mandatorySections = [
   'Completion checks',
 ];
 
-const commandNames = ['define', 'recover', 'explore', 'change', 'impact', 'audit'];
+const commandNames = [
+  'define',
+  'recover',
+  'explore',
+  'change',
+  'impact',
+  'audit',
+  'bind',
+  'refine',
+];
 const hookNames: string[] = [];
 
 const vendorPattern = /\b(claude|copilot|anthropic|openai|cursor|gemini)\b/i;

@@ -110,6 +110,53 @@ describe('parseRecoveryBrief', () => {
     expect(errors).toEqual([]);
     expect(brief).toEqual(defaultRecoveryBrief());
   });
+
+  it('parses ordered evidence tiers and the git discipline block', () => {
+    const { brief, errors } = parseRecoveryBrief(
+      [
+        'tiers:',
+        '  - name: sdd-specs',
+        '    globs:',
+        "      - 'openspec/specs/**'",
+        '  - name: docs',
+        '    globs:',
+        "      - 'docs/**'",
+        "      - '*.md'",
+        'git:',
+        '  branch: recovery/chg-initial',
+      ].join('\n'),
+      'brief.yaml',
+    );
+    expect(errors).toEqual([]);
+    expect(brief.tiers).toEqual([
+      { name: 'sdd-specs', globs: ['openspec/specs/**'] },
+      { name: 'docs', globs: ['docs/**', '*.md'] },
+    ]);
+    expect(brief.git).toEqual({ branch: 'recovery/chg-initial' });
+  });
+
+  it('rejects malformed tiers and git declarations', () => {
+    const { errors } = parseRecoveryBrief(
+      [
+        'tiers:',
+        '  - globs: [docs/**]',
+        '  - name: empty',
+        '    globs: []',
+        '  - name: surprising',
+        '    globs: [ok/**]',
+        '    priority: 1',
+        'git:',
+        '  branch: ""',
+        '  push: true',
+      ].join('\n'),
+      'brief.yaml',
+    );
+    expect(errors.some((e) => e.includes("'tiers[0].name' is required"))).toBe(true);
+    expect(errors.some((e) => e.includes("'tiers[1].globs' must not be empty"))).toBe(true);
+    expect(errors.some((e) => e.includes("Unknown 'tiers[2]' key 'priority'"))).toBe(true);
+    expect(errors.some((e) => e.includes("'git.branch' is required"))).toBe(true);
+    expect(errors.some((e) => e.includes("Unknown 'git' key 'push'"))).toBe(true);
+  });
 });
 
 function minimalState(): RecoveryState {

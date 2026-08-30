@@ -2,15 +2,35 @@
 
 ## When to explore vs. when to change
 
-Explore when the idea is still fuzzy and you are not sure what artifacts would be affected. Change when you know what you want to modify and need a validated delta.
+Explore when the idea is still fuzzy and you are not sure what artifacts would be affected. Change (`analyze-product-change`) when you know what you want to modify and need a validated delta.
 
 ## Reading the graph from high altitude
 
-Start from journeys and use cases — they describe what the product does. Then trace down to requirements (what the product must satisfy) and business rules (what governs it). Terms and bounded contexts define the language; actors define who participates.
+Start from journeys and use cases: they describe what the product does. Then trace down to requirements (what the product must satisfy) and business rules (what governs it). Terms and bounded contexts define the language; actors define who participates.
 
 ## Surfacing gaps
 
-- A use case with no journey is an orphan — who reaches it?
-- A requirement with no derivation is an assertion — where does it come from?
-- A business rule with no consumers is dead knowledge — who enforces it?
+Each gap is a question waiting to be asked:
+
+- A use case with no journey is an orphan: who reaches it?
+- A requirement with no derivation is an assertion: where does it come from?
+- A business rule with no consumers is dead knowledge: who enforces it?
 - A term with no usage is vocabulary nobody speaks.
+- An actor with no journeys is an audience nobody serves.
+
+## Surfacing inconsistencies
+
+- Words used in artifact prose that have no entry among the domain terms: undefined vocabulary the model relies on anyway.
+- Requirements or flows that reference artifacts not in the model: the graph claims knowledge it does not hold.
+- The same concept under two names in two artifacts: a reconciliation the team never had.
+
+## What a grounded question looks like
+
+A grounded question names something specific in the model, or a specific hole in it. A generic question outsources the thinking back to the engineer.
+
+- Grounded: "There's no use case covering bulk export, but JRN-REPORTING-002 ends at 'the operator downloads the results'; is your idea filling that gap?"
+- Grounded: "BR-DISCOUNT-002 caps discounts at 20%; would your campaign idea need an exception, or a change to the rule?"
+- Generic (avoid): "What actors are involved?"
+- Generic (avoid): "Can you tell me more about your idea?"
+
+Introduce one question at a time and let the answer steer the next one; a questionnaire is not a conversation.

@@ -3,13 +3,11 @@ name: analyze-product-change
 description: Convert a requested product modification into a Product Change and its complete proposed future-state artifacts; use when a change is requested and no change exists for it yet. This skill elaborates the change, it does not approve, apply or merge it.
 ---
 
-# Analyze Product Change (ps:change)
+# Analyze Product Change
 
 Turn a raw change request into a Product Change (`change.md`) and the complete proposed future-state artifacts it needs, under `docs/product/changes/active/<chg-id>/`.
 
-**This skill writes only inside the change directory.** It never edits a baseline file under `docs/product/model/`: while a change is live, the baseline artifacts it touches stay authoritative and unchanged, and the proposed future state lives under the change's `proposed/`. Apply later materializes an approved change on a working branch; merge acceptance is separate, and both are outside this skill.
-
-Product-definition work and implementation work have independent cadence. They may share a pull request or implementation may follow later, but the Product Change carries semantic intent and never implementation, verification, release or deployment state.
+**This skill writes only inside the change directory.** The baseline under `docs/product/model/` stays authoritative and untouched while the change is live; apply and merge acceptance come later and are outside this skill.
 
 ## Purpose
 
@@ -19,12 +17,13 @@ Provide a structured, AI-assisted elaboration workflow that reads the product gr
 
 - A stakeholder requests a product modification and no Product Change exists for it yet.
 - The engineer wants AI assistance to identify affected artifacts and draft them.
+- Do NOT use when the idea is still fuzzy: `explore-product` sharpens it against the model first.
 - Do NOT use when the change is already drafted: run `prodshape change validate <chg-id>` to check it instead.
 
 ## Required inputs
 
 - The Product Definition under `docs/product/model/` (must exist and be valid).
-- The change request (natural language intent from the user).
+- The change request (natural language intent from the engineer).
 - A change ID (e.g. `CHG-ADD-CITE-001`). The directory is its lowercase form.
 
 ## Files to read
@@ -32,8 +31,8 @@ Provide a structured, AI-assisted elaboration workflow that reads the product gr
 - All artifact files under `docs/product/model/**` (to understand the current graph).
 - `.product/config.yaml` for repository configuration.
 - `.product/templates/product-change.md` for the change template.
-- `references/operations-checklist.md` in this skill — the drafting checklist (before, during, after).
-- `references/change-template-guide.md` in this skill — the product-change frontmatter and body sections.
+- `references/operations-checklist.md` in this skill: the drafting checklist (before, during, after).
+- `references/change-template-guide.md` in this skill: the change frontmatter and body contract, the operations rules, and the lifecycle after drafting.
 
 ## Deterministic commands
 
@@ -48,21 +47,14 @@ prodshape schema product-change     # The frontmatter contract for a change
 
 ## Reasoning procedure
 
-1. **Validate the baseline** — run `prodshape validate` to ensure the Product Definition is structurally sound before drafting a delta against it.
-2. **Read the full model** — read all artifact files under `docs/product/model/**`. Understand the current graph: actors, journeys, use cases, rules, terms, requirements.
-3. **Analyze the change request** — identify which artifacts the intended outcome requires added, modified or removed. Use `prodshape impact <ID>` to check structural reach, especially before proposing a removal.
-4. **Create the change** — create `docs/product/changes/active/<chg-id>/change.md` from `.product/templates/product-change.md`. The frontmatter is closed, so any field the schema does not list is a `PRODUCT002` error. Fill in:
-   - `id`: the `CHG-` identifier
-   - `type`: `product-change`
-   - `title`: what the change is, in one line
-   - `status`: `draft`
-   - `base-revision`: the current baseline commit, quoted
-   - `operations`: `add`, `modify` and `remove`, all three present even when empty
-   - Body sections, in order: Problem, Intended Product Outcome, Rationale, Affected Product Areas, Open Questions, Product Acceptance, Out of Scope
-5. **Draft the proposed artifacts** — write the complete future-state artifact for every ID under `add` and `modify` into the change's `proposed/` directory, laid out as it will live in the model. Not a diff and not an instruction: the whole artifact as it should exist afterwards. A modification keeps the same ID.
-6. **Validate the overlay** — run `prodshape change validate <chg-id>`. It compiles the baseline with the operations applied virtually and validates the result. Fix the diagnostics it reports.
-7. **Surface open questions** — any unresolved product decision goes in `## Open Questions`, unanswered. Write `None.` only when there genuinely are none.
-8. **Report** — summarize what the change adds, modifies and removes, what diagnostics were found and fixed, and what open questions remain for the engineer.
+1. **Validate the baseline**: run `prodshape validate` to ensure the Product Definition is structurally sound before drafting a delta against it.
+2. **Read the full model**: read all artifact files under `docs/product/model/**`. Understand the current graph: actors, journeys, use cases, rules, terms, requirements.
+3. **Analyze the change request**: identify which artifacts the intended outcome requires added, modified or removed. Use `prodshape impact <ID>` to check structural reach, especially before proposing a removal.
+4. **Create the change**: `docs/product/changes/active/<chg-id>/change.md` from `.product/templates/product-change.md`, filling every frontmatter field and every ordered body section per `references/change-template-guide.md`. The frontmatter is closed (PRODUCT002) and the body sections are ordered (PRODUCT009).
+5. **Draft the proposed artifacts**: the complete future-state artifact for every ID under `add` and `modify`, into the change's `proposed/` directory, per the guide. A modification keeps the same ID.
+6. **Validate the overlay**: run `prodshape change validate <chg-id>`. It compiles the baseline with the operations applied virtually and validates the result. Fix the diagnostics it reports.
+7. **Surface open questions**: any unresolved product decision goes in `## Open Questions`, unanswered. Write `None.` only when there genuinely are none.
+8. **Report**: summarize what the change adds, modifies and removes, what diagnostics were found and fixed, and what open questions remain for the engineer.
 
 ## Allowed modifications
 
@@ -75,6 +67,7 @@ prodshape schema product-change     # The frontmatter contract for a change
 - Do NOT set `status: approved`. Approval is a human product decision.
 - Do NOT run `prodshape change apply`, merge, push, or touch the canonical branch.
 - Do NOT invent product decisions. Surface them as open questions for the human.
+- Do NOT record implementation, verification, release or deployment state in the change: it carries semantic intent only, whatever cadence delivery follows.
 
 ## Human approval points
 

@@ -10,6 +10,7 @@ import {
   findingClassifications,
   loadRecoverySession,
   markEvidence,
+  markEvidenceBulk,
   markFamilyProbe,
   nextBatch,
   parseRecoveryBrief,
@@ -21,6 +22,7 @@ import {
   snapshotEvidence,
   startRecoverySession,
   stableJson,
+  unmarkEvidence,
   writeRecoveryReport,
   computeCoverage,
   type EvidenceItem,
@@ -31,6 +33,7 @@ import {
 } from '@prodshape/core';
 import { frameworkVersion } from '@prodshape/distribution';
 import { CliError, exitCodes, resolveRepository, type CliIo } from '../context.js';
+import { checkpoint, ensureRecoveryBranch, gitDiscipline } from './recover-git.js';
 
 /**
  * Deterministic session bookkeeping for brownfield recovery. Every subcommand here manages
@@ -96,12 +99,24 @@ export async function runRecoverStart(io: CliIo, options: RecoverStartOptions): 
     brief = parsed.brief;
   }
 
+  // Branch discipline runs before any session file exists, so the session's whole life
+  // (state, candidates, checkpoints) happens on the declared branch.
+  if (brief !== undefined && gitDiscipline(brief) !== undefined) {
+    await ensureRecoveryBranch(io, repo.root, gitDiscipline(brief)!.branch);
+  }
+
   try {
     const session = await startRecoverySession(repo, {
       ...(options.session !== undefined ? { sessionId: options.session } : {}),
       ...(brief !== undefined ? { brief } : {}),
       cliVersion: await frameworkVersion(),
     });
+    await checkpoint(
+      io,
+      repo,
+      session,
+      `start ${session.state.sessionId} (${session.inventory.items.length} sources)`,
+    );
     if (options.format === 'json') {
       io.out(
         stableJson({
@@ -196,7 +211,9 @@ export async function runRecoverNext(io: CliIo, options: RecoverNextOptions): Pr
 }
 
 export interface RecoverMarkOptions extends RecoverFormatOptions {
-  source: string;
+  source?: string;
+  sources?: string;
+  glob?: string[];
   as?: string;
   artifacts?: string;
   question?: string;
@@ -205,6 +222,18 @@ export interface RecoverMarkOptions extends RecoverFormatOptions {
   complete?: boolean;
   exclude?: boolean;
   acceptChanged?: boolean;
+}
+
+/**
+ * Split a separated id list. Commas are the documented separator; whitespace is accepted too
+ * because the PowerShell path to a npm-installed CLI turns an unquoted comma list into one
+ * space-joined argument (issue #196), and refusing to understand it helps nobody.
+ */
+function splitIdList(value: string): string[] {
+  return value
+    .split(/[\s,]+/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 }
 
 export async function runRecoverMark(io: CliIo, options: RecoverMarkOptions): Promise<number> {
@@ -219,6 +248,64 @@ export async function runRecoverMark(io: CliIo, options: RecoverMarkOptions): Pr
     }
     classification = options.as as FindingClassification;
   }
+
+  const bulk =
+    options.sources !== undefined || (options.glob !== undefined && options.glob.length > 0);
+  if (options.source === undefined && !bulk) {
+    throw new CliError(
+      'Pass --source <id-or-path>, or a bulk selection with --sources <ids> and/or --glob <glob>',
+      exitCodes.invalidInvocation,
+    );
+  }
+  if (options.source !== undefined && bulk) {
+    throw new CliError(
+      'Pass either --source or a bulk selection (--sources / --glob), not both',
+      exitCodes.invalidInvocation,
+    );
+  }
+
+  const findingOptions = {
+    ...(classification !== undefined ? { classification } : {}),
+    ...(options.artifacts !== undefined ? { artifacts: splitIdList(options.artifacts) } : {}),
+    ...(options.question !== undefined ? { question: options.question } : {}),
+    ...(options.reason !== undefined ? { reason: options.reason } : {}),
+    ...(options.note !== undefined ? { note: options.note } : {}),
+    ...(options.complete !== undefined ? { complete: options.complete } : {}),
+  };
+
+  if (bulk) {
+    if (options.exclude || options.acceptChanged) {
+      throw new CliError(
+        'Exclusion and --accept-changed are per-source decisions; use --source for them',
+        exitCodes.invalidInvocation,
+      );
+    }
+    if (classification === undefined && !options.complete) {
+      throw new CliError(
+        `Nothing to record: pass --as <classification> or --complete`,
+        exitCodes.invalidInvocation,
+      );
+    }
+    try {
+      const items = await markEvidenceBulk(repo, session, {
+        ...findingOptions,
+        ...(options.sources !== undefined ? { sources: splitIdList(options.sources) } : {}),
+        ...(options.glob !== undefined && options.glob.length > 0 ? { globs: options.glob } : {}),
+      });
+      await checkpoint(io, repo, session, `mark ${items.length} sources in bulk`);
+      if (options.format === 'json') {
+        io.out(stableJson({ marked: items }).trimEnd());
+      } else {
+        io.out(
+          `Marked ${items.length} source(s)${classification !== undefined ? ` as ${classification}` : ''}${options.complete ? ' (processed)' : ''}.`,
+        );
+      }
+      return exitCodes.success;
+    } catch (error) {
+      rethrow(error);
+    }
+  }
+
   if (classification === undefined && !options.complete && !options.exclude) {
     throw new CliError(
       `Nothing to record: pass --as <classification>, --complete, or --exclude --reason <why>`,
@@ -227,27 +314,53 @@ export async function runRecoverMark(io: CliIo, options: RecoverMarkOptions): Pr
   }
   try {
     const item = await markEvidence(repo, session, {
-      source: options.source,
-      ...(classification !== undefined ? { classification } : {}),
-      ...(options.artifacts !== undefined
-        ? {
-            artifacts: options.artifacts
-              .split(',')
-              .map((a) => a.trim())
-              .filter(Boolean),
-          }
-        : {}),
-      ...(options.question !== undefined ? { question: options.question } : {}),
-      ...(options.reason !== undefined ? { reason: options.reason } : {}),
-      ...(options.note !== undefined ? { note: options.note } : {}),
-      ...(options.complete !== undefined ? { complete: options.complete } : {}),
+      source: options.source!,
+      ...findingOptions,
       ...(options.exclude !== undefined ? { exclude: options.exclude } : {}),
       ...(options.acceptChanged !== undefined ? { acceptChanged: options.acceptChanged } : {}),
     });
+    await checkpoint(io, repo, session, `mark ${item.id} (${item.status})`);
     if (options.format === 'json') {
       io.out(stableJson({ marked: item }).trimEnd());
     } else {
       io.out(`${item.id} is now ${item.status} with ${item.findings.length} finding(s).`);
+    }
+    return exitCodes.success;
+  } catch (error) {
+    rethrow(error);
+  }
+}
+
+export interface RecoverUnmarkOptions extends RecoverFormatOptions {
+  source: string;
+  last?: boolean;
+  index?: string;
+  all?: boolean;
+}
+
+export async function runRecoverUnmark(io: CliIo, options: RecoverUnmarkOptions): Promise<number> {
+  const { repo, session } = await openSession(io, options.session);
+  let index: number | undefined;
+  if (options.index !== undefined) {
+    index = Number(options.index);
+    if (!Number.isInteger(index) || index < 1) {
+      throw new CliError('--index must be a positive integer', exitCodes.invalidInvocation);
+    }
+  }
+  try {
+    const item = await unmarkEvidence(repo, session, {
+      source: options.source,
+      ...(options.last !== undefined ? { last: options.last } : {}),
+      ...(index !== undefined ? { index } : {}),
+      ...(options.all !== undefined ? { all: options.all } : {}),
+    });
+    await checkpoint(io, repo, session, `unmark ${item.id}`);
+    if (options.format === 'json') {
+      io.out(stableJson({ unmarked: item }).trimEnd());
+    } else {
+      io.out(
+        `${item.id} is now ${item.status} with ${item.findings.length} finding(s); re-complete it with: prodshape recover mark --source ${item.id} --complete`,
+      );
     }
     return exitCodes.success;
   } catch (error) {
@@ -279,6 +392,7 @@ export async function runRecoverEvidenceAdd(
       title: options.title,
       ...(options.authorized !== undefined ? { authorized: options.authorized } : {}),
     });
+    await checkpoint(io, repo, session, `evidence add ${item.id}`);
     if (options.format === 'json') {
       io.out(stableJson({ added: item }).trimEnd());
     } else {
@@ -313,6 +427,7 @@ export async function runRecoverEvidenceSnapshot(
   }
   try {
     const item = await snapshotEvidence(repo, session, evidenceId, options.file);
+    await checkpoint(io, repo, session, `evidence snapshot ${item.id}`);
     if (options.format === 'json') {
       io.out(stableJson({ snapshotted: item }).trimEnd());
     } else {
@@ -364,6 +479,7 @@ export async function runRecoverLeadAdd(
       ...(options.source !== undefined ? { source: options.source } : {}),
       kind,
     });
+    await checkpoint(io, repo, session, `lead add ${lead.id}`);
     if (options.format === 'json') io.out(stableJson({ lead }).trimEnd());
     else io.out(`Recorded ${lead.id}: ${lead.description}`);
     return exitCodes.success;
@@ -384,6 +500,7 @@ export async function runRecoverLeadResolve(
   const { repo, session } = await openSession(io, options.session);
   try {
     const lead = await resolveLead(repo, session, leadId, options.resolution ?? '');
+    await checkpoint(io, repo, session, `lead resolve ${lead.id}`);
     if (options.format === 'json') io.out(stableJson({ lead }).trimEnd());
     else io.out(`Resolved ${lead.id}.`);
     return exitCodes.success;
@@ -430,6 +547,7 @@ export async function runRecoverQuestionAdd(
       ...(options.option !== undefined ? { options: options.option } : {}),
       ...(options.recommendation !== undefined ? { recommendation: options.recommendation } : {}),
     });
+    await checkpoint(io, repo, session, `question add ${question.id}`);
     if (options.format === 'json') io.out(stableJson({ question }).trimEnd());
     else io.out(`Recorded ${question.id}: ${question.text}`);
     return exitCodes.success;
@@ -450,6 +568,7 @@ export async function runRecoverQuestionAnswer(
   const { repo, session } = await openSession(io, options.session);
   try {
     const question = await answerQuestion(repo, session, questionId, options.answer ?? '');
+    await checkpoint(io, repo, session, `question answer ${question.id}`);
     if (options.format === 'json') io.out(stableJson({ question }).trimEnd());
     else io.out(`Answered ${question.id}.`);
     return exitCodes.success;
@@ -470,6 +589,7 @@ export async function runRecoverQuestionDefer(
   const { repo, session } = await openSession(io, options.session);
   try {
     const question = await deferQuestion(repo, session, questionId, options.reason ?? '');
+    await checkpoint(io, repo, session, `question defer ${question.id}`);
     if (options.format === 'json') io.out(stableJson({ question }).trimEnd());
     else io.out(`Deferred ${question.id}.`);
     return exitCodes.success;
@@ -513,6 +633,7 @@ export async function runRecoverFamily(
   }
   try {
     await markFamilyProbe(repo, session, family, options.note ?? '');
+    await checkpoint(io, repo, session, `family ${family} probed, none found`);
     io.out(`Recorded ${family} as probed with no candidates found.`);
     return exitCodes.success;
   } catch (error) {
@@ -525,6 +646,12 @@ export async function runRecoverCheck(io: CliIo, options: RecoverFormatOptions):
   try {
     const result = await checkRecoverySession(repo, session);
     const errors = result.issues.filter((i) => i.severity === 'error');
+    await checkpoint(
+      io,
+      repo,
+      session,
+      `check: ${errors.length} error(s), ${result.issues.length - errors.length} warning(s)`,
+    );
     if (options.format === 'json') {
       io.out(
         stableJson({
@@ -553,6 +680,7 @@ export async function runRecoverReport(io: CliIo, options: RecoverFormatOptions)
   const { repo, session } = await openSession(io, options.session);
   try {
     const { path, coverage } = await writeRecoveryReport(repo, session);
+    await checkpoint(io, repo, session, `report written`);
     if (options.format === 'json') {
       io.out(stableJson({ report: path, complete: coverage.completion.complete }).trimEnd());
     } else {
