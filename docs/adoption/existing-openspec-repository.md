@@ -4,7 +4,7 @@ This guide is for repositories that already run OpenSpec. Product Definition as 
 
 The order of adoption is: install the layer with one command, recover the product definition from the system you already have through an agent-driven session, accept it by merge, then let your OpenSpec documents cite it instead of restating it.
 
-> These commands target the supported published baseline, [`@prodshape/cli@0.16.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.16.0), which includes the OpenSpec integration. They use `prodshape`; the `product-definition` alias is equivalent through v0.x. The contracts are fixed in the [specification](https://github.com/product-definition-as-code/spec). See [Limitations](../limitations.md).
+> These commands target the supported published baseline, [`@prodshape/cli@0.17.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.17.0), which includes the OpenSpec integration. They use `prodshape`; the `product-definition` alias is equivalent through v0.x. The contracts are fixed in the [specification](https://github.com/product-definition-as-code/spec). See [Limitations](../limitations.md).
 
 ## What Product Definition adds
 

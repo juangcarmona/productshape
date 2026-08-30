@@ -4,9 +4,32 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-The supported published CLI baseline is `@prodshape/cli@0.16.0`. Every stable public CLI release from `0.1.0` through that baseline is recorded below; package-specific dependency changes remain in each package's changelog.
+The supported published CLI baseline is `@prodshape/cli@0.17.0`. Every stable public CLI release from `0.1.0` through that baseline is recorded below; package-specific dependency changes remain in each package's changelog.
 
 ## [Unreleased]
+
+## [0.17.0]
+
+The recover UX release: every change comes from the first external recovery run (a 1103-source session over a real OpenSpec repository) and closes issues #196 through #206 in one wave (PR #207).
+
+### Added
+
+- `prodshape recover unmark --source <id> --last|--index <n>|--all`: retract a wrong finding through the CLI and return the source to pending; session state is never edited by hand.
+- Bulk classification on `prodshape recover mark`: `--glob '<glob>'` (repeatable) and `--sources <ids>` apply one identical finding to a whole pending selection in a single state write, validation-first and all-or-nothing.
+- Ordered evidence `tiers` in the recovery brief: the inventory is enumerated tier by tier, so `recover next` serves SDD specs and product documentation before source code instead of relying on path order.
+- Opt-in git checkpoint discipline via the brief's `git.branch`: `recover start` creates the dedicated recovery branch (refusing modified tracked files) and every state-mutating recover command records one `recover(CHG-INITIAL): <step>` commit, making a session auditable step by step and disposable by deleting the branch. FR-RECOVER-001 was amended accordingly by CHG-RECOVER-GIT-001.
+- Two canonical skills with their commands: `bind-consumers` (`/product:bind`) backfills scope declarations and citations into existing SDD consumer documents once a baseline exists, recording drift instead of fixing it; `refine-product` (`/product:refine`) interviews the engineer through the model's weak spots (the PRODUCT111 queue, drift, deferred questions) and turns the answers into an ordinary Product Change.
+
+### Changed
+
+- `recover mark --artifacts` splits on commas and whitespace and validates every id against the canonical artifact-id pattern at record time, failing with a hint to quote the list: the npm PowerShell shim turns an unquoted comma list into one space-joined argument that previously persisted silently and only surfaced later in `recover check`.
+- Both SDD context blocks now enumerate the whole model, bounded contexts and structured behaviours included; integrated repositories pick the wording up through `prodshape integration update`.
+- The recover-product skill authors candidates by copying templates, checks after the first candidate, and closes its handover with the next moves (checkpoint commit or ready branch, snapshot preview, the lifecycle commands, the consumer-binding follow-up). The canonical skills went through a single-source-of-truth pass: each SKILL.md is the compressed view, the references own the depth, the role noun is uniformly the engineer, and every skill's "When to use" names its neighbours.
+- The adoption guides follow the workflow: the OpenSpec guide's Step 3 is now the binding step (existing documents are unclassified until bound; ship the applied `CHG-INITIAL` and the bindings in one pull request), and the recovery narratives cover tiers, bulk marking, retraction and the git discipline.
+
+### Fixed
+
+- `prodshape cite` accepts `SB-` ids: `emitCitation` still carried a pre-RFC-0084 pattern; the id grammar is now derived from the canonical kind-prefix map so a future artifact kind cannot be missed again.
 
 ## [0.16.0]
 
@@ -221,7 +244,8 @@ Published as `@prodshape/cli` 0.2.0, `core` and `distribution` 0.3.0, `integrati
 - Promotion applies its plan in two phases (preflight, then execute with the change-directory move last), so a failed promotion no longer leaves a partially promoted baseline.
 - `validation.warnings-as-errors` is enforced uniformly across baseline validate, change validate, handoff generation, graph generation and promotion.
 
-[unreleased]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.16.0...HEAD
+[unreleased]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.17.0...HEAD
+[0.17.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.16.0...@prodshape/cli@0.17.0
 [0.16.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.15.0...@prodshape/cli@0.16.0
 [0.15.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.14.0...@prodshape/cli@0.15.0
 [0.14.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.13.0...@prodshape/cli@0.14.0

@@ -1,6 +1,6 @@
 {
   "name": "@prodshape/integration-speckit",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Spec Kit integration for Product Definition as Code: configures Spec Kit workspaces with PDaC citation guidance and verifies citations against the feature-spec population.",
   "license": "Apache-2.0",
   "type": "module",
