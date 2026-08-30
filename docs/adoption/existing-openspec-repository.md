@@ -51,10 +51,10 @@ The six commands: `recover` (rebuild the definition from an existing system), `d
 Your repository already runs OpenSpec, so the product knowledge exists: in `openspec/specs/`, in the code, in tests, in people. Recovery is the brownfield path, it is agent-driven end to end, and it writes the reserved first change `CHG-INITIAL` for you. Trigger it and tell the agent where the knowledge lives, inside the repository and beyond it. For example:
 
 ```text
-/product-recover  NOTE: most of the product documentation is in docs/, many specs under openspec/specs/ are already implemented, and the onboarding guide lives in Confluence at https://yourcompany.atlassian.net/wiki/spaces/PROD; you may read it.
+/product-recover  NOTE: most of the product documentation is in docs/, and the onboarding guide lives in Confluence at https://yourcompany.atlassian.net/wiki/spaces/PROD; you may read it.
 ```
 
-Naming an external source like that Confluence page is what authorises the agent to read it; external files and URLs you have not named and approved stay unread, and everything the agent does read is registered and hashed as evidence so later drift in it is detected too.
+Tell it what it cannot discover on its own: where documentation lives, which external sources exist, what is out of scope. What the repository already states needs no telling; `openspec/specs/` is by definition implemented truth, and the workflow treats it as evidence without being asked. Naming an external source like that Confluence page is what authorises the agent to read it; external files and URLs you have not named and approved stay unread, and everything the agent does read is registered and hashed as evidence so later drift in it is detected too.
 
 What happens, in order:
 
