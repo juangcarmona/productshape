@@ -131,13 +131,10 @@ const publicDocs = [
   readme,
   ...(await Promise.all(baselineDocs.map((path) => readFile(join(repoRoot, path), 'utf8')))),
 ].join('\n');
-for (const block of publicDocs.matchAll(/```bash\r?\n([\s\S]*?)\r?\n```/g)) {
-  if (block[1]?.includes('prodshape init --sdd')) {
-    throw new Error(
-      'an executable public code block claims unreleased prodshape init --sdd behaviour',
-    );
-  }
-}
+// A guard against executable code blocks claiming `prodshape init --sdd` lived here while that
+// flag was unreleased. It went stale the same way the phrases below did: 0.16.0 published the
+// flag and the guard kept calling it unreleased. Guards on specific unreleased behaviour must be
+// removed by the release that ships the behaviour, or they become the lie they check for.
 
 // Phrasing that describes shipped behaviour as pending. Each of these went stale in place once the
 // behaviour it hedged actually published (issue #120): the pin above still named the current
