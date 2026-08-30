@@ -1,6 +1,6 @@
 ---
 name: refine-product
-description: Improve the accepted Product Definition through a question-driven interview; gather weak spots, ask the user one question at a time with evidence and options, and turn the answers into an ordinary Product Change. Use when a baseline exists and its quality needs raising.
+description: Improve the accepted Product Definition through a question-driven interview; gather weak spots, ask the engineer one question at a time with evidence and options, and turn the answers into an ordinary Product Change. Use when a baseline exists and its quality needs raising.
 ---
 
 # Refine Product
@@ -19,8 +19,8 @@ Not for diagnosis alone (`audit-product-model` reports without interviewing), no
 ## Required inputs
 
 - An accepted baseline that validates (`prodshape validate --format json`).
-- The question sources present in the repository: the low-confidence queue (PRODUCT111), audit findings when the user wants an audit first, deferred questions from the recovery session report when one exists, and `prodshape drift` output.
-- A scope agreement: which areas to refine now, and how many questions the user is up for in this sitting.
+- The question sources present in the repository: the low-confidence queue (PRODUCT111), audit findings when the engineer wants an audit first, deferred questions from the recovery session report when one exists, and `prodshape drift` output.
+- A scope agreement: which areas to refine now, and how many questions the engineer is up for in this sitting.
 
 ## Files to read
 
@@ -40,7 +40,7 @@ Not for diagnosis alone (`audit-product-model` reports without interviewing), no
 2. Interview, strictly one question at a time:
    - Present the artifact text, the uncertainty, and the evidence on each side.
    - Offer concrete interpretation options with their consequences, and a recommendation when the evidence supports one.
-   - Record the answer verbatim. If the user is unsure, park the question; parked is an outcome, not a failure.
+   - Record the answer verbatim. If the engineer is unsure, park the question; parked is an outcome, not a failure.
    - Never ask what the evidence already answers, and never bundle questions.
 3. Convert answers into a Product Change under `docs/product/changes/active/<chg-id>/`: templates copied, one proposed artifact per touched ID, `operations` complete, and a change document whose Rationale traces each edit to its question and verbatim answer, with parked questions under Open Questions. Related answers batch into one change; unrelated topics get separate changes.
 4. Validate the overlay (`prodshape change validate <CHG-ID>`) after each batch of edits and fix what it reports before continuing the interview.
@@ -54,7 +54,7 @@ Not for diagnosis alone (`audit-product-model` reports without interviewing), no
 ## Forbidden actions
 
 - Editing `docs/product/model`.
-- Writing an answer the user did not give, or raising confidence without new evidence or a human decision.
+- Writing an answer the engineer did not give, or raising confidence without new evidence or a human decision.
 - Treating silence or hesitation as a decision; ask again, or park the question.
 - Bundling several questions into one message, or interrogating past the agreed sitting.
 - Applying, committing, merging or approving anything.

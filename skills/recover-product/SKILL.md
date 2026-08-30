@@ -7,9 +7,9 @@ description: Recover an initial ProductShape definition from a brownfield system
 
 ## Purpose
 
-Reconstruct candidate product knowledge (actors, journeys, use cases, business rules, domain terms, bounded contexts, functional requirements, quality requirements, constraints) from the evidence an existing system leaves behind: its repository, materials the user supplies, and online resources the user explicitly authorises. The work is split on a hard line. The deterministic CLI (`prodshape recover ...`) owns the bookkeeping: evidence inventory, content hashes, batches, coverage, checkpoints, validation, the final report. This skill owns the semantics: reading evidence, extracting candidates, reconciling duplicates and contradictions, and asking the user when meaning is uncertain. Neither side may do the other's job.
+Reconstruct candidate product knowledge (actors, journeys, use cases, business rules, domain terms, bounded contexts, functional requirements, quality requirements, constraints) from the evidence an existing system leaves behind: its repository, materials the engineer supplies, and online resources the engineer explicitly authorises. The work is split on a hard line. The deterministic CLI (`prodshape recover ...`) owns the bookkeeping: evidence inventory, content hashes, batches, coverage, checkpoints, validation, the final report. This skill owns the semantics: reading evidence, extracting candidates, reconciling duplicates and contradictions, and asking the engineer when meaning is uncertain. Neither side may do the other's job.
 
-Every candidate is proposed, never accepted: candidates live in the proposed overlay of `CHG-INITIAL` under `docs/product/changes/active/chg-initial/`, carry `status: draft` and `provenance` frontmatter, and enter the model only after human product approval, explicit apply on a working branch and merge acceptance of the resulting baseline. This skill stops before those lifecycle steps.
+Every candidate is proposed, never accepted: candidates carry `status: draft` and `provenance` frontmatter inside the `CHG-INITIAL` overlay, and enter the model only after human product approval, explicit apply on a working branch and merge acceptance of the resulting baseline. This skill stops before those lifecycle steps.
 
 ## When to use
 
@@ -20,8 +20,8 @@ Do not use this skill for greenfield intent (use `define-product`) or to review 
 
 ## Required inputs
 
-- A recovery brief agreed with the user before any extraction: source roots, include and exclude globs, forbidden directories, documentation languages, product scope, known actors and terminology, synonyms and obsolete names, source authority rules, ordered evidence tiers (SDD specs and product documentation before source code), known contradictions, material to ignore, secondary evidence policy, batch size, areas requiring confirmation, optional git checkpoint discipline, and any external sources. Authoring guidance and the full template are in `references/evidence-classification.md`.
-- Explicit user authorisation, in this conversation, for every external file or online resource before it is read. Listing a source in the brief the user reviewed counts; assuming access does not.
+- A recovery brief agreed with the engineer before any extraction: source roots, include and exclude globs, forbidden directories, documentation languages, product scope, known actors and terminology, synonyms and obsolete names, source authority rules, ordered evidence tiers (SDD specs and product documentation before source code), known contradictions, material to ignore, secondary evidence policy, batch size, areas requiring confirmation, optional git checkpoint discipline, and any external sources. Authoring guidance and the full template are in `references/evidence-classification.md`.
+- The engineer's explicit authorisation, in this conversation, for every external file or online resource before it is read. Listing a source in the brief the engineer reviewed counts; assuming access does not.
 - Whether a session already exists: `prodshape recover status` resumes; `prodshape recover start` begins.
 
 ## Files to read
@@ -44,7 +44,7 @@ Do not use this skill for greenfield intent (use `define-product`) or to review 
 - `prodshape recover mark --glob '<glob>' ...` (or `--sources <ids>`): apply one identical finding to a whole pending selection in a single call, for corroborating material like implementation code. Never loop the single-source form over hundreds of files.
 - `prodshape recover unmark --source <id> --last|--index <n>|--all`: retract a wrong finding. Session state is corrected only through this command, never by editing session files.
 - `prodshape recover evidence add|snapshot|list`: register and freeze external or user-provided evidence.
-- `prodshape recover lead add|resolve|list` and `prodshape recover question add|answer|defer|list`: persist every lead and every user question with its answer.
+- `prodshape recover lead add|resolve|list` and `prodshape recover question add|answer|defer|list`: persist every lead and every question with its answer.
 - `prodshape recover family <kind> --none-found --note <what was searched>`: record a probed family that yielded nothing.
 - `prodshape recover check`: re-hash evidence, detect drift, verify the model stayed untouched, revalidate the `CHG-INITIAL` overlay.
 - `prodshape recover report`: the final report into the session directory.
@@ -54,12 +54,14 @@ Structural facts come from these commands, never from your own reading of state 
 
 ## Reasoning procedure
 
-1. Orient. Confirm this is genuinely initial recovery (`recover start` enforces it), agree the brief with the user, and resolve ambiguity about scope before extraction, not after.
-2. Inventory. `recover start` builds the deterministic inventory from the brief: repository files plus declared external sources. Register anything the user hands you later with `recover evidence add` (externals need `--authorized`).
+The full session loop, with its per-step commands and resume discipline, is `references/recovery-workflow.md`; this is the compressed view.
+
+1. Orient. Confirm this is genuinely initial recovery (`recover start` enforces it), agree the brief with the engineer, and resolve ambiguity about scope before extraction, not after.
+2. Inventory. `recover start` builds the deterministic inventory from the brief: repository files plus declared external sources. Register anything the engineer hands you later with `recover evidence add` (externals need `--authorized`).
 3. Process batches. `recover next`, then read each source in full. Identify explicit product claims and implications separately. Extract candidates into `CHG-INITIAL/proposed/` with provenance and confidence. Classify every relevant section of the source and `recover mark` it, with `--complete` only when nothing relevant is left unclassified.
 4. Expand. Every mention of an unseen subsystem, document or person becomes a lead (`recover lead add`). Resolve every lead before completion.
 5. Reconcile continuously. Duplicates merge with provenance preserved; contradictions are recorded, linked to a question, and never resolved silently.
-6. Ask. When meaning is uncertain, interpretations conflict, the product boundary is unclear, or an external source needs confirmation: `recover question add` with evidence summary, options and a recommendation where the evidence supports one, then put the question to the user and `recover question answer` with their decision. Defer only with the user's agreement.
+6. Ask. When meaning is uncertain, interpretations conflict, the product boundary is unclear, or an external source needs confirmation: `recover question add` with evidence summary, options and a recommendation where the evidence supports one, then put the question to the engineer and `recover question answer` with their decision. Defer only with the engineer's agreement.
 7. Checkpoint and repeat. State persists on every command; a new session of work resumes from `recover status`, trusting only persisted state. Run `recover check` after every few batches and after any pause: it catches changed evidence, model drift and validation regressions.
 8. Finish. When `recover status` reports every completion criterion met, run `recover report` and hand over per `references/completion-criteria.md`.
 
@@ -75,16 +77,16 @@ Structural facts come from these commands, never from your own reading of state 
 - Targeting any change other than `CHG-INITIAL`, or starting recovery when a baseline exists.
 - Marking candidates `active`, applying the change, merging or pushing anything. Committing is equally forbidden, with one bounded exception: when the brief declares the git checkpoint discipline, the CLI itself records checkpoint commits on the declared recovery branch; you still never run version-control commands yourself.
 - Reading paths the brief forbids, or any credential and secret material; they are never evidence.
-- Fetching an external file or URL the user has not explicitly authorised.
-- Resolving contradictions between sources yourself; they stay open questions until the user decides.
+- Fetching an external file or URL the engineer has not explicitly authorised.
+- Resolving contradictions between sources yourself; they stay open questions until the engineer decides.
 - Emitting a candidate without provenance, or presenting inferred intent as observed behaviour.
 - Inventing frontmatter fields; each kind accepts exactly what `prodshape schema <kind>` prints.
 - Using chat history as session state; the persisted session files are the only memory that counts.
 
 ## Human approval points
 
-- The brief: scope, sources, exclusions and external access are the user's call. Confirm before the first batch.
-- Every external source: named, explained and authorised by the user before it is read.
+- The brief: scope, sources, exclusions and external access are the engineer's call. Confirm before the first batch.
+- Every external source: named, explained and authorised by the engineer before it is read.
 - Every question raised during processing: present evidence, options, consequences and your recommendation; record the answer verbatim.
 - The final gate: present the report, the candidate list with confidence, the contradictions and the deferred questions. The human reviews `CHG-INITIAL` and decides whether to reject it or grant product approval; you stop at the handover. Apply and merge acceptance happen later through the normal Product Change lifecycle.
 

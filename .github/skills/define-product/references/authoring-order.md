@@ -3,16 +3,17 @@
 
 # Authoring order
 
-The Define flow follows a conceptual dependency chain:
+The Define flow follows a conceptual dependency chain. Each family gives the next its grounding: journeys without actors are screen flows, use cases without journeys are feature lists, requirements without derivation are decisions with no reason.
 
-1. Actors — who or what interacts with the product, identified before any feature is invented.
-2. Journeys — the end-to-end outcomes those actors pursue.
-3. Use cases — the concrete interactions inside journey steps.
-4. Business rules and domain terms — the constraints and language the use cases surface.
-5. Requirements — obligations derived from all of the above, each with `derived-from`.
+1. **Actors** BEFORE inventing features. List every human, external system and scheduled process that interacts with the product. Purpose, goals, responsibilities, boundaries; no personas, no demographics.
+2. **Journeys** around outcomes. For each significant actor goal, draft the end-to-end path to the outcome, including branches, failures, waiting and manual steps.
+3. **Use cases** from journey steps. Each meaningful interaction becomes a use case with trigger, preconditions, main flow, alternatives, failure conditions and postconditions; observable behaviour only.
+4. **Business rules** extracted from flows. Every "unless", "must", "only when" hidden in a flow becomes an independently identifiable Business Rule referenced by ID from the flows it governs.
+5. **Domain terms and bounded contexts.** Define every word two people could read differently; when one word carries two meanings, create two terms in two contexts.
+6. **Requirements** with traceability. Every functional requirement, quality requirement and constraint names what it derives from (`derived-from`) and carries verification scenarios.
 
-This order exists because each family gives the next its grounding: journeys without actors are screen flows, use cases without journeys are feature lists, requirements without derivation are decisions with no reason.
+## A graph, not a waterfall
 
-It is NOT a mandatory sequence. The product model is a graph, not a waterfall, and discovery loops: drafting a use case reveals a missing actor; extracting a rule forces a term to be defined; writing a requirement sends you back to sharpen a journey. Start anywhere the intent is clearest and iterate — what matters is that the finished set satisfies the dependencies (every use case has its actor, every requirement its derivation), not that they were authored in order.
+The order is NOT a mandatory sequence. The product model is a graph, and discovery loops: drafting a use case reveals a missing actor; extracting a rule forces a term to be defined; writing a requirement sends you back to sharpen a journey. Start anywhere the intent is clearest and iterate.
 
-Treat the numbered flow as the natural order of discovery and as the checklist for completeness, never as a gate that blocks going back.
+What matters is that the finished set satisfies the dependencies (every use case has its actor, every requirement its derivation), not that they were authored in order. Treat the numbered flow as the natural order of discovery and as the checklist for completeness, never as a gate that blocks going back.

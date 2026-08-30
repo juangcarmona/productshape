@@ -16,6 +16,7 @@
     "lifecycle:check": "node scripts/check-current-lifecycle-language.mjs",
     "docs:frontmatter": "tsx scripts/generate-frontmatter-reference.mts && prettier --write docs/specification/frontmatter-reference.md",
     "schemas:sync": "tsx scripts/sync-schemas.mts",
+    "sync:assets": "tsx scripts/sync-assets.mts",
     "registry:sync": "tsx scripts/sync-spec-registry.mts",
     "typecheck": "pnpm -r run typecheck",
     "test": "vitest run",

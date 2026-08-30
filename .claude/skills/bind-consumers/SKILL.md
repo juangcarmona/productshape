@@ -14,7 +14,7 @@ Make every current SDD consumer document (OpenSpec or Spec Kit) bound or exempt 
 
 ## When to use
 
-- Right after an initial recovery baseline is applied or accepted: the workspace has SDD documents that predate the model, so every one is unclassified and provider verification fails by design.
+- Right after an initial recovery baseline is applied or accepted (the `recover-product` handover offers exactly this follow-up): the workspace has SDD documents that predate the model, so every one is unclassified and provider verification fails by design.
 - Any time provider verification reports unclassified documents or bound documents with zero citations.
 
 Not for authoring new SDD changes (the integration rules in the SDD configuration govern those), and not for changing the model (that is a Product Change).
@@ -23,7 +23,7 @@ Not for authoring new SDD changes (the integration rules in the SDD configuratio
 
 - A Product Definition that validates with zero errors (`prodshape validate`). An invalid model offers no reliable IDs or digests; stop and have it fixed first.
 - The provider, detected from the installed integration (`openspec` or `speckit`).
-- The user's decision on every exemption: `pdac-scope: none` is a human declaration. Collect proposed exemptions with reasons, present them, and write only the approved ones.
+- The engineer's decision on every exemption: `pdac-scope: none` is a human declaration. Collect proposed exemptions with reasons, present them, and write only the approved ones.
 
 ## Files to read
 
@@ -44,12 +44,12 @@ Not for authoring new SDD changes (the integration rules in the SDD configuratio
 2. Per current document, read it in full. List the artifacts that govern it: search the model by the document's own vocabulary, widen with `prodshape impact` on each hit, and note the neighbours you deliberately leave out.
 3. Classify every requirement or claim in the document:
    - Aligned with the model: cite it. Place each citation under the text it grounds, one per line, in the document's native comment, at the position the provider reference specifies.
-   - Contradicts the model: record it with `<!-- pdac-drift ids="..." summary="..." -->` next to the conflict and add it to the drift report for the user. Never rewrite either side to make the conflict disappear.
+   - Contradicts the model: record it with `<!-- pdac-drift ids="..." summary="..." -->` next to the conflict and add it to the drift report for the engineer. Never rewrite either side to make the conflict disappear.
    - Beyond the model (the document knows something the model does not): note it as a candidate for an ordinary Product Change. Never edit the model from here.
-   - No product-semantic dependency: queue a proposed exemption with a reason for the user.
-4. Declare scope: `pdac-scope: cited` on every document that received citations; write approved exemptions exactly as the user confirmed them.
+   - No product-semantic dependency: queue a proposed exemption with a reason for the engineer.
+4. Declare scope: `pdac-scope: cited` on every document that received citations; write approved exemptions exactly as the engineer confirmed them.
 5. Re-run provider verification. Repeat until every current document is bound or exempt and every citation is current.
-6. Hand over: citations added per document, drift markers with summaries, exemptions written, Product Change candidates, and the final verification output. Committing and pull requests are the user's call; when this work follows an applied `CHG-INITIAL`, suggest shipping both in the same pull request so the baseline and its bindings are accepted together.
+6. Hand over: citations added per document, drift markers with summaries, exemptions written, Product Change candidates, and the final verification output. Committing and pull requests are the engineer's call; when this work follows an applied `CHG-INITIAL`, suggest shipping both in the same pull request so the baseline and its bindings are accepted together.
 
 ## Allowed modifications
 
@@ -60,7 +60,7 @@ Not for authoring new SDD changes (the integration rules in the SDD configuratio
 
 - Editing `docs/product/model` or any Product Change.
 - Changing a document's requirements, scenarios or prose while citing it.
-- Declaring an exemption the user did not approve, or declaring one to silence a diagnostic.
+- Declaring an exemption the engineer did not approve, or declaring one to silence a diagnostic.
 - Writing citation payloads or digests by hand.
 - Deleting or weakening a citation to hide drift; drift is recorded, presented and decided by humans.
 - Citing archived documents; history stays untouched.
@@ -68,13 +68,13 @@ Not for authoring new SDD changes (the integration rules in the SDD configuratio
 ## Human approval points
 
 - Every exemption, with its reason.
-- Every drift marker: present both sides and a recommendation; the resolution (a Product Change or a spec fix) is the user's.
+- Every drift marker: present both sides and a recommendation; the resolution (a Product Change or a spec fix) is the engineer's.
 - The final handover, before anything is committed.
 
 ## Expected outputs
 
 - Every current consumer document bound with current citations, or exempt with a human-approved reason.
-- A drift list the user can act on (`prodshape drift` reproduces it).
+- A drift list the engineer can act on (`prodshape drift` reproduces it).
 - A list of Product Change candidates for knowledge the model lacks.
 
 ## Completion checks
