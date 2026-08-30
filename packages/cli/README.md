@@ -43,7 +43,8 @@ prodshape change list [--all]               # live changes, or the whole change 
 prodshape change apply CHG-ID [--dry-run]   # materialize an approved change; never commits
 prodshape change archive CHG-ID             # file a rejected or superseded change
 prodshape recover start --brief brief.yaml  # open a brownfield recovery session: evidence inventory, hashes, checkpoints
-prodshape recover next | mark | check       # bounded batches, per-source classification, drift detection and overlay validation
+prodshape recover next | mark | check       # bounded batches (tier-ordered), per-source or bulk (--glob) classification, drift detection
+prodshape recover unmark --source <id>      # retract a wrong finding; session state is never edited by hand
 prodshape recover report                    # final recovery report; candidates stay proposed under CHG-INITIAL
 prodshape citations verify                  # check citations in consumer documents
 prodshape doctor                            # repository health

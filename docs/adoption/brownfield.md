@@ -30,11 +30,14 @@ A brownfield repository that already runs OpenSpec can wire the integration in t
 
 The Recover operation reconstructs product knowledge from what the system already tells you. The workflow is described in [Recover](../methodology/recover.md); the essentials:
 
-**A recovery brief bounds the session.** Before anything is read, you and the assistant agree a brief: which roots and file patterns are evidence, what is excluded or forbidden, the documentation languages, the product scope, known actors and vocabulary (including obsolete names), which source wins when sources disagree, the batch size, the areas where you want to confirm candidates personally, and any external material you explicitly authorise. Then:
+**A recovery brief bounds the session.** Before anything is read, you and the assistant agree a brief: which roots and file patterns are evidence, what is excluded or forbidden, the documentation languages, the product scope, known actors and vocabulary (including obsolete names), which source wins when sources disagree, ordered evidence tiers (specification documents and product docs first, source code last; the tiers drive the batch order), the batch size, the areas where you want to confirm candidates personally, and any external material you explicitly authorise. The brief can also declare `git.branch`: the session then runs on that dedicated branch and the CLI records one checkpoint commit per step, so the whole experiment is auditable step by step and disposable by deleting the branch. Then:
 
 ```bash
 prodshape recover start --brief brief.yaml   # inventory the declared evidence, hash it, checkpoint
 prodshape recover next                       # the next bounded batch to read
+prodshape recover mark --source E-0001 --as represented --artifacts "UC-CHECKOUT,BR-LIMIT"   # record classifications (quote the list)
+prodshape recover mark --glob 'src/**' --as no-product-intent --reason "..." --complete      # one identical finding for a whole selection
+prodshape recover unmark --source E-0001 --last   # retract a wrong finding; session files are never edited by hand
 prodshape recover status                     # coverage, open questions and completion criteria
 prodshape recover check                      # detect changed evidence, revalidate the overlay
 prodshape recover report                     # the final report, once complete
@@ -75,7 +78,9 @@ prodshape validate
 
 Fix errors; review warnings. Warnings like `PRODUCT105` (business rule with no consumers) or `PRODUCT103` (requirement unreachable from any actor) are common in recovered models and usually point at knowledge you have not finished connecting — see [Validation](../specification/validation.md).
 
-`PRODUCT111` is the recovery-specific one: a `draft` candidate whose `provenance.confidence` is `low`. It is not a defect to fix but a queue to work through — every artifact resting on weak evidence, listed by the tool rather than tracked by hand. It stops firing when the candidate is accepted into the baseline or its evidence improves.
+`PRODUCT111` is the recovery-specific one: a `draft` candidate whose `provenance.confidence` is `low`. It is not a defect to fix but a queue to work through — every artifact resting on weak evidence, listed by the tool rather than tracked by hand. It stops firing when the candidate is accepted into the baseline or its evidence improves. Once the baseline is accepted, the `refine-product` skill (`/product:refine`) works exactly this queue: it interviews you through the weak spots one question at a time and turns your answers into an ordinary Product Change.
+
+In an SDD workspace (OpenSpec, Spec Kit), one more step follows apply: your existing specification documents were read as evidence but never written to, so they are unclassified until they declare scope and cite the new baseline, and `prodshape citations verify --provider <name>` fails on them by design until then. The `bind-consumers` skill (`/product:bind`) drives that backfill; ship it in the same pull request as the applied `CHG-INITIAL` when you can. See [Adopting in an existing OpenSpec repository](existing-openspec-repository.md).
 
 If validation reports `PRODUCT101` (file name not aligned with its ID), fix every occurrence at once:
 

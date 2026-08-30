@@ -191,7 +191,7 @@ What to read next:
 
 ## Agent skills
 
-`prodshape init --ai claude,codex,copilot` installs generated commands and skills for the chosen providers, so an AI agent works the model through the same operations you do: explore, define, change, audit, impact and recover. The assets are canonical to the CLI. Run `prodshape integration update` to refresh them after an upgrade. [The methodology overview](docs/methodology/overview.md) explains what each operation does.
+`prodshape init --ai claude,codex,copilot` installs generated commands and skills for the chosen providers, so an AI agent works the model through the same operations you do: explore, define, change, audit, impact, recover, bind (backfill citations into existing SDD documents) and refine (interview-driven model improvement). The assets are canonical to the CLI. Run `prodshape integration update` to refresh them after an upgrade. [The methodology overview](docs/methodology/overview.md) explains what each operation does.
 
 ## PDaC conformance
 

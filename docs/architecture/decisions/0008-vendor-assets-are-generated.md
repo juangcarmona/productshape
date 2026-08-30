@@ -8,7 +8,7 @@ The toolkit ships AI assets for multiple providers: Claude Code reads `.claude/`
 
 ## Decision
 
-The canonical AI assets live once, provider-neutrally, in the repository: `skills/` (five skills), `commands/` (six thin `/product:*` commands) and `templates/`. The push-pipeline hooks were retired by RFC #4. Provider files under `.claude/`, `.github/` and `.agents/` are generated from them by the `distribution` package, using the provider mappings exported by `integration-claude`, `integration-copilot` and `integration-codex`.
+The canonical AI assets live once, provider-neutrally, in the repository: `skills/`, `commands/` (thin `/product:*` commands) and `templates/`. The push-pipeline hooks were retired by RFC #4. Provider files under `.claude/`, `.github/` and `.agents/` are generated from them by the `distribution` package, using the provider mappings exported by `integration-claude`, `integration-copilot` and `integration-codex`.
 
 Every generated provider file carries a managed-file header — a marker, the framework version, the canonical source and a content hash — and is recorded in `installation.lock.json`. `prodshape integration update` regenerates managed files; `prodshape doctor` compares actual content hashes against the lock file and reports hand-edited (`PRODUCT051`) or missing (`PRODUCT052`) managed files. No manually maintained provider duplicates exist.
 
