@@ -2,7 +2,7 @@
 
 An honest account of what the toolkit does not do: where the implemented scope has operational limits, what is deliberately excluded, and where the design has known limits. Genuinely open decisions are tracked separately in [OPEN-DECISIONS.md](../OPEN-DECISIONS.md).
 
-> Supported baseline: `@prodshape/cli@0.16.0`, the version `main` is prepared to release; the latest version actually on npm can trail it until the release workflow completes. This file is deliberately unversioned: a limitations document named after one release stops describing the product at the next one. Items explicitly labelled **Unreleased** describe the next release candidate on `main`, not the published packages.
+> Supported baseline: `@prodshape/cli@0.17.0`, the version `main` is prepared to release; the latest version actually on npm can trail it until the release workflow completes. This file is deliberately unversioned: a limitations document named after one release stops describing the product at the next one. Items explicitly labelled **Unreleased** describe the next release candidate on `main`, not the published packages.
 
 ## Implementation status
 
