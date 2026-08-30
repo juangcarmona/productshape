@@ -12,8 +12,8 @@ The extension adds commands and hooks only. It gains no write authority over the
 
 ## Requirements
 
-- A Spec Kit workspace (`specify init`).
-- ProductShape reachable as `npx prodshape` (install: `npm install -g @prodshape/cli`, or as a devDependency).
+- A Spec Kit workspace (`specify init`). Verified on Spec Kit 0.7.2 and 1.0.1.
+- ProductShape 0.16.0 or newer, reachable as `npx prodshape` (install: `npm install -g @prodshape/cli`, or as a devDependency). 0.16.0 is the floor because `speckit.pdac.verify` runs `citations verify --provider speckit --format json` and relies on the `pdac-scope` exemption carrier, neither of which works on 0.14.0; 0.15.0 was never published.
 - A product definition: `npx prodshape init` for greenfield, or the [brownfield recovery path](../../docs/adoption/brownfield.md).
 
 Recommended companion: `npx prodshape integration add speckit`, which installs the full guidance at `.specify/memory/pdac.md`, merges the Product Grounding blocks into the workspace templates and provides the CI example. The extension and the integration compose; each also works alone.
@@ -35,11 +35,13 @@ Alternatives:
 # From a local checkout of this repository
 specify extension add /path/to/productshape/extensions/speckit-pdac --dev
 
-# From a release asset URL directly
+# From a release asset URL directly (the specify CLI asks you to confirm an untrusted source)
 specify extension add pdac --from https://github.com/juangcarmona/productshape/releases/latest/download/speckit-pdac.zip
 ```
 
 Verify the installation with `specify extension list` and `specify extension info pdac`.
+
+Spec Kit's own community catalog lists this extension for discovery — `specify extension search` finds it there. It is not an install source: installs come from the ProductShape catalog above, which is the one that pins each release asset and its sha256.
 
 ## Uninstall
 
