@@ -26,6 +26,7 @@ Adoption: [UC-INIT-001](use-cases/uc-init-001.md), [UC-DEFINE-001](use-cases/uc-
 - [BR-CHANGE-001](business-rules/br-change-001.md) — Product Changes are overlay-validated, approved and applied; merge accepts the resulting baseline.
 - [BR-SDD-001](business-rules/br-sdd-001.md) — consumers cite, never own semantics.
 - [BR-AI-001](business-rules/br-ai-001.md) — deterministic validation is never delegated to AI.
+- [BR-MUTATION-001](business-rules/br-mutation-001.md) — repository mutation is contained, planned, drift-safe and fails closed.
 
 ## Structured behaviours
 

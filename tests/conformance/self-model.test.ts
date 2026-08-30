@@ -48,6 +48,9 @@ const expectedIds: Record<string, string[]> = {
     'BR-CHANGE-001',
     'BR-SDD-001',
     'BR-AI-001',
+    // Added by CHG-MUTATION-SAFETY-001 (repository mutation is contained, planned, drift-safe
+    // and fails closed).
+    'BR-MUTATION-001',
   ],
   'domain-term': [
     'TERM-PRODUCT-ARTIFACT',

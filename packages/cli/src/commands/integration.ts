@@ -1,12 +1,13 @@
 import {
+  applyProviderPlan,
+  applyProviderRemoval,
   checkIntegrations,
-  emptyLock,
+  InstallationLockError,
   InstallConflictError,
-  installProvider,
-  readLock,
+  planProvider,
+  planProviderRemoval,
   rendererFor,
   updateIntegrations,
-  writeLock,
 } from '@prodshape/distribution';
 import {
   addOpenSpecIntegration,
@@ -26,8 +27,6 @@ import {
   SPECKIT_VERIFY_COMMAND,
   updateSpecKitIntegration,
 } from '@prodshape/integration-speckit';
-import { rm } from 'node:fs/promises';
-import { join } from 'node:path';
 import {
   CliError,
   exitCodes,
@@ -35,6 +34,24 @@ import {
   resolveRepository,
   type CliIo,
 } from '../context.js';
+
+/**
+ * An installation lock that exists but cannot be trusted is a refusal, not a crash: every
+ * integration command stops with the validation exit code rather than proceeding as though
+ * nothing were installed.
+ */
+function asCliError(error: unknown): CliError {
+  if (error instanceof InstallationLockError) {
+    return new CliError(error.message, exitCodes.validationErrors);
+  }
+  if (error instanceof InstallConflictError) {
+    return new CliError(error.message, exitCodes.validationErrors);
+  }
+  return new CliError(
+    error instanceof Error ? error.message : String(error),
+    exitCodes.validationErrors,
+  );
+}
 
 export async function runIntegrationAdd(
   io: CliIo,
@@ -116,22 +133,54 @@ export async function runIntegrationAdd(
       exitCodes.invalidInvocation,
     );
   }
-  let result;
+  // Plan first, always. A dry run is the plan without the apply, so what the report says is what
+  // the real run does; the previous order — install, then check the flag — wrote every managed
+  // file and then announced that nothing had been written.
+  let plan;
   try {
-    result = await installProvider(repo.root, provider, {
+    plan = await planProvider(repo.root, provider, {
       force: options?.force,
       render: { shorthandCommands: repo.config.prodshape.integrations['shorthand-commands'] },
     });
   } catch (error) {
-    if (error instanceof InstallConflictError) {
-      throw new CliError(error.message, exitCodes.validationErrors);
-    }
-    throw error;
+    throw asCliError(error);
   }
+
   if (options?.dryRun) {
     io.out('Dry run — no files written.');
+    for (const path of plan.created) io.out(`  would create: ${path}`);
+    for (const path of plan.regenerated) io.out(`  would regenerate: ${path}`);
+    for (const path of plan.overwritten) io.out(`  would overwrite: ${path}`);
+    for (const path of plan.orphans) io.out(`  would remove if unmodified: ${path}`);
+    // A dry run predicts the outcome, including a refusal: reporting success here and failing on
+    // the real run would make the report the one thing a maintainer cannot rely on.
+    if (plan.conflicts.length > 0) {
+      throw new CliError(
+        new InstallConflictError(provider, plan.conflicts).message,
+        exitCodes.validationErrors,
+      );
+    }
+    if (plan.created.length === 0 && plan.overwritten.length === 0 && plan.orphans.length === 0) {
+      io.out(`  ${provider} integration is already up to date.`);
+    }
+    return exitCodes.success;
   }
-  io.out(`Installed ${result.provider} integration (${result.written.length} managed file(s)).`);
+
+  if (plan.conflicts.length > 0) {
+    throw new CliError(
+      new InstallConflictError(provider, plan.conflicts).message,
+      exitCodes.validationErrors,
+    );
+  }
+  let result;
+  try {
+    result = await applyProviderPlan(repo.root, plan);
+  } catch (error) {
+    throw asCliError(error);
+  }
+  io.out(
+    `Installed ${result.provider} integration (${result.written.length + result.unchanged.length} managed file(s)).`,
+  );
   return exitCodes.success;
 }
 
@@ -153,14 +202,11 @@ export async function runIntegrationUpdate(
       render: { shorthandCommands: repo.config.prodshape.integrations['shorthand-commands'] },
     });
   } catch (error) {
-    if (error instanceof InstallConflictError) {
-      throw new CliError(error.message, exitCodes.validationErrors);
-    }
-    throw error;
+    throw asCliError(error);
   }
   for (const result of results) {
     io.out(
-      `Regenerated ${result.provider} integration (${result.written.length} managed file(s)).`,
+      `Regenerated ${result.provider} integration (${result.written.length + result.unchanged.length} managed file(s)).`,
     );
     if (result.removed.length > 0) {
       io.out(
@@ -224,8 +270,19 @@ export async function runIntegrationUpdate(
 export async function runIntegrationCheck(io: CliIo): Promise<number> {
   const repo = await resolveRepository(io);
 
-  // Check AI provider integrations (managed-file drift).
-  const diagnostics = await checkIntegrations(repo.root);
+  // Check AI provider integrations (managed-file drift). A lock that exists but cannot be trusted
+  // fails the check: there is no record of what is managed, so reporting a clean result would be
+  // reporting that an unverifiable installation is verified.
+  let diagnostics;
+  try {
+    diagnostics = await checkIntegrations(repo.root);
+  } catch (error) {
+    if (error instanceof InstallationLockError) {
+      io.err(error.message);
+      return exitCodes.validationErrors;
+    }
+    throw error;
+  }
   for (const diagnostic of diagnostics) io.out(formatDiagnosticLine(diagnostic));
 
   const aiOk = diagnostics.length === 0;
@@ -267,7 +324,7 @@ export async function runIntegrationCheck(io: CliIo): Promise<number> {
 export async function runIntegrationRemove(
   io: CliIo,
   provider: string,
-  options?: { dryRun?: boolean },
+  options?: { dryRun?: boolean; force?: boolean },
 ): Promise<number> {
   const repo = await resolveRepository(io);
 
@@ -332,36 +389,63 @@ export async function runIntegrationRemove(
     );
   }
 
-  // Remove AI provider managed files and lock entry.
-  const lock = (await readLock(repo.root)) ?? emptyLock('0.0.0');
-  if (!lock.providers[provider]) {
+  // Remove AI provider managed files and lock entry. Planned first, and drift-safe by default:
+  // a managed file a human edited is the human's work, and deleting it because the lock happens
+  // to name it destroys content the product never wrote.
+  let plan;
+  try {
+    plan = await planProviderRemoval(repo.root, provider, { force: options?.force });
+  } catch (error) {
+    throw asCliError(error);
+  }
+
+  const touched =
+    plan.removed.length + plan.preserved.length + plan.missing.length + plan.rejected.length;
+  if (touched === 0) {
     io.out(`${provider} integration is not installed.`);
     return exitCodes.success;
   }
-  const entry = lock.providers[provider]!;
-  const removed: string[] = [];
-  for (const path of Object.keys(entry.files).sort()) {
-    const target = join(repo.root, ...path.split('/'));
-    if (!options?.dryRun) {
-      await rm(target, { force: true });
+
+  const report = (): void => {
+    for (const path of plan.preserved) {
+      io.out(`  preserved (modified by hand): ${path}`);
     }
-    removed.push(path);
-  }
-
-  if (!options?.dryRun) {
-    delete lock.providers[provider];
-    await writeLock(repo.root, lock);
-  }
-
-  if (removed.length === 0) {
-    io.out(`${provider} integration is not installed.`);
-    return exitCodes.success;
-  }
+    for (const path of plan.missing) {
+      io.out(`  already absent: ${path}`);
+    }
+    for (const rejection of plan.rejected) {
+      io.out(`  refused (not a repository-relative path): ${rejection.path}`);
+    }
+    if (plan.preserved.length > 0) {
+      io.out(
+        `${plan.preserved.length} modified file(s) were kept, and stay recorded in the installation lock. Re-run with --force to remove them.`,
+      );
+    }
+  };
 
   if (options?.dryRun) {
     io.out('Dry run — no files removed.');
+    for (const path of plan.removed) io.out(`  would remove: ${path}`);
+    report();
+    if (plan.removed.length === 0 && plan.preserved.length === 0) {
+      io.out(`  nothing to remove for the ${provider} integration.`);
+    }
+    return plan.rejected.length > 0 ? exitCodes.validationErrors : exitCodes.success;
   }
-  io.out(`Removed ${provider} integration (${removed.length} file(s)):`);
-  for (const path of removed) io.out(`  ${path}`);
-  return exitCodes.success;
+
+  let result;
+  try {
+    result = await applyProviderRemoval(repo.root, plan);
+  } catch (error) {
+    throw asCliError(error);
+  }
+
+  if (result.removed.length > 0) {
+    io.out(`Removed ${provider} integration (${result.removed.length} file(s)):`);
+    for (const path of result.removed) io.out(`  ${path}`);
+  } else {
+    io.out(`Removed no ${provider} files.`);
+  }
+  report();
+  return plan.rejected.length > 0 ? exitCodes.validationErrors : exitCodes.success;
 }

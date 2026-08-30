@@ -46,12 +46,32 @@ export type {
 export {
   emptyLock,
   fileDigest,
+  InstallationLockError,
+  isManagedPath,
   lockPath,
   lockRelativePath,
   lockSchemaId,
-  readLock,
-  writeLock,
+  parseLock,
+  serializeLock,
 } from './lock.js';
-export type { InstallationLock } from './lock.js';
+export type { InstallationLock, LockFailure } from './lock.js';
+export {
+  applyProviderRemoval,
+  classifyManaged,
+  planProviderRemoval,
+  readLock,
+  readManaged,
+  removeManaged,
+  resolveManaged,
+  writeLock,
+  writeManaged,
+} from './mutation.js';
+export type {
+  ManagedClassification,
+  ManagedState,
+  RejectedManagedPath,
+  RemovalPlan,
+  RemovalResult,
+} from './mutation.js';
 export { detectSddFrameworks, sddFrameworkById, sddFrameworks } from './sdd.js';
 export type { SddFramework, SddFrameworkId } from './sdd.js';

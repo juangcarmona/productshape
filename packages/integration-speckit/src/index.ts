@@ -23,7 +23,8 @@
  * workspace to exist and never creates it.
  */
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname } from 'node:path';
+import { isNotFound, resolveInRepository } from '@prodshape/core';
 import {
   MANAGED_TEMPLATES,
   extractTemplateBlock,
@@ -152,7 +153,19 @@ to silence a diagnostic.
 export interface SpecKitIntegrationMeta {
   provider: 'speckit';
   version: string;
+  /**
+   * When the integration was first installed. Preserved across every later add, update and no-op:
+   * an install date that moves on each invocation records nothing, and rewriting it made every
+   * no-op command dirty the working tree.
+   */
   installedAt: string;
+  /**
+   * When managed content last actually changed. Absent until the first change after installation;
+   * written only when a managed file or the merged template blocks differed, so a no-op leaves
+   * this file byte-identical. It answers the question `installedAt` cannot: whether this
+   * installation has been regenerated since a ProductShape upgrade.
+   */
+  updatedAt?: string;
   memoryPath: string;
   ciExamplePath: string;
   /** The Spec Kit template files a managed PDaC block was merged into (repository-relative). */
@@ -210,16 +223,25 @@ export function renderCiExample(options: { warningsAsErrors: boolean }): string 
   ].join('\n');
 }
 
+/**
+ * Every path this integration writes is one of its own module-level literals, resolved through the
+ * repository-containment resolver rather than joined directly, so the contract is enforced by the
+ * same code that enforces it for repository-supplied paths instead of by inspection of this file.
+ */
 function memoryPath(root: string): string {
-  return join(root, ...MEMORY_RELATIVE.split('/'));
+  return resolveInRepository(root, MEMORY_RELATIVE, 'the Spec Kit integration');
 }
 
 function metaPath(root: string): string {
-  return join(root, ...META_RELATIVE.split('/'));
+  return resolveInRepository(root, META_RELATIVE, 'the Spec Kit integration');
 }
 
 function ciExamplePath(root: string): string {
-  return join(root, ...CI_EXAMPLE_RELATIVE.split('/'));
+  return resolveInRepository(root, CI_EXAMPLE_RELATIVE, 'the Spec Kit integration');
+}
+
+function templatePath(root: string, relative: string): string {
+  return resolveInRepository(root, relative, 'the Spec Kit integration');
 }
 
 /** Read the ProductShape version from the integration-speckit package.json. */
@@ -235,20 +257,77 @@ export async function isSpecKitIntegrationInstalled(root: string): Promise<boole
   return pathExists(metaPath(root));
 }
 
-/** Write the integration metadata file. */
-async function writeMeta(root: string, meta: SpecKitIntegrationMeta): Promise<void> {
+/**
+ * Write the integration metadata file, but only when its bytes would change. Reports whether it
+ * was written, so a caller never claims a write that did not happen.
+ */
+async function writeMetaIfChanged(root: string, meta: SpecKitIntegrationMeta): Promise<boolean> {
   const path = metaPath(root);
+  const desired = `${JSON.stringify(meta, null, 2)}\n`;
+  let existing: string | undefined;
+  try {
+    existing = await readFile(path, 'utf8');
+  } catch (error) {
+    if (!isNotFound(error)) throw error;
+  }
+  if (existing === desired) return false;
   await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
+  await writeFile(path, desired, 'utf8');
+  return true;
 }
 
-/** Read the integration metadata file, or null if absent. */
+/**
+ * An integration metadata file that exists but cannot be read or parsed.
+ *
+ * Absent metadata means the integration is not installed, which is a supported state. A metadata
+ * file that is present and unreadable is not: continuing as though it were absent would reinstall
+ * over an installation whose recorded history was just discarded.
+ */
+export class SpecKitMetaError extends Error {
+  constructor(detail: string, options?: { cause?: unknown }) {
+    super(
+      `Spec Kit integration metadata ${META_RELATIVE} cannot be trusted: ${detail}` +
+        '\nReconcile it by hand, or remove it and re-run: prodshape integration add speckit',
+      options,
+    );
+    this.name = 'SpecKitMetaError';
+  }
+}
+
+/** Read the integration metadata file, or null if absent. Unreadable or malformed is an error. */
 export async function readSpecKitIntegrationMeta(
   root: string,
 ): Promise<SpecKitIntegrationMeta | null> {
   const path = metaPath(root);
-  if (!(await pathExists(path))) return null;
-  return JSON.parse(await readFile(path, 'utf8')) as SpecKitIntegrationMeta;
+  let content: string;
+  try {
+    content = await readFile(path, 'utf8');
+  } catch (error) {
+    if (isNotFound(error)) return null;
+    throw new SpecKitMetaError(
+      `it exists but could not be read (${error instanceof Error ? error.message : String(error)})`,
+      { cause: error },
+    );
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(content);
+  } catch (error) {
+    throw new SpecKitMetaError(
+      `it is not valid JSON (${error instanceof Error ? error.message : String(error)})`,
+      { cause: error },
+    );
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new SpecKitMetaError('the document is not a JSON object');
+  }
+  const record = parsed as Record<string, unknown>;
+  if (record.provider !== 'speckit' || typeof record.installedAt !== 'string') {
+    throw new SpecKitMetaError(
+      "it does not match the metadata schema ('provider' must be 'speckit' and 'installedAt' a string)",
+    );
+  }
+  return record as unknown as SpecKitIntegrationMeta;
 }
 
 /**
@@ -260,9 +339,9 @@ export async function readSpecKitIntegrationMeta(
  *   (`.specify/templates/{spec,plan,tasks}-template.md`), preserving user-authored content.
  * - Installs the CI-ready example at `.product/integrations/speckit.ci.yml`.
  * - Records metadata under `.product/integrations/speckit.json`.
- * - Idempotent: running twice produces the same result and reports no changes.
+ * - Byte-idempotent: running twice produces the same result, reports no changes and rewrites
+ *   nothing at all — not the managed files, not the templates, not the metadata.
  * - `--dry-run` reports what would change without writing.
- * - `--force` rewrites managed files even when their content already matches.
  */
 export async function addSpecKitIntegration(
   root: string,
@@ -276,7 +355,11 @@ export async function addSpecKitIntegration(
     warningsAsErrors?: boolean;
   } = {},
 ): Promise<{ written: string[]; changes: string[]; meta: SpecKitIntegrationMeta }> {
-  const { force = false, dryRun = false, warningsAsErrors = false } = options;
+  // `force` is accepted for signature compatibility with the other integrations and deliberately
+  // ignored: every managed surface here is compared by content, so there is nothing a forced run
+  // could regenerate that a normal one does not. It used to mean "rewrite even when identical",
+  // which is exactly the byte-churn this integration must not produce.
+  const { dryRun = false, warningsAsErrors = false } = options;
 
   if (!(await isSpecKitWorkspace(root))) {
     throw new Error(
@@ -303,7 +386,7 @@ export async function addSpecKitIntegration(
   const templateMerges: Array<{ relative: string; absolute: string; content: string }> = [];
   const templatePaths: string[] = [];
   for (const managed of MANAGED_TEMPLATES) {
-    const absolute = join(root, ...managed.relative.split('/'));
+    const absolute = templatePath(root, managed.relative);
     if (!(await pathExists(absolute))) continue;
     templatePaths.push(managed.relative);
     const merged = mergeTemplateBlock(await readFile(absolute, 'utf8'), managed.block);
@@ -331,26 +414,32 @@ export async function addSpecKitIntegration(
     );
   }
 
+  // `installedAt` records when this integration was first installed, and is preserved from here
+  // on. Stamping a fresh timestamp on every invocation is what made a no-op `add` — and every
+  // `integration update` — rewrite this file, so a command that reported "already up to date"
+  // still left the working tree dirty. `updatedAt` carries the moving fact instead, and moves
+  // only when managed content actually changed.
+  const previous = await readSpecKitIntegrationMeta(root);
+  const now = new Date().toISOString();
   const meta: SpecKitIntegrationMeta = {
     provider: 'speckit',
     version: await productshapeVersion(),
-    installedAt: new Date().toISOString(),
+    installedAt: previous?.installedAt ?? now,
     memoryPath: MEMORY_RELATIVE,
     ciExamplePath: CI_EXAMPLE_RELATIVE,
     templatePaths,
   };
-
-  if (changes.length === 0 && !force) {
-    // Already up to date. Still record/refresh metadata.
-    if (!dryRun) {
-      await writeMeta(root, meta);
-    }
-    return { written: [], changes: [], meta };
-  }
+  const updatedAt =
+    changes.length > 0 && previous !== null ? now : (previous?.updatedAt ?? undefined);
+  if (updatedAt !== undefined) meta.updatedAt = updatedAt;
 
   const written: string[] = [];
   if (!dryRun) {
-    if (memoryChanged || force) {
+    // Every write below is conditional on the bytes actually differing. `force` re-derives the
+    // content; it does not license rewriting a file that already carries exactly that content,
+    // because a byte-identical rewrite is invisible in a diff and visible everywhere else — in
+    // Git's stat cache, in file watchers, and in every build that keys off modification times.
+    if (memoryChanged) {
       await mkdir(dirname(memoryAbsolute), { recursive: true });
       await writeFile(memoryAbsolute, PDAC_SPECKIT_GUIDANCE, 'utf8');
       written.push(MEMORY_RELATIVE);
@@ -359,13 +448,14 @@ export async function addSpecKitIntegration(
       await writeFile(merge.absolute, merge.content, 'utf8');
       written.push(merge.relative);
     }
-    if (ciChanged || force) {
+    if (ciChanged) {
       await mkdir(dirname(ciAbsolute), { recursive: true });
       await writeFile(ciAbsolute, ciDesired, 'utf8');
       written.push(CI_EXAMPLE_RELATIVE);
     }
-    await writeMeta(root, meta);
-    written.push(META_RELATIVE);
+    if (await writeMetaIfChanged(root, meta)) {
+      written.push(META_RELATIVE);
+    }
   }
 
   return { written, changes, meta };
@@ -428,7 +518,7 @@ export async function checkSpecKitIntegration(root: string): Promise<{
   }
 
   for (const managed of MANAGED_TEMPLATES) {
-    const absolute = join(root, ...managed.relative.split('/'));
+    const absolute = templatePath(root, managed.relative);
     if (!(await pathExists(absolute))) {
       checks.push({
         name: `template: ${managed.relative}`,
@@ -485,7 +575,9 @@ export async function checkSpecKitIntegration(root: string): Promise<{
     checks.push({
       name: 'metadata',
       ok: true,
-      detail: `Integration recorded (ProductShape ${meta.version}, installed ${meta.installedAt}).`,
+      detail:
+        `Integration recorded (ProductShape ${meta.version}, installed ${meta.installedAt}` +
+        `${meta.updatedAt ? `, updated ${meta.updatedAt}` : ''}).`,
     });
   }
 
@@ -507,7 +599,7 @@ export async function removeSpecKitIntegration(
   const removed: string[] = [];
 
   for (const managed of MANAGED_TEMPLATES) {
-    const absolute = join(root, ...managed.relative.split('/'));
+    const absolute = templatePath(root, managed.relative);
     if (!(await pathExists(absolute))) continue;
     const stripped = removeTemplateBlock(await readFile(absolute, 'utf8'));
     if (stripped.changed) {
@@ -519,7 +611,7 @@ export async function removeSpecKitIntegration(
   }
 
   for (const relativePath of [MEMORY_RELATIVE, CI_EXAMPLE_RELATIVE, META_RELATIVE]) {
-    const absolute = join(root, ...relativePath.split('/'));
+    const absolute = resolveInRepository(root, relativePath, 'the Spec Kit integration');
     if (await pathExists(absolute)) {
       if (!dryRun) {
         await rm(absolute, { force: true });
