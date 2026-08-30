@@ -48,16 +48,18 @@ The six commands: `recover` (rebuild the definition from an existing system), `d
 
 ## Step 2: recover the definition with the agent
 
-Your repository already runs OpenSpec, so the product knowledge exists: in `openspec/specs/`, in the code, in tests, in people. Recovery is the brownfield path, it is agent-driven end to end, and it writes the reserved first change `CHG-INITIAL` for you. Trigger it and tell the agent what you know:
+Your repository already runs OpenSpec, so the product knowledge exists: in `openspec/specs/`, in the code, in tests, in people. Recovery is the brownfield path, it is agent-driven end to end, and it writes the reserved first change `CHG-INITIAL` for you. Trigger it and tell the agent where the knowledge lives, inside the repository and beyond it. For example:
 
 ```text
-/product-recover  NOTE: most of the required product documentation is in docs/, and many specs under openspec/specs/ are already implemented.
+/product-recover  NOTE: most of the product documentation is in docs/, many specs under openspec/specs/ are already implemented, and the onboarding guide lives in Confluence at https://yourcompany.atlassian.net/wiki/spaces/PROD; you may read it.
 ```
+
+Naming an external source like that Confluence page is what authorises the agent to read it; external files and URLs you have not named and approved stay unread, and everything the agent does read is registered and hashed as evidence so later drift in it is detected too.
 
 What happens, in order:
 
 1. **The brief comes first.** Before reading anything, the agent drafts a recovery brief and puts it to you: product scope, known terminology, source authority order (for example User > Tests > Code > Documentation), which secondary evidence to use, batch size, and the areas where it must confirm with you instead of deciding. Nothing is read until you approve.
-2. **You decide what counts as evidence.** Expect targeted questions. Your `openspec/specs/` directory is the highest-value evidence in the repository, since it already states behaviour in product terms and has survived review; include it. Proposed changes under `openspec/changes/` are speculative rather than current truth; usually exclude them. External files and URLs are read only with your explicit authorisation.
+2. **You decide what counts as evidence.** Expect targeted questions. Your `openspec/specs/` directory is the highest-value evidence in the repository, since it already states behaviour in product terms and has survived review; include it. Proposed changes under `openspec/changes/` are speculative rather than current truth; usually exclude them.
 3. **The session runs in bounded batches.** `prodshape recover start` inventories and hashes every authorised source; the agent processes them through `recover next`, classifies every relevant section, and persists every lead, contradiction and question through `recover` commands. Progress lives in the session state, not in the chat, so the session survives interruption and resumes from `prodshape recover status`. `prodshape recover check` re-hashes evidence and verifies nothing escaped.
 4. **Everything lands inside `CHG-INITIAL`.** Candidates arrive under `docs/product/changes/active/chg-initial/proposed/`, each carrying `provenance` (the evidence behind it) and a confidence level, with observed behaviour and inferred intent labelled apart. The accepted model under `docs/product/model` is never touched; the agent never applies, commits or merges.
 5. **You accept, or you do not.** The session ends with a report, the candidate list with confidence, the contradictions and the open questions. Review `CHG-INITIAL`, decide, set it to `approved`, then:
@@ -72,6 +74,8 @@ Apply materializes the model on your working branch and archives the change; it 
 As a scale reference: recovering [DomusMind](https://github.com/juangcarmona/domusmind), a family-organizer with OpenSpec specs for areas, calendar, family, lists, meal planning, tasks and its web app, inventoried 1103 evidence sources and processed them in batches of ten, with the OpenSpec specs included as evidence and one proposed change under `openspec/changes/` excluded as speculative.
 
 Greenfield instead? If there is no built system to recover from, skip recovery: author intent with `/product-define`, or scaffold `CHG-INITIAL` by hand with `prodshape change create CHG-INITIAL`. The [greenfield guide](greenfield.md) covers that path.
+
+The recovery workflow is the part of the toolchain evolving fastest: the skills are being reshaped to tell the agent where to look first and to spend fewer tokens getting there. If you run a recovery, [open an issue](https://github.com/juangcarmona/productshape/issues) with what the session produced and where it struggled; real sessions are the evidence the next iteration is shaped from.
 
 ## Step 3: cite instead of restating
 
