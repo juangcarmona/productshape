@@ -4,23 +4,42 @@ extension:
   id: pdac
   name: 'Product Definition as Code (PDaC)'
   version: '0.2.0'
-  description: 'Ground Spec Kit features in an accepted product definition: fetch the cited context projection before specifying, and verify citations after specify, plan and tasks with ProductShape'
+  # Under the 200-character limit the extension API reference states, and it states the
+  # boundary: the extension reads the product model and never writes it. A catalog reader
+  # decides whether to trust an extension from this line alone.
+  description: 'Ground Spec Kit features in an accepted product definition: fetch a cited context projection before specifying, then verify citations after specify, plan and tasks. Never writes the product model.'
   author: juangcarmona
   repository: https://github.com/juangcarmona/productshape
+  homepage: https://pdac.dev
   license: Apache-2.0
   # Catalog facets the community catalog and `specify extension info` display.
-  # docs: the commands read, validate and repair the feature spec artifacts.
-  # read-write: speckit.pdac.verify repairs what verification reports. It never
-  # writes docs/product/model, which changes only through a Product Change.
-  category: docs
+  # process: the extension governs the specify -> plan -> tasks loop. Its three hooks are
+  # lifecycle hooks and its purpose is a gate on that process, not documentation generation.
+  # read-write: speckit.pdac.verify repairs the feature documents that verification reports on.
+  # It never writes docs/product/model, which changes only through a Product Change.
+  category: process
   effect: read-write
 
 requires:
   # The floor with evidence behind it, not a guess: the extension is markdown commands
   # and a manifest, and both surfaces it depends on (schema_version 1.0 and the
   # after_specify/after_plan/after_tasks hook names) are identical on 0.7.2 and 1.0.1.
-  # Verified installing and running on 1.0.1, and installed in a real 0.7.2 workspace.
+  # Verified installing, registering both commands and landing all three hooks on both.
   speckit_version: '>=0.7.2'
+  tools:
+    # ProductShape is what the two commands actually run. `required: true` because neither
+    # command can do its work without it; the hooks separately degrade to a successful no-op
+    # in a workspace that has none, so a missing ProductShape never breaks a Spec Kit run.
+    #
+    # >=0.16.0, not the older >=0.14.0 claim: 0.14.0 introduced the Spec Kit provider, but
+    # `citations verify --provider speckit --format json` — step 1 of speckit.pdac.verify —
+    # fails there, and 0.14.0 does not read the `<!-- pdac-scope: none reason="..." -->`
+    # exemption carrier the command instructs the agent to write. 0.15.0 was never published.
+    # 0.16.0 is the lowest published version on which every command this extension invokes
+    # works; verified on 0.16.0 and 0.17.0.
+    - name: prodshape
+      version: '>=0.16.0'
+      required: true
 
 provides:
   commands:

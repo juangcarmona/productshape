@@ -81,33 +81,41 @@ The extension under `extensions/speckit-pdac/` releases independently of the npm
 2. Tag the merge commit and push the tag: `git tag speckit-pdac-v<version> && git push origin speckit-pdac-v<version>`.
 3. The `speckit-pdac release` workflow builds `speckit-pdac.zip` with `git archive`, creates the GitHub release with the asset, and opens an automated PR that updates `extensions/catalog.json` with the new version, the pinned asset URL and the archive's sha256.
 4. Merge that catalog PR. From that moment `specify extension add pdac` and `specify extension update pdac` serve the new version to everyone who added the catalog.
+5. Only then submit or update the Spec Kit community listing (below). It is discovery, not distribution, and its form requires a download URL that already resolves.
 
-The workflow refuses a tag whose version does not match `extension.yml`, and the test suite keeps any catalog entry consistent with the manifest identity and its own pinned URL.
+The workflow refuses a tag whose version does not match `extension.yml`, and the test suite keeps any catalog entry consistent with the manifest identity and its own pinned URL. `extensions/catalog.json` deliberately lags the manifest between a version bump and its release: the entry pins an archive sha256, which exists only once the release workflow has built the archive, so a version in development is never served.
 
 ### Community catalog listing (discovery)
 
-Spec Kit's community catalog (`extensions/catalog.community.json` in [github/spec-kit](https://github.com/github/spec-kit)) is discovery-only: it makes `specify extension search` find the extension but is never an install source. The listing is a one-time manual PR; using the `releases/latest/download` alias keeps its URL valid across our releases. Ready-to-submit entry:
+Spec Kit's community catalog (`extensions/catalog.community.json` in [github/spec-kit](https://github.com/github/spec-kit)) is discovery-only: it makes `specify extension search` find the extension but is never an install source. Installs come from ProductShape's own catalog, which is the one that pins each release asset and its sha256.
+
+**Submission is an issue, not a pull request.** Spec Kit's publishing guide states it explicitly: do not open a PR against `extensions/catalog.community.json`. File the [Extension Submission](https://github.com/github/spec-kit/issues/new?template=extension_submission.yml) issue form instead. A maintainer applies the `extension-submission` label during triage, which starts the automated catalog validation; the automation (`.github/skills/add-community-extension`) validates the release, writes the catalog entry and the community table row in alphabetical order, and opens the catalog pull request. Contributors cannot apply that label themselves, so there is nothing to label or re-request — the issue waits in triage. Typical review is 3-7 business days. An update to an existing listing goes through the same form, saying in the issue that it updates an existing entry.
+
+Submit **after** the release exists: the form requires a download URL, and the automation checks that the release is reachable. The proposed catalog entry below is what the issue's "Proposed Catalog Entry" field takes; the maintainers write the final entry themselves and add `verified`, `downloads`, `stars`, `created_at` and `updated_at`.
+
+The download URL pins the release tag rather than using the `releases/latest/download` alias. A catalog entry names one version, so an entry whose `version` says 0.2.0 and whose URL follows `latest` would start serving a different artifact than it names at the next release.
 
 ```json
 "pdac": {
   "name": "Product Definition as Code (PDaC)",
   "id": "pdac",
-  "description": "Ground Spec Kit features in an accepted product definition kept as versioned Markdown: fetch a cited context projection before specifying, and verify citations by id and content digest after specify, plan and tasks. Deterministic and read-only over the product model.",
+  "description": "Ground Spec Kit features in an accepted product definition: fetch a cited context projection before specifying, then verify citations after specify, plan and tasks. Never writes the product model.",
   "author": "Juan G. Carmona (@juangcarmona)",
-  "version": "0.1.0",
-  "download_url": "https://github.com/juangcarmona/productshape/releases/latest/download/speckit-pdac.zip",
+  "version": "0.2.0",
+  "download_url": "https://github.com/juangcarmona/productshape/releases/download/speckit-pdac-v0.2.0/speckit-pdac.zip",
   "repository": "https://github.com/juangcarmona/productshape",
   "homepage": "https://pdac.dev",
   "documentation": "https://github.com/juangcarmona/productshape/blob/main/extensions/speckit-pdac/README.md",
+  "changelog": "https://github.com/juangcarmona/productshape/blob/main/extensions/speckit-pdac/CHANGELOG.md",
   "license": "Apache-2.0",
   "category": "process",
   "effect": "read-write",
   "requires": {
-    "speckit_version": ">=0.2.0",
+    "speckit_version": ">=0.7.2",
     "tools": [
       {
         "name": "prodshape",
-        "version": ">=0.14.0",
+        "version": ">=0.16.0",
         "required": true
       }
     ]
@@ -119,3 +127,5 @@ Spec Kit's community catalog (`extensions/catalog.community.json` in [github/spe
   "tags": ["product", "citations", "pdac", "traceability", "governance"]
 }
 ```
+
+Every field above is derived from `extensions/speckit-pdac/extension.yml` and must stay identical to it. `speckit_version` is `>=0.7.2` because that is the lowest Spec Kit the extension has been installed and registered on; `prodshape` is `>=0.16.0` because `citations verify --provider speckit --format json` and the `pdac-scope` exemption carrier that `speckit.pdac.verify` depends on do not work on 0.14.0, and 0.15.0 was never published.
