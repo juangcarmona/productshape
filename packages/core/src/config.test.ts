@@ -172,6 +172,29 @@ describe('parseConfig', () => {
     expect(config.prodshape.citations['consumer-roots']).toEqual(['openspec']);
   });
 
+  it('accepts an external consumer root: it is a read-only scan target, not a writable root', () => {
+    // Deliberate asymmetry with generated.root. Consumer documents legitimately live outside the
+    // product repository, and scanning them writes nothing, so the containment contract that
+    // guards writable roots would only forbid a supported layout.
+    const { config, diagnostics } = parseConfig(
+      [
+        'version: v1alpha1',
+        'extensions:',
+        '  prodshape:',
+        '    citations:',
+        '      consumer-roots:',
+        '        - ../sibling-checkout/specs',
+        '        - /srv/shared/specs',
+      ].join('\n'),
+      '.product/config.yaml',
+    );
+    expect(diagnostics).toEqual([]);
+    expect(config.prodshape.citations['consumer-roots']).toEqual([
+      '../sibling-checkout/specs',
+      '/srv/shared/specs',
+    ]);
+  });
+
   it('provides documented defaults', () => {
     const config = defaultConfig();
     expect(config['product-root']).toBe('docs/product');
@@ -204,6 +227,43 @@ describe('parseConfig', () => {
     expect(config.prodshape.integrations.ai).toEqual(['claude']);
     expect(config.prodshape.integrations['shorthand-commands']).toBe(true);
     expect(config.prodshape.citations['consumer-roots']).toEqual(['specs', 'docs/consumers']);
+  });
+
+  it.each([
+    ['an absolute POSIX path', '/var/generated'],
+    ['a drive-qualified path', 'C:/generated'],
+    ['a parent-traversal path', '../generated'],
+    ['a traversal in the middle', '.product/../../generated'],
+    ['a backslash path', '.product\\generated'],
+    ['a dot segment', './generated'],
+    ['the current directory', '.'],
+    ['an empty segment', '.product//generated'],
+    ['a trailing separator', '.product/generated/'],
+  ])('refuses %s as generated.root with PRODUCT050', (_label, root) => {
+    const content = [
+      'version: v1alpha1',
+      'extensions:',
+      '  prodshape:',
+      '    generated:',
+      `      root: ${JSON.stringify(root)}`,
+    ].join('\n');
+    const { diagnostics } = parseConfig(content, '.product/config.yaml');
+    expect(diagnostics).toEqual([
+      expect.objectContaining({
+        code: 'PRODUCT050',
+        field: '/extensions/prodshape/generated/root',
+      }),
+    ]);
+    expect(diagnostics[0]?.message).toContain('generated.root');
+  });
+
+  it('accepts a normalized repository-relative generated root', () => {
+    const { config, diagnostics } = parseConfig(
+      'version: v1alpha1\nextensions:\n  prodshape:\n    generated:\n      root: build/product\n',
+      '.product/config.yaml',
+    );
+    expect(diagnostics).toEqual([]);
+    expect(config.prodshape.generated.root).toBe('build/product');
   });
 
   it.each([

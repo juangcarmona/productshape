@@ -5,6 +5,7 @@ import { configSchema } from './config-schema.js';
 import type { Diagnostic } from './diagnostics.js';
 import { compareCodePoints } from './diagnostics.js';
 import { appendPointerToken } from './json-pointer.js';
+import { isNotFound, isRepositoryRelativePath } from './repo-path.js';
 import { collectForbiddenYamlFeatures } from './yaml-strict.js';
 import type { YamlFeatureViolation } from './yaml-strict.js';
 
@@ -16,6 +17,11 @@ import type { YamlFeatureViolation } from './yaml-strict.js';
  */
 export interface ProdshapeSettings {
   generated: {
+    /**
+     * Where regenerable output is written. A writable root: it carries the same normalized
+     * repository-relative contract the kernel states for `product-root`, and a value that would
+     * resolve outside the repository is refused as invalid configuration.
+     */
     root: string;
     commit: boolean;
   };
@@ -33,12 +39,21 @@ export interface ProdshapeSettings {
   };
   citations: {
     /**
-     * Repository-relative directories `citations verify` scans when no target is given.
+     * Directories `citations verify` and `drift` scan when no target is given.
      *
      * Configurable because where consumer documents live is a repository's decision, not the
      * kernel's: an OpenSpec repository keeps them under `openspec/`, another keeps them under
      * `specs/`, and a hardcoded default silently verifies nothing in the second case. The default
      * stays `openspec` so existing repositories are unaffected.
+     *
+     * Deliberately NOT a writable root, and deliberately not held to the containment contract
+     * `generated.root` carries. A consumer root is a read-only scan target: the product opens the
+     * documents under it, reports on their citations, and never writes, renames or deletes there.
+     * Consumer documents legitimately live outside the product repository — a sibling checkout, a
+     * mounted specification tree — and an explicit scan target on the command line has always
+     * accepted such a path, so refusing the configured form would make configuration weaker than
+     * the flag it replaces. The safety property this rests on is that no code path turns a
+     * consumer root into a mutation; that is what the contract test over these two roots states.
      */
     'consumer-roots': string[];
   };
@@ -208,7 +223,20 @@ function parseProdshapeSettings(raw: unknown, out: Violation[]): ProdshapeSettin
 
   const generated = section('generated');
   if (generated) {
-    readString(generated, 'generated', 'root', (v) => (settings.generated.root = v));
+    readString(generated, 'generated', 'root', (v) => {
+      // The generated root is a writable root: the product creates directories and files under it.
+      // It therefore carries the same normalized repository-relative contract the kernel states
+      // for `product-root`, and an escaping value is refused here, before any command-specific
+      // work, rather than after graph generation has already written outside the repository.
+      if (!isRepositoryRelativePath(v, { strictCharset: true })) {
+        out.push({
+          path: appendPointerToken(appendPointerToken(nsPointer, 'generated'), 'root'),
+          message: `'${ns}.generated.root' must be a normalized repository-relative POSIX path (no absolute, drive-qualified or backslash paths, no '.' or '..' segments)`,
+        });
+        return;
+      }
+      settings.generated.root = v;
+    });
     readBoolean(generated, 'generated', 'commit', (v) => (settings.generated.commit = v));
   }
 
@@ -345,13 +373,34 @@ export function parseConfig(content: string, file: string): ConfigResult {
   return { config: withDerived(config), diagnostics: [] };
 }
 
-/** Load a configuration file; an absent file yields defaults (the caller decided the root). */
+/**
+ * Load a configuration file.
+ *
+ * An absent file yields defaults: the caller decided the root, and a repository without a
+ * configuration file is a supported state. Nothing else does. A file that exists but cannot be
+ * read — a permission error, a directory in its place, an I/O fault — is reported as invalid
+ * configuration, because continuing with defaults would silently reconfigure the repository:
+ * `product-root`, the generated root and the consumer roots would all revert, and the commands
+ * that follow would validate a different tree than the one the repository configured.
+ */
 export async function loadConfig(configPath: string, file: string): Promise<ConfigResult> {
   let content: string;
   try {
     content = await readFile(configPath, 'utf8');
-  } catch {
-    return { config: defaultConfig(), diagnostics: [] };
+  } catch (error) {
+    if (isNotFound(error)) return { config: defaultConfig(), diagnostics: [] };
+    const reason = error instanceof Error ? error.message : String(error);
+    return {
+      config: defaultConfig(),
+      diagnostics: [
+        {
+          severity: 'error',
+          code: 'PRODUCT050',
+          message: `Configuration exists but could not be read: ${reason}`,
+          file,
+        },
+      ],
+    };
   }
   return parseConfig(content, file);
 }

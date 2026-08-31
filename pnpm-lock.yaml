@@ -106,6 +106,9 @@ importers:
 
   packages/distribution:
     dependencies:
+      '@prodshape/core':
+        specifier: workspace:*
+        version: link:../core
       '@prodshape/integration-claude':
         specifier: workspace:*
         version: link:../integration-claude

@@ -1,11 +1,16 @@
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
 import { claudeRenderer } from '@prodshape/integration-claude';
 import { codexRenderer } from '@prodshape/integration-codex';
 import { copilotRenderer } from '@prodshape/integration-copilot';
 import type { CanonicalAssets, ProviderRenderer, RenderOptions } from './assets.js';
 import { loadBundledAssets } from './assets.js';
-import { emptyLock, fileDigest, readLock, writeLock, type InstallationLock } from './lock.js';
+import {
+  emptyLock,
+  fileDigest,
+  lockRelativePath,
+  serializeLock,
+  type InstallationLock,
+} from './lock.js';
+import { classifyManaged, readLock, readManaged, removeManaged, writeManaged } from './mutation.js';
 
 export interface IntegrationDiagnostic {
   severity: 'error' | 'warning';
@@ -30,7 +35,15 @@ export function rendererFor(provider: string): ProviderRenderer | undefined {
 
 export interface InstallResult {
   provider: string;
+  /** Managed files whose bytes this run actually changed. */
   written: string[];
+  /**
+   * Managed files already byte-identical to what this render produces, and therefore not
+   * rewritten. A no-op install must leave the working tree alone, not rewrite it with the same
+   * content: rewriting makes every no-op look like a change to Git, to file watchers and to
+   * anything that reads modification times.
+   */
+  unchanged: string[];
   /** Files the lock owned but this render no longer produces, and which were deleted. */
   removed: string[];
 }
@@ -110,15 +123,15 @@ export async function planProvider(
   const overwritten: string[] = [];
   const conflicts: string[] = [];
   for (const file of files) {
-    let existing: string;
-    try {
-      existing = await readFile(join(root, ...file.path.split('/')), 'utf8');
-    } catch {
+    const classification = await classifyManaged(
+      root,
+      file.path,
+      owned.get(file.path),
+      `the ${provider} renderer`,
+    );
+    if (classification.state === 'absent') {
       created.push(file.path); // Absent targets are always writable.
-      continue;
-    }
-    const ownedDigest = owned.get(file.path);
-    if (ownedDigest !== undefined && fileDigest(existing) === ownedDigest) {
+    } else if (classification.state === 'owned-clean') {
       // Ours and unmodified: rewriting it is a no-op, not a loss of user content.
       regenerated.push(file.path);
     } else if (force) {
@@ -159,12 +172,17 @@ export async function applyProviderPlan(root: string, plan: ProviderPlan): Promi
   const entry = { files: {} as Record<string, string> };
   lock.providers[plan.provider] = entry;
   const written: string[] = [];
+  const unchanged: string[] = [];
   for (const file of plan.files) {
-    const target = join(root, ...file.path.split('/'));
-    await mkdir(dirname(target), { recursive: true });
-    await writeFile(target, file.content, 'utf8');
+    const source = `the ${plan.provider} renderer`;
+    const existing = await readManaged(root, file.path, source);
+    if (existing === file.content) {
+      unchanged.push(file.path);
+    } else {
+      await writeManaged(root, file.path, file.content, source);
+      written.push(file.path);
+    }
     entry.files[file.path] = fileDigest(file.content);
-    written.push(file.path);
   }
 
   // Files this provider used to own but no longer renders would otherwise linger forever:
@@ -174,20 +192,25 @@ export async function applyProviderPlan(root: string, plan: ProviderPlan): Promi
   const removed: string[] = [];
   for (const path of Object.keys(previouslyOwned).sort()) {
     if (rendered.has(path)) continue;
-    const target = join(root, ...path.split('/'));
-    let content: string;
-    try {
-      content = await readFile(target, 'utf8');
-    } catch {
-      continue; // Already gone.
-    }
-    if (fileDigest(content) !== previouslyOwned[path]) continue; // Hand-edited: leave it.
-    await rm(target, { force: true });
+    const classification = await classifyManaged(
+      root,
+      path,
+      previouslyOwned[path],
+      lockRelativePath,
+    );
+    // Absent: already gone. Drifted: hand-edited, and no longer ours to delete.
+    if (classification.state !== 'owned-clean') continue;
+    await removeManaged(root, path, lockRelativePath);
     removed.push(path);
   }
 
-  await writeLock(root, lock);
-  return { provider: plan.provider, written, removed };
+  // The lock is rewritten only when it would differ: a no-op install must not touch it either.
+  const currentLock = await readManaged(root, lockRelativePath, lockRelativePath);
+  const nextLock = serializeLock(lock);
+  if (currentLock !== nextLock) {
+    await writeManaged(root, lockRelativePath, nextLock, lockRelativePath);
+  }
+  return { provider: plan.provider, written, unchanged, removed };
 }
 
 /**
@@ -230,10 +253,8 @@ export async function checkIntegrations(root: string): Promise<IntegrationDiagno
 
   for (const [provider, entry] of Object.entries(lock.providers)) {
     for (const [path, expected] of Object.entries(entry.files)) {
-      let content: string;
-      try {
-        content = await readFile(join(root, ...path.split('/')), 'utf8');
-      } catch {
+      const content = await readManaged(root, path, lockRelativePath);
+      if (content === undefined) {
         diagnostics.push({
           severity: 'error',
           code: 'PRODUCT052',

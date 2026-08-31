@@ -152,7 +152,8 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .description('Remove a provider integration and its managed files')
     .argument('<provider>', 'provider name')
     .option('--dry-run', 'report what would be removed without deleting anything')
-    .action(async (provider: string, options: { dryRun?: boolean }) => {
+    .option('--force', 'also remove managed files that were modified by hand')
+    .action(async (provider: string, options: { dryRun?: boolean; force?: boolean }) => {
       capture.code = await runIntegrationRemove(io, provider, options);
     });
 

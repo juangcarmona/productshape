@@ -2,7 +2,8 @@ import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 import { frameworkVersion, loadBundledAssets } from './assets.js';
 import { checkIntegrations, type IntegrationDiagnostic } from './install.js';
-import { readLock } from './lock.js';
+import { InstallationLockError, lockRelativePath, type InstallationLock } from './lock.js';
+import { readLock } from './mutation.js';
 
 export interface DoctorCheck {
   name: string;
@@ -31,9 +32,10 @@ export interface DoctorOptions {
   configDetail: string;
   modelPath: string;
   /**
-   * Model-validation verdict supplied by the caller. Injected rather than computed here because
-   * this package must not depend on core; omit it and the check is simply not reported, so a
-   * library consumer that never runs validation does not get a phantom failure.
+   * Model-validation verdict supplied by the caller. Injected rather than computed here: this
+   * package depends on core only for the repository-relative path contract, never for the model.
+   * Omit it and the check is simply not reported, so a library consumer that never runs
+   * validation does not get a phantom failure.
    */
   validation?: { errors: number; warnings: number; artifacts: number };
   /**
@@ -116,8 +118,24 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
     });
   }
 
-  const lock = await readLock(root);
+  // An untrustworthy lock is a health problem, not a crash: `doctor` exists to tell a maintainer
+  // what is wrong with the installation, and a broken lock is exactly that.
+  let lock: InstallationLock | undefined;
+  let lockError: InstallationLockError | undefined;
+  try {
+    lock = await readLock(root);
+  } catch (error) {
+    if (!(error instanceof InstallationLockError)) throw error;
+    lockError = error;
+  }
   const version = await frameworkVersion();
+  if (lockError) {
+    checks.push({
+      name: 'installation lock',
+      ok: false,
+      detail: `${lockRelativePath} cannot be trusted (${lockError.failure}); reconcile it by hand, or remove it and re-run: prodshape integration add <provider>`,
+    });
+  }
   if (lock) {
     const versionOk = lock.version === version;
     checks.push({
@@ -130,17 +148,22 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
   } else {
     checks.push({
       name: 'framework version',
-      ok: true,
-      detail: 'no integrations installed (no installation.lock.json)',
+      ok: !lockError,
+      detail: lockError
+        ? 'unknown: the installation lock could not be read'
+        : 'no integrations installed (no installation.lock.json)',
     });
   }
 
-  const diagnostics = await checkIntegrations(root);
+  // Without a trustworthy lock there is no record of what is managed, so drift cannot be checked
+  // at all. Reporting "nothing to check" here would read as a clean bill of health.
+  const diagnostics = lockError ? [] : await checkIntegrations(root);
   checks.push({
     name: 'managed files',
-    ok: diagnostics.length === 0,
-    detail:
-      diagnostics.length === 0
+    ok: !lockError && diagnostics.length === 0,
+    detail: lockError
+      ? 'not checked: the installation lock could not be read'
+      : diagnostics.length === 0
         ? lock
           ? 'all managed files match the installation lock'
           : 'nothing to check'

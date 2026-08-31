@@ -33,9 +33,10 @@ v0.1 is delivered through four OpenSpec changes: `establish-product-definition-f
 
 | Package | Responsibility |
 | --- | --- |
-| `core` | Parsing (frontmatter, YAML), JSON Schema validation, graph compilation, diagnostics, change overlays, apply planning, product diffs, digests, citation emission and verification. Pure library: no provider or OpenSpec knowledge, no `process.exit`, no console output. |
+| `core` | Parsing (frontmatter, YAML), JSON Schema validation, graph compilation, diagnostics, change overlays, apply planning, product diffs, digests, citation emission and verification, and the repository-relative path contract every mutation resolves through. Pure library: no provider or OpenSpec knowledge, no `process.exit`, no console output. |
 | `cli` | commander command definitions, human and JSON output, exit codes 0/1/2/3. Orchestration only; all domain logic lives in the packages it calls. |
-| `distribution` | `init`, rendering canonical AI assets into provider formats, managed-file headers and content hashes, `installation.lock.json`, `integration update`, drift detection, `doctor`. |
+| `distribution` | `init`, rendering canonical AI assets into provider formats, managed-file headers and content hashes, `installation.lock.json`, `integration update`, drift detection, `doctor`. Owns repository mutation for managed files (`src/mutation.ts`): safe path resolution, validated lock loading, plan and conflict classification, plan application and drift-aware removal. |
+| `integration-speckit` | Configures a Spec Kit workspace with PDaC guidance (managed memory file plus sentinel-delimited template blocks) and records integration metadata. Never writes the constitution or feature directories. |
 | `integration-claude` | Claude Code-specific mapping and templates only (renders `.claude/` assets, including executable hooks). |
 | `integration-copilot` | GitHub Copilot-specific mapping and templates only (renders `.github/` assets; hooks render as documentation — see OD-002). |
 | `integration-codex` | Codex-specific mapping and templates only (renders `.agents/` assets). |
@@ -47,18 +48,21 @@ Internal dependencies are strictly acyclic:
 
 ```text
 cli ─────────────► core
-cli ─────────────► integration-openspec
-cli ─────────────► distribution ─┬───► integration-claude
+cli ─────────────► integration-openspec ──► core
+cli ─────────────► integration-speckit ───► core
+cli ─────────────► distribution ─┬───► core
+                                 ├───► integration-claude
                                  ├───► integration-copilot
                                  └───► integration-codex
 
 integration-claude:   no internal dependencies
 integration-copilot:  no internal dependencies
 integration-codex:    no internal dependencies
-integration-openspec: no internal dependencies (yaml only)
 ```
 
-The integration packages export their provider renderers as plain, structurally typed objects. `distribution` consumes them through TypeScript structural typing; there is deliberately no shared types package. This keeps the integration packages dependency-free and lets a future provider integration be added without touching any existing package's imports.
+The provider integration packages export their renderers as plain, structurally typed objects. `distribution` consumes them through TypeScript structural typing; there is deliberately no shared types package. This keeps the provider packages dependency-free and lets a future provider integration be added without touching any existing package's imports.
+
+`distribution` and the two SDD integration packages depend on `core` for one thing: the repository-relative path contract and the resolver every mutation goes through (`core/src/repo-path.ts`). `BR-MUTATION-001` requires _one_ resolver, and `core` is the only package all three can reach; a second copy would be a second contract. `distribution` still computes no model validation — `doctor` receives validation and SDD-integration verdicts from its caller, so the dependency stays a path contract and does not become a dependency on the model.
 
 ## Deterministic core and AI reasoning
 

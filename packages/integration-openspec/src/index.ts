@@ -13,7 +13,8 @@
  * guidance, deduplicating identical entries so the operation is idempotent.
  */
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname } from 'node:path';
+import { isNotFound, resolveInRepository } from '@prodshape/core';
 import { parse, stringify } from 'yaml';
 import { runCommand } from './process.js';
 import { envWithLocalBin, isOpenSpecWorkspace, pathExists } from './workspace.js';
@@ -118,7 +119,19 @@ export interface OpenSpecIntegrationMeta {
   provider: 'openspec';
   version: string;
   openspecVersion: string;
+  /**
+   * When the integration was first installed. Preserved across every later add, update and no-op:
+   * an install date that moves on each invocation records nothing, and rewriting it made every
+   * no-op command dirty the working tree.
+   */
   installedAt: string;
+  /**
+   * When managed content last actually changed. Absent until the first change after installation;
+   * written only when the merged configuration or the CI example differed, so a no-op leaves this
+   * file byte-identical. It answers the question `installedAt` cannot: whether this installation
+   * has been regenerated since a ProductShape upgrade.
+   */
+  updatedAt?: string;
   configPath: string;
   /** Absent in metadata written before the CI example existed; `integration update` adds it. */
   ciExamplePath?: string;
@@ -199,16 +212,21 @@ export function renderCiExample(options: { warningsAsErrors: boolean }): string 
   ].join('\n');
 }
 
+/**
+ * Every path this integration writes is one of its own module-level literals, resolved through the
+ * repository-containment resolver rather than joined directly, so the contract is enforced by the
+ * same code that enforces it for repository-supplied paths instead of by inspection of this file.
+ */
 function configPath(root: string): string {
-  return join(root, ...CONFIG_RELATIVE.split('/'));
+  return resolveInRepository(root, CONFIG_RELATIVE, 'the OpenSpec integration');
 }
 
 function metaPath(root: string): string {
-  return join(root, ...META_RELATIVE.split('/'));
+  return resolveInRepository(root, META_RELATIVE, 'the OpenSpec integration');
 }
 
 function ciExamplePath(root: string): string {
-  return join(root, ...CI_EXAMPLE_RELATIVE.split('/'));
+  return resolveInRepository(root, CI_EXAMPLE_RELATIVE, 'the OpenSpec integration');
 }
 
 /**
@@ -502,9 +520,9 @@ async function productshapeVersion(): Promise<string> {
  * - Merges PDaC guidance into `openspec/config.yaml`, preserving existing user configuration.
  * - Records metadata under `.product/integrations/openspec.json`, including the exact strings
  *   injected, so a later update replaces outdated PDaC entries instead of accumulating them.
- * - Idempotent: running twice produces the same result.
+ * - Byte-idempotent: running twice produces the same result, reports no changes and rewrites
+ *   nothing at all — not the merged configuration, not the CI example, not the metadata.
  * - `--dry-run` reports what would change without writing.
- * - `--force` re-merges even if the PDaC block is already present (useful after a PDaC upgrade).
  */
 export async function addOpenSpecIntegration(
   root: string,
@@ -519,7 +537,11 @@ export async function addOpenSpecIntegration(
     warningsAsErrors?: boolean;
   } = {},
 ): Promise<{ written: string[]; changes: string[]; meta: OpenSpecIntegrationMeta }> {
-  const { force = false, dryRun = false, warningsAsErrors = false } = options;
+  // `force` is accepted for signature compatibility with the other integrations and deliberately
+  // ignored: every managed surface here is compared by content, so there is nothing a forced run
+  // could regenerate that a normal one does not. It used to mean "rewrite even when identical",
+  // which is exactly the byte-churn this integration must not produce.
+  const { dryRun = false, warningsAsErrors = false } = options;
 
   let openspecVersion = options.cliVersion;
   if (!openspecVersion) {
@@ -558,56 +580,120 @@ export async function addOpenSpecIntegration(
     );
   }
 
+  // `installedAt` records when this integration was first installed, and is preserved from here
+  // on. Stamping a fresh timestamp on every invocation is what made a no-op `add` — and every
+  // `integration update` — rewrite this file, so a command that reported "already up to date"
+  // still left the working tree dirty. `updatedAt` carries the moving fact instead, and moves
+  // only when managed content actually changed.
+  const now = new Date().toISOString();
   const meta: OpenSpecIntegrationMeta = {
     provider: 'openspec',
     version: await productshapeVersion(),
     openspecVersion,
-    installedAt: new Date().toISOString(),
+    installedAt: previousMeta?.installedAt ?? now,
     configPath: CONFIG_RELATIVE,
     ciExamplePath: CI_EXAMPLE_RELATIVE,
     managed: currentManagedStrings(),
   };
-
-  if (changes.length === 0 && !force) {
-    // Already up to date. Still record/refresh metadata.
-    if (!dryRun) {
-      await writeMeta(root, meta);
-    }
-    return { written: [], changes: [], meta };
-  }
+  const updatedAt =
+    changes.length > 0 && previousMeta !== null ? now : (previousMeta?.updatedAt ?? undefined);
+  if (updatedAt !== undefined) meta.updatedAt = updatedAt;
 
   const written: string[] = [];
   if (!dryRun) {
-    if (configChanges.length > 0 || force) {
+    // Every write below is conditional on the bytes actually differing. `force` re-derives the
+    // content; it does not license rewriting a file that already carries exactly that content,
+    // because a byte-identical rewrite is invisible in a diff and visible everywhere else — in
+    // Git's stat cache, in file watchers, and in every build that keys off modification times.
+    if (configChanges.length > 0) {
       const serialized = serializeConfig(config);
       await mkdir(dirname(configPath(root)), { recursive: true });
       await writeFile(configPath(root), serialized, 'utf8');
       written.push(CONFIG_RELATIVE);
     }
-    if (ciChanged || force) {
+    if (ciChanged) {
       await mkdir(dirname(ciAbsolute), { recursive: true });
       await writeFile(ciAbsolute, ciDesired, 'utf8');
       written.push(CI_EXAMPLE_RELATIVE);
     }
-    await writeMeta(root, meta);
-    written.push(META_RELATIVE);
+    if (await writeMetaIfChanged(root, meta)) {
+      written.push(META_RELATIVE);
+    }
   }
 
   return { written, changes, meta };
 }
 
-/** Write the integration metadata file. */
-async function writeMeta(root: string, meta: OpenSpecIntegrationMeta): Promise<void> {
+/**
+ * Write the integration metadata file, but only when its bytes would change. Reports whether it
+ * was written, so a caller never claims a write that did not happen.
+ */
+async function writeMetaIfChanged(root: string, meta: OpenSpecIntegrationMeta): Promise<boolean> {
   const path = metaPath(root);
+  const desired = `${JSON.stringify(meta, null, 2)}\n`;
+  let existing: string | undefined;
+  try {
+    existing = await readFile(path, 'utf8');
+  } catch (error) {
+    if (!isNotFound(error)) throw error;
+  }
+  if (existing === desired) return false;
   await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
+  await writeFile(path, desired, 'utf8');
+  return true;
 }
 
-/** Read the integration metadata file, or null if absent. */
+/**
+ * An integration metadata file that exists but cannot be read or parsed.
+ *
+ * Absent metadata means the integration is not installed, which is a supported state. A metadata
+ * file that is present and unreadable is not: continuing as though it were absent would discard
+ * the record of exactly which guidance strings were injected, and the next update would append
+ * duplicates alongside the entries it should have replaced.
+ */
+export class OpenSpecMetaError extends Error {
+  constructor(detail: string, options?: { cause?: unknown }) {
+    super(
+      `OpenSpec integration metadata ${META_RELATIVE} cannot be trusted: ${detail}` +
+        '\nReconcile it by hand, or remove it and re-run: prodshape integration add openspec',
+      options,
+    );
+    this.name = 'OpenSpecMetaError';
+  }
+}
+
+/** Read the integration metadata file, or null if absent. Unreadable or malformed is an error. */
 async function readMeta(root: string): Promise<OpenSpecIntegrationMeta | null> {
   const path = metaPath(root);
-  if (!(await pathExists(path))) return null;
-  return JSON.parse(await readFile(path, 'utf8')) as OpenSpecIntegrationMeta;
+  let content: string;
+  try {
+    content = await readFile(path, 'utf8');
+  } catch (error) {
+    if (isNotFound(error)) return null;
+    throw new OpenSpecMetaError(
+      `it exists but could not be read (${error instanceof Error ? error.message : String(error)})`,
+      { cause: error },
+    );
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(content);
+  } catch (error) {
+    throw new OpenSpecMetaError(
+      `it is not valid JSON (${error instanceof Error ? error.message : String(error)})`,
+      { cause: error },
+    );
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new OpenSpecMetaError('the document is not a JSON object');
+  }
+  const record = parsed as Record<string, unknown>;
+  if (record.provider !== 'openspec' || typeof record.installedAt !== 'string') {
+    throw new OpenSpecMetaError(
+      "it does not match the metadata schema ('provider' must be 'openspec' and 'installedAt' a string)",
+    );
+  }
+  return record as unknown as OpenSpecIntegrationMeta;
 }
 
 /**
@@ -707,7 +793,9 @@ export async function checkOpenSpecIntegration(root: string): Promise<{
     checks.push({
       name: 'metadata',
       ok: true,
-      detail: `Integration recorded (OpenSpec ${meta.openspecVersion}, installed ${meta.installedAt}).`,
+      detail:
+        `Integration recorded (OpenSpec ${meta.openspecVersion}, installed ${meta.installedAt}` +
+        `${meta.updatedAt ? `, updated ${meta.updatedAt}` : ''}).`,
     });
   }
 

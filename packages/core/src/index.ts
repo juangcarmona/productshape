@@ -219,6 +219,21 @@ export { escapeHtml, renderMarkdown } from './markdown.js';
 export { buildSnapshotHtml } from './snapshot.js';
 export { parseArtifactDocument } from './parse.js';
 export type { ParseResult } from './parse.js';
+export {
+  isNotFound,
+  isRepositoryRelativePath,
+  joinRepositoryPath,
+  readRepositoryFile,
+  rejectRepositoryRelativePath,
+  removeRepositoryFile,
+  renameRepositoryFile,
+  repositoryRelativeRootPattern,
+  RepositoryPathError,
+  resolveInRepository,
+  toRepositoryRelative,
+  writeRepositoryFile,
+} from './repo-path.js';
+export type { RepositoryPathRejection } from './repo-path.js';
 export { allowedTargets, extractEdges, relationshipSpecs } from './relationships.js';
 export type { Edge, RelationshipPolarity, RelationshipSpec } from './relationships.js';
 export { findRepositoryRoot, openRepository, validateBaseline } from './repository.js';
