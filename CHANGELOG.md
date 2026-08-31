@@ -10,6 +10,30 @@ The supported published CLI baseline is `@prodshape/cli@0.18.0`. Every stable pu
 
 ## [0.18.0]
 
+The repository-mutation safety release (PR #210, the safety phase of #208, which stays open for the architecture and performance work it also tracks). Every mutation this CLI performs on a repository is now contained inside that repository, planned before it acts, drift-safe over content a human has touched, and closed against state it cannot trust.
+
+### Added
+
+- `prodshape integration remove <provider> --force`: the explicit destructive path. Without it, removal preserves and reports every managed file whose content has diverged from the digest recorded for it, and keeps that file's lock entry so it stays covered by drift detection instead of being left behind unowned.
+- An optional `updatedAt` in the OpenSpec and Spec Kit integration metadata, recording when managed content last actually changed, reported by `prodshape integration check` alongside `installedAt`.
+- `BR-MUTATION-001` in the product definition, applied by `CHG-MUTATION-SAFETY-001`, which also amends `FR-DISTRIBUTION-001`, `FR-OPENSPEC-001` and `FR-SPECKIT-001` with the report, preservation, fail-closed and idempotence obligations.
+
+### Changed
+
+- `prodshape integration add --dry-run` and `prodshape integration remove --dry-run` report every target by outcome (would create, would regenerate, would overwrite, would remove, preserved, already absent) and predict a refusal rather than reporting a success the real run would not deliver. A report that disagrees with the outcome is worse than none, because it is the one a maintainer consults before risking the real run.
+- `extensions.prodshape.citations.consumer-roots` is documented and tested as a read-only scan target: it may point outside the repository, deliberately unlike the writable roots below, because scanning a consumer document tree writes nothing.
+
+### Fixed
+
+- A path recorded in `.product/installation.lock.json` could name a target outside the repository and have it deleted. The lock is now validated in full before any entry is used, every recorded path is held to the normalized repository-relative contract, and every read, write, rename and deletion of a managed file resolves through one containment-checked resolver.
+- `prodshape integration add --dry-run` wrote every managed file and then reported that nothing had been written: it installed before it checked the flag. Installation is planned first, and a dry run is that plan without the apply, so the report and the outcome come from one computation.
+- `prodshape integration remove` deleted managed files a human had edited. The digest that distinguishes the product's own untouched output from someone's work was recorded, present and ignored.
+- `extensions.prodshape.generated.root` could resolve outside the repository, after which graph generation wrote there. It now carries the same normalized repository-relative contract the kernel states for `product-root`, and an escaping value is refused as `PRODUCT050` before command-specific work begins.
+- A malformed, unreadable or off-contract installation lock read as "nothing installed", so drift checking reported that every managed file matched a record it could not read, and the next install rewrote files whose recorded digests had just been discarded. Only the not-found condition means absence now: `prodshape integration check` and `prodshape doctor` fail when a lock exists but cannot be trusted, and a configuration file that exists but cannot be read is reported as `PRODUCT050` instead of being silently replaced with defaults.
+- Integration operations are byte-idempotent. A no-op add or update rewrites no managed file, no merged template, no installation lock and no integration metadata, and `installedAt` keeps the moment of first installation instead of being restamped on every invocation, so a command that reports no changes no longer leaves the working tree dirty.
+
+Normative diagnostics, deterministic ordering and the documented exit codes are unchanged.
+
 ## [0.17.0]
 
 The recover UX release: every change comes from the first external recovery run (a 1103-source session over a real OpenSpec repository) and closes issues #196 through #206 in one wave (PR #207).
