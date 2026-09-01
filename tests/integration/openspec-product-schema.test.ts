@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
+import { contentDigest } from '@prodshape/core';
 import {
   addOpenSpecIntegration,
   checkOpenSpecIntegration,
@@ -98,11 +99,14 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
       expect(result.changes).toContain(
         'Installed the OpenSpec product schema at openspec/schemas/product.',
       );
-      expect(result.meta.productSchema).toEqual({
-        name: 'product',
-        requiresOpenspec: PRODUCT_SCHEMA_MIN_OPENSPEC,
-        files: SCHEMA_FILES,
-      });
+      // The record carries the ownership proof: each managed file with its installed digest.
+      expect(result.meta.productSchema?.name).toBe('product');
+      expect(result.meta.productSchema?.requiresOpenspec).toBe(PRODUCT_SCHEMA_MIN_OPENSPEC);
+      expect(Object.keys(result.meta.productSchema?.files ?? {}).sort()).toEqual(SCHEMA_FILES);
+      for (const [relative, digest] of Object.entries(result.meta.productSchema?.files ?? {})) {
+        expect(digest).toMatch(/^sha256:[0-9a-f]{64}$/);
+        expect(digest).toBe(contentDigest(await readFile(join(dir, ...relative.split('/')), 'utf8')));
+      }
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
@@ -159,16 +163,150 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
     }
   });
 
-  it('update replaces a tampered managed schema file', async () => {
+  it('update replaces a file that still matches its recorded managed digest', async () => {
     const dir = await scratchWorkspace();
     try {
       await addOpenSpecIntegration(dir, { cliVersion: '1.11.0' });
+      // Simulate a managed file from an OLDER integration version: different bytes on disk, and a
+      // metadata record proving this integration wrote exactly those bytes.
       const target = join(dir, 'openspec', 'schemas', 'product', 'schema.yaml');
-      await writeFile(target, 'name: tampered\n', 'utf8');
+      const olderManaged = 'name: product\nversion: 1\ndescription: older managed revision\nartifacts: []\n';
+      await writeFile(target, olderManaged, 'utf8');
+      const metaPath = join(dir, '.product', 'integrations', 'openspec.json');
+      const meta = JSON.parse(await readFile(metaPath, 'utf8')) as {
+        productSchema: { files: Record<string, string> };
+      };
+      meta.productSchema.files['openspec/schemas/product/schema.yaml'] = contentDigest(olderManaged);
+      await writeFile(metaPath, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
+
       const result = await updateOpenSpecIntegration(dir);
       expect(result.written).toContain('openspec/schemas/product/schema.yaml');
       const restored = await readFile(target, 'utf8');
       expect(restored).toContain('name: product');
+      expect(restored).not.toContain('older managed revision');
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('update preserves a hand-edited managed file and reports it', async () => {
+    const dir = await scratchWorkspace();
+    try {
+      await addOpenSpecIntegration(dir, { cliVersion: '1.11.0' });
+      const target = join(dir, 'openspec', 'schemas', 'product', 'schema.yaml');
+      const edited = 'name: tampered by hand\n';
+      await writeFile(target, edited, 'utf8');
+      const result = await updateOpenSpecIntegration(dir);
+      expect(result.written).not.toContain('openspec/schemas/product/schema.yaml');
+      expect(
+        result.changes.some((change) =>
+          change.startsWith(
+            'Preserved hand-edited managed file openspec/schemas/product/schema.yaml',
+          ),
+        ),
+      ).toBe(true);
+      expect(await readFile(target, 'utf8')).toBe(edited);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('add fails closed on a pre-existing user schema file and writes nothing at all', async () => {
+    const dir = await scratchWorkspace();
+    try {
+      const userContent = 'name: product\ndescription: USER AUTHORED\nartifacts: []\n';
+      const target = join(dir, 'openspec', 'schemas', 'product', 'schema.yaml');
+      await mkdir(join(dir, 'openspec', 'schemas', 'product'), { recursive: true });
+      await writeFile(target, userContent, 'utf8');
+      await expect(addOpenSpecIntegration(dir, { cliVersion: '1.11.0' })).rejects.toThrow(
+        'never overwrites user-authored files',
+      );
+      await expect(
+        addOpenSpecIntegration(dir, { cliVersion: '1.11.0', dryRun: true }),
+      ).rejects.toThrow('never overwrites user-authored files');
+      // The whole operation failed closed: the user file is intact and no other surface was
+      // written either.
+      expect(await readFile(target, 'utf8')).toBe(userContent);
+      await expect(stat(join(dir, 'openspec', 'config.yaml'))).rejects.toThrow();
+      await expect(stat(join(dir, '.product'))).rejects.toThrow();
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('add fails closed on a colliding template or script', async () => {
+    const dir = await scratchWorkspace();
+    try {
+      const target = join(dir, 'openspec', 'schemas', 'product', 'templates', 'proposal.md');
+      await mkdir(join(dir, 'openspec', 'schemas', 'product', 'templates'), { recursive: true });
+      await writeFile(target, '# my own proposal template\n', 'utf8');
+      await expect(addOpenSpecIntegration(dir, { cliVersion: '1.11.0' })).rejects.toThrow(
+        'openspec/schemas/product/templates/proposal.md',
+      );
+      expect(await readFile(target, 'utf8')).toBe('# my own proposal template\n');
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('remove preserves a hand-edited managed file and reports it while deleting the rest', async () => {
+    const dir = await scratchWorkspace();
+    try {
+      await addOpenSpecIntegration(dir, { cliVersion: '1.11.0' });
+      const target = join(dir, 'openspec', 'schemas', 'product', 'schema.yaml');
+      const edited = 'name: edited after installation\n';
+      await writeFile(target, edited, 'utf8');
+      const result = await removeOpenSpecIntegration(dir);
+      expect(result.preserved).toEqual(['openspec/schemas/product/schema.yaml']);
+      expect(result.removed).not.toContain('openspec/schemas/product/schema.yaml');
+      expect(await readFile(target, 'utf8')).toBe(edited);
+      for (const relative of SCHEMA_FILES.filter(
+        (file) => file !== 'openspec/schemas/product/schema.yaml',
+      )) {
+        expect(result.removed).toContain(relative);
+        await expect(stat(join(dir, ...relative.split('/')))).rejects.toThrow();
+      }
+      await expect(
+        stat(join(dir, '.product', 'integrations', 'openspec.json')),
+      ).rejects.toThrow();
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('remove without integration metadata never deletes a coincidentally named user schema', async () => {
+    const dir = await scratchWorkspace();
+    try {
+      const userContent = 'name: product\ndescription: USER AUTHORED\nartifacts: []\n';
+      const target = join(dir, 'openspec', 'schemas', 'product', 'schema.yaml');
+      await mkdir(join(dir, 'openspec', 'schemas', 'product'), { recursive: true });
+      await writeFile(target, userContent, 'utf8');
+      const result = await removeOpenSpecIntegration(dir);
+      expect(result.removed.filter((entry) => entry.startsWith('openspec/schemas/'))).toEqual([]);
+      expect(result.preserved).toEqual([]);
+      expect(await readFile(target, 'utf8')).toBe(userContent);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('a dry-run remove reports removals and preserved files while changing no bytes', async () => {
+    const dir = await scratchWorkspace();
+    try {
+      await addOpenSpecIntegration(dir, { cliVersion: '1.11.0' });
+      const target = join(dir, 'openspec', 'schemas', 'product', 'schema.yaml');
+      await writeFile(target, 'name: edited\n', 'utf8');
+      const result = await removeOpenSpecIntegration(dir, { dryRun: true });
+      expect(result.preserved).toEqual(['openspec/schemas/product/schema.yaml']);
+      expect(result.removed).toContain('openspec/schemas/product/scripts/product-apply.mjs');
+      for (const relative of SCHEMA_FILES.filter(
+        (file) => file !== 'openspec/schemas/product/schema.yaml',
+      )) {
+        await expect(readFile(join(dir, ...relative.split('/')), 'utf8')).resolves.toBeTruthy();
+      }
+      await expect(
+        readFile(join(dir, '.product', 'integrations', 'openspec.json'), 'utf8'),
+      ).resolves.toBeTruthy();
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
@@ -194,7 +332,9 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
       const tampered = await checkOpenSpecIntegration(dir);
       const tamperedCheck = tampered.checks.find((check) => check.name === 'product workflow');
       expect(tamperedCheck!.ok).toBe(false);
-      expect(tamperedCheck!.detail).toContain('openspec/schemas/product/schema.yaml');
+      expect(tamperedCheck!.detail).toContain(
+        'hand-edited and preserved: openspec/schemas/product/schema.yaml',
+      );
       expect(tampered.ok).toBe(false);
     } finally {
       await rm(dir, { recursive: true, force: true });
