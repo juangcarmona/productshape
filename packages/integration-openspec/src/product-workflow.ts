@@ -153,14 +153,26 @@ async function loadHostedChange(
 }
 
 /**
- * Every live change the concurrency rule (PRODUCT025) must see: all hosted OpenSpec product
- * changes plus every native change under `<changes>/active`. Concurrency spans BOTH containers,
- * so a hosted change and a native change touching the same artifact report against each other.
+ * A hosted change in a terminal status is change history awaiting its container move: the native
+ * lifecycle expresses that state by location (changes/completed, rejected, superseded), while the
+ * hosted container keeps the directory in place until `openspec archive` moves it, so status is
+ * the lifecycle carrier here.
+ */
+const TERMINAL_CHANGE_STATUSES = new Set(['applied', 'rejected', 'superseded']);
+
+/**
+ * Every live change the concurrency rule (PRODUCT025) must see: hosted OpenSpec product changes
+ * that are not in a terminal status, plus every native change under `<changes>/active`.
+ * Concurrency spans BOTH containers, so a hosted change and a native change touching the same
+ * artifact report against each other; a terminal hosted change is inert exactly like the native
+ * archives.
  */
 async function loadAllLiveChanges(root: string, repo: ProductRepository): Promise<LoadedChange[]> {
   const changes: LoadedChange[] = [];
   for (const ref of await listOpenSpecProductChanges(root)) {
-    changes.push(await loadChange(ref.dir, repo.root, repo.registry));
+    const loaded = await loadChange(ref.dir, repo.root, repo.registry);
+    if (loaded.status !== undefined && TERMINAL_CHANGE_STATUSES.has(loaded.status)) continue;
+    changes.push(loaded);
   }
   for (const dir of await discoverChanges(join(repo.changesDir, 'active'))) {
     changes.push(await loadChange(dir, repo.root, repo.registry));
