@@ -26,8 +26,9 @@
  * archive move) is filtered out and `openspec archive` moves the container instead, as a separate
  * action after apply. `planApply`'s contract sanctions callers filtering the returned action set.
  */
-import { readdir } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { parse } from 'yaml';
 import {
   analyzeImpact,
   blockingDiagnostics,
@@ -53,6 +54,7 @@ import type {
   ProductGraph,
   ProductRepository,
 } from '@prodshape/core';
+import { OPENSPEC_PRODUCT_SCHEMA_NAME } from './product-schema.js';
 import { pathExists } from './workspace.js';
 
 /** The subdirectory of an OpenSpec change that hosts the PDaC Product Change delta. */
@@ -93,11 +95,47 @@ export interface OpenSpecProductChangeRef {
   file: string;
 }
 
+/** The result of reading a change's `.openspec.yaml` schema pin. */
+type HostedSchemaPin =
+  | { schema: string }
+  | { problem: 'missing' }
+  | { problem: 'malformed'; detail: string };
+
 /**
- * List the OpenSpec changes that host a PDaC Product Change (a `product/change.md` inside the
- * change directory). The OpenSpec archive is history and is never listed; a change without a
- * product delta (for example one whose honest intent verdict was "no product delta") is not a
- * product change and is not listed either.
+ * Read the schema a change is pinned to. OpenSpec records it in the change's `.openspec.yaml`
+ * (`openspec new change <name> --schema product` writes it), and the hosted product rail treats
+ * that pin as load-bearing: OpenSpec selects the workflow, so a change is a product change
+ * because its container says so, never because a `product/` directory happens to exist.
+ */
+async function readHostedSchemaPin(changeDir: string): Promise<HostedSchemaPin> {
+  const metadataPath = join(changeDir, '.openspec.yaml');
+  if (!(await pathExists(metadataPath))) return { problem: 'missing' };
+  let parsed: unknown;
+  try {
+    parsed = parse(await readFile(metadataPath, 'utf8'));
+  } catch (error) {
+    return {
+      problem: 'malformed',
+      detail: error instanceof Error ? error.message : String(error),
+    };
+  }
+  const schema =
+    parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)['schema']
+      : undefined;
+  if (typeof schema !== 'string' || schema.length === 0) {
+    return { problem: 'malformed', detail: 'the document carries no schema field' };
+  }
+  return { schema };
+}
+
+/**
+ * List the OpenSpec changes that host a PDaC Product Change: pinned to `schema: product` in
+ * `.openspec.yaml` AND carrying `product/change.md`. The OpenSpec archive is history and is never
+ * listed; a change without a product delta (for example one whose honest intent verdict was "no
+ * product delta") is not a product change; and a change pinned to another schema is not one
+ * either, whatever directories it contains, so it never enters the product rail or its
+ * concurrency input.
  */
 export async function listOpenSpecProductChanges(
   root: string,
@@ -115,14 +153,16 @@ export async function listOpenSpecProductChanges(
     .sort(compareCodePoints);
   const refs: OpenSpecProductChangeRef[] = [];
   for (const name of names) {
-    const dir = join(changesDir, name, OPENSPEC_PRODUCT_SUBDIR);
-    if (await pathExists(join(dir, 'change.md'))) {
-      refs.push({
-        name,
-        dir,
-        file: `openspec/changes/${name}/${OPENSPEC_PRODUCT_SUBDIR}/change.md`,
-      });
-    }
+    const changeDir = join(changesDir, name);
+    const dir = join(changeDir, OPENSPEC_PRODUCT_SUBDIR);
+    if (!(await pathExists(join(dir, 'change.md')))) continue;
+    const pin = await readHostedSchemaPin(changeDir);
+    if ('problem' in pin || pin.schema !== OPENSPEC_PRODUCT_SCHEMA_NAME) continue;
+    refs.push({
+      name,
+      dir,
+      file: `openspec/changes/${name}/${OPENSPEC_PRODUCT_SUBDIR}/change.md`,
+    });
   }
   return refs;
 }
@@ -141,15 +181,39 @@ async function loadHostedChange(
   repo: ProductRepository,
   changeName: string,
 ): Promise<LoadedChange> {
-  const refs = await listOpenSpecProductChanges(root);
-  const ref = refs.find((candidate) => candidate.name === changeName);
-  if (!ref) {
+  const changesDir = join(root, 'openspec', 'changes');
+  const changeDir = join(changesDir, changeName);
+  const deltaDir = join(changeDir, OPENSPEC_PRODUCT_SUBDIR);
+  const hasDelta =
+    changeName !== 'archive' &&
+    (await pathExists(changeDir)) &&
+    (await pathExists(join(deltaDir, 'change.md')));
+  if (!hasDelta) {
+    const refs = await listOpenSpecProductChanges(root);
     const known = refs.map((candidate) => candidate.name).join(', ') || 'none';
     throw new Error(
       `No OpenSpec product change named '${changeName}' under openspec/changes/ (a product change hosts product/change.md; found: ${known}).`,
     );
   }
-  return loadChange(ref.dir, repo.root, repo.registry);
+  // The schema pin is load-bearing and fails closed: without a readable pin naming the product
+  // schema, this change never enters the product rail, however product-shaped its contents look.
+  const pin = await readHostedSchemaPin(changeDir);
+  if ('problem' in pin) {
+    if (pin.problem === 'missing') {
+      throw new Error(
+        `OpenSpec change '${changeName}' has no .openspec.yaml, so its schema pin is unknown; the hosted product rail refuses it. Create product changes with: openspec new change ${changeName} --schema ${OPENSPEC_PRODUCT_SCHEMA_NAME}.`,
+      );
+    }
+    throw new Error(
+      `OpenSpec change '${changeName}' has an unreadable .openspec.yaml (${pin.detail}); the hosted product rail refuses it until the schema pin is readable.`,
+    );
+  }
+  if (pin.schema !== OPENSPEC_PRODUCT_SCHEMA_NAME) {
+    throw new Error(
+      `OpenSpec change '${changeName}' is pinned to schema '${pin.schema}', not '${OPENSPEC_PRODUCT_SCHEMA_NAME}'; the hosted product rail refuses it. Product intent travels through a change created with: openspec new change <name> --schema ${OPENSPEC_PRODUCT_SCHEMA_NAME}.`,
+    );
+  }
+  return loadChange(deltaDir, repo.root, repo.registry);
 }
 
 /**

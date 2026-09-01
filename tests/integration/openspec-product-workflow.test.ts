@@ -515,6 +515,104 @@ describe('openspec product workflow: apply', () => {
     }
   });
 
+  it('the schema pin is load-bearing: another schema never applies through the product rail', async () => {
+    const { root, base } = await createRepo();
+    try {
+      await writeHostedChange(root, priceFloorSpec(base, { status: 'approved' }));
+      // The container says spec-driven: however product-shaped its contents look, it is not a
+      // product change.
+      const metadataPath = join(root, 'openspec', 'changes', 'chg-price-floor', '.openspec.yaml');
+      await writeFile(metadataPath, 'schema: spec-driven\nskip_specs: true\n', 'utf8');
+
+      expect(await listOpenSpecProductChanges(root)).toEqual([]);
+      const modelBefore = await snapshotTree(root, 'docs/product/model');
+      const changesBefore = await snapshotTree(root, 'openspec/changes');
+      await expect(validateOpenSpecProductChange(root, 'chg-price-floor')).rejects.toThrow(
+        "pinned to schema 'spec-driven', not 'product'",
+      );
+      await expect(applyOpenSpecProductChange(root, 'chg-price-floor')).rejects.toThrow(
+        "pinned to schema 'spec-driven', not 'product'",
+      );
+      expect(await snapshotTree(root, 'docs/product/model')).toEqual(modelBefore);
+      expect(await snapshotTree(root, 'openspec/changes')).toEqual(changesBefore);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('missing or malformed change metadata fails closed with a clear error', async () => {
+    const { root, base } = await createRepo();
+    try {
+      await writeHostedChange(root, priceFloorSpec(base, { status: 'approved' }));
+      const metadataPath = join(root, 'openspec', 'changes', 'chg-price-floor', '.openspec.yaml');
+
+      await rm(metadataPath, { force: true });
+      expect(await listOpenSpecProductChanges(root)).toEqual([]);
+      await expect(applyOpenSpecProductChange(root, 'chg-price-floor')).rejects.toThrow(
+        'has no .openspec.yaml',
+      );
+
+      await writeFile(metadataPath, 'schema: [broken\n', 'utf8');
+      await expect(applyOpenSpecProductChange(root, 'chg-price-floor')).rejects.toThrow(
+        'unreadable .openspec.yaml',
+      );
+
+      await writeFile(metadataPath, 'skip_specs: true\n', 'utf8');
+      await expect(applyOpenSpecProductChange(root, 'chg-price-floor')).rejects.toThrow(
+        'unreadable .openspec.yaml',
+      );
+
+      // The model never moved through any of the refusals.
+      const inspection = await inspectProductModel(root);
+      expect(inspection.artifacts).toHaveLength(10);
+      expect(inspection.diagnostics).toEqual([]);
+
+      // Restoring the product pin restores the rail.
+      await writeFile(metadataPath, 'schema: product\nskip_specs: true\n', 'utf8');
+      const result = await applyOpenSpecProductChange(root, 'chg-price-floor', { dryRun: true });
+      expect(result.outcome).toBe('dry-run');
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('a wrong-schema container does not shadow concurrency between legitimate changes', async () => {
+    const { root, base } = await createRepo();
+    try {
+      // A spec-driven change carrying a product-shaped payload takes no part in PRODUCT025.
+      await writeHostedChange(root, {
+        ...priceFloorSpec(base),
+        name: 'chg-not-product',
+        chgId: 'CHG-NOT-PRODUCT-001',
+        operations: { add: [], modify: ['BR-PRICING-001'], remove: [] },
+        proposed: { 'business-rules/br-pricing-001.md': BR_PRICING_V3 },
+      });
+      await writeFile(
+        join(root, 'openspec', 'changes', 'chg-not-product', '.openspec.yaml'),
+        'schema: spec-driven\nskip_specs: true\n',
+        'utf8',
+      );
+      await writeHostedChange(root, priceFloorSpec(base));
+      const alone = await validateOpenSpecProductChange(root, 'chg-price-floor');
+      expect(alone.diagnostics.filter((d) => d.code === 'PRODUCT025')).toEqual([]);
+
+      // Legitimate hosted and native changes still see each other.
+      await writeNativeChange(root, {
+        name: 'unused',
+        chgId: 'CHG-NATIVE-TOUCH-001',
+        title: 'Native change touching the same rule',
+        status: 'draft',
+        baseRevision: base,
+        operations: { add: [], modify: ['BR-PRICING-001'], remove: [] },
+        proposed: { 'business-rules/br-pricing-001.md': BR_PRICING_V3 },
+      });
+      const withNative = await validateOpenSpecProductChange(root, 'chg-price-floor');
+      expect(withNative.diagnostics.some((d) => d.code === 'PRODUCT025')).toBe(true);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it('a request with no product impact never becomes a product change', async () => {
     const { root } = await createRepo();
     try {
