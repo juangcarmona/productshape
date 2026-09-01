@@ -385,7 +385,13 @@ describe('openspec product workflow: apply', () => {
       const before = await snapshotTree(root, 'docs/product/model');
       const result = await applyOpenSpecProductChange(root, 'chg-price-floor');
       expect(result.outcome).toBe('refused');
-      expect(result.plan.diagnostics.some((d) => d.code === 'PRODUCT028')).toBe(true);
+      const gate = result.plan.diagnostics.find((d) => d.code === 'PRODUCT028');
+      expect(gate).toBeDefined();
+      // The hosted runtime diagnostic is policy-neutral: it names the required protocol state
+      // and whose decision the transition is, and prescribes no human, manual edit, wrapper or
+      // automation.
+      expect(gate!.message).toContain("caller's authorisation policy");
+      expect(gate!.message).not.toMatch(/human|by hand/i);
       expect(await snapshotTree(root, 'docs/product/model')).toEqual(before);
       // No assertion anywhere about WHO performs the approving transition: any caller policy
       // that produces status approved satisfies the gate.

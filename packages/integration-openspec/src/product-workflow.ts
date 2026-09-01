@@ -375,6 +375,19 @@ export async function applyOpenSpecProductChange(
   const plan: ApplyPlan = {
     ...rawPlan,
     actions: rawPlan.actions.filter((action) => action.kind !== 'move-change'),
+    // The hosted rail states authorisation as policy. Core's PRODUCT028 wording prescribes a
+    // human hand edit, which is the native lifecycle's own contract; here the code, severity,
+    // file and fields stay core's while the message (implementation-defined and never compared)
+    // says what the hosted contract requires. A message rewrite of an existing diagnostic, never
+    // a new emission.
+    diagnostics: rawPlan.diagnostics.map((diagnostic) =>
+      diagnostic.code === 'PRODUCT028'
+        ? {
+            ...diagnostic,
+            message: `Apply requires status 'approved'; the change is '${change.status ?? 'unknown'}'. The transition into the apply-authorised state belongs to the caller's authorisation policy; the integration never performs or judges it.`,
+          }
+        : diagnostic,
+    ),
   };
 
   if (plan.diagnostics.some((diagnostic) => diagnostic.severity === 'error')) {
