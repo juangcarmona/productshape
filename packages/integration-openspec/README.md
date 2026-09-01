@@ -46,12 +46,12 @@ The deterministic rails are exported for wrappers, tests and custom callers; the
 
 ```ts
 import {
-  inspectProductModel,          // accepted model + in-memory graph + diagnostics
-  listOpenSpecProductChanges,   // OpenSpec changes hosting product/change.md
+  inspectProductModel, // accepted model + in-memory graph + diagnostics
+  listOpenSpecProductChanges, // OpenSpec changes hosting product/change.md
   loadOpenSpecProductChange,
   validateOpenSpecProductChange, // overlay validation; concurrency spans both containers
-  applyOpenSpecProductChange,    // revalidates at apply time; fail closed; never archives
-  deriveDeliveryContext,         // fresh post-apply context for a future delivery workflow
+  applyOpenSpecProductChange, // revalidates at apply time; fail closed; never archives
+  deriveDeliveryContext, // fresh post-apply context for a future delivery workflow
 } from '@prodshape/integration-openspec';
 ```
 

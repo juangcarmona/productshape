@@ -157,7 +157,12 @@ describe('openspec product workflow: overlay validation', () => {
         name: 'chg-missing',
         chgId: 'CHG-MISSING-001',
         operations: { add: [], modify: ['BR-GHOST-001'], remove: ['TERM-GHOST-001'] },
-        proposed: { 'business-rules/br-ghost-001.md': BR_PRICING_V2.replaceAll('BR-PRICING-001', 'BR-GHOST-001') },
+        proposed: {
+          'business-rules/br-ghost-001.md': BR_PRICING_V2.replaceAll(
+            'BR-PRICING-001',
+            'BR-GHOST-001',
+          ),
+        },
       });
       const missingCodes = await codesOf('chg-missing');
       expect(missingCodes).toContain('PRODUCT021');
@@ -350,7 +355,11 @@ describe('openspec product workflow: apply', () => {
       await approve(root, 'chg-price-floor');
       // The baseline moves after the change was authored: the modify target drifts.
       const brFile = join(root, 'docs', 'product', 'model', 'business-rules', 'br-pricing-001.md');
-      await writeFile(brFile, (await readFile(brFile, 'utf8')).replace('20 euro item', '25 euro item'), 'utf8');
+      await writeFile(
+        brFile,
+        (await readFile(brFile, 'utf8')).replace('20 euro item', '25 euro item'),
+        'utf8',
+      );
       git(root, 'add', '-A');
       git(root, 'commit', '-m', 'baseline moved');
 
@@ -453,9 +462,7 @@ describe('openspec product workflow: apply', () => {
         expect(after.get(relative)).toBe(content);
       }
       const inspection = await inspectProductModel(root);
-      expect(
-        inspection.graph.nodes.filter((node) => node.id === 'BR-PRICING-001'),
-      ).toHaveLength(1);
+      expect(inspection.graph.nodes.filter((node) => node.id === 'BR-PRICING-001')).toHaveLength(1);
       expect(inspection.diagnostics).toEqual([]);
     } finally {
       await rm(root, { recursive: true, force: true });

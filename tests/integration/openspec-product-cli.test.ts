@@ -62,13 +62,7 @@ function meetsProductFloor(version: string | undefined): boolean {
 }
 
 const openspecVersion = detectedOpenSpecVersion();
-const integrationEntry = join(
-  repoRoot,
-  'packages',
-  'integration-openspec',
-  'dist',
-  'index.js',
-);
+const integrationEntry = join(repoRoot, 'packages', 'integration-openspec', 'dist', 'index.js');
 const canRun = meetsProductFloor(openspecVersion) && existsSync(integrationEntry);
 
 /** The test resolution hook: production resolves @prodshape/integration-openspec from the
@@ -112,7 +106,10 @@ describe.skipIf(!canRun)(
         const created = runOpenspec(root, 'new', 'change', 'spike-price', '--schema', 'product');
         expect(created.status).toBe(0);
         const metadata = parse(
-          await readFile(join(root, 'openspec', 'changes', 'spike-price', '.openspec.yaml'), 'utf8'),
+          await readFile(
+            join(root, 'openspec', 'changes', 'spike-price', '.openspec.yaml'),
+            'utf8',
+          ),
         ) as { schema: string; skip_specs?: boolean };
         expect(metadata.schema).toBe('product');
         // A schema with no specs artifact records skip_specs so openspec validate stays clean.
@@ -128,9 +125,9 @@ describe.skipIf(!canRun)(
     it('status reports the two artifacts and instructions route apply through the bridge', async () => {
       const { root, base } = await createOpenSpecRepo();
       try {
-        expect(runOpenspec(root, 'new', 'change', 'spike-price', '--schema', 'product').status).toBe(
-          0,
-        );
+        expect(
+          runOpenspec(root, 'new', 'change', 'spike-price', '--schema', 'product').status,
+        ).toBe(0);
 
         // Before any artifact exists: apply is blocked on the delta.
         const blocked = runOpenspec(
@@ -161,7 +158,14 @@ describe.skipIf(!canRun)(
         expect(statusPayload.applyRequires).toContain('delta');
 
         // The delta instruction carries the PDaC authoring contract.
-        const delta = runOpenspec(root, 'instructions', 'delta', '--change', 'spike-price', '--json');
+        const delta = runOpenspec(
+          root,
+          'instructions',
+          'delta',
+          '--change',
+          'spike-price',
+          '--json',
+        );
         expect(delta.status).toBe(0);
         const deltaPayload = JSON.parse(delta.stdout) as Record<string, unknown>;
         const deltaText = JSON.stringify(deltaPayload);
@@ -193,9 +197,9 @@ describe.skipIf(!canRun)(
     it('the bridge script drives the deterministic apply and archive moves only the container', async () => {
       const { root, base } = await createOpenSpecRepo();
       try {
-        expect(runOpenspec(root, 'new', 'change', 'spike-price', '--schema', 'product').status).toBe(
-          0,
-        );
+        expect(
+          runOpenspec(root, 'new', 'change', 'spike-price', '--schema', 'product').status,
+        ).toBe(0);
         await writeHostedChange(root, priceFloorSpec(base, { name: 'spike-price' }));
 
         // Preflight through the validate bridge: clean overlay.

@@ -70,9 +70,9 @@ describe('openspec product schema assets', () => {
     expect(schema.apply.instruction).toContain('Do not archive this change as part of apply');
     // Every referenced template resolves to a bundled asset.
     for (const artifact of schema.artifacts) {
-      expect(
-        assets.some((asset) => asset.relative === `templates/${artifact.template}`),
-      ).toBe(true);
+      expect(assets.some((asset) => asset.relative === `templates/${artifact.template}`)).toBe(
+        true,
+      );
     }
   });
 
@@ -234,7 +234,9 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
         await expect(stat(join(dir, ...relative.split('/')))).rejects.toThrow();
       }
       // Emptied managed directories are pruned; directories still holding user files are not.
-      await expect(stat(join(dir, 'openspec', 'schemas', 'product', 'templates'))).rejects.toThrow();
+      await expect(
+        stat(join(dir, 'openspec', 'schemas', 'product', 'templates')),
+      ).rejects.toThrow();
       await expect(stat(join(dir, 'openspec', 'schemas', 'product', 'scripts'))).rejects.toThrow();
       expect(await readdir(join(dir, 'openspec', 'schemas', 'product'))).toEqual(['NOTES.md']);
       expect(await readdir(join(dir, 'openspec', 'schemas', 'custom'))).toEqual(['schema.yaml']);

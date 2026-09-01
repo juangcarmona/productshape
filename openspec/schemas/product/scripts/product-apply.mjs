@@ -95,7 +95,11 @@ const resultingErrors = (result.resultingModel?.diagnostics ?? []).filter(
 );
 if (resultingErrors.length > 0) {
   printDiagnostics(resultingErrors);
-  console.log('Applied, but the resulting accepted model reports errors. Investigate before archiving.');
+  console.log(
+    'Applied, but the resulting accepted model reports errors. Investigate before archiving.',
+  );
   process.exit(1);
 }
-console.log('Applied. Nothing was committed and the change was not archived: verify the model, then archive separately.');
+console.log(
+  'Applied. Nothing was committed and the change was not archived: verify the model, then archive separately.',
+);

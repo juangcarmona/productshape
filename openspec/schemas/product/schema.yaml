@@ -4,11 +4,7 @@
 name: product
 version: 1
 description: >-
-  PDaC product workflow hosted in OpenSpec: requested product intent becomes a Product Change
-  delta against the accepted model in docs/product/model, deterministically validated as an
-  overlay, then applied by the PDaC integration only for a change in the apply-authorised state.
-  Requires OpenSpec >= 1.7.0. This schema changes product meaning only; implementation work
-  belongs to a separate spec-driven change.
+  PDaC product workflow hosted in OpenSpec: requested product intent becomes a Product Change delta against the accepted model in docs/product/model, deterministically validated as an overlay, then applied by the PDaC integration only for a change in the apply-authorised state. Requires OpenSpec >= 1.7.0. This schema changes product meaning only; implementation work belongs to a separate spec-driven change.
 artifacts:
   - id: intent
     generates: proposal.md
