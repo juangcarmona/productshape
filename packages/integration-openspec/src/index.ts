@@ -1,14 +1,21 @@
 /**
- * OpenSpec integration for Product Definition as Code.
+ * OpenSpec integration for Product Definition as Code, in two lanes.
  *
- * This module configures an existing OpenSpec workspace with PDaC citation rules by merging
- * guidance into `openspec/config.yaml`, and records metadata under `.product/integrations/`.
- * It never creates an OpenSpec plugin, never patches OpenSpec-generated commands or skills, and
- * never forks OpenSpec's default schema. The integration is configuration + deterministic
- * verification: consumer documents cite canonical product artifacts by id + digest, and
- * `prodshape citations verify` checks them.
+ * The citation lane configures OpenSpec's spec-driven delivery workflow: PDaC citation rules are
+ * merged into `openspec/config.yaml`, metadata is recorded under `.product/integrations/`, and
+ * consumer documents cite canonical product artifacts by id + digest for
+ * `prodshape citations verify` to check.
  *
- * The merge logic is the heart of this module: it preserves every field the user authored
+ * The product lane hosts the PDaC product workflow inside OpenSpec: the integration installs a
+ * project-local `product` schema at `openspec/schemas/product/`, OpenSpec's official project
+ * extension surface, whose changes host a Product Change delta that `product-workflow.ts`
+ * validates as an overlay and applies deterministically.
+ *
+ * Both lanes write only official OpenSpec surfaces plus ProductShape's own integration metadata.
+ * The integration never patches OpenSpec-generated commands or skills, never modifies OpenSpec's
+ * built-in schemas, and never writes into a native spec-driven change's documents.
+ *
+ * The merge logic is the heart of the citation lane: it preserves every field the user authored
  * (schema, context, rules, operations, githubCopilot, and anything else) and only appends PDaC
  * guidance, deduplicating identical entries so the operation is idempotent.
  */
@@ -37,6 +44,24 @@ export {
   PRODUCT_SCHEMA_MIN_OPENSPEC,
 } from './product-schema.js';
 export type { ProductSchemaAsset } from './product-schema.js';
+export {
+  applyOpenSpecProductChange,
+  deriveDeliveryContext,
+  inspectProductModel,
+  listOpenSpecProductChanges,
+  loadOpenSpecProductChange,
+  OPENSPEC_PRODUCT_SUBDIR,
+  validateOpenSpecProductChange,
+} from './product-workflow.js';
+export type {
+  DeliveryContextBundle,
+  DeliveryContextEntry,
+  OpenSpecProductApplyOutcome,
+  OpenSpecProductApplyResult,
+  OpenSpecProductChangeRef,
+  OpenSpecProductChangeValidation,
+  ProductModelInspection,
+} from './product-workflow.js';
 
 /** The minimum supported OpenSpec CLI version. */
 export const MIN_SUPPORTED_OPENSPEC = '1.0.0';
@@ -62,7 +87,7 @@ A citation binds consumer text to a canonical artifact: it records the artifact 
 To cite: run \`npx prodshape inspect <ID>\` to read the current digest, then \`npx prodshape cite --id <ID> --digest <digest>\` to emit the canonical payload. Wrap it in the document's native comment (\`<!-- ... -->\` in Markdown) on its own line directly under the text it grounds.
 To find which artifacts a change impacts, compare the change's intent with the whole product definition first, then widen the result with \`npx prodshape impact <ID>\`. When the intent contradicts or goes beyond the definition, record that drift in the proposal with the marker \`<!-- pdac-drift ids="..." summary="..." -->\` (listed by \`npx prodshape drift\`) and let humans decide — never fix it quietly.
 Every current OpenSpec document (proposal, specs, design, tasks and openspec/specs/) carries exactly one explicit scope declaration: \`pdac-scope: cited\` for a bound document that carries at least one citation, or \`pdac-scope: none\` with a non-empty human-authored reason (\`pdac-scope-reason: <why>\` in frontmatter, or \`<!-- pdac-scope: none reason=\"<why>\" -->\`) for an exempt one. Citations alone never bind: a document without a declaration is unclassified and fails verification, a bound document with zero citations fails, and an exemption without a reason or contradicted by citations fails. Binding and exemption are human declarations: never declare an exemption merely because citations are missing. Verify with \`npx prodshape citations verify --provider openspec\`: it enumerates the expected current documents, so zero discovered citations is a set of failures, never a pass. Archived changes are excluded by default; \`--include-archived\` also verifies the citations history carries, reported as warnings, because archived history cannot be edited.
-The accepted Product Definition changes only through a Product Change under docs/product/changes/: validate it as an overlay while the baseline stays untouched, obtain human product approval, apply explicitly on a working branch, and let a human accept the resulting baseline by merging its pull request. A Product Change is not a pull request; apply is not acceptance; neither apply nor merge attests implementation, verification, release or deployment. OpenSpec changes never edit docs/product/model directly: an OpenSpec change may share a pull request with an applied Product Change or follow later, but it never supplies Product Change status.
+The accepted Product Definition changes only through a Product Change: validate it as an overlay while the baseline stays untouched, reach the apply-authorised state (status: approved, a transition owned by the caller's authorisation policy, never performed by tooling on its own), apply explicitly on a working branch, and let a human accept the resulting baseline by merging its pull request. A Product Change is not a pull request; apply is not acceptance; neither apply nor merge attests implementation, verification, release or deployment. A Product Change lives under docs/product/changes/ or hosted inside an OpenSpec change created with the product schema (product/change.md plus product/proposed/**); its deterministically validated, apply-authorised apply is the only write path into docs/product/model. A spec-driven OpenSpec delivery change never edits docs/product/model directly: it may share a pull request with an applied Product Change or follow later, but it never supplies Product Change status.
 ${PDAC_CONTEXT_END}`;
 
 /** The PDaC citation rules injected per artifact into openspec/config.yaml `rules:`. */
@@ -71,7 +96,7 @@ export const PDAC_RULES: Record<string, string[]> = {
     'State which PDaC artifacts this change touches, each with a citation payload emitted by `npx prodshape cite --id <ID> --digest <digest>` and wrapped in the document native comment (`<!-- ... -->` in Markdown). Never write a citation record by hand.',
     'Find the impacted artifacts as a separate step, before writing any proposal content. Read the whole product definition (docs/product/model by default), compare it with what this change wants — the backlog item behind it, if there is one — and list every artifact the change depends on, alters or contradicts. Then widen the list: run `npx prodshape impact <ID>` on each artifact you found and check its direct and indirect neighbours. Put the resulting list in the proposal, cite every impacted artifact from each document that uses it (proposal, specs, design, tasks), and name any neighbour you checked and left out.',
     'If this change\'s goals contradict the product definition, or need behaviour it does not describe, that is product-definition drift. Record it in the proposal under a \'Product definition drift\' note naming the artifacts involved, with the marker `<!-- pdac-drift ids="<ID>[, <ID>...]" summary="<one line>" -->` on its own line so `npx prodshape drift` can list it. The decision is human: the developer and the product owner agree whether to propose a Product Change or adjust this change. Never fix drift quietly, drop or weaken a citation to hide it, or write around the conflict.',
-    'If the change implements altered product behaviour, name the Product Change (CHG id) whose applied or accepted artifacts it implements. If no overlay-validated and human-approved Product Change exists yet, stop and ask for one instead of proceeding. The OpenSpec change is not the Product Change.',
+    'If the change implements altered product behaviour, name the Product Change (CHG id) whose applied or accepted artifacts it implements. If no overlay-validated, apply-authorised Product Change exists yet, stop and ask for one instead of proceeding. A spec-driven OpenSpec change is not the Product Change; product intent travels through a Product Change, under docs/product/changes or hosted by a product-schema OpenSpec change.',
     'Every document of this change must end up bound or exempt, each with an explicit declaration: declare `pdac-scope: cited` on a line of its own and cite the canonical text the document depends on, or declare `pdac-scope: none` with a non-empty reason (`pdac-scope-reason: <why>` in frontmatter, or `<!-- pdac-scope: none reason="<why>" -->`) when a human judges the document has no product-semantic dependency. Citations alone never bind, and never declare an exemption just because citations are missing.',
   ],
   specs: [
