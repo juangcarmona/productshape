@@ -45,24 +45,24 @@ context: >-
   history carries, reported as warnings, because archived history cannot be
   edited.
 
-  The accepted Product Definition changes only through a Product Change under
-  docs/product/changes/: validate it as an overlay while the baseline stays
-  untouched, obtain human product approval, apply explicitly on a working
-  branch, and let a human accept the resulting baseline by merging its pull
-  request. A Product Change is not a pull request; apply is not acceptance;
-  neither apply nor merge attests implementation, verification, release or
-  deployment. OpenSpec changes never edit docs/product/model directly: an
-  OpenSpec change may share a pull request with an applied Product Change or
-  follow later, but it never supplies Product Change status.
+  The accepted Product Definition changes only through a Product Change:
+  validate it as an overlay while the baseline stays untouched, reach the
+  apply-authorised state (status: approved, a transition owned by the caller's
+  authorisation policy, never performed by tooling on its own), apply explicitly
+  on a working branch, and let a human accept the resulting baseline by merging
+  its pull request. A Product Change is not a pull request; apply is not
+  acceptance; neither apply nor merge attests implementation, verification,
+  release or deployment. A Product Change lives under docs/product/changes/ or
+  hosted inside an OpenSpec change created with the product schema
+  (product/change.md plus product/proposed/**); its deterministically validated,
+  apply-authorised apply is the only write path into docs/product/model. A
+  spec-driven OpenSpec delivery change never edits docs/product/model directly:
+  it may share a pull request with an applied Product Change or follow later,
+  but it never supplies Product Change status.
 
   <!-- pdac:context end -->
 rules:
   proposal:
-    - If the change implements altered product behaviour, name the Product
-      Change (CHG id) whose applied or accepted artifacts it implements. If no
-      overlay-validated and human-approved Product Change exists yet, stop and
-      ask for one instead of proceeding. The OpenSpec change is not the Product
-      Change.
     - "If this change's goals contradict the product definition, or need
       behaviour it does not describe, that is product-definition drift. Record
       it in the proposal under a 'Product definition drift' note naming the
@@ -92,6 +92,12 @@ rules:
       or `<!-- pdac-scope: none reason="<why>" -->`) when a human judges the
       document has no product-semantic dependency. Citations alone never bind,
       and never declare an exemption just because citations are missing.'
+    - If the change implements altered product behaviour, name the Product
+      Change (CHG id) whose applied or accepted artifacts it implements. If no
+      overlay-validated, apply-authorised Product Change exists yet, stop and
+      ask for one instead of proceeding. A spec-driven OpenSpec change is not
+      the Product Change; product intent travels through a Product Change, under
+      docs/product/changes or hosted by a product-schema OpenSpec change.
   specs:
     - Cite a specific verification scenario with an anchor when the requirement
       maps to one (anchor="<scenario id>").

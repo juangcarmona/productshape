@@ -13,6 +13,13 @@ const repoRoot = join(pkg, '..', '..');
 const targets = [
   { from: join(repoRoot, 'schemas'), to: join(pkg, 'schemas') },
   { from: join(repoRoot, 'packages', 'distribution', 'assets'), to: join(pkg, 'assets') },
+  // The OpenSpec product schema ships with integration-openspec, which the CLI bundles; its
+  // assets must ride inside the CLI package the same way the distribution assets do. Staged
+  // after the distribution assets because that target replaces the whole assets directory.
+  {
+    from: join(repoRoot, 'packages', 'integration-openspec', 'assets', 'openspec-product-schema'),
+    to: join(pkg, 'assets', 'openspec-product-schema'),
+  },
 ];
 
 for (const { from, to } of targets) {
