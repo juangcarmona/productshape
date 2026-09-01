@@ -30,7 +30,7 @@ fresh model validation                     apply ends here and never archives
 deriveDeliveryContext                      fresh read, fresh graph, impact: the future DELIVERY handoff
 ```
 
-Evidence: `tests/integration/openspec-product-workflow.test.ts` (deterministic rails end to end on a ten-kind greenfield fixture), `tests/integration/openspec-product-cli.test.ts` (the OpenSpec routing proof and the bridge execution proof against the real CLI), `tests/integration/openspec-product-schema.test.ts` (managed schema lifecycle), and this repository itself, which installs the schema and passes doctor with the product workflow reported available.
+Evidence: `tests/integration/openspec-product-workflow.test.ts` (deterministic rails end to end on a ten-kind greenfield fixture, including the fail-closed refusals and the schema-pin invariant), `tests/integration/openspec-product-cli.test.ts` (the OpenSpec routing proof against the real CLI), `tests/integration/openspec-product-packed.test.ts` (the production bridge on a packed consumer, no resolution override), `tests/integration/openspec-product-schema.test.ts` (the ownership-proven managed lifecycle), and this repository itself, which installs the schema and passes doctor with the product workflow reported available.
 
 ## Upstream constraints that shaped the design (OpenSpec 1.11.0)
 
@@ -42,13 +42,25 @@ Evidence: `tests/integration/openspec-product-workflow.test.ts` (deterministic r
 
 ## The executable bridge
 
-`/opsx:apply` follows `openspec instructions apply --json`, whose instruction must name a concrete invocation. The bridge is two managed scripts installed with the schema (`product-validate.mjs`, `product-apply.mjs`) that resolve the locally installed `@prodshape/integration-openspec` and call the library rails; they parse arguments and print reports, and duplicate no apply logic. The bridge is proven end to end in the CLI suite.
+`/opsx:apply` follows `openspec instructions apply --json`, whose instruction must name a concrete invocation. The bridge is two managed scripts installed with the schema (`product-validate.mjs`, `product-apply.mjs`) that resolve the locally installed `@prodshape/integration-openspec` and call the library rails; they parse arguments and print reports, and duplicate no apply logic.
 
-One installation-contract gap was discovered and is recorded rather than hidden: the published ProductShape CLI bundles this integration, so a consumer that installed only the CLI does not have `@prodshape/integration-openspec` in `node_modules`, and the bridge says so and stops. The product workflow therefore requires `npm install --save-dev @prodshape/integration-openspec` today (this repository consumes its own package as a workspace devDependency). Whether the supported installation contract should install the package, or a different invocation surface should exist, is a migration question for after the spike; per the spike's constraints no new CLI or bin was added.
+Two suites prove it at different depths. The CLI suite proves the OpenSpec routing and drives the scripts through the documented entry override, because workspace temp fixtures have no `node_modules`. The packed-consumer suite proves production resolution: it packs `@prodshape/core` and `@prodshape/integration-openspec`, installs the tarballs as local devDependencies in a fresh consumer repository exactly as documented, installs the schema through the installed package by bare specifier, and runs the installed bridge scripts with no override through refusal, dry run, apply and separate archive.
+
+One installation-contract gap remains recorded rather than hidden: the published ProductShape CLI bundles this integration, so a consumer that installed only the CLI does not have `@prodshape/integration-openspec` in `node_modules`, and the bridge says so and stops. The product workflow therefore requires `npm install --save-dev @prodshape/integration-openspec` today (this repository consumes its own package as a workspace devDependency). Whether the supported installation contract should install the package, or a different invocation surface should exist, is a migration question for after the spike; per the spike's constraints no new CLI or bin was added.
 
 ## Authorisation is policy, not mechanism
 
 `status: approved` in the hosted change.md is the apply-authorised protocol state (PRODUCT028 refuses anything else). The transition into it belongs to the caller's authorisation policy: a human, a command, an agentic wrapper or an automated workflow. The integration never performs or judges that transition, nothing requires interactive confirmation, and the tests assert only the state, never who produced it. Merging the resulting baseline remains a human decision, as the accepted contract requires.
+
+## Corrective validation pass
+
+An independent review of the first head reproduced three blockers; each was reproduced again before its fix and now carries a regression suite.
+
+- Hosted apply was not fully fail-closed. The pre-write blocking set omitted the baseline's own load diagnostics, and per-document defects (parse failures, schema violations, body-section defects) of artifacts a change never touches are load-time diagnostics graph-level overlay revalidation never re-emits, so a valid delta over an invalid baseline applied and only the post-write validation reported PRODUCT002 and PRODUCT009, violating FR-CHANGE-002's resulting-model obligation. Apply now blocks on configuration, baseline, change, operation, concurrency and overlay diagnostics before any mutation, and the refusal leaves the model and the change container byte-identical.
+- The managed schema lifecycle could destroy user content: add overwrote a pre-existing user schema, remove deleted hand-edited managed files, and remove with absent metadata deleted a coincidentally named user schema. Ownership is now recorded and proven per ADR 0008: the metadata records each managed file's installed content digest, add fails closed on collisions before writing anything, update replaces only proven-managed content, remove deletes only proven files and preserves and reports hand-edited ones, and with no record nothing under `openspec/schemas/` is touched.
+- The rail did not enforce the schema boundary: any change carrying `product/change.md` was treated as a hosted Product Change, so a `spec-driven` change applied through the product rail. The `.openspec.yaml` pin is now load-bearing: only `schema: product` enters listing, validation, apply and concurrency, and missing, malformed or wrong pins fail closed with the model and container untouched.
+
+The pass also replaced the too-strong "bridge proven end to end" claim with the two-suite evidence above, made the hosted PRODUCT028 runtime message policy-neutral (the required state and whose decision the transition is, prescribing no human, manual edit, wrapper or automation; core's native wording is untouched), and added `@prodshape/cli` to the changeset because the CLI ships the bundled integration and its staged schema assets.
 
 ## Findings made along the way
 

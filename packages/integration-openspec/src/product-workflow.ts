@@ -97,9 +97,7 @@ export interface OpenSpecProductChangeRef {
 
 /** The result of reading a change's `.openspec.yaml` schema pin. */
 type HostedSchemaPin =
-  | { schema: string }
-  | { problem: 'missing' }
-  | { problem: 'malformed'; detail: string };
+  { schema: string } | { problem: 'missing' } | { problem: 'malformed'; detail: string };
 
 /**
  * Read the schema a change is pinned to. OpenSpec records it in the change's `.openspec.yaml`

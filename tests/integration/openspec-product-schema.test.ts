@@ -105,7 +105,9 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
       expect(Object.keys(result.meta.productSchema?.files ?? {}).sort()).toEqual(SCHEMA_FILES);
       for (const [relative, digest] of Object.entries(result.meta.productSchema?.files ?? {})) {
         expect(digest).toMatch(/^sha256:[0-9a-f]{64}$/);
-        expect(digest).toBe(contentDigest(await readFile(join(dir, ...relative.split('/')), 'utf8')));
+        expect(digest).toBe(
+          contentDigest(await readFile(join(dir, ...relative.split('/')), 'utf8')),
+        );
       }
     } finally {
       await rm(dir, { recursive: true, force: true });
@@ -170,13 +172,15 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
       // Simulate a managed file from an OLDER integration version: different bytes on disk, and a
       // metadata record proving this integration wrote exactly those bytes.
       const target = join(dir, 'openspec', 'schemas', 'product', 'schema.yaml');
-      const olderManaged = 'name: product\nversion: 1\ndescription: older managed revision\nartifacts: []\n';
+      const olderManaged =
+        'name: product\nversion: 1\ndescription: older managed revision\nartifacts: []\n';
       await writeFile(target, olderManaged, 'utf8');
       const metaPath = join(dir, '.product', 'integrations', 'openspec.json');
       const meta = JSON.parse(await readFile(metaPath, 'utf8')) as {
         productSchema: { files: Record<string, string> };
       };
-      meta.productSchema.files['openspec/schemas/product/schema.yaml'] = contentDigest(olderManaged);
+      meta.productSchema.files['openspec/schemas/product/schema.yaml'] =
+        contentDigest(olderManaged);
       await writeFile(metaPath, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
 
       const result = await updateOpenSpecIntegration(dir);
@@ -266,9 +270,7 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
         expect(result.removed).toContain(relative);
         await expect(stat(join(dir, ...relative.split('/')))).rejects.toThrow();
       }
-      await expect(
-        stat(join(dir, '.product', 'integrations', 'openspec.json')),
-      ).rejects.toThrow();
+      await expect(stat(join(dir, '.product', 'integrations', 'openspec.json'))).rejects.toThrow();
     } finally {
       await rm(dir, { recursive: true, force: true });
     }

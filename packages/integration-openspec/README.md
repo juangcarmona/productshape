@@ -2,7 +2,7 @@
 
 OpenSpec integration for Product Definition as Code (PDaC), in two lanes: a citation lane that grounds OpenSpec's spec-driven delivery workflow in the accepted product model, and a product lane that hosts the PDaC product workflow inside OpenSpec itself.
 
-Both lanes write only official OpenSpec surfaces (`openspec/config.yaml`, `openspec/schemas/product/`) plus ProductShape's own integration metadata (`.product/integrations/openspec.json`). The integration never patches OpenSpec-generated commands or skills, never modifies OpenSpec's built-in schemas, and never writes into a native spec-driven change's documents. Every write is byte-gated and reversible: `prodshape integration add openspec` installs, `update` regenerates, `remove` takes everything back out while preserving user-authored content.
+Both lanes write only official OpenSpec surfaces (`openspec/config.yaml`, `openspec/schemas/product/`) plus ProductShape's own integration metadata (`.product/integrations/openspec.json`). The integration never patches OpenSpec-generated commands or skills, never modifies OpenSpec's built-in schemas, and never writes into a native spec-driven change's documents. Every write is byte-gated and ownership-proven: the metadata records each managed schema file with the content digest it was installed at, `prodshape integration add openspec` fails closed instead of overwriting pre-existing user files (a collision names the files and the remediation), `update` replaces only content still proven managed by its recorded digest or the current assets, and `remove` deletes only proven-managed files, preserves and reports hand-edited ones, and with no recorded product schema touches nothing under `openspec/schemas/`. Dry runs report exactly what the real operation would do.
 
 ## The citation lane (delivery)
 
@@ -11,6 +11,8 @@ The integration merges PDaC authority context and citation rules into `openspec/
 ## The product lane (the hosted product workflow)
 
 The integration installs a project-local OpenSpec schema named `product` at `openspec/schemas/product/`. An OpenSpec change created with that schema hosts a PDaC Product Change: the normative semantic delta (`product/change.md` plus `product/proposed/**`) against the accepted model in `docs/product/model`, which stays the only source of product truth.
+
+The schema pin is a load-bearing, enforced invariant: the rail reads each change's `.openspec.yaml` and treats a change as a product change only when it is pinned to `schema: product`. A change pinned to another schema never lists, never validates, never applies and never enters concurrency, however product-shaped its contents look, and missing or unreadable metadata fails closed with an error naming the remediation.
 
 The primary workflow is OpenSpec's own:
 
@@ -30,14 +32,14 @@ Apply and archive are separate lifecycle operations. The schema's apply instruct
 node openspec/schemas/product/scripts/product-apply.mjs --change <name> [--dry-run]
 ```
 
-The bridge resolves the locally installed `@prodshape/integration-openspec` and calls `applyOpenSpecProductChange`, which re-reads the accepted model, revalidates the hosted delta as an overlay at apply time (a prior validate call is never trusted), refuses on any blocking diagnostic with the model untouched, enforces base-revision drift (PRODUCT027) and the apply-authorised state (PRODUCT028), writes the delta into the model named by lowercase id, reports the product diff computed from the result, and flips the hosted change.md status to applied in place. It never commits and never archives; `openspec archive` moves the change container afterwards and never touches the model. A preflight bridge exists beside it (`product-validate.mjs`) for explicit overlay validation at any point.
+The bridge resolves the locally installed `@prodshape/integration-openspec` and calls `applyOpenSpecProductChange`, which re-reads the accepted model and revalidates everything at apply time: the configuration, the baseline itself (including per-document load diagnostics of artifacts the change never touches) and the hosted delta as an overlay; a prior validate call is never trusted. Any blocking diagnostic refuses before any write, with the model and the change container byte-identical. It enforces base-revision drift (PRODUCT027) and the apply-authorised state (PRODUCT028, worded as caller policy), writes the delta into the model named by lowercase id, reports the product diff computed from the result, and flips the hosted change.md status to applied in place. It never commits and never archives; `openspec archive` moves the change container afterwards and never touches the model. A preflight bridge exists beside it (`product-validate.mjs`) for explicit overlay validation at any point.
 
 Validation is mandatory; authorisation is policy. `status: approved` in the hosted change.md is the apply-authorised protocol state, the transition into it belongs to the caller's authorisation policy (a human, a command, an agentic wrapper, an automated workflow), and the integration never performs or judges that transition. Merging the resulting baseline remains a human decision.
 
 ### Requirements
 
 - OpenSpec >= 1.7.0 for the product workflow (`skip_specs` change metadata, declaration-order artifacts, schema-agnostic skill instructions). The schema files install under any supported OpenSpec (>= 1.0.0) and are inert data below the floor: `prodshape doctor` then reports the product workflow UNAVAILABLE while the citation lane keeps working.
-- `@prodshape/integration-openspec` installed locally (`npm install --save-dev @prodshape/integration-openspec`). The ProductShape CLI bundles this package for its own commands, so a CLI-only installation does not put it in `node_modules`; the bridge scripts need the package resolvable from the repository and say so when it is not.
+- `@prodshape/integration-openspec` installed locally (`npm install --save-dev @prodshape/integration-openspec`). The ProductShape CLI bundles this package for its own commands, so a CLI-only installation does not put it in `node_modules`; the bridge scripts need the package resolvable from the repository and say so when it is not. This documented installation is proven end to end by the packed-consumer suite, which installs the packed tarballs into a fresh repository and runs the bridge scripts by bare specifier with no override.
 - `@prodshape/cli` available locally for the authoring capabilities the schema instructions name (`prodshape inspect`, `prodshape impact`, `prodshape template <kind>`, `prodshape validate`).
 
 ## Library API
