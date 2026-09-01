@@ -12,10 +12,15 @@
  * (schema, context, rules, operations, githubCopilot, and anything else) and only appends PDaC
  * guidance, deduplicating identical entries so the operation is idempotent.
  */
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rm, rmdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { isNotFound, resolveInRepository } from '@prodshape/core';
 import { parse, stringify } from 'yaml';
+import {
+  loadProductSchemaAssets,
+  OPENSPEC_PRODUCT_SCHEMA_RELATIVE,
+  PRODUCT_SCHEMA_MIN_OPENSPEC,
+} from './product-schema.js';
 import { runCommand } from './process.js';
 import { envWithLocalBin, isOpenSpecWorkspace, pathExists } from './workspace.js';
 
@@ -25,6 +30,13 @@ export {
   isOpenSpecCliAvailable,
   openSpecProvider,
 } from './population.js';
+export {
+  loadProductSchemaAssets,
+  OPENSPEC_PRODUCT_SCHEMA_NAME,
+  OPENSPEC_PRODUCT_SCHEMA_RELATIVE,
+  PRODUCT_SCHEMA_MIN_OPENSPEC,
+} from './product-schema.js';
+export type { ProductSchemaAsset } from './product-schema.js';
 
 /** The minimum supported OpenSpec CLI version. */
 export const MIN_SUPPORTED_OPENSPEC = '1.0.0';
@@ -137,6 +149,12 @@ export interface OpenSpecIntegrationMeta {
   ciExamplePath?: string;
   /** Absent in metadata written before the field existed; treated as the current guidance. */
   managed?: ManagedStrings;
+  /**
+   * The installed OpenSpec product schema: its name, the OpenSpec floor the product workflow
+   * needs, and every managed file it consists of. Absent in metadata written before the schema
+   * existed; `integration update` installs the schema and adds the record.
+   */
+  productSchema?: { name: string; requiresOpenspec: string; files: string[] };
 }
 
 /** Repository-relative paths used by this integration. */
@@ -580,6 +598,39 @@ export async function addOpenSpecIntegration(
     );
   }
 
+  // The OpenSpec product schema: managed files under openspec/schemas/product, the framework's
+  // official project-local schema surface. The files are version-independent data, so they are
+  // installed regardless of the detected CLI version and compared by content like every other
+  // managed surface; whether the product workflow is USABLE on this CLI is a separate,
+  // capability-specific report (`checkOpenSpecIntegration`), never a different set of bytes.
+  const schemaAssets = await loadProductSchemaAssets();
+  const schemaFiles = schemaAssets.map(
+    (asset) => `${OPENSPEC_PRODUCT_SCHEMA_RELATIVE}/${asset.relative}`,
+  );
+  const schemaWrites: { relative: string; absolute: string; content: string }[] = [];
+  let schemaExistedBefore = false;
+  for (const asset of schemaAssets) {
+    const relative = `${OPENSPEC_PRODUCT_SCHEMA_RELATIVE}/${asset.relative}`;
+    const absolute = resolveInRepository(root, relative, 'the OpenSpec integration');
+    const existing = (await pathExists(absolute)) ? await readFile(absolute, 'utf8') : null;
+    if (existing !== null) schemaExistedBefore = true;
+    if (existing !== asset.content) {
+      schemaWrites.push({ relative, absolute, content: asset.content });
+    }
+  }
+  if (schemaWrites.length > 0) {
+    changes.push(
+      schemaExistedBefore
+        ? `Updated the OpenSpec product schema at ${OPENSPEC_PRODUCT_SCHEMA_RELATIVE} (${schemaWrites.length} file${schemaWrites.length === 1 ? '' : 's'}).`
+        : `Installed the OpenSpec product schema at ${OPENSPEC_PRODUCT_SCHEMA_RELATIVE}.`,
+    );
+    if (compareVersions(openspecVersion, PRODUCT_SCHEMA_MIN_OPENSPEC) < 0) {
+      changes.push(
+        `Product workflow unavailable until OpenSpec >= ${PRODUCT_SCHEMA_MIN_OPENSPEC} (detected ${openspecVersion}); the citation lane is unaffected.`,
+      );
+    }
+  }
+
   // `installedAt` records when this integration was first installed, and is preserved from here
   // on. Stamping a fresh timestamp on every invocation is what made a no-op `add` — and every
   // `integration update` — rewrite this file, so a command that reported "already up to date"
@@ -594,6 +645,11 @@ export async function addOpenSpecIntegration(
     configPath: CONFIG_RELATIVE,
     ciExamplePath: CI_EXAMPLE_RELATIVE,
     managed: currentManagedStrings(),
+    productSchema: {
+      name: 'product',
+      requiresOpenspec: PRODUCT_SCHEMA_MIN_OPENSPEC,
+      files: schemaFiles,
+    },
   };
   const updatedAt =
     changes.length > 0 && previousMeta !== null ? now : (previousMeta?.updatedAt ?? undefined);
@@ -615,6 +671,11 @@ export async function addOpenSpecIntegration(
       await mkdir(dirname(ciAbsolute), { recursive: true });
       await writeFile(ciAbsolute, ciDesired, 'utf8');
       written.push(CI_EXAMPLE_RELATIVE);
+    }
+    for (const write of schemaWrites) {
+      await mkdir(dirname(write.absolute), { recursive: true });
+      await writeFile(write.absolute, write.content, 'utf8');
+      written.push(write.relative);
     }
     if (await writeMetaIfChanged(root, meta)) {
       written.push(META_RELATIVE);
@@ -720,6 +781,9 @@ export async function updateOpenSpecIntegration(
  * - `openspec/config.yaml` exists and contains the PDaC context block.
  * - `.product/integrations/openspec.json` metadata exists.
  * - The config's PDaC block matches the current PDaC guidance (not removed or altered).
+ * - The product schema's managed files are installed and intact, with the product workflow's
+ *   availability reported per capability: an OpenSpec CLI below the product floor leaves the
+ *   citation lane usable and states the product workflow UNAVAILABLE instead of failing it.
  */
 export async function checkOpenSpecIntegration(root: string): Promise<{
   ok: boolean;
@@ -729,6 +793,7 @@ export async function checkOpenSpecIntegration(root: string): Promise<{
 
   // 1. OpenSpec CLI installed and supported.
   const detected = await detectOpenSpecVersion(root);
+  const detectedVersion = 'error' in detected ? undefined : detected.version;
   if ('error' in detected) {
     checks.push({ name: 'openspec CLI', ok: false, detail: detected.error });
   } else if (compareVersions(detected.version, MIN_SUPPORTED_OPENSPEC) < 0) {
@@ -838,6 +903,53 @@ export async function checkOpenSpecIntegration(root: string): Promise<{
     }
   }
 
+  // 5. Product workflow: managed schema state plus capability-specific availability. The schema
+  // files are inert data valid under any CLI, so a floor-violating CLI is not a managed-state
+  // defect; it makes the product workflow UNAVAILABLE, stated as the check's verdict rather than
+  // buried as a footnote, while the citation lane stays independently usable.
+  const schemaAssets = await loadProductSchemaAssets();
+  if (meta === null || meta.productSchema === undefined) {
+    checks.push({
+      name: 'product workflow',
+      ok: false,
+      detail: `OpenSpec product schema not installed (${OPENSPEC_PRODUCT_SCHEMA_RELATIVE}). Run: prodshape integration update`,
+    });
+  } else {
+    const stale: string[] = [];
+    for (const asset of schemaAssets) {
+      const relative = `${OPENSPEC_PRODUCT_SCHEMA_RELATIVE}/${asset.relative}`;
+      const absolute = resolveInRepository(root, relative, 'the OpenSpec integration');
+      const existing = (await pathExists(absolute)) ? await readFile(absolute, 'utf8') : null;
+      if (existing !== asset.content) stale.push(relative);
+    }
+    if (stale.length > 0) {
+      checks.push({
+        name: 'product workflow',
+        ok: false,
+        detail: `Product schema files missing or differing from the managed assets: ${stale.join(', ')}. Run: prodshape integration update`,
+      });
+    } else if (detectedVersion === undefined) {
+      checks.push({
+        name: 'product workflow',
+        ok: true,
+        detail:
+          'Product workflow UNAVAILABLE: the OpenSpec CLI was not detected. The schema is installed and intact; the openspec CLI check carries the remedy.',
+      });
+    } else if (compareVersions(detectedVersion, PRODUCT_SCHEMA_MIN_OPENSPEC) < 0) {
+      checks.push({
+        name: 'product workflow',
+        ok: true,
+        detail: `Product workflow UNAVAILABLE: requires OpenSpec >= ${PRODUCT_SCHEMA_MIN_OPENSPEC}, detected ${detectedVersion}. The citation lane is unaffected; upgrade OpenSpec to use the product schema.`,
+      });
+    } else {
+      checks.push({
+        name: 'product workflow',
+        ok: true,
+        detail: `Product workflow available: schema installed and OpenSpec ${detectedVersion} meets the ${PRODUCT_SCHEMA_MIN_OPENSPEC} floor.`,
+      });
+    }
+  }
+
   const ok = checks.every((c) => c.ok);
   return { ok, checks };
 }
@@ -862,7 +974,8 @@ export async function removeOpenSpecIntegration(
   // Remove both what the metadata recorded as injected and what the current guidance would
   // inject: the union covers metadata written before the record existed as well as entries left
   // behind by an older ProductShape.
-  const recorded = (await readMeta(root))?.managed;
+  const previousMeta = await readMeta(root);
+  const recorded = previousMeta?.managed;
   const current = currentManagedStrings();
   const managedRules: Record<string, string[]> = {};
   for (const key of new Set([
@@ -989,6 +1102,49 @@ export async function removeOpenSpecIntegration(
       await rm(ciExamplePath(root), { force: true });
     }
     removed.push(CI_EXAMPLE_RELATIVE);
+  }
+
+  // Remove the installed product schema: the union of the files the metadata recorded and the
+  // files the current assets would install, so older installs and renamed assets both come out.
+  // Only managed files are deleted; directories are pruned only when the removal emptied them,
+  // so a user schema beside ours (openspec/schemas/<other>/) and user files inside ours survive.
+  const currentSchemaFiles = (await loadProductSchemaAssets()).map(
+    (asset) => `${OPENSPEC_PRODUCT_SCHEMA_RELATIVE}/${asset.relative}`,
+  );
+  const schemaFileSet = [
+    ...new Set([...(previousMeta?.productSchema?.files ?? []), ...currentSchemaFiles]),
+  ].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  const pruneCandidates = new Set<string>();
+  for (const relative of schemaFileSet) {
+    const absolute = resolveInRepository(root, relative, 'the OpenSpec integration');
+    if (!(await pathExists(absolute))) continue;
+    if (!dryRun) {
+      await rm(absolute, { force: true });
+      let parent = dirname(relative);
+      while (
+        parent.startsWith('openspec/schemas') &&
+        parent !== 'openspec/schemas' &&
+        parent !== 'openspec'
+      ) {
+        pruneCandidates.add(parent);
+        parent = parent.split('/').slice(0, -1).join('/');
+      }
+      pruneCandidates.add('openspec/schemas');
+    }
+    removed.push(relative);
+  }
+  if (!dryRun) {
+    // Deepest first, so a directory is only considered after its children were.
+    const ordered = [...pruneCandidates].sort((a, b) => b.length - a.length);
+    for (const relative of ordered) {
+      const absolute = resolveInRepository(root, relative, 'the OpenSpec integration');
+      try {
+        const entries = await readdir(absolute);
+        if (entries.length === 0) await rmdir(absolute);
+      } catch (error) {
+        if (!isNotFound(error)) throw error;
+      }
+    }
   }
 
   // Remove metadata file.

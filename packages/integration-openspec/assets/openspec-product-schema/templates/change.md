@@ -1,0 +1,47 @@
+---
+id: CHG-EXAMPLE-001
+type: product-change
+title: Example product change
+status: draft
+base-revision: '3f2a91c'
+operations:
+  add:
+    - FR-EXAMPLE-001
+  modify:
+    - UC-EXAMPLE-001
+  remove: []
+---
+
+This file lives at `product/change.md` inside the OpenSpec change directory, and the proposed future state lives beside it under `product/proposed/**`, laid out exactly as it will live in `docs/product/model` with files named by lowercase id.
+
+Every ID under `operations.add` and `operations.modify` needs a complete proposed artifact under `product/proposed/`. Author each artifact from its current PDaC template (`prodshape template <kind>`). Set `base-revision` to the baseline commit this change was authored against, quoted so YAML reads an all-digit revision as a string.
+
+Leave `status: draft` while authoring; `status: approved` is the apply-authorised protocol state and setting it is the caller's authorisation act, outside this workflow. Apply materializes the proposal into the accepted model on a working branch; it never archives this change, and a pull-request merge accepts the resulting baseline. Product Change status never records implementation, verification, release or deployment.
+
+## Problem
+
+What is wrong or missing in the current Product Definition? State the problem, not the solution.
+
+## Intended Product Outcome
+
+What the Product Definition says once this change is accepted. Describe the destination, not the steps.
+
+## Rationale
+
+Why this outcome, and why now. Record the reasoning a future reader would otherwise have to reconstruct.
+
+## Affected Product Areas
+
+Which parts of the product this change touches, in product language rather than file paths.
+
+## Open Questions
+
+Unresolved questions that need a decision before the change can be authorised. Write `None.` when there are none.
+
+## Product Acceptance
+
+How a reviewer recognises that the accepted definition expresses the intended outcome.
+
+## Out of Scope
+
+What this change explicitly does not touch, including delivery, technical design and implementation.
