@@ -332,6 +332,52 @@ describe('openspec product workflow: apply', () => {
     }
   });
 
+  it('an invalid untouched baseline artifact blocks apply before any write', async () => {
+    const { root } = await createRepo();
+    try {
+      // A baseline defect in an artifact the change never touches: an unknown frontmatter key
+      // (PRODUCT002) and missing required body sections (PRODUCT009). These are load-time
+      // diagnostics, invisible to graph-level overlay revalidation, so they are exactly the class
+      // that once slipped past apply and only surfaced in the post-write validation.
+      await writeFile(
+        join(root, 'docs', 'product', 'model', 'business-rules', 'br-broken.md'),
+        '---\nid: BR-BROKEN-001\ntype: business-rule\ntitle: Broken untouched artifact\nstatus: active\nbogus-field: true\n---\n\n## Rule\n\nOnly one of the four required sections is present.\n',
+        'utf8',
+      );
+      git(root, 'add', '-A');
+      git(root, 'commit', '-m', 'broken baseline artifact');
+      const base = git(root, 'rev-parse', '--short', 'HEAD');
+      await writeHostedChange(root, priceFloorSpec(base, { status: 'approved' }));
+
+      const modelBefore = await snapshotTree(root, 'docs/product/model');
+      const changesBefore = await snapshotTree(root, 'openspec/changes');
+      const result = await applyOpenSpecProductChange(root, 'chg-price-floor');
+
+      expect(result.outcome).toBe('refused');
+      const errorCodes = new Set(
+        result.plan.diagnostics
+          .filter((diagnostic) => diagnostic.severity === 'error')
+          .map((diagnostic) => diagnostic.code),
+      );
+      expect(errorCodes.has('PRODUCT002')).toBe(true);
+      expect(errorCodes.has('PRODUCT009')).toBe(true);
+      // Nothing was written: the model, the hosted change (no status transition) and the whole
+      // container tree (no archive move) are byte-identical.
+      expect(await snapshotTree(root, 'docs/product/model')).toEqual(modelBefore);
+      expect(await snapshotTree(root, 'openspec/changes')).toEqual(changesBefore);
+      expect(changesBefore.get('chg-price-floor/product/change.md')).toContain('status: approved');
+      expect(result.resultingModel).toBeUndefined();
+
+      // The preflight surface reports the same blockers.
+      const preflight = await validateOpenSpecProductChange(root, 'chg-price-floor');
+      const preflightCodes = new Set(preflight.blocking.map((diagnostic) => diagnostic.code));
+      expect(preflightCodes.has('PRODUCT002')).toBe(true);
+      expect(preflightCodes.has('PRODUCT009')).toBe(true);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it('refuses outside the apply-authorised state (PRODUCT028) and leaves the tree byte-identical', async () => {
     const { root, base } = await createRepo();
     try {

@@ -258,13 +258,15 @@ export interface OpenSpecProductApplyResult {
 /**
  * Apply one hosted Product Change to the accepted model, deterministically and fail closed.
  *
- * The sequence mirrors the native apply: full revalidation of the overlay at apply time, the
- * apply-authorised state gate (PRODUCT028; the integration never performs the authorising
- * transition), base-revision drift by content digest (PRODUCT027), write and delete actions named
- * by lowercase id, the product diff computed from the result, and the hosted change.md status
- * flipped to applied in place. Any blocking diagnostic refuses with `docs/product/model`
- * untouched. A dry run still preflights every action. Nothing is committed and nothing is
- * archived: verification and the container move remain separate, later actions.
+ * The sequence mirrors the native apply and is fail closed end to end: full revalidation at apply
+ * time of the configuration, the baseline (including its per-document load diagnostics) and the
+ * overlay, the apply-authorised state gate (PRODUCT028; the integration never performs the
+ * authorising transition), base-revision drift by content digest (PRODUCT027), write and delete
+ * actions named by lowercase id, the product diff computed from the result, and the hosted
+ * change.md status flipped to applied in place. Any blocking diagnostic refuses BEFORE any
+ * mutation, with `docs/product/model` and the change container byte-identical. A dry run still
+ * preflights every action. Nothing is committed and nothing is archived: verification and the
+ * container move remain separate, later actions.
  */
 export async function applyOpenSpecProductChange(
   root: string,
@@ -280,8 +282,21 @@ export async function applyOpenSpecProductChange(
     (await loadHostedChange(root, repo, changeName));
 
   const validation = validateChange(change, baseline.artifacts, all);
+  // Everything capable of making the resulting model invalid blocks BEFORE any write:
+  // configuration diagnostics, the baseline's own load and per-document diagnostics, the change's
+  // diagnostics and the full overlay revalidation. The overlay pass alone is not enough, because
+  // per-document defects of UNTOUCHED baseline artifacts (parse failures, schema violations,
+  // body-section defects) are load-time diagnostics that graph-level revalidation never re-emits;
+  // omitting them let apply write into a model whose fresh validation then failed, violating the
+  // resulting-model obligation. Refusal happens with the working tree byte-identical.
   const overlayErrors = blockingDiagnostics(
-    sortDiagnostics(dedupeDiagnostics([...repo.configDiagnostics, ...validation.diagnostics])),
+    sortDiagnostics(
+      dedupeDiagnostics([
+        ...repo.configDiagnostics,
+        ...baseline.diagnostics,
+        ...validation.diagnostics,
+      ]),
+    ),
     repo.config.validation['warnings-as-errors'],
   );
 
