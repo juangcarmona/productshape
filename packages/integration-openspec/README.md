@@ -36,6 +36,8 @@ The bridge resolves the locally installed `@prodshape/integration-openspec` and 
 
 Validation is mandatory; authorisation policy is outside the deterministic rail. `status: approved` in the hosted change.md is the apply-authorised protocol state. ProductShape's accepted policy requires human product approval before that state is recorded; the integration verifies the state but cannot identify or judge the actor, and it never performs the transition. Merging the resulting baseline also remains a human decision.
 
+Product-semantic clarification happens before the delta. While authoring the intent, the schema asks the agent to identify wording that admits materially different observable outcomes, present those alternatives to the user and stop. An unresolved decision must remain visible under `Open Questions for the Product Owner`; the agent must not choose an outcome, author the delta or seek approval merely to advance the artifact graph. The deterministic rail validates structure and semantics it can prove, but it cannot infer that a human-facing request was ambiguous. `proposal.md` cites the accepted model it consumes; `product/change.md` and `product/proposed/**` carry no citations or scope declarations, and only the proposed artifacts can be materialized into the accepted model.
+
 ### Requirements
 
 - OpenSpec >= 1.7.0 for the product workflow (`skip_specs` change metadata, declaration-order artifacts, schema-agnostic skill instructions). The schema files install under any supported OpenSpec (>= 1.0.0) and are inert data below the floor: `prodshape doctor` then reports the product workflow UNAVAILABLE while the citation lane keeps working.

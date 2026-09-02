@@ -64,6 +64,8 @@ Two independent reviews of the implementation heads reproduced the blockers belo
 
 The pass also replaced the too-strong "bridge proven end to end" claim with the two-suite evidence above, kept the hosted PRODUCT028 runtime mechanism limited to the required state while making the shipped guidance explicit that ProductShape's accepted policy requires human product approval, and added `@prodshape/cli` to the changeset because the CLI ships the bundled integration and its staged schema assets.
 
+A fresh packed-consumer usability run exposed one further agentic-boundary defect: an intentionally underspecified minimum-price request admitted several materially different observable outcomes, but the agent silently selected one, wrote `Open Questions: None.` and completed the delta. The schema now requires an explicit ambiguity pass during intent, user interaction and a stop before delta whenever product meaning remains unresolved; delta and approval instructions repeat that boundary. This is an agent-and-human obligation rather than a deterministic validation claim. The same run also showed an agent adding citations to `product/change.md`; the schema now states that citations bind the consuming `proposal.md`, while the change manifest and proposed canonical artifacts remain citation-free.
+
 ## Findings made along the way
 
 - Concurrency now spans both change containers: a hosted change and a native change under `docs/product/changes/active/` touching the same artifact report PRODUCT025 against each other. Before the spike the two containers could not exist, so the blind spot is closed at its birth.

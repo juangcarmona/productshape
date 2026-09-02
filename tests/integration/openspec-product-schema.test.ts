@@ -85,6 +85,47 @@ describe('openspec product schema assets', () => {
       expect(artifact.generates.startsWith('specs/')).toBe(false);
     }
   });
+
+  it('keeps citations at the intent boundary and keeps the canonical delta citation-free', async () => {
+    const assets = await loadProductSchemaAssets();
+    const proposal = assets.find((asset) => asset.relative === 'templates/proposal.md')!.content;
+    const change = assets.find((asset) => asset.relative === 'templates/change.md')!.content;
+    const schema = assets.find((asset) => asset.relative === 'schema.yaml')!.content;
+
+    expect(proposal).toContain('pdac-scope: cited');
+    expect(proposal).toContain('prodshape cite');
+    expect(change).not.toContain('pdac-scope:');
+    expect(change).not.toContain('pdac:cite');
+    const compactSchema = schema.replace(/\s+/g, ' ');
+    expect(compactSchema).toContain(
+      'product/change.md is a change manifest, not a consumer document',
+    );
+    expect(compactSchema).toContain('Never add PDaC citations or a pdac-scope declaration');
+  });
+
+  it('stops for human clarification before an ambiguous intent becomes a delta or approval', async () => {
+    const assets = await loadProductSchemaAssets();
+    const schema = parse(assets.find((asset) => asset.relative === 'schema.yaml')!.content) as {
+      artifacts: { id: string; instruction: string }[];
+      apply: { instruction: string };
+    };
+    const intent = schema.artifacts
+      .find((artifact) => artifact.id === 'intent')!
+      .instruction.replace(/\s+/g, ' ');
+    const delta = schema.artifacts
+      .find((artifact) => artifact.id === 'delta')!
+      .instruction.replace(/\s+/g, ' ');
+    const apply = schema.apply.instruction.replace(/\s+/g, ' ');
+
+    expect(intent).toContain('materially different product outcomes');
+    expect(intent).toContain('ask the user');
+    expect(intent).toContain('STOP before authoring the delta');
+    expect(delta).toContain('Open Questions for the Product Owner');
+    expect(delta).toContain('Do not author or complete the delta');
+    expect(delta).toContain("Never choose a product outcome on the user's behalf");
+    expect(apply).toContain('no unresolved product-semantic questions');
+    expect(apply).toContain('must not be recorded merely to make apply proceed');
+  });
 });
 
 describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', () => {

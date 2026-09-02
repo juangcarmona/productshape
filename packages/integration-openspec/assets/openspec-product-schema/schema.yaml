@@ -27,6 +27,14 @@ artifacts:
          own line. Declare the document scope: `pdac-scope: cited` when the proposal carries citations, or
          `pdac-scope: none` with a non-empty human reason when no product text is involved.
 
+      Before declaring the intent ready, actively look for wording that permits materially different
+      product outcomes. Compare those alternatives in product-observable terms. When the accepted model
+      and the request do not select one outcome, put the alternatives under "Open Questions for the
+      Product Owner", ask the user for the missing decision, and STOP before authoring the delta. Never
+      silently select, combine or narrow product meaning on the user's behalf. `None.` is appropriate only
+      after this ambiguity pass finds no unresolved decision that would change product behaviour, scope,
+      policy or acceptance.
+
       Decide the outcome honestly. When the request changes no product meaning (tooling, refactoring,
       delivery-only work), record that verdict under the "No product delta" heading and STOP: do not
       author a delta artifact and do not invent product change to satisfy the workflow. Otherwise state
@@ -45,11 +53,18 @@ artifacts:
       requirements/quality/, requirements/constraints/), each file named <lowercase-id>.md.
 
       Rules that make the delta valid:
+      - Re-read the intent's "Open Questions for the Product Owner" before writing. Do not author or
+        complete the delta while any product-semantic question remains unresolved: ask the user and stop.
+        Never choose a product outcome on the user's behalf. Carry the user's answer into one unambiguous
+        intended outcome; do not merely delete the question.
       - change.md frontmatter carries id (CHG-...), type: product-change, title, status: draft,
         base-revision (the commit the change was authored against, `git rev-parse --short HEAD`, quoted),
         and operations with all three keys add, modify and remove. The body carries seven sections in
         order: Problem, Intended Product Outcome, Rationale, Affected Product Areas, Open Questions,
         Product Acceptance, Out of Scope.
+      - product/change.md is a change manifest, not a consumer document. Never add PDaC citations or a
+        pdac-scope declaration to it or to product/proposed/**. Citations belong in proposal.md and other
+        documents that consume the accepted model; proposed artifacts use typed PDaC relationships.
       - Preserve stable IDs: evolve an existing artifact by listing its EXISTING id under
         operations.modify, never by adding a near duplicate under a new id. Create only the artifacts
         the intent requires.
@@ -88,6 +103,8 @@ apply:
        status: approved. That protocol state is required for apply (PRODUCT028 otherwise); the
        integration checks only that protocol state. ProductShape's accepted policy requires human
        product approval; neither this workflow nor the integration grants, infers or judges it.
+       Before asking for or recording that state, confirm there are no unresolved product-semantic questions
+       in either the intent or the delta. `status: approved` must not be recorded merely to make apply proceed.
     2. Run the deterministic apply through the PDaC integration, dry run first:
        `node openspec/schemas/product/scripts/product-apply.mjs --change <change-name> --dry-run`
        then without --dry-run. The script resolves the locally installed

@@ -26,4 +26,4 @@ Only when the honest verdict is that this request changes no product meaning: st
 
 ## Open Questions for the Product Owner
 
-Questions that must be answered before the delta can be authored or authorised. Write `None.` when there are none.
+Questions that must be answered before the delta can be authored or authorised. First identify any wording that permits materially different observable product outcomes and list the alternatives here. Ask the product owner and stop before the delta until each such decision is answered. Never choose an outcome on the user's behalf. Write `None.` only after this ambiguity pass finds no unresolved decision that would change product behaviour, scope, policy or acceptance.
