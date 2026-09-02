@@ -215,6 +215,34 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
     }
   });
 
+  it('update removes an obsolete file that still matches its recorded managed digest', async () => {
+    const dir = await scratchWorkspace();
+    try {
+      await addOpenSpecIntegration(dir, { cliVersion: '1.11.0' });
+      const obsoleteRelative = 'openspec/schemas/product/templates/retired.md';
+      const obsolete = join(dir, ...obsoleteRelative.split('/'));
+      const obsoleteContent = '# retired managed template\n';
+      await writeFile(obsolete, obsoleteContent, 'utf8');
+
+      const metaPath = join(dir, '.product', 'integrations', 'openspec.json');
+      const meta = JSON.parse(await readFile(metaPath, 'utf8')) as {
+        productSchema: { files: Record<string, string> };
+      };
+      meta.productSchema.files[obsoleteRelative] = contentDigest(obsoleteContent);
+      await writeFile(metaPath, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
+
+      const result = await updateOpenSpecIntegration(dir);
+      await expect(stat(obsolete)).rejects.toThrow();
+      expect(result.changes).toContain(`Removed obsolete managed file ${obsoleteRelative}.`);
+      const updatedMeta = JSON.parse(await readFile(metaPath, 'utf8')) as {
+        productSchema: { files: Record<string, string> };
+      };
+      expect(updatedMeta.productSchema.files).not.toHaveProperty(obsoleteRelative);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it('add fails closed on a pre-existing user schema file and writes nothing at all', async () => {
     const dir = await scratchWorkspace();
     try {
@@ -232,6 +260,26 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
       // written either.
       expect(await readFile(target, 'utf8')).toBe(userContent);
       await expect(stat(join(dir, 'openspec', 'config.yaml'))).rejects.toThrow();
+      await expect(stat(join(dir, '.product'))).rejects.toThrow();
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('add does not claim a byte-identical pre-existing user schema without ownership metadata', async () => {
+    const dir = await scratchWorkspace();
+    try {
+      const schemaAsset = (await loadProductSchemaAssets()).find(
+        (asset) => asset.relative === 'schema.yaml',
+      )!;
+      const target = join(dir, 'openspec', 'schemas', 'product', 'schema.yaml');
+      await mkdir(join(dir, 'openspec', 'schemas', 'product'), { recursive: true });
+      await writeFile(target, schemaAsset.content, 'utf8');
+
+      await expect(addOpenSpecIntegration(dir, { cliVersion: '1.11.0' })).rejects.toThrow(
+        'never overwrites user-authored files',
+      );
+      expect(await readFile(target, 'utf8')).toBe(schemaAsset.content);
       await expect(stat(join(dir, '.product'))).rejects.toThrow();
     } finally {
       await rm(dir, { recursive: true, force: true });
@@ -292,6 +340,73 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
     }
   });
 
+  it('remove rejects recorded schema paths outside the managed schema directory', async () => {
+    const dir = await scratchWorkspace();
+    try {
+      await addOpenSpecIntegration(dir, { cliVersion: '1.11.0' });
+      const victimRelative = 'docs/product/model/user-owned.md';
+      const victim = join(dir, ...victimRelative.split('/'));
+      const victimContent = 'accepted product truth owned by the repository\n';
+      await mkdir(join(dir, 'docs', 'product', 'model'), { recursive: true });
+      await writeFile(victim, victimContent, 'utf8');
+
+      const metaPath = join(dir, '.product', 'integrations', 'openspec.json');
+      const meta = JSON.parse(await readFile(metaPath, 'utf8')) as {
+        productSchema: { files: Record<string, string> };
+      };
+      meta.productSchema.files[victimRelative] = contentDigest(victimContent);
+      await writeFile(metaPath, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
+
+      await expect(removeOpenSpecIntegration(dir)).rejects.toThrow('cannot be trusted');
+      expect(await readFile(victim, 'utf8')).toBe(victimContent);
+      await expect(readFile(metaPath, 'utf8')).resolves.toBeTruthy();
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('remove does not infer per-file ownership from a schema-level record and current bytes', async () => {
+    const dir = await scratchWorkspace();
+    try {
+      const schemaAsset = (await loadProductSchemaAssets()).find(
+        (asset) => asset.relative === 'schema.yaml',
+      )!;
+      const relative = 'openspec/schemas/product/schema.yaml';
+      const target = join(dir, ...relative.split('/'));
+      await mkdir(join(dir, 'openspec', 'schemas', 'product'), { recursive: true });
+      await writeFile(target, schemaAsset.content, 'utf8');
+      const metaPath = join(dir, '.product', 'integrations', 'openspec.json');
+      await mkdir(join(dir, '.product', 'integrations'), { recursive: true });
+      await writeFile(
+        metaPath,
+        `${JSON.stringify(
+          {
+            provider: 'openspec',
+            version: '0.5.3',
+            openspecVersion: '1.11.0',
+            installedAt: '2026-09-01T00:00:00.000Z',
+            configPath: 'openspec/config.yaml',
+            productSchema: {
+              name: 'product',
+              requiresOpenspec: PRODUCT_SCHEMA_MIN_OPENSPEC,
+              files: {},
+            },
+          },
+          null,
+          2,
+        )}\n`,
+        'utf8',
+      );
+
+      const result = await removeOpenSpecIntegration(dir);
+      expect(result.removed).not.toContain(relative);
+      expect(result.preserved).toContain(relative);
+      expect(await readFile(target, 'utf8')).toBe(schemaAsset.content);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it('a dry-run remove reports removals and preserved files while changing no bytes', async () => {
     const dir = await scratchWorkspace();
     try {
@@ -338,6 +453,50 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
         'hand-edited and preserved: openspec/schemas/product/schema.yaml',
       );
       expect(tampered.ok).toBe(false);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('check rejects an installed asset missing its per-file ownership record', async () => {
+    const dir = await scratchWorkspace();
+    try {
+      await addOpenSpecIntegration(dir, { cliVersion: '1.11.0' });
+      const metaPath = join(dir, '.product', 'integrations', 'openspec.json');
+      const meta = JSON.parse(await readFile(metaPath, 'utf8')) as {
+        productSchema: { files: Record<string, string> };
+      };
+      delete meta.productSchema.files['openspec/schemas/product/schema.yaml'];
+      await writeFile(metaPath, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
+
+      const result = await checkOpenSpecIntegration(dir);
+      const check = result.checks.find((entry) => entry.name === 'product workflow');
+      expect(check?.ok).toBe(false);
+      expect(check?.detail).toContain('unrecorded: openspec/schemas/product/schema.yaml');
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('check reports a recorded obsolete asset that update must reconcile', async () => {
+    const dir = await scratchWorkspace();
+    try {
+      await addOpenSpecIntegration(dir, { cliVersion: '1.11.0' });
+      const obsoleteRelative = 'openspec/schemas/product/templates/retired.md';
+      const obsolete = join(dir, ...obsoleteRelative.split('/'));
+      const obsoleteContent = '# retired managed template\n';
+      await writeFile(obsolete, obsoleteContent, 'utf8');
+      const metaPath = join(dir, '.product', 'integrations', 'openspec.json');
+      const meta = JSON.parse(await readFile(metaPath, 'utf8')) as {
+        productSchema: { files: Record<string, string> };
+      };
+      meta.productSchema.files[obsoleteRelative] = contentDigest(obsoleteContent);
+      await writeFile(metaPath, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
+
+      const result = await checkOpenSpecIntegration(dir);
+      const check = result.checks.find((entry) => entry.name === 'product workflow');
+      expect(check?.ok).toBe(false);
+      expect(check?.detail).toContain(`obsolete managed content: ${obsoleteRelative}`);
     } finally {
       await rm(dir, { recursive: true, force: true });
     }

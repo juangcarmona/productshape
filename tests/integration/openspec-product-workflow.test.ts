@@ -1,4 +1,4 @@
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { contentDigest } from '@prodshape/core';
@@ -86,6 +86,18 @@ describe('openspec product workflow: accepted-model inspection', () => {
 });
 
 describe('openspec product workflow: overlay validation', () => {
+  it('treats an unreadable changes root as an error, not as an empty live-change set', async () => {
+    const { root } = await createRepo();
+    try {
+      await rm(join(root, 'openspec', 'changes'), { recursive: true, force: true });
+      await writeFile(join(root, 'openspec', 'changes'), 'not a directory\n', 'utf8');
+
+      await expect(listOpenSpecProductChanges(root)).rejects.toThrow();
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it('a valid hosted delta validates with zero diagnostics and the baseline stays byte-identical', async () => {
     const { root, base } = await createRepo();
     try {
@@ -546,6 +558,46 @@ describe('openspec product workflow: apply', () => {
     }
   });
 
+  it('a change name cannot escape the OpenSpec changes directory', async () => {
+    const { root, base } = await createRepo();
+    try {
+      await writeHostedChange(root, priceFloorSpec(base, { name: 'rogue', status: 'approved' }));
+      await rename(join(root, 'openspec', 'changes', 'rogue'), join(root, 'rogue'));
+      const modelBefore = await snapshotTree(root, 'docs/product/model');
+
+      await expect(validateOpenSpecProductChange(root, '../../rogue')).rejects.toThrow(
+        'valid OpenSpec change name',
+      );
+      await expect(applyOpenSpecProductChange(root, '../../rogue')).rejects.toThrow(
+        'valid OpenSpec change name',
+      );
+      expect(await snapshotTree(root, 'docs/product/model')).toEqual(modelBefore);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('listing rejects a product-shaped container whose name OpenSpec would reject', async () => {
+    const { root, base } = await createRepo();
+    try {
+      await writeHostedChange(root, priceFloorSpec(base, { name: 'Bad_Name' }));
+      await expect(listOpenSpecProductChanges(root)).rejects.toThrow('valid OpenSpec change name');
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("rejects a product-shaped container name beyond OpenSpec 1.11's 200-character limit", async () => {
+    const { root, base } = await createRepo();
+    try {
+      const name = `a${'b'.repeat(200)}`;
+      await writeHostedChange(root, priceFloorSpec(base, { name }));
+      await expect(listOpenSpecProductChanges(root)).rejects.toThrow('valid OpenSpec change name');
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it('missing or malformed change metadata fails closed with a clear error', async () => {
     const { root, base } = await createRepo();
     try {
@@ -553,17 +605,19 @@ describe('openspec product workflow: apply', () => {
       const metadataPath = join(root, 'openspec', 'changes', 'chg-price-floor', '.openspec.yaml');
 
       await rm(metadataPath, { force: true });
-      expect(await listOpenSpecProductChanges(root)).toEqual([]);
+      await expect(listOpenSpecProductChanges(root)).rejects.toThrow('has no .openspec.yaml');
       await expect(applyOpenSpecProductChange(root, 'chg-price-floor')).rejects.toThrow(
         'has no .openspec.yaml',
       );
 
       await writeFile(metadataPath, 'schema: [broken\n', 'utf8');
+      await expect(listOpenSpecProductChanges(root)).rejects.toThrow('unreadable .openspec.yaml');
       await expect(applyOpenSpecProductChange(root, 'chg-price-floor')).rejects.toThrow(
         'unreadable .openspec.yaml',
       );
 
       await writeFile(metadataPath, 'skip_specs: true\n', 'utf8');
+      await expect(listOpenSpecProductChanges(root)).rejects.toThrow('schema is required');
       await expect(applyOpenSpecProductChange(root, 'chg-price-floor')).rejects.toThrow(
         'unreadable .openspec.yaml',
       );
@@ -577,6 +631,33 @@ describe('openspec product workflow: apply', () => {
       await writeFile(metadataPath, 'schema: product\nskip_specs: true\n', 'utf8');
       const result = await applyOpenSpecProductChange(root, 'chg-price-floor', { dryRun: true });
       expect(result.outcome).toBe('dry-run');
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects metadata that OpenSpec 1.11 considers structurally invalid', async () => {
+    const { root, base } = await createRepo();
+    try {
+      await writeHostedChange(root, priceFloorSpec(base, { status: 'approved' }));
+      const metadataPath = join(root, 'openspec', 'changes', 'chg-price-floor', '.openspec.yaml');
+      await writeFile(
+        metadataPath,
+        'schema: product\ncreated: yesterday\nskip_specs: true\n',
+        'utf8',
+      );
+      const modelBefore = await snapshotTree(root, 'docs/product/model');
+      const changesBefore = await snapshotTree(root, 'openspec/changes');
+
+      await expect(listOpenSpecProductChanges(root)).rejects.toThrow('created must be YYYY-MM-DD');
+      await expect(validateOpenSpecProductChange(root, 'chg-price-floor')).rejects.toThrow(
+        'created must be YYYY-MM-DD',
+      );
+      await expect(applyOpenSpecProductChange(root, 'chg-price-floor')).rejects.toThrow(
+        'created must be YYYY-MM-DD',
+      );
+      expect(await snapshotTree(root, 'docs/product/model')).toEqual(modelBefore);
+      expect(await snapshotTree(root, 'openspec/changes')).toEqual(changesBefore);
     } finally {
       await rm(root, { recursive: true, force: true });
     }
@@ -614,6 +695,28 @@ describe('openspec product workflow: apply', () => {
       });
       const withNative = await validateOpenSpecProductChange(root, 'chg-price-floor');
       expect(withNative.diagnostics.some((d) => d.code === 'PRODUCT025')).toBe(true);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('concurrency fails closed instead of ignoring a malformed product-shaped container', async () => {
+    const { root, base } = await createRepo();
+    try {
+      await writeHostedChange(
+        root,
+        priceFloorSpec(base, { name: 'chg-malformed', chgId: 'CHG-MALFORMED-001' }),
+      );
+      await writeFile(
+        join(root, 'openspec', 'changes', 'chg-malformed', '.openspec.yaml'),
+        'schema: product\ncreated: yesterday\n',
+        'utf8',
+      );
+      await writeHostedChange(root, priceFloorSpec(base));
+
+      await expect(validateOpenSpecProductChange(root, 'chg-price-floor')).rejects.toThrow(
+        "OpenSpec change 'chg-malformed'",
+      );
     } finally {
       await rm(root, { recursive: true, force: true });
     }

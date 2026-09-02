@@ -21,10 +21,16 @@
  */
 import { mkdir, readdir, readFile, rm, rmdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import { contentDigest, isNotFound, resolveInRepository } from '@prodshape/core';
+import {
+  contentDigest,
+  isNotFound,
+  isRepositoryRelativePath,
+  resolveInRepository,
+} from '@prodshape/core';
 import { parse, stringify } from 'yaml';
 import {
   loadProductSchemaAssets,
+  OPENSPEC_PRODUCT_SCHEMA_NAME,
   OPENSPEC_PRODUCT_SCHEMA_RELATIVE,
   PRODUCT_SCHEMA_MIN_OPENSPEC,
 } from './product-schema.js';
@@ -87,7 +93,7 @@ A citation binds consumer text to a canonical artifact: it records the artifact 
 To cite: run \`npx prodshape inspect <ID>\` to read the current digest, then \`npx prodshape cite --id <ID> --digest <digest>\` to emit the canonical payload. Wrap it in the document's native comment (\`<!-- ... -->\` in Markdown) on its own line directly under the text it grounds.
 To find which artifacts a change impacts, compare the change's intent with the whole product definition first, then widen the result with \`npx prodshape impact <ID>\`. When the intent contradicts or goes beyond the definition, record that drift in the proposal with the marker \`<!-- pdac-drift ids="..." summary="..." -->\` (listed by \`npx prodshape drift\`) and let humans decide — never fix it quietly.
 Every current OpenSpec document (proposal, specs, design, tasks and openspec/specs/) carries exactly one explicit scope declaration: \`pdac-scope: cited\` for a bound document that carries at least one citation, or \`pdac-scope: none\` with a non-empty human-authored reason (\`pdac-scope-reason: <why>\` in frontmatter, or \`<!-- pdac-scope: none reason=\"<why>\" -->\`) for an exempt one. Citations alone never bind: a document without a declaration is unclassified and fails verification, a bound document with zero citations fails, and an exemption without a reason or contradicted by citations fails. Binding and exemption are human declarations: never declare an exemption merely because citations are missing. Verify with \`npx prodshape citations verify --provider openspec\`: it enumerates the expected current documents, so zero discovered citations is a set of failures, never a pass. Archived changes are excluded by default; \`--include-archived\` also verifies the citations history carries, reported as warnings, because archived history cannot be edited.
-The accepted Product Definition changes only through a Product Change: validate it as an overlay while the baseline stays untouched, reach the apply-authorised state (status: approved, a transition owned by the caller's authorisation policy, never performed by tooling on its own), apply explicitly on a working branch, and let a human accept the resulting baseline by merging its pull request. A Product Change is not a pull request; apply is not acceptance; neither apply nor merge attests implementation, verification, release or deployment. A Product Change lives under docs/product/changes/ or hosted inside an OpenSpec change created with the product schema (product/change.md plus product/proposed/**); its deterministically validated, apply-authorised apply is the only write path into docs/product/model. A spec-driven OpenSpec delivery change never edits docs/product/model directly: it may share a pull request with an applied Product Change or follow later, but it never supplies Product Change status.
+The accepted Product Definition changes only through a Product Change: validate it as an overlay while the baseline stays untouched, obtain human product approval (represented by status: approved; the integration verifies the state but cannot identify or judge the actor), apply explicitly on a working branch, and let a human accept the resulting baseline by merging its pull request. A Product Change is not a pull request; apply is not acceptance; neither apply nor merge attests implementation, verification, release or deployment. A Product Change lives under docs/product/changes/ or hosted inside a valid OpenSpec change created with the product schema (product/change.md plus product/proposed/**); its deterministically validated, apply-authorised apply is the only write path into docs/product/model. A spec-driven OpenSpec delivery change never edits docs/product/model directly: it may share a pull request with an applied Product Change or follow later, but it never supplies Product Change status.
 ${PDAC_CONTEXT_END}`;
 
 /** The PDaC citation rules injected per artifact into openspec/config.yaml `rules:`. */
@@ -177,9 +183,10 @@ export interface OpenSpecIntegrationMeta {
   /**
    * The installed OpenSpec product schema: its name, the OpenSpec floor the product workflow
    * needs, and every managed file it consists of, each with the content digest it was installed
-   * at. The digests are the ownership proof (ADR 0008): update replaces and remove deletes a file
-   * only when its bytes still match the recorded digest or the current assets; a diverged file is
-   * preserved and reported, never overwritten or deleted. Absent in metadata written before the
+   * at. The per-file record and digest are the ownership proof (ADR 0008): update replaces and
+   * remove deletes a file only when that exact path was recorded and its bytes still match the
+   * recorded digest (legacy path-only records additionally require the current asset bytes). A
+   * diverged or unrecorded file is preserved and reported, never overwritten or deleted. Absent in metadata written before the
    * schema existed; `integration update` installs the schema and adds the record. Metadata
    * written by earlier spike revisions carried a plain path array; it is read as paths with no
    * recorded digest, so ownership then rests on matching the current assets.
@@ -193,20 +200,46 @@ function recordedProductSchemaFiles(
 ): Record<string, string> | undefined {
   const record = meta?.productSchema;
   if (!record) return undefined;
-  const files = record.files as unknown;
-  if (Array.isArray(files)) {
-    return Object.fromEntries(
-      files.filter((file): file is string => typeof file === 'string').map((file) => [file, '']),
+  if (
+    typeof record !== 'object' ||
+    record === null ||
+    record.name !== OPENSPEC_PRODUCT_SCHEMA_NAME ||
+    typeof record.requiresOpenspec !== 'string'
+  ) {
+    throw new Error(
+      "'productSchema' must name the product schema and carry a string 'requiresOpenspec'",
     );
+  }
+  const files = record.files as unknown;
+  const validatePath = (file: unknown): file is string =>
+    typeof file === 'string' &&
+    file.startsWith(`${OPENSPEC_PRODUCT_SCHEMA_RELATIVE}/`) &&
+    isRepositoryRelativePath(file);
+  if (Array.isArray(files)) {
+    if (!files.every(validatePath)) {
+      throw new Error(
+        `'productSchema.files' contains a path outside ${OPENSPEC_PRODUCT_SCHEMA_RELATIVE}`,
+      );
+    }
+    return Object.fromEntries(files.map((file) => [file, '']));
   }
   if (files !== null && typeof files === 'object') {
-    return Object.fromEntries(
-      Object.entries(files as Record<string, unknown>).filter(
-        (entry): entry is [string, string] => typeof entry[1] === 'string',
-      ),
-    );
+    const entries = Object.entries(files as Record<string, unknown>);
+    if (!entries.every(([file]) => validatePath(file))) {
+      throw new Error(
+        `'productSchema.files' contains a path outside ${OPENSPEC_PRODUCT_SCHEMA_RELATIVE}`,
+      );
+    }
+    if (
+      !entries.every(
+        ([, digest]) => typeof digest === 'string' && /^sha256:[0-9a-f]{64}$/.test(digest),
+      )
+    ) {
+      throw new Error("'productSchema.files' contains an invalid content digest");
+    }
+    return Object.fromEntries(entries as [string, string][]);
   }
-  return {};
+  throw new Error("'productSchema.files' must be a path-to-digest object or legacy path array");
 }
 
 /** Repository-relative paths used by this integration. */
@@ -656,15 +689,19 @@ export async function addOpenSpecIntegration(
   // this CLI is a separate, capability-specific report (`checkOpenSpecIntegration`), never a
   // different set of bytes.
   //
-  // Ownership is proven, never inferred from the path (ADR 0008): a file may be replaced only
-  // when its bytes match the digest this integration recorded for it or the current assets. On a
-  // fresh install (no recorded product schema) a pre-existing differing file is a collision and
-  // the whole operation fails closed before any byte is written; on an update a diverged managed
-  // file is preserved and reported, never overwritten.
+  // Ownership is proven per file, never inferred from the schema path or byte equality (ADR
+  // 0008): a file may be replaced only when the metadata recorded that exact path and its bytes
+  // still match the recorded digest. Any pre-existing unrecorded file is a collision, even when
+  // byte-identical to the asset; on update a diverged managed file is preserved and reported, and
+  // an obsolete still-managed file is removed only while its digest continues to match.
   const schemaAssets = await loadProductSchemaAssets();
   const recordedSchema = recordedProductSchemaFiles(previousMeta);
+  const currentSchemaPaths = new Set(
+    schemaAssets.map((asset) => `${OPENSPEC_PRODUCT_SCHEMA_RELATIVE}/${asset.relative}`),
+  );
   const schemaFileDigests: Record<string, string> = {};
   const schemaWrites: { relative: string; absolute: string; content: string }[] = [];
+  const schemaDeletes: { relative: string; absolute: string }[] = [];
   const schemaCollisions: string[] = [];
   const schemaPreserved: string[] = [];
   let schemaInstalledAnything = false;
@@ -679,28 +716,45 @@ export async function addOpenSpecIntegration(
       schemaInstalledAnything = true;
       continue;
     }
+    const recordedDigest = recordedSchema?.[relative];
+    if (recordedDigest === undefined) {
+      // Ownership is per file. Byte equality proves compatibility, not authorship: adopting an
+      // identical user file on a fresh install or when a later release adds a new asset would let
+      // a subsequent remove delete content the integration never installed.
+      schemaCollisions.push(relative);
+      continue;
+    }
     if (existing === asset.content) {
-      // Byte-identical to the current assets: managed by content, nothing to write.
+      // A recorded managed path is already byte-identical to the current asset: nothing to write.
       schemaFileDigests[relative] = assetDigest;
       continue;
     }
-    const recordedDigest = recordedSchema?.[relative];
-    if (recordedDigest !== undefined && contentDigest(existing) === recordedDigest) {
+    if (recordedDigest !== '' && contentDigest(existing) === recordedDigest) {
       // Proven managed at an older recorded version: replace with the current assets.
       schemaWrites.push({ relative, absolute, content: asset.content });
       schemaFileDigests[relative] = assetDigest;
-      continue;
-    }
-    if (recordedSchema === undefined) {
-      // Fresh install into a directory that already carries a differing file: not ours to touch.
-      schemaCollisions.push(relative);
       continue;
     }
     // Managed path whose content diverged from both the record and the current assets: a hand
     // edit. Preserve it, keep its recorded digest (restoring the recorded content re-enables
     // management), and report it.
     schemaPreserved.push(relative);
-    if (recordedDigest !== undefined) schemaFileDigests[relative] = recordedDigest;
+    if (recordedDigest !== '') schemaFileDigests[relative] = recordedDigest;
+  }
+  for (const [relative, recordedDigest] of Object.entries(recordedSchema ?? {})) {
+    if (currentSchemaPaths.has(relative)) continue;
+    const absolute = resolveInRepository(root, relative, 'the OpenSpec integration');
+    if (!(await pathExists(absolute))) continue;
+    const existing = await readFile(absolute, 'utf8');
+    if (recordedDigest !== '' && contentDigest(existing) === recordedDigest) {
+      schemaDeletes.push({ relative, absolute });
+      continue;
+    }
+    // Ownership extends to absence, but deletion still requires the recorded digest proof. A
+    // diverged obsolete file stays user-visible and remains recorded so check/remove can continue
+    // reporting it; a digest-less legacy record is preserved but cannot become ownership proof.
+    schemaPreserved.push(relative);
+    if (recordedDigest !== '') schemaFileDigests[relative] = recordedDigest;
   }
   if (schemaCollisions.length > 0) {
     throw new Error(
@@ -718,6 +772,9 @@ export async function addOpenSpecIntegration(
         `Product workflow unavailable until OpenSpec >= ${PRODUCT_SCHEMA_MIN_OPENSPEC} (detected ${openspecVersion}); the citation lane is unaffected.`,
       );
     }
+  }
+  for (const { relative } of schemaDeletes) {
+    changes.push(`Removed obsolete managed file ${relative}.`);
   }
   for (const relative of schemaPreserved) {
     changes.push(
@@ -765,6 +822,9 @@ export async function addOpenSpecIntegration(
       await mkdir(dirname(ciAbsolute), { recursive: true });
       await writeFile(ciAbsolute, ciDesired, 'utf8');
       written.push(CI_EXAMPLE_RELATIVE);
+    }
+    for (const deletion of schemaDeletes) {
+      await rm(deletion.absolute, { force: true });
     }
     for (const write of schemaWrites) {
       await mkdir(dirname(write.absolute), { recursive: true });
@@ -848,7 +908,16 @@ async function readMeta(root: string): Promise<OpenSpecIntegrationMeta | null> {
       "it does not match the metadata schema ('provider' must be 'openspec' and 'installedAt' a string)",
     );
   }
-  return record as unknown as OpenSpecIntegrationMeta;
+  const meta = record as unknown as OpenSpecIntegrationMeta;
+  try {
+    recordedProductSchemaFiles(meta);
+  } catch (error) {
+    throw new OpenSpecMetaError(
+      `it does not match the product schema ownership record (${error instanceof Error ? error.message : String(error)})`,
+      { cause: error },
+    );
+  }
+  return meta;
 }
 
 /**
@@ -1010,28 +1079,48 @@ export async function checkOpenSpecIntegration(root: string): Promise<{
     });
   } else {
     const recordedSchema = recordedProductSchemaFiles(meta) ?? {};
+    const currentSchemaPaths = new Set(
+      schemaAssets.map((asset) => `${OPENSPEC_PRODUCT_SCHEMA_RELATIVE}/${asset.relative}`),
+    );
     const missing: string[] = [];
+    const unrecorded: string[] = [];
     const outdated: string[] = [];
     const diverged: string[] = [];
+    const obsolete = Object.keys(recordedSchema)
+      .filter((relative) => !currentSchemaPaths.has(relative))
+      .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
     for (const asset of schemaAssets) {
       const relative = `${OPENSPEC_PRODUCT_SCHEMA_RELATIVE}/${asset.relative}`;
       const absolute = resolveInRepository(root, relative, 'the OpenSpec integration');
       const existing = (await pathExists(absolute)) ? await readFile(absolute, 'utf8') : null;
-      if (existing === null) {
+      const recordedDigest = recordedSchema[relative];
+      if (recordedDigest === undefined) {
+        unrecorded.push(relative);
+      } else if (existing === null) {
         missing.push(relative);
       } else if (existing !== asset.content) {
-        const recordedDigest = recordedSchema[relative];
-        if (recordedDigest !== undefined && contentDigest(existing) === recordedDigest) {
+        if (recordedDigest !== '' && contentDigest(existing) === recordedDigest) {
           outdated.push(relative);
         } else {
           diverged.push(relative);
         }
       }
     }
-    if (missing.length > 0 || outdated.length > 0 || diverged.length > 0) {
+    if (
+      missing.length > 0 ||
+      unrecorded.length > 0 ||
+      outdated.length > 0 ||
+      diverged.length > 0 ||
+      obsolete.length > 0
+    ) {
       const parts: string[] = [];
       if (missing.length > 0) {
         parts.push(`missing: ${missing.join(', ')} (run: prodshape integration update)`);
+      }
+      if (unrecorded.length > 0) {
+        parts.push(
+          `unrecorded: ${unrecorded.join(', ')} (move user files aside, then run: prodshape integration update)`,
+        );
       }
       if (outdated.length > 0) {
         parts.push(
@@ -1041,6 +1130,11 @@ export async function checkOpenSpecIntegration(root: string): Promise<{
       if (diverged.length > 0) {
         parts.push(
           `hand-edited and preserved: ${diverged.join(', ')} (restore or delete them, then run: prodshape integration update)`,
+        );
+      }
+      if (obsolete.length > 0) {
+        parts.push(
+          `obsolete managed content: ${obsolete.join(', ')} (run: prodshape integration update)`,
         );
       }
       checks.push({
@@ -1228,12 +1322,11 @@ export async function removeOpenSpecIntegration(
     removed.push(CI_EXAMPLE_RELATIVE);
   }
 
-  // Remove the installed product schema, deleting only files still PROVEN managed: bytes matching
-  // the digest the metadata recorded, or matching the current assets. A diverged (hand-edited)
-  // file is preserved and reported instead of deleted, and with no recorded product schema at all
-  // nothing under openspec/schemas is touched, so a coincidentally named user schema survives a
-  // remove. Directories are pruned only when the removal emptied them, so a user schema beside
-  // ours (openspec/schemas/<other>/) and user files inside ours survive.
+  // Remove the installed product schema, deleting only paths with a per-file ownership record and
+  // bytes still proven managed by the recorded digest (or, for a legacy path-only record, the
+  // current asset). A diverged or unrecorded file is preserved and reported, and with no recorded
+  // product schema at all nothing under openspec/schemas is touched. Directories are pruned only
+  // when the removal emptied them, so adjacent schemas and user files inside ours survive.
   const recordedSchema = recordedProductSchemaFiles(previousMeta);
   if (recordedSchema !== undefined) {
     const assetContentByRelative = new Map(
@@ -1242,9 +1335,7 @@ export async function removeOpenSpecIntegration(
         asset.content,
       ]),
     );
-    const schemaFileSet = [
-      ...new Set([...Object.keys(recordedSchema), ...assetContentByRelative.keys()]),
-    ].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+    const schemaFileSet = Object.keys(recordedSchema).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
     const pruneCandidates = new Set<string>();
     for (const relative of schemaFileSet) {
       const absolute = resolveInRepository(root, relative, 'the OpenSpec integration');
@@ -1274,6 +1365,15 @@ export async function removeOpenSpecIntegration(
         pruneCandidates.add('openspec/schemas');
       }
       removed.push(relative);
+    }
+    // A schema-level record is not ownership of every current asset path. If a path is absent
+    // from the per-file record, preserve and report it even when its bytes equal today's asset.
+    for (const relative of [...assetContentByRelative.keys()].sort((a, b) =>
+      a < b ? -1 : a > b ? 1 : 0,
+    )) {
+      if (recordedSchema[relative] !== undefined) continue;
+      const absolute = resolveInRepository(root, relative, 'the OpenSpec integration');
+      if (await pathExists(absolute)) preserved.push(relative);
     }
     if (!dryRun) {
       // Deepest first, so a directory is only considered after its children were.

@@ -46,14 +46,14 @@ context: >-
   edited.
 
   The accepted Product Definition changes only through a Product Change:
-  validate it as an overlay while the baseline stays untouched, reach the
-  apply-authorised state (status: approved, a transition owned by the caller's
-  authorisation policy, never performed by tooling on its own), apply explicitly
-  on a working branch, and let a human accept the resulting baseline by merging
-  its pull request. A Product Change is not a pull request; apply is not
-  acceptance; neither apply nor merge attests implementation, verification,
-  release or deployment. A Product Change lives under docs/product/changes/ or
-  hosted inside an OpenSpec change created with the product schema
+  validate it as an overlay while the baseline stays untouched, obtain human
+  product approval (represented by status: approved; the integration verifies
+  the state but cannot identify or judge the actor), apply explicitly on a
+  working branch, and let a human accept the resulting baseline by merging its
+  pull request. A Product Change is not a pull request; apply is not acceptance;
+  neither apply nor merge attests implementation, verification, release or
+  deployment. A Product Change lives under docs/product/changes/ or hosted
+  inside a valid OpenSpec change created with the product schema
   (product/change.md plus product/proposed/**); its deterministically validated,
   apply-authorised apply is the only write path into docs/product/model. A
   spec-driven OpenSpec delivery change never edits docs/product/model directly:

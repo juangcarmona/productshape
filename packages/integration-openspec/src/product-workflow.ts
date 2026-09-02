@@ -15,10 +15,10 @@
  *   authorise a write (no time-of-check to time-of-use gap). `validateOpenSpecProductChange`
  *   exists for explicit preflight, wrappers, diagnostics and tests; it is never a precondition
  *   token.
- * - Authorisation is policy, not mechanism: `status: approved` in the hosted change.md is the
- *   apply-authorised protocol state (PRODUCT028 refuses anything else), the transition into it
- *   belongs to the caller's policy (a human, a command, an agentic wrapper, an automated
- *   workflow), and nothing here performs or judges that transition.
+ * - Authorisation policy stays outside this deterministic mechanism: `status: approved` in the
+ *   hosted change.md is the apply-authorised protocol state (PRODUCT028 refuses anything else).
+ *   ProductShape's accepted policy keeps product approval human; this rail verifies the recorded
+ *   state but cannot identify or judge the actor, and nothing here performs the transition.
  *
  * Everything deterministic comes from `@prodshape/core`. The one lifecycle divergence from the
  * native Product Change flow is the container: the hosted change directory belongs to OpenSpec,
@@ -36,6 +36,7 @@ import {
   dedupeDiagnostics,
   discoverChanges,
   executeApply,
+  isNotFound,
   loadChange,
   openRepository,
   planApply,
@@ -59,6 +60,17 @@ import { pathExists } from './workspace.js';
 
 /** The subdirectory of an OpenSpec change that hosts the PDaC Product Change delta. */
 export const OPENSPEC_PRODUCT_SUBDIR = 'product';
+
+/** OpenSpec 1.11's change-id grammar (`isKebabId`): one folder-safe path segment. */
+const OPENSPEC_CHANGE_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
+
+function assertOpenSpecChangeName(changeName: string): void {
+  if (changeName.length > 200 || !OPENSPEC_CHANGE_NAME.test(changeName)) {
+    throw new Error(
+      `OpenSpec change '${changeName}' is not a valid OpenSpec change name; use kebab-case with lowercase letters, numbers and single hyphen separators.`,
+    );
+  }
+}
 
 /** The accepted product model, read directly from disk and validated, with its in-memory graph. */
 export interface ProductModelInspection {
@@ -99,6 +111,64 @@ export interface OpenSpecProductChangeRef {
 type HostedSchemaPin =
   { schema: string } | { problem: 'missing' } | { problem: 'malformed'; detail: string };
 
+const OPEN_SPEC_KEBAB_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
+
+/** Validate the OpenSpec 1.11 ChangeMetadataSchema fields without taking a runtime dependency. */
+function openSpecChangeMetadataProblem(parsed: unknown): string | undefined {
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return 'the document must be an object';
+  }
+  const record = parsed as Record<string, unknown>;
+  if (typeof record['schema'] !== 'string' || record['schema'].length === 0) {
+    return 'schema is required';
+  }
+  const created = record['created'];
+  if (
+    created !== undefined &&
+    (typeof created !== 'string' || !/^\d{4}-\d{2}-\d{2}$/u.test(created))
+  ) {
+    return 'created must be YYYY-MM-DD format';
+  }
+  const goal = record['goal'];
+  if (goal !== undefined && (typeof goal !== 'string' || goal.length === 0)) {
+    return 'goal must be a non-empty string';
+  }
+  const affectedAreas = record['affected_areas'];
+  if (
+    affectedAreas !== undefined &&
+    (!Array.isArray(affectedAreas) ||
+      !affectedAreas.every((area) => typeof area === 'string' && area.length > 0))
+  ) {
+    return 'affected_areas must be an array of non-empty strings';
+  }
+  const initiative = record['initiative'];
+  if (initiative !== undefined) {
+    if (initiative === null || typeof initiative !== 'object' || Array.isArray(initiative)) {
+      return 'initiative must be an object';
+    }
+    const link = initiative as Record<string, unknown>;
+    if (
+      Object.keys(link).some((key) => key !== 'store' && key !== 'id') ||
+      typeof link['store'] !== 'string' ||
+      !OPEN_SPEC_KEBAB_ID.test(link['store']) ||
+      typeof link['id'] !== 'string' ||
+      !OPEN_SPEC_KEBAB_ID.test(link['id'])
+    ) {
+      return 'initiative must contain only kebab-case store and id fields';
+    }
+  }
+  if (record['skip_specs'] !== undefined && typeof record['skip_specs'] !== 'boolean') {
+    return 'skip_specs must be a boolean';
+  }
+  if (
+    record['retire_capabilities'] !== undefined &&
+    typeof record['retire_capabilities'] !== 'boolean'
+  ) {
+    return 'retire_capabilities must be a boolean';
+  }
+  return undefined;
+}
+
 /**
  * Read the schema a change is pinned to. OpenSpec records it in the change's `.openspec.yaml`
  * (`openspec new change <name> --schema product` writes it), and the hosted product rail treats
@@ -117,14 +187,23 @@ async function readHostedSchemaPin(changeDir: string): Promise<HostedSchemaPin> 
       detail: error instanceof Error ? error.message : String(error),
     };
   }
-  const schema =
-    parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)
-      ? (parsed as Record<string, unknown>)['schema']
-      : undefined;
-  if (typeof schema !== 'string' || schema.length === 0) {
-    return { problem: 'malformed', detail: 'the document carries no schema field' };
+  const problem = openSpecChangeMetadataProblem(parsed);
+  if (problem !== undefined) return { problem: 'malformed', detail: problem };
+  return { schema: (parsed as Record<string, string>)['schema']! };
+}
+
+function hostedSchemaPinError(
+  changeName: string,
+  pin: Exclude<HostedSchemaPin, { schema: string }>,
+): Error {
+  if (pin.problem === 'missing') {
+    return new Error(
+      `OpenSpec change '${changeName}' has no .openspec.yaml, so its schema pin is unknown; the hosted product rail refuses it. Create product changes with: openspec new change ${changeName} --schema ${OPENSPEC_PRODUCT_SCHEMA_NAME}.`,
+    );
   }
-  return { schema };
+  return new Error(
+    `OpenSpec change '${changeName}' has an unreadable .openspec.yaml (${pin.detail}); the hosted product rail refuses it until the metadata is valid under OpenSpec 1.11.`,
+  );
 }
 
 /**
@@ -142,8 +221,9 @@ export async function listOpenSpecProductChanges(
   let entries;
   try {
     entries = await readdir(changesDir, { withFileTypes: true });
-  } catch {
-    return [];
+  } catch (error) {
+    if (isNotFound(error)) return [];
+    throw error;
   }
   const names = entries
     .filter((entry) => entry.isDirectory() && entry.name !== 'archive')
@@ -154,8 +234,10 @@ export async function listOpenSpecProductChanges(
     const changeDir = join(changesDir, name);
     const dir = join(changeDir, OPENSPEC_PRODUCT_SUBDIR);
     if (!(await pathExists(join(dir, 'change.md')))) continue;
+    assertOpenSpecChangeName(name);
     const pin = await readHostedSchemaPin(changeDir);
-    if ('problem' in pin || pin.schema !== OPENSPEC_PRODUCT_SCHEMA_NAME) continue;
+    if ('problem' in pin) throw hostedSchemaPinError(name, pin);
+    if (pin.schema !== OPENSPEC_PRODUCT_SCHEMA_NAME) continue;
     refs.push({
       name,
       dir,
@@ -179,6 +261,7 @@ async function loadHostedChange(
   repo: ProductRepository,
   changeName: string,
 ): Promise<LoadedChange> {
+  assertOpenSpecChangeName(changeName);
   const changesDir = join(root, 'openspec', 'changes');
   const changeDir = join(changesDir, changeName);
   const deltaDir = join(changeDir, OPENSPEC_PRODUCT_SUBDIR);
@@ -197,14 +280,7 @@ async function loadHostedChange(
   // schema, this change never enters the product rail, however product-shaped its contents look.
   const pin = await readHostedSchemaPin(changeDir);
   if ('problem' in pin) {
-    if (pin.problem === 'missing') {
-      throw new Error(
-        `OpenSpec change '${changeName}' has no .openspec.yaml, so its schema pin is unknown; the hosted product rail refuses it. Create product changes with: openspec new change ${changeName} --schema ${OPENSPEC_PRODUCT_SCHEMA_NAME}.`,
-      );
-    }
-    throw new Error(
-      `OpenSpec change '${changeName}' has an unreadable .openspec.yaml (${pin.detail}); the hosted product rail refuses it until the schema pin is readable.`,
-    );
+    throw hostedSchemaPinError(changeName, pin);
   }
   if (pin.schema !== OPENSPEC_PRODUCT_SCHEMA_NAME) {
     throw new Error(

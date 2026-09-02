@@ -65,8 +65,9 @@ artifacts:
       - Stay in product semantics: no file paths, package names or implementation detail inside product
         artifacts. Add a structured-behaviour only where it clarifies observable product behaviour
         (given/when/then in frontmatter, Intent and Boundaries body sections).
-      - Leave status: draft while authoring. The transition to approved is the caller's authorisation
-        act and happens outside this artifact.
+      - Leave status: draft while authoring. Status approved records human product approval under
+        ProductShape's accepted policy; that decision happens outside this artifact, and neither
+        this workflow nor the integration grants it.
       - Never edit docs/product/model directly; the accepted model changes only through the
         deterministic apply of this change.
 
@@ -85,8 +86,8 @@ apply:
 
     1. Confirm the change is in the apply-authorised state: product/change.md carries
        status: approved. That protocol state is required for apply (PRODUCT028 otherwise); the
-       transition into it belongs to the caller's authorisation policy, and neither this workflow nor
-       the integration performs or judges that transition.
+       integration checks only that protocol state. ProductShape's accepted policy requires human
+       product approval; neither this workflow nor the integration grants, infers or judges it.
     2. Run the deterministic apply through the PDaC integration, dry run first:
        `node openspec/schemas/product/scripts/product-apply.mjs --change <change-name> --dry-run`
        then without --dry-run. The script resolves the locally installed
