@@ -16,6 +16,8 @@ import { listFilesRecursive, repoRoot, toPosix } from '../helpers.js';
 
 let workDir: string;
 
+const packageVersionPattern = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
+
 /** `.claude/commands/ps/<name>.md` or `.github/prompts/ps-<name>.prompt.md`. */
 function isShorthandPath(path: string): boolean {
   return path.includes('/commands/ps/') || path.includes('/prompts/ps-');
@@ -60,7 +62,15 @@ describe('bundled assets', () => {
     expect(assets.skills).toHaveLength(7);
     expect(assets.commands).toHaveLength(8);
     expect(assets.templates).toHaveLength(11);
-    expect(assets.version).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(assets.version).toMatch(packageVersionPattern);
+  });
+
+  it('accepts stable and prerelease package versions', () => {
+    expect('0.15.0').toMatch(packageVersionPattern);
+    expect('0.16.0-alpha.0').toMatch(packageVersionPattern);
+    expect('0.16.0-alpha.0.1').toMatch(packageVersionPattern);
+    expect('0.16').not.toMatch(packageVersionPattern);
+    expect('0.16.0-').not.toMatch(packageVersionPattern);
   });
 });
 
