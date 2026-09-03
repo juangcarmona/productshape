@@ -78,6 +78,7 @@ jobs:
       - run: pnpm lint
       - run: pnpm format:check
       - run: pnpm lifecycle:check
+      - run: pnpm release-workflow:check
 
   release-contract:
     name: packed release contract
