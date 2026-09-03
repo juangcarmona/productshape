@@ -8,7 +8,9 @@ import {
   addOpenSpecIntegration,
   checkOpenSpecIntegration,
   loadProductChangeSchemaAssets,
+  loadProductRecoverySchemaAssets,
   OPENSPEC_PRODUCT_CHANGE_SCHEMA_RELATIVE,
+  OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE,
   PRODUCT_CHANGE_SCHEMA_MIN_OPENSPEC,
   removeOpenSpecIntegration,
   updateOpenSpecIntegration,
@@ -36,6 +38,31 @@ async function scratchWorkspace(): Promise<string> {
 }
 
 describe('openspec product schema assets', () => {
+  it('bundles the independent product-recovery workload', async () => {
+    const assets = await loadProductRecoverySchemaAssets();
+    expect(assets.map((asset) => `${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}/${asset.relative}`)).toEqual([
+      `${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}/schema.yaml`,
+      `${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}/templates/brief.md`,
+      `${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}/templates/report.md`,
+    ]);
+    const schema = parse(assets.find((asset) => asset.relative === 'schema.yaml')!.content) as any;
+    expect(schema.name).toBe('product-recovery');
+    expect(schema.artifacts.map((artifact: any) => artifact.id)).toEqual(['brief', 'recovery-outcome']);
+    expect(schema.apply.requires).toEqual(['recovery-outcome']);
+  });
+
+  it('installs, checks and removes product-recovery without touching product-change ownership', async () => {
+    const dir = await scratchWorkspace();
+    try {
+      const added = await addOpenSpecIntegration(dir, { cliVersion: '1.11.0' });
+      expect(added.written).toContain(`${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}/schema.yaml`);
+      expect((await checkOpenSpecIntegration(dir)).checks.find((c) => c.name === 'product recovery workflow')?.ok).toBe(true);
+      const removed = await removeOpenSpecIntegration(dir);
+      expect(removed.removed).toContain(`${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}/schema.yaml`);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
   it('bundles exactly the managed asset set', async () => {
     const assets = await loadProductChangeSchemaAssets();
     expect(

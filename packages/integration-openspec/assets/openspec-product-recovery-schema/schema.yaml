@@ -1,0 +1,41 @@
+# MANAGED FILE. Installed by `prodshape integration add openspec`.
+name: product-recovery
+version: 1
+description: >-
+  PDaC brownfield recovery hosted in OpenSpec. Evidence is processed in bounded,
+  resumable rounds and converges on a draft CHG-INITIAL Product Change.
+artifacts:
+  - id: brief
+    generates: recovery/brief.md
+    description: Confirmed recovery scope, evidence authority and batch policy
+    template: brief.md
+    instruction: |
+      Agree this brief with the human before reading evidence. The brief is the
+      authority for roots, include/exclude/forbidden patterns, ordered tiers,
+      batch size and explicitly authorised external sources.
+    requires: []
+  - id: recovery-outcome
+    generates: recovery/report.md
+    description: Iterative evidence recovery report and hosted CHG-INITIAL draft
+    template: report.md
+    instruction: |
+      Repeat `/opsx:continue` for one bounded round at a time. Re-inventory and
+      re-hash first, stop on drift, then process at most the configured batch.
+      Use the deterministic ProductShape recovery capabilities for state changes;
+      never edit state files manually. Keep recovery/** and product-change/**
+      inside this OpenSpec change container. Distinguish observed evidence from
+      inference, preserve provenance and confidence, record contradictions as
+      questions, and finish either with a defensible candidate baseline or an
+      explicit insufficient-evidence report. Do not approve or apply.
+    requires:
+      - brief
+apply:
+  requires:
+    - recovery-outcome
+  instruction: |
+    Apply is available only for a complete candidate-baseline outcome with a
+    human-approved CHG-INITIAL in product-change/change.md. Revalidate fresh
+    evidence, recovery completion, model drift and the complete overlay, then
+    delegate to the existing Product Change apply rail. An insufficient-evidence
+    outcome reports that there is nothing to apply. Never commit or archive;
+    `/opsx:archive` remains a separate action.
