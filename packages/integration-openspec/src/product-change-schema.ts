@@ -30,6 +30,10 @@ export const OPENSPEC_PRODUCT_CHANGE_SCHEMA_RELATIVE = 'openspec/schemas/product
  */
 export const PRODUCT_CHANGE_SCHEMA_MIN_OPENSPEC = '1.7.0';
 
+/** The separate hosted brownfield recovery workload. */
+export const OPENSPEC_PRODUCT_RECOVERY_SCHEMA_NAME = 'product-recovery';
+export const OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE = 'openspec/schemas/product-recovery';
+
 /** One bundled product-schema file: its path relative to the installed schema directory. */
 export interface ProductChangeSchemaAsset {
   relative: string;
@@ -70,4 +74,20 @@ export async function loadProductChangeSchemaAssets(): Promise<ProductChangeSche
     });
   }
   return assets;
+}
+
+/** Load the bundled recovery schema assets using the same deterministic asset contract. */
+export async function loadProductRecoverySchemaAssets(): Promise<ProductChangeSchemaAsset[]> {
+  const dir = fileURLToPath(
+    new URL('../assets/openspec-product-recovery-schema/', import.meta.url),
+  );
+  const relatives = await collectFiles(dir, '');
+  return Promise.all(
+    relatives
+      .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(async (relative) => ({
+        relative,
+        content: await readFile(join(dir, ...relative.split('/')), 'utf8'),
+      })),
+  );
 }
