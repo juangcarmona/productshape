@@ -11,5 +11,5 @@
     "@prodshape/integration-openspec": "0.5.3",
     "@prodshape/integration-speckit": "0.3.5"
   },
-  "changesets": ["openspec-product-workflow"]
+  "changesets": ["openspec-product-workflow", "product-change-schema"]
 }
