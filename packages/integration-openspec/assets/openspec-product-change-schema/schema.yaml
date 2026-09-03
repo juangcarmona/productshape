@@ -13,6 +13,13 @@ artifacts:
     instruction: |
       Capture WHY the product definition should change, before any delta exists.
 
+      Run a proportional integrity pass before authoring the first delta. Show a small prioritised
+      report: for each changed or proposed node, name the neighbouring candidate, relationship,
+      impact polarity and the mechanical reason it merits review. Classify each candidate as
+      affected, checked and unaffected, or uncertain. This graph evidence is assistance, never
+      authority: it must not expand scope or modify an artifact. Explain why relevant categories
+      and neighbours were left unchanged.
+
       Ground the intent in the accepted model:
       1. Read the accepted Product Definition (docs/product/model unless .product/config.yaml moves product-root).
          Never treat proposals, archived changes or OpenSpec documents as product truth.
@@ -39,6 +46,14 @@ artifacts:
       delivery-only work), record that verdict under the "No product delta" heading and STOP: do not
       author a delta artifact and do not invent product change to satisfy the workflow. Otherwise state
       the intended product outcome in product language, not implementation language.
+
+      Keep proposal.md as resumable working memory: record the current queue, checked-and-excluded
+      candidates, recommendations, parked items, parked questions and verbatim human answers. Ask exactly one
+      question at a time, highest product risk first. A user may stop, park a question, or place a
+      possible gap explicitly out of scope. The readiness conclusion must say whether no material
+      product decisions remain unresolved, named decisions are required, or named possible gaps
+      remain and may be refined now or consciously placed out of scope.
+      Record checked and excluded candidates in the proposal even when they need no artifact.
     requires: []
 
   - id: delta
@@ -53,6 +68,11 @@ artifacts:
       requirements/quality/, requirements/constraints/), each file named <lowercase-id>.md.
 
       Rules that make the delta valid:
+      - Perform the proportional integrity pass again before the first delta, after a material
+        widening of intent, when the delta begins to modify additional graph nodes, whenever the
+        user explicitly requests another refinement pass, and immediately before approval.
+        Editorial corrections do not require a new whole pass. Recompute the explained graph
+        candidates; do not expand scope or modify a neighbour automatically.
       - Re-read the intent's "Open Questions for the Product Owner" before writing. Do not author or
         complete the delta while any product-semantic question remains unresolved: ask the user and stop.
         Never choose a product outcome on the user's behalf. Carry the user's answer into one unambiguous
@@ -89,6 +109,14 @@ artifacts:
       Preflight is available at any time:
       `node openspec/schemas/product-change/scripts/product-validate.mjs --change <change-name>` validates the
       accepted baseline plus this delta as an overlay without touching either.
+
+      The semantic requests "refine", "review" and "challenge this product change", and the
+      explicit `/product:refine <change>` command, resume this same OpenSpec product-change
+      container. The refine adapter may update proposal.md, change.md and proposed artifacts, but
+      it must never approve, apply or archive. If no change is identifiable, ask the user to select
+      one or create one through the normal OpenSpec workflow; do not create a second lifecycle.
+      This is the same OpenSpec change, not a new refinement workflow.
+      This is the same OpenSpec change, not a new refinement workflow.
     requires:
       - intent
 
@@ -105,6 +133,9 @@ apply:
        product approval; neither this workflow nor the integration grants, infers or judges it.
        Before asking for or recording that state, confirm there are no unresolved product-semantic questions
        in either the intent or the delta. `status: approved` must not be recorded merely to make apply proceed.
+       Immediately before asking for approval, run the proportional integrity pass again, record
+       the report and distinguish unresolved decisions from optional further depth. Parked decisions
+       keep the change unready; consciously excluded gaps must be named under Out of Scope.
     2. Run the deterministic apply through the PDaC integration, dry run first:
        `node openspec/schemas/product-change/scripts/product-apply.mjs --change <change-name> --dry-run`
        then without --dry-run. The script resolves the locally installed

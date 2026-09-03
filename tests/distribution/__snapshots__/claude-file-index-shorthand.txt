@@ -36,5 +36,6 @@
 .claude/skills/recover-product/references/reconciliation.md
 .claude/skills/recover-product/references/recovery-workflow.md
 .claude/skills/recover-product/SKILL.md
+.claude/skills/refine-product/references/host-adapter.md
 .claude/skills/refine-product/references/question-writing.md
 .claude/skills/refine-product/SKILL.md

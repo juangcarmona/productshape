@@ -126,6 +126,43 @@ describe('openspec product schema assets', () => {
     expect(apply).toContain('no unresolved product-semantic questions');
     expect(apply).toContain('must not be recorded merely to make apply proceed');
   });
+
+  it('ships a proportional graph-guided clarification contract for the hosted workflow', async () => {
+    const assets = await loadProductChangeSchemaAssets();
+    const schema = parse(assets.find((asset) => asset.relative === 'schema.yaml')!.content) as {
+      artifacts: { id: string; instruction: string }[];
+      apply: { instruction: string };
+    };
+    const intent = schema.artifacts.find((artifact) => artifact.id === 'intent')!.instruction;
+    const delta = schema.artifacts.find((artifact) => artifact.id === 'delta')!.instruction;
+    const apply = schema.apply.instruction;
+    const contract = `${intent}\n${delta}\n${apply}`.replace(/\s+/g, ' ');
+
+    expect(contract).toContain('proportional integrity pass');
+    expect(contract).toContain('after a material widening of intent');
+    expect(contract).toContain('impact polarity');
+    expect(contract).toContain('changed or proposed node');
+    expect(contract).toContain('checked and excluded');
+    expect(contract).toContain('Ask exactly one question at a time');
+    expect(contract).toContain('proposal.md');
+    expect(contract).toContain('verbatim human answers');
+    expect(contract).toContain('parked items');
+    expect(contract).toContain('Out of Scope');
+    expect(contract).toContain('no material product decisions remain unresolved');
+    expect(contract).toContain('never approve, apply or archive');
+  });
+
+  it('makes the hosted refine adapter resume an existing product-change container only', async () => {
+    const assets = await loadProductChangeSchemaAssets();
+    const skill = assets.find((asset) => asset.relative === 'templates/proposal.md')!.content;
+    const schema = assets.find((asset) => asset.relative === 'schema.yaml')!.content;
+    expect(skill).toContain('Refinement pass');
+    expect(skill).toContain('Read the existing OpenSpec change');
+    expect(schema).toContain('/product:refine');
+    expect(schema).toContain('same OpenSpec change');
+    expect(schema).toContain('never approve, apply or archive');
+    expect(schema).not.toContain('docs/product/changes/active');
+  });
 });
 
 describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', () => {

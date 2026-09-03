@@ -155,6 +155,22 @@ describe('Claude-only installation', () => {
     expect(refs.length).toBeGreaterThan(0);
   });
 
+  it('installs the graph-guided refine contract from the packed artifact', async () => {
+    const skill = await readFile(
+      join(claudeDir, '.claude', 'skills', 'refine-product', 'SKILL.md'),
+      'utf8',
+    );
+    expect(skill).toContain('existing hosted product change identified by the host adapter');
+    expect(skill).toContain('references/host-adapter.md');
+    expect(skill).toContain('host adapter');
+    expect(skill).toContain('impact polarity');
+    expect(skill).toContain('Ask exactly one question at a time');
+    expect(skill).toContain('same hosted change');
+    expect(skill).toContain('must never approve, apply or archive');
+    expect(skill.toLowerCase()).not.toContain('openspec');
+    expect(skill).not.toContain('docs/product/changes/active/<chg-id>');
+  });
+
   it('creates .claude/commands/product/<name>.md for every command', async () => {
     const commandsDir = join(claudeDir, '.claude', 'commands', 'product');
     const entries = await readdir(commandsDir);

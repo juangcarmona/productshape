@@ -5,6 +5,20 @@ const packageJson = readFileSync(new URL('../package.json', import.meta.url), 'u
 
 const checks = [
   ['never pushes directly to protected main', !/git push[^\n]*HEAD:main/.test(workflow)],
+  [
+    'version PR uses Changesets Action v1 for Changesets CLI v2',
+    /changesets\/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d\s+# v1/.test(workflow) &&
+      !/changesets\/action@8488615a623b1b9c987934bb89eae8af6a946ac1/.test(workflow),
+  ],
+  [
+    'version PR uses the v1 input names',
+    /changesets\/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d[\s\S]*?\n\s+with:\n\s+version:\s+pnpm run version\n\s+commit:\s+'chore: Version Packages'\n\s+title:\s+'Version Packages'/.test(
+      workflow,
+    ) &&
+      !/changesets\/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d[\s\S]*?commit-message:/.test(
+        workflow,
+      ),
+  ],
   ['dispatch can open release PRs', /pull-requests: write/.test(workflow)],
   ['pre-enter creates a PR', /name: enter alpha[\s\S]*?gh pr create/.test(workflow)],
   [

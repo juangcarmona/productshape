@@ -11,7 +11,7 @@
         ".claude/commands/product/explore.md": "sha256:a1574f0256a454810703521961523470f37c2f4e7be22aa019f0d30b6e909975",
         ".claude/commands/product/impact.md": "sha256:bb3d545822bb488e82916b9a848d8986abe872beaff33cf5af9bdc06c4b0cdab",
         ".claude/commands/product/recover.md": "sha256:76474f6ed7f3717ea0d78e64c4f2b78d3b3fce04d4fbc7bd3fe95d768a74c1b3",
-        ".claude/commands/product/refine.md": "sha256:6e49dd96e897bdf4c4afb7340e8fd8e978163a7906fb5aa6c7a66c3a568adf21",
+        ".claude/commands/product/refine.md": "sha256:98dfefc1172d7d077e7d988a9372ad40cbfea35b44ec871f804a9395797aaf83",
         ".claude/commands/ps/audit.md": "sha256:7a1f7270a1aa20ea9c7fe1e8c08578f5c6f38a4686469fd5eac246105b3e0b1d",
         ".claude/commands/ps/bind.md": "sha256:0a58a11ea9594627bb4d7b154599204cf435c16cafe8f7adfd96f46d3434cf4a",
         ".claude/commands/ps/change.md": "sha256:aa182739b4cc29ec42cb45d6179db67f93fe4e3d443836ed41b322ccde564831",
@@ -19,7 +19,7 @@
         ".claude/commands/ps/explore.md": "sha256:a1574f0256a454810703521961523470f37c2f4e7be22aa019f0d30b6e909975",
         ".claude/commands/ps/impact.md": "sha256:bb3d545822bb488e82916b9a848d8986abe872beaff33cf5af9bdc06c4b0cdab",
         ".claude/commands/ps/recover.md": "sha256:76474f6ed7f3717ea0d78e64c4f2b78d3b3fce04d4fbc7bd3fe95d768a74c1b3",
-        ".claude/commands/ps/refine.md": "sha256:6e49dd96e897bdf4c4afb7340e8fd8e978163a7906fb5aa6c7a66c3a568adf21",
+        ".claude/commands/ps/refine.md": "sha256:98dfefc1172d7d077e7d988a9372ad40cbfea35b44ec871f804a9395797aaf83",
         ".claude/hooks/product-definition.json": "sha256:89e989cd53c0d2a87bf60a9e9a5d4e166899211c405c05e62f871b0c7e1c708b",
         ".claude/skills/analyze-product-change/references/change-template-guide.md": "sha256:ce27790f5c6c1e2456df0ab015b609160c97531efe6b3772b1ee97d58bf9c8bb",
         ".claude/skills/analyze-product-change/references/operations-checklist.md": "sha256:f971e16e33178371d4b0c1188526165c4eb02954719d7ffccf8fdadd6c755c89",
@@ -42,8 +42,9 @@
         ".claude/skills/recover-product/references/reconciliation.md": "sha256:48a0ce4346af68790ed3997ffa18e41a48b6bb8c83c764c250cc8d369db2c6f2",
         ".claude/skills/recover-product/references/recovery-workflow.md": "sha256:adc465a0946b291041edadfa6193b4c2288177f5537f9e46621af8be239c6371",
         ".claude/skills/recover-product/SKILL.md": "sha256:a913713018c67223a91754b26ba5e5a13127aa43c66eef1a36ae2bade90ef6a8",
-        ".claude/skills/refine-product/references/question-writing.md": "sha256:7345203f9a1aa28c1bd66251695719487569bfe6e3a83a4aa984c068a4355a24",
-        ".claude/skills/refine-product/SKILL.md": "sha256:7f1e954127d27a33b3670c1da2b2f3eb565e296fdc4d99ca6abed69b978f5d8a"
+        ".claude/skills/refine-product/references/host-adapter.md": "sha256:5a1a9f37b67a350bf79bb45c9806cbff4bb761d76b43ea983d61d104ebf50e0a",
+        ".claude/skills/refine-product/references/question-writing.md": "sha256:480b15f00bf3d74ea600f81180e73cc0d162710443410c69a4377a76a73aa645",
+        ".claude/skills/refine-product/SKILL.md": "sha256:11cf5ee42dcb12e05932ffe265c2c8551e5cdaabbb768a372a194aa434c13a0d"
       }
     },
     "copilot": {
@@ -55,7 +56,7 @@
         ".github/prompts/product-explore.prompt.md": "sha256:a1574f0256a454810703521961523470f37c2f4e7be22aa019f0d30b6e909975",
         ".github/prompts/product-impact.prompt.md": "sha256:bb3d545822bb488e82916b9a848d8986abe872beaff33cf5af9bdc06c4b0cdab",
         ".github/prompts/product-recover.prompt.md": "sha256:76474f6ed7f3717ea0d78e64c4f2b78d3b3fce04d4fbc7bd3fe95d768a74c1b3",
-        ".github/prompts/product-refine.prompt.md": "sha256:6e49dd96e897bdf4c4afb7340e8fd8e978163a7906fb5aa6c7a66c3a568adf21",
+        ".github/prompts/product-refine.prompt.md": "sha256:98dfefc1172d7d077e7d988a9372ad40cbfea35b44ec871f804a9395797aaf83",
         ".github/prompts/ps-audit.prompt.md": "sha256:7a1f7270a1aa20ea9c7fe1e8c08578f5c6f38a4686469fd5eac246105b3e0b1d",
         ".github/prompts/ps-bind.prompt.md": "sha256:0a58a11ea9594627bb4d7b154599204cf435c16cafe8f7adfd96f46d3434cf4a",
         ".github/prompts/ps-change.prompt.md": "sha256:aa182739b4cc29ec42cb45d6179db67f93fe4e3d443836ed41b322ccde564831",
@@ -63,7 +64,7 @@
         ".github/prompts/ps-explore.prompt.md": "sha256:a1574f0256a454810703521961523470f37c2f4e7be22aa019f0d30b6e909975",
         ".github/prompts/ps-impact.prompt.md": "sha256:bb3d545822bb488e82916b9a848d8986abe872beaff33cf5af9bdc06c4b0cdab",
         ".github/prompts/ps-recover.prompt.md": "sha256:76474f6ed7f3717ea0d78e64c4f2b78d3b3fce04d4fbc7bd3fe95d768a74c1b3",
-        ".github/prompts/ps-refine.prompt.md": "sha256:6e49dd96e897bdf4c4afb7340e8fd8e978163a7906fb5aa6c7a66c3a568adf21",
+        ".github/prompts/ps-refine.prompt.md": "sha256:98dfefc1172d7d077e7d988a9372ad40cbfea35b44ec871f804a9395797aaf83",
         ".github/skills/analyze-product-change/references/change-template-guide.md": "sha256:ce27790f5c6c1e2456df0ab015b609160c97531efe6b3772b1ee97d58bf9c8bb",
         ".github/skills/analyze-product-change/references/operations-checklist.md": "sha256:f971e16e33178371d4b0c1188526165c4eb02954719d7ffccf8fdadd6c755c89",
         ".github/skills/analyze-product-change/SKILL.md": "sha256:dfc67d134c03b5a78179f46969ccf298bff311293ff33cbf599ccb9ddc6bf4e2",
@@ -85,8 +86,9 @@
         ".github/skills/recover-product/references/reconciliation.md": "sha256:48a0ce4346af68790ed3997ffa18e41a48b6bb8c83c764c250cc8d369db2c6f2",
         ".github/skills/recover-product/references/recovery-workflow.md": "sha256:adc465a0946b291041edadfa6193b4c2288177f5537f9e46621af8be239c6371",
         ".github/skills/recover-product/SKILL.md": "sha256:a913713018c67223a91754b26ba5e5a13127aa43c66eef1a36ae2bade90ef6a8",
-        ".github/skills/refine-product/references/question-writing.md": "sha256:7345203f9a1aa28c1bd66251695719487569bfe6e3a83a4aa984c068a4355a24",
-        ".github/skills/refine-product/SKILL.md": "sha256:7f1e954127d27a33b3670c1da2b2f3eb565e296fdc4d99ca6abed69b978f5d8a"
+        ".github/skills/refine-product/references/host-adapter.md": "sha256:5a1a9f37b67a350bf79bb45c9806cbff4bb761d76b43ea983d61d104ebf50e0a",
+        ".github/skills/refine-product/references/question-writing.md": "sha256:480b15f00bf3d74ea600f81180e73cc0d162710443410c69a4377a76a73aa645",
+        ".github/skills/refine-product/SKILL.md": "sha256:11cf5ee42dcb12e05932ffe265c2c8551e5cdaabbb768a372a194aa434c13a0d"
       }
     }
   }

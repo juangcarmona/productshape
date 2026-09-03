@@ -9,7 +9,11 @@ The interview is the product. A question that wastes the human's attention costs
 - The answer changes product text. A question whose every answer leaves the model byte-identical is curiosity, not refinement.
 - It is decidable by this engineer, now. Questions for absent stakeholders are parked with a name attached, not asked into the void.
 
-## Ranking heuristics
+## Graph-guided ranking
+
+The graph produces candidates, not answers. For every candidate report the changed or proposed node, neighbouring candidate, relationship and impact polarity, then the mechanical reason it merits review. Classify it as affected, checked and unaffected, or uncertain. A neighbour that is checked and excluded stays visible with its reason; an explicit product gap that is excluded belongs under `Out of Scope`.
+
+Rank by the cost of a wrong product decision, using graph evidence to explain the ordering:
 
 Rank by the cost of the artifact being wrong, not by how easy the fix is:
 
@@ -21,6 +25,8 @@ Rank by the cost of the artifact being wrong, not by how easy the fix is:
 ## The question shape
 
 Every question carries, in this order: the artifact's current text (quoted, not paraphrased), the uncertainty and where it came from, two to four concrete interpretation options with the consequence of each, and a recommendation when the evidence supports one. Then stop and wait.
+
+Ask exactly one question at a time. Do not ask about a category merely because the graph contains it; ask only when evidence leaves uncertainty, contradiction or a missing human decision that could change product meaning.
 
 ## Recording discipline
 
