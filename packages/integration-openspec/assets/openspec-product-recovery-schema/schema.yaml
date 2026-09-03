@@ -2,8 +2,7 @@
 name: product-recovery
 version: 1
 description: >-
-  PDaC brownfield recovery hosted in OpenSpec. Evidence is processed in bounded,
-  resumable rounds and converges on a draft CHG-INITIAL Product Change.
+  PDaC brownfield recovery hosted in OpenSpec. Evidence is processed in bounded, resumable rounds and converges on a draft CHG-INITIAL Product Change.
 artifacts:
   - id: brief
     generates: recovery/brief.md

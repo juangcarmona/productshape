@@ -3,9 +3,9 @@
 ```yaml
 schema: product-definition-as-code/recovery-brief/v1alpha1
 roots: [.]
-include: ["**/*"]
+include: ['**/*']
 exclude: []
-forbidden: ["**/.env", "**/.env.*", "**/*.pem", "**/*.key", "**/secrets/**"]
+forbidden: ['**/.env', '**/.env.*', '**/*.pem', '**/*.key', '**/secrets/**']
 ignore: []
 languages: []
 tiers: []

@@ -262,8 +262,13 @@ function recordedRecoverySchemaFiles(
 ): Record<string, string> | undefined {
   const record = meta?.recoverySchema;
   if (!record) return undefined;
-  if (record.name !== OPENSPEC_PRODUCT_RECOVERY_SCHEMA_NAME || typeof record.requiresOpenspec !== 'string') {
-    throw new Error("'recoverySchema' must name the product-recovery schema and carry a string 'requiresOpenspec'");
+  if (
+    record.name !== OPENSPEC_PRODUCT_RECOVERY_SCHEMA_NAME ||
+    typeof record.requiresOpenspec !== 'string'
+  ) {
+    throw new Error(
+      "'recoverySchema' must name the product-recovery schema and carry a string 'requiresOpenspec'",
+    );
   }
   if (!record.files || typeof record.files !== 'object' || Array.isArray(record.files)) {
     throw new Error("'recoverySchema.files' must be a path-to-digest object");
@@ -836,11 +841,15 @@ export async function addOpenSpecIntegration(
       recoveryDigests[relative] = digest;
     } else {
       recoveryDigests[relative] = recorded;
-      changes.push(`Preserved hand-edited managed file ${relative}; restore or delete it, then run: prodshape integration update.`);
+      changes.push(
+        `Preserved hand-edited managed file ${relative}; restore or delete it, then run: prodshape integration update.`,
+      );
     }
   }
   if (recoveryCollisions.length > 0) {
-    throw new Error(`Refusing to install the OpenSpec product-recovery schema: unrecorded files exist (${recoveryCollisions.join(', ')}). The integration never overwrites user-authored files.`);
+    throw new Error(
+      `Refusing to install the OpenSpec product-recovery schema: unrecorded files exist (${recoveryCollisions.join(', ')}). The integration never overwrites user-authored files.`,
+    );
   }
   if (recoveryWrites.length > 0) {
     changes.push(

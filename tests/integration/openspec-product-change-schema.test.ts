@@ -31,6 +31,12 @@ const SCHEMA_FILES = [
   'openspec/schemas/product-change/templates/proposal.md',
 ];
 
+interface RecoverySchemaDocument {
+  name: string;
+  artifacts: { id: string }[];
+  apply: { requires: string[] };
+}
+
 async function scratchWorkspace(): Promise<string> {
   const dir = await mkdtemp(join(tmpdir(), 'prodshape-openspec-product-change-schema-'));
   await mkdir(join(dir, 'openspec'), { recursive: true });
@@ -40,14 +46,18 @@ async function scratchWorkspace(): Promise<string> {
 describe('openspec product schema assets', () => {
   it('bundles the independent product-recovery workload', async () => {
     const assets = await loadProductRecoverySchemaAssets();
-    expect(assets.map((asset) => `${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}/${asset.relative}`)).toEqual([
+    expect(
+      assets.map((asset) => `${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}/${asset.relative}`),
+    ).toEqual([
       `${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}/schema.yaml`,
       `${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}/templates/brief.md`,
       `${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}/templates/report.md`,
     ]);
-    const schema = parse(assets.find((asset) => asset.relative === 'schema.yaml')!.content) as any;
+    const schema = parse(
+      assets.find((asset) => asset.relative === 'schema.yaml')!.content,
+    ) as RecoverySchemaDocument;
     expect(schema.name).toBe('product-recovery');
-    expect(schema.artifacts.map((artifact: any) => artifact.id)).toEqual(['brief', 'recovery-outcome']);
+    expect(schema.artifacts.map((artifact) => artifact.id)).toEqual(['brief', 'recovery-outcome']);
     expect(schema.apply.requires).toEqual(['recovery-outcome']);
   });
 
@@ -56,7 +66,11 @@ describe('openspec product schema assets', () => {
     try {
       const added = await addOpenSpecIntegration(dir, { cliVersion: '1.11.0' });
       expect(added.written).toContain(`${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}/schema.yaml`);
-      expect((await checkOpenSpecIntegration(dir)).checks.find((c) => c.name === 'product recovery workflow')?.ok).toBe(true);
+      expect(
+        (await checkOpenSpecIntegration(dir)).checks.find(
+          (c) => c.name === 'product recovery workflow',
+        )?.ok,
+      ).toBe(true);
       const removed = await removeOpenSpecIntegration(dir);
       expect(removed.removed).toContain(`${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}/schema.yaml`);
     } finally {

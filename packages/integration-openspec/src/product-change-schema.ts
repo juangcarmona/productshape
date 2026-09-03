@@ -78,12 +78,16 @@ export async function loadProductChangeSchemaAssets(): Promise<ProductChangeSche
 
 /** Load the bundled recovery schema assets using the same deterministic asset contract. */
 export async function loadProductRecoverySchemaAssets(): Promise<ProductChangeSchemaAsset[]> {
-  const dir = fileURLToPath(new URL('../assets/openspec-product-recovery-schema/', import.meta.url));
+  const dir = fileURLToPath(
+    new URL('../assets/openspec-product-recovery-schema/', import.meta.url),
+  );
   const relatives = await collectFiles(dir, '');
   return Promise.all(
-    relatives.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)).map(async (relative) => ({
-      relative,
-      content: await readFile(join(dir, ...relative.split('/')), 'utf8'),
-    })),
+    relatives
+      .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+      .map(async (relative) => ({
+        relative,
+        content: await readFile(join(dir, ...relative.split('/')), 'utf8'),
+      })),
   );
 }

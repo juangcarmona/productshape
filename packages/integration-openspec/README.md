@@ -12,14 +12,7 @@ The integration merges PDaC authority context and citation rules into `openspec/
 
 The integration installs a project-local OpenSpec schema named `product-change` at `openspec/schemas/product-change/`. An OpenSpec change created with that schema hosts a PDaC Product Change: the normative semantic delta (`product-change/change.md` plus `product-change/proposed/**`) against the accepted model in `docs/product/model`, which stays the only source of product truth.
 
-For brownfield systems without an accepted baseline, the integration also installs the independent
-`product-recovery` schema at `openspec/schemas/product-recovery/`. Use `/opsx:new <name> --schema
-product-recovery`, confirm `recovery/brief.md`, and repeat `/opsx:continue` for bounded evidence
-rounds. Recovery state and the draft `CHG-INITIAL` remain inside the OpenSpec change container;
-they never write `.product/generated/recovery/` or `docs/product/changes/active/`. A completed
-recovery may produce a candidate baseline or an honest insufficient-evidence outcome. Only a
-human-approved candidate baseline can delegate to the existing Product Change apply rail, and
-archive remains separate.
+For brownfield systems without an accepted baseline, the integration also installs the independent `product-recovery` schema at `openspec/schemas/product-recovery/`. Use `/opsx:new <name> --schema product-recovery`, confirm `recovery/brief.md`, and repeat `/opsx:continue` for bounded evidence rounds. Recovery state and the draft `CHG-INITIAL` remain inside the OpenSpec change container; they never write `.product/generated/recovery/` or `docs/product/changes/active/`. A completed recovery may produce a candidate baseline or an honest insufficient-evidence outcome. Only a human-approved candidate baseline can delegate to the existing Product Change apply rail, and archive remains separate.
 
 The schema pin is a load-bearing, enforced invariant: the rail accepts only one folder-safe OpenSpec 1.11 change name and validates the complete OpenSpec 1.11 metadata shape in `.openspec.yaml`, not merely the presence of a schema string. It treats a change as a product change only when that valid metadata pins `schema: product-change`. A change pinned to another schema never lists, validates, applies or enters concurrency, however product-shaped its contents look. A product-shaped container with missing or malformed metadata stops listing and concurrency with a clear error instead of disappearing from the live-change set.
 
