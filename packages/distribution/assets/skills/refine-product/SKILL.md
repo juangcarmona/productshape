@@ -7,7 +7,7 @@ description: Refine an existing hosted OpenSpec product-change through a graph-g
 
 ## Purpose
 
-Raise the quality of a live hosted Product Change socratically: deterministic model inspection and impact polarity propose candidates, the human owns every answer and scope decision, and every accepted answer lands in the same OpenSpec change. The skill never edits the accepted model, approves, applies or archives, and never invents an answer.
+Raise the quality of a live hosted Product Change socratically: deterministic model inspection and impact polarity propose candidates, the human owns every answer and scope decision, and every accepted answer lands in the same OpenSpec change. The skill must never approve, apply or archive; it never edits the accepted model or invents an answer.
 
 ## When to use
 
@@ -41,7 +41,7 @@ If no change is identifiable, ask the user to select one or create one through n
 1. Read the existing OpenSpec change and reconstruct the current sitting from files alone. Run a proportional integrity pass: compare the intent with the whole accepted definition, widen through the graph, and show a small prioritised report containing each changed/proposed node, neighbouring candidate, relationship, impact polarity and mechanical reason for review.
 2. Classify each candidate as affected, checked and unaffected, or uncertain. Considering a category does not require creating an artifact. Explain checked-and-excluded neighbours and consciously out-of-scope gaps. The graph is assistance, never authority; it must not expand scope or modify an artifact automatically.
 3. Build the question queue from uncertainty, contradiction or a missing human decision and rank by product risk. A small clear change may produce no questions; do not split a coherent outcome merely because it is large or has many artifacts. Show the report and agree where to start.
-4. Interview, strictly one question at a time:
+4. Ask exactly one question at a time and interview strictly one question at a time:
    - Present the relevant artifact text, uncertainty and evidence on each side.
    - Offer two to four concrete interpretations with consequences and a recommendation when evidence supports one.
    - Record the answer verbatim. If the engineer is unsure, park the question; parked is an outcome, not a failure.

@@ -43,7 +43,7 @@
         ".claude/skills/recover-product/references/recovery-workflow.md": "sha256:adc465a0946b291041edadfa6193b4c2288177f5537f9e46621af8be239c6371",
         ".claude/skills/recover-product/SKILL.md": "sha256:a913713018c67223a91754b26ba5e5a13127aa43c66eef1a36ae2bade90ef6a8",
         ".claude/skills/refine-product/references/question-writing.md": "sha256:480b15f00bf3d74ea600f81180e73cc0d162710443410c69a4377a76a73aa645",
-        ".claude/skills/refine-product/SKILL.md": "sha256:65d09b0be117e0c660596a87c2d54a17255e44530d19fc1a55dc301700ab93ac"
+        ".claude/skills/refine-product/SKILL.md": "sha256:42be929e5e832318f0f748e04eaa19b26382caaed9c858f32cae633ea3cfad6e"
       }
     },
     "copilot": {
@@ -86,7 +86,7 @@
         ".github/skills/recover-product/references/recovery-workflow.md": "sha256:adc465a0946b291041edadfa6193b4c2288177f5537f9e46621af8be239c6371",
         ".github/skills/recover-product/SKILL.md": "sha256:a913713018c67223a91754b26ba5e5a13127aa43c66eef1a36ae2bade90ef6a8",
         ".github/skills/refine-product/references/question-writing.md": "sha256:480b15f00bf3d74ea600f81180e73cc0d162710443410c69a4377a76a73aa645",
-        ".github/skills/refine-product/SKILL.md": "sha256:65d09b0be117e0c660596a87c2d54a17255e44530d19fc1a55dc301700ab93ac"
+        ".github/skills/refine-product/SKILL.md": "sha256:42be929e5e832318f0f748e04eaa19b26382caaed9c858f32cae633ea3cfad6e"
       }
     }
   }
