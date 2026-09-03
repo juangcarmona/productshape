@@ -8,12 +8,15 @@ import { gitHead, gitRevisionExists, gitShowBytes } from './git.js';
 
 const exec = promisify(execFile);
 
+const setupHookTimeoutMs = 15_000;
+const cleanupHookTimeoutMs = 10_000;
+
 let repoDir: string;
 let plainDir: string;
 let head: string;
 
 async function git(cwd: string, ...args: string[]): Promise<string> {
-  const { stdout } = await exec('git', args, { cwd });
+  const { stdout } = await exec('git', args, { cwd, windowsHide: true });
   return stdout.trim();
 }
 
@@ -29,12 +32,12 @@ beforeEach(async () => {
 
   // A directory with no Git repository at all, to exercise "outside a Git repo".
   plainDir = await mkdtemp(join(tmpdir(), 'prodshape-not-git-'));
-});
+}, setupHookTimeoutMs);
 
 afterEach(async () => {
-  await rm(repoDir, { recursive: true, force: true });
-  await rm(plainDir, { recursive: true, force: true });
-});
+  await rm(repoDir, { recursive: true, force: true, maxRetries: 8, retryDelay: 100 });
+  await rm(plainDir, { recursive: true, force: true, maxRetries: 8, retryDelay: 100 });
+}, cleanupHookTimeoutMs);
 
 describe('gitRevisionExists', () => {
   it('is true for a revision that resolves to a commit', async () => {
