@@ -1,78 +1,85 @@
 ---
 name: refine-product
-description: Improve the accepted Product Definition through a question-driven interview; gather weak spots, ask the engineer one question at a time with evidence and options, and turn the answers into an ordinary Product Change. Use when a baseline exists and its quality needs raising.
+description: Refine an existing hosted OpenSpec product-change through a graph-guided, question-driven interview; persist evidence and answers in that same change without approving, applying or archiving it.
 ---
 
 # Refine Product
 
 ## Purpose
 
-Raise the quality of an accepted Product Definition socratically: the evidence proposes the questions, the human owns the answers, and every accepted answer lands as a proposed edit inside an ordinary Product Change. The skill never edits the model directly and never invents an answer.
+Raise the quality of a live hosted Product Change socratically: deterministic model inspection and impact polarity propose candidates, the human owns every answer and scope decision, and every accepted answer lands in the same OpenSpec change. The skill never edits the accepted model, approves, applies or archives, and never invents an answer.
 
 ## When to use
 
-- After an initial recovery baseline is accepted: low-confidence candidates, thin sections and deferred questions are waiting.
-- Periodically, when audit findings or drift markers suggest the definition no longer says what the team means.
+- A semantic request says “refine”, “review” or “challenge this product change”.
+- `/product:refine <change>` explicitly requests another pass on an existing OpenSpec change.
 
-Not for diagnosis alone (`audit-product-model` reports without interviewing), not for greenfield intent (`define-product`), and not for brownfield extraction (`recover-product`).
+If no change is identifiable, ask the user to select one or create one through normal OpenSpec workflow. Do not create `product-refinement`, a native ProductShape lifecycle, or a second apply rail.
 
 ## Required inputs
 
+- An existing OpenSpec change pinned to `schema: product-change`.
 - An accepted baseline that validates (`prodshape validate --format json`).
-- The question sources present in the repository: the low-confidence queue (PRODUCT111), audit findings when the engineer wants an audit first, deferred questions from the recovery session report when one exists, and `prodshape drift` output.
-- A scope agreement: which areas to refine now, and how many questions the engineer is up for in this sitting.
+- The existing change's `proposal.md`, `product-change/change.md`, proposed artifacts and any prior questions.
+- A scope agreement for this sitting; no fixed question count is imposed.
 
 ## Files to read
 
 - `references/question-writing.md`: what makes a refinement question worth a human's time, ranking heuristics, and the answer-recording discipline.
 - `.product/templates/<kind>.md`: the artifact templates every proposed edit starts from.
+- `product-change/templates/proposal.md` and `product-change/templates/change.md`: the hosted working-memory and rationale contracts.
 
 ## Deterministic commands
 
-- `prodshape validate --format json`: the low-confidence queue and structural warnings.
+- `prodshape validate --format json`: baseline diagnostics and structural warnings.
 - `prodshape inspect <ID>` and `prodshape impact <ID>`: current content and neighbours for the artifact under discussion.
 - `prodshape drift`: recorded divergences worth turning into questions.
 - `prodshape schema <kind>` and `prodshape template <kind>`: the exact shape of any proposed edit.
 
 ## Reasoning procedure
 
-1. Gather signals and build the question queue: one entry per uncertainty, each naming the artifact, the evidence, and why it matters. Rank by product risk (a wrong business rule outranks a thin glossary entry). Show the ranked queue and agree where to start.
-2. Interview, strictly one question at a time:
-   - Present the artifact text, the uncertainty, and the evidence on each side.
-   - Offer concrete interpretation options with their consequences, and a recommendation when the evidence supports one.
+1. Read the existing OpenSpec change and reconstruct the current sitting from files alone. Run a proportional integrity pass: compare the intent with the whole accepted definition, widen through the graph, and show a small prioritised report containing each changed/proposed node, neighbouring candidate, relationship, impact polarity and mechanical reason for review.
+2. Classify each candidate as affected, checked and unaffected, or uncertain. Considering a category does not require creating an artifact. Explain checked-and-excluded neighbours and consciously out-of-scope gaps. The graph is assistance, never authority; it must not expand scope or modify an artifact automatically.
+3. Build the question queue from uncertainty, contradiction or a missing human decision and rank by product risk. A small clear change may produce no questions; do not split a coherent outcome merely because it is large or has many artifacts. Show the report and agree where to start.
+4. Interview, strictly one question at a time:
+   - Present the relevant artifact text, uncertainty and evidence on each side.
+   - Offer two to four concrete interpretations with consequences and a recommendation when evidence supports one.
    - Record the answer verbatim. If the engineer is unsure, park the question; parked is an outcome, not a failure.
-   - Never ask what the evidence already answers, and never bundle questions.
-3. Convert answers into a Product Change under `docs/product/changes/active/<chg-id>/`: templates copied, one proposed artifact per touched ID, `operations` complete, and a change document whose Rationale traces each edit to its question and verbatim answer, with parked questions under Open Questions. Related answers batch into one change; unrelated topics get separate changes.
-4. Validate the overlay (`prodshape change validate <CHG-ID>`) after each batch of edits and fix what it reports before continuing the interview.
-5. Hand over: the change or changes, the questions with verbatim answers, the parked questions, and the explicit statement that nothing is approved or applied. Approval, apply and merge follow the ordinary Product Change lifecycle.
+   - Never ask what the evidence already answers and never bundle questions.
+5. After each material widening or when new graph nodes enter the delta, repeat the pass. Editorial corrections do not require a whole new pass. An explicit `/product:refine` always requests a pass.
+6. Persist the queue, evidence, checked-and-excluded candidates, recommendations, parked questions and verbatim answers in `proposal.md`. Distil decisions that explain the delta into `product-change/change.md` under Rationale; leave only genuinely unresolved decisions under Open Questions and conscious exclusions under Out of Scope.
+7. Validate the overlay (`node openspec/schemas/product-change/scripts/product-validate.mjs --change <change>`) after each batch of edits and fix what it reports before continuing.
+8. Before approval, repeat the pass and write a narrative readiness conclusion: no material decisions remain; named decisions are required; or named possible gaps remain and may be refined or consciously excluded. Never turn this conclusion into a protocol state.
+9. Hand over the same change with the questions, verbatim answers, parked items and exclusions. Explicitly state that nothing is approved, applied or archived. Approval, apply and archive remain separate OpenSpec actions.
 
 ## Allowed modifications
 
-- `docs/product/changes/active/<chg-id>/` for the changes this interview produces.
-- Nothing else; the model directory stays untouched.
+- The existing OpenSpec change's `proposal.md`, `product-change/change.md` and proposed artifacts.
+- Nothing under `docs/product/model/`, `docs/product/changes/active/` or `docs/product/changes/completed/`.
 
 ## Forbidden actions
 
-- Editing `docs/product/model`.
-- Writing an answer the engineer did not give, or raising confidence without new evidence or a human decision.
-- Treating silence or hesitation as a decision; ask again, or park the question.
+- Editing `docs/product/model` or creating a native ProductShape change under `docs/product/changes/active`.
+- Writing an answer the engineer did not give, or raising confidence without evidence or a human decision.
+- Treating silence or hesitation as a decision; ask once more plainly, or park it.
 - Bundling several questions into one message, or interrogating past the agreed sitting.
-- Applying, committing, merging or approving anything.
+- Expanding scope or modifying a neighbour because the graph surfaced it.
+- Applying, committing, merging, archiving or approving anything.
 
 ## Human approval points
 
-- The ranked queue and where to start.
+- The ranked report, sitting scope and where to start.
 - Every answer; the answers are the interview.
-- The resulting change document, before handover.
+- The resulting same-change handover, before approval.
 
 ## Expected outputs
 
-- One or more draft Product Changes whose rationale traces each edit to a recorded question and its verbatim answer.
-- Parked questions recorded under the change's Open Questions with why they parked.
-- A validation-clean overlay.
+- The same draft OpenSpec Product Change with its rationale tracing each edit to a recorded question and verbatim answer.
+- A persisted graph report, checked-and-excluded neighbours, parked questions and consciously excluded gaps.
+- A narrative readiness conclusion and explicit statement that nothing is approved, applied or archived.
 
 ## Completion checks
 
 - The agreed sitting is exhausted or the queue is empty.
 - Every touched artifact's edit maps to an answer; no orphan edits.
-- `prodshape validate` is clean over the overlay; the model is untouched; nothing was applied.
+- `prodshape validate` is clean over the overlay; the model is untouched; nothing was approved, applied or archived.

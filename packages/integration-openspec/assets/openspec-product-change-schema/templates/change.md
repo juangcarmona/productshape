@@ -32,13 +32,15 @@ What the Product Definition says once this change is accepted. Describe the dest
 
 Why this outcome, and why now. Record the reasoning a future reader would otherwise have to reconstruct.
 
+Distil each accepted decision that explains the delta here, next to the relevant edit. Preserve the human's answer verbatim; do not replace it with an interpretation.
+
 ## Affected Product Areas
 
 Which parts of the product this change touches, in product language rather than file paths.
 
 ## Open Questions
 
-Unresolved questions that need a decision before the change can be authorised. If answering a question could produce materially different product behaviour, scope, policy or acceptance, ask the product owner and stop: do not complete this delta or select an answer on the user's behalf. Write `None.` only after every product-semantic question in both the intent and this manifest has been resolved.
+Only genuinely unresolved decisions remain here. Include parked questions and why they are parked. If answering a question could produce materially different product behaviour, ask exactly one question at a time and stop: do not complete this delta or select an answer on the user's behalf. Write `None.` only after every product-semantic question in both the intent and this manifest has been resolved.
 
 ## Product Acceptance
 
@@ -46,4 +48,4 @@ How a reviewer recognises that the accepted definition expresses the intended ou
 
 ## Out of Scope
 
-What this change explicitly does not touch, including delivery, technical design and implementation.
+What this change explicitly does not touch, including consciously excluded gaps, delivery, technical design and implementation. A graph neighbour checked and found unaffected belongs here as an explained exclusion, not as a silent omission.
