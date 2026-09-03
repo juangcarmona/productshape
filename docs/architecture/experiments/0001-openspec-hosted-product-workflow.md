@@ -11,13 +11,13 @@ The shipped shape:
 ```text
 requested product intent
         |
-/opsx:new <name> --schema product          OpenSpec change pinned to the managed product schema
+/opsx:new <name> --schema product-change          OpenSpec change pinned to the managed product schema
         |
 /opsx:continue or /opsx:ff                 proposal.md, then product/change.md + product/proposed/**
         |
 /opsx:apply <name>                         openspec instructions apply surfaces the schema's apply instruction
         |
-node openspec/schemas/product/scripts/product-apply.mjs --change <name>
+node openspec/schemas/product-change/scripts/product-apply.mjs --change <name>
         |
 applyOpenSpecProductChange                 @prodshape/integration-openspec over @prodshape/core
         |
@@ -30,7 +30,7 @@ fresh model validation                     apply ends here and never archives
 deriveDeliveryContext                      fresh read, fresh graph, impact: the future DELIVERY handoff
 ```
 
-Evidence: `tests/integration/openspec-product-workflow.test.ts` (deterministic rails end to end on a ten-kind greenfield fixture, including the fail-closed refusals and the schema-pin invariant), `tests/integration/openspec-product-cli.test.ts` (the OpenSpec routing proof against the real CLI), `tests/integration/openspec-product-packed.test.ts` (the production bridge on a packed consumer, no resolution override), `tests/integration/openspec-product-schema.test.ts` (the ownership-proven managed lifecycle), and this repository itself, which installs the schema and passes doctor with the product workflow reported available.
+Evidence: `tests/integration/openspec-product-workflow.test.ts` (deterministic rails end to end on a ten-kind greenfield fixture, including the fail-closed refusals and the schema-pin invariant), `tests/integration/openspec-product-cli.test.ts` (the OpenSpec routing proof against the real CLI), `tests/integration/openspec-product-packed.test.ts` (the production bridge on a packed consumer, no resolution override), `tests/integration/openspec-product-change-schema.test.ts` (the ownership-proven managed lifecycle), and this repository itself, which installs the schema and passes doctor with the product workflow reported available.
 
 ## Upstream constraints that shaped the design (OpenSpec 1.11.0)
 
@@ -58,13 +58,13 @@ Two independent reviews of the implementation heads reproduced the blockers belo
 
 - Hosted apply was not fully fail-closed. The pre-write blocking set omitted the baseline's own load diagnostics, and per-document defects (parse failures, schema violations, body-section defects) of artifacts a change never touches are load-time diagnostics graph-level overlay revalidation never re-emits, so a valid delta over an invalid baseline applied and only the post-write validation reported PRODUCT002 and PRODUCT009, violating FR-CHANGE-002's resulting-model obligation. Apply now blocks on configuration, baseline, change, operation, concurrency and overlay diagnostics before any mutation, and the refusal leaves the model and the change container byte-identical.
 - The managed schema lifecycle could destroy user content: add overwrote a pre-existing user schema, remove deleted hand-edited managed files, and remove with absent metadata deleted a coincidentally named user schema. Ownership is now recorded and proven per ADR 0008: the metadata records each managed file's installed content digest, add fails closed on collisions before writing anything, update replaces only proven-managed content, remove deletes only proven files and preserves and reports hand-edited ones, and with no record nothing under `openspec/schemas/` is touched.
-- The rail did not enforce the schema boundary: any change carrying `product/change.md` was treated as a hosted Product Change, so a `spec-driven` change applied through the product rail. The `.openspec.yaml` pin is now load-bearing: only `schema: product` enters listing, validation, apply and concurrency, and missing, malformed or wrong pins fail closed with the model and container untouched.
+- The rail did not enforce the schema boundary: any change carrying `product-change/change.md` was treated as a hosted Product Change, so a `spec-driven` change applied through the product rail. The `.openspec.yaml` pin is now load-bearing: only `schema: product-change` enters listing, validation, apply and concurrency, and missing, malformed or wrong pins fail closed with the model and container untouched.
 - The first ownership fix still trusted schema-level metadata too broadly. A hostile recorded path could escape the product schema and delete an arbitrary repository file, a fresh install adopted a byte-identical user file, and obsolete managed assets had no safe lifecycle. Metadata paths and digests are now validated, ownership is proven per exact file, add never adopts a pre-existing file, and update or remove touches an obsolete asset only while its recorded digest still matches.
 - Change-container discovery still accepted traversal names and only inspected the `schema` field, so structurally invalid OpenSpec metadata could enter the rail or silently disappear from cross-container concurrency. Names now follow OpenSpec 1.11's kebab-case constraint before path resolution, the complete 1.11 metadata shape is checked locally, and a malformed product-shaped container makes listing, validation, apply and concurrency fail closed.
 
 The pass also replaced the too-strong "bridge proven end to end" claim with the two-suite evidence above, kept the hosted PRODUCT028 runtime mechanism limited to the required state while making the shipped guidance explicit that ProductShape's accepted policy requires human product approval, and added `@prodshape/cli` to the changeset because the CLI ships the bundled integration and its staged schema assets.
 
-A fresh packed-consumer usability run exposed one further agentic-boundary defect: an intentionally underspecified minimum-price request admitted several materially different observable outcomes, but the agent silently selected one, wrote `Open Questions: None.` and completed the delta. The schema now requires an explicit ambiguity pass during intent, user interaction and a stop before delta whenever product meaning remains unresolved; delta and approval instructions repeat that boundary. This is an agent-and-human obligation rather than a deterministic validation claim. The same run also showed an agent adding citations to `product/change.md`; the schema now states that citations bind the consuming `proposal.md`, while the change manifest and proposed canonical artifacts remain citation-free.
+A fresh packed-consumer usability run exposed one further agentic-boundary defect: an intentionally underspecified minimum-price request admitted several materially different observable outcomes, but the agent silently selected one, wrote `Open Questions: None.` and completed the delta. The schema now requires an explicit ambiguity pass during intent, user interaction and a stop before delta whenever product meaning remains unresolved; delta and approval instructions repeat that boundary. This is an agent-and-human obligation rather than a deterministic validation claim. The same run also showed an agent adding citations to `product-change/change.md`; the schema now states that citations bind the consuming `proposal.md`, while the change manifest and proposed canonical artifacts remain citation-free.
 
 ## Findings made along the way
 

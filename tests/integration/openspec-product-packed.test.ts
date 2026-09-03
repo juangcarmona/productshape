@@ -109,7 +109,7 @@ describe.skipIf(!canRun)(
                 '@prodshape',
                 'integration-openspec',
                 'assets',
-                'openspec-product-schema',
+                'openspec-product-change-schema',
                 'schema.yaml',
               ),
             ),
@@ -127,14 +127,14 @@ describe.skipIf(!canRun)(
             root,
           );
           expect(added.status, added.stderr).toBe(0);
-          expect(existsSync(join(root, 'openspec', 'schemas', 'product', 'schema.yaml'))).toBe(
-            true,
-          );
+          expect(
+            existsSync(join(root, 'openspec', 'schemas', 'product-change', 'schema.yaml')),
+          ).toBe(true);
 
           // 4. The pinned OpenSpec CLI owns the container.
           const created = run(
             'openspec',
-            ['new', 'change', 'spike-price', '--schema', 'product'],
+            ['new', 'change', 'spike-price', '--schema', 'product-change'],
             root,
             isWindows,
           );
@@ -144,7 +144,7 @@ describe.skipIf(!canRun)(
           const bridge = (script: string, ...args: string[]) =>
             run(
               process.execPath,
-              [join(root, 'openspec', 'schemas', 'product', 'scripts', script), ...args],
+              [join(root, 'openspec', 'schemas', 'product-change', 'scripts', script), ...args],
               root,
             );
 
@@ -186,7 +186,7 @@ describe.skipIf(!canRun)(
                 'changes',
                 'archive',
                 archived.find((entry) => entry.endsWith('spike-price'))!,
-                'product',
+                'product-change',
                 'change.md',
               ),
               'utf8',

@@ -77,7 +77,7 @@ function runBridge(
 ): { status: number | null; stdout: string; stderr: string } {
   const result = spawnSync(
     process.execPath,
-    [join(root, 'openspec', 'schemas', 'product', 'scripts', script), ...args],
+    [join(root, 'openspec', 'schemas', 'product-change', 'scripts', script), ...args],
     { cwd: root, encoding: 'utf8', env: { ...process.env, ...bridgeEnv } },
   );
   return { status: result.status, stdout: result.stdout ?? '', stderr: result.stderr ?? '' };
@@ -101,9 +101,16 @@ describe.skipIf(!canRun)(
         const rows = Array.isArray(parsedSchemas)
           ? parsedSchemas
           : ((parsedSchemas as { schemas?: unknown[] }).schemas ?? []);
-        expect(JSON.stringify(rows)).toContain('"product"');
+        expect(JSON.stringify(rows)).toContain('"product-change"');
 
-        const created = runOpenspec(root, 'new', 'change', 'spike-price', '--schema', 'product');
+        const created = runOpenspec(
+          root,
+          'new',
+          'change',
+          'spike-price',
+          '--schema',
+          'product-change',
+        );
         expect(created.status).toBe(0);
         const metadata = parse(
           await readFile(
@@ -111,7 +118,7 @@ describe.skipIf(!canRun)(
             'utf8',
           ),
         ) as { schema: string; skip_specs?: boolean };
-        expect(metadata.schema).toBe('product');
+        expect(metadata.schema).toBe('product-change');
         // A schema with no specs artifact records skip_specs so openspec validate stays clean.
         expect(metadata.skip_specs).toBe(true);
 
@@ -126,7 +133,7 @@ describe.skipIf(!canRun)(
       const { root, base } = await createOpenSpecRepo();
       try {
         expect(
-          runOpenspec(root, 'new', 'change', 'spike-price', '--schema', 'product').status,
+          runOpenspec(root, 'new', 'change', 'spike-price', '--schema', 'product-change').status,
         ).toBe(0);
 
         // Before any artifact exists: apply is blocked on the delta.
@@ -169,7 +176,7 @@ describe.skipIf(!canRun)(
         expect(delta.status).toBe(0);
         const deltaPayload = JSON.parse(delta.stdout) as Record<string, unknown>;
         const deltaText = JSON.stringify(deltaPayload);
-        expect(deltaText).toContain('product/change.md');
+        expect(deltaText).toContain('product-change/change.md');
         expect(deltaText).toContain('operations.modify');
 
         // Author the hosted delta (the agent's work, pre-authored here), then apply is ready and
@@ -188,7 +195,7 @@ describe.skipIf(!canRun)(
         expect(readyText).not.toContain('"blocked"');
         expect(readyText).toContain('product-apply.mjs');
         expect(readyText).toContain('Do not archive this change as part of apply');
-        expect(readyText).toContain('product/change.md');
+        expect(readyText).toContain('product-change/change.md');
       } finally {
         await rm(root, { recursive: true, force: true });
       }
@@ -198,7 +205,7 @@ describe.skipIf(!canRun)(
       const { root, base } = await createOpenSpecRepo();
       try {
         expect(
-          runOpenspec(root, 'new', 'change', 'spike-price', '--schema', 'product').status,
+          runOpenspec(root, 'new', 'change', 'spike-price', '--schema', 'product-change').status,
         ).toBe(0);
         await writeHostedChange(root, priceFloorSpec(base, { name: 'spike-price' }));
 
@@ -230,7 +237,7 @@ describe.skipIf(!canRun)(
         expect(afterApply.size).toBe(before.size + 2);
         expect(
           await readFile(
-            join(root, 'openspec', 'changes', 'spike-price', 'product', 'change.md'),
+            join(root, 'openspec', 'changes', 'spike-price', 'product-change', 'change.md'),
             'utf8',
           ),
         ).toContain('status: applied');

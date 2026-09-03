@@ -1,8 +1,8 @@
 /**
- * The OpenSpec `product` schema shipped by this integration.
+ * The OpenSpec `product-change` schema shipped by this integration.
  *
  * The schema is a set of static assets (schema.yaml, templates, bridge scripts) bundled with the
- * package and installed into a consumer repository at `openspec/schemas/product/`. OpenSpec reads
+ * package and installed into a consumer repository at `openspec/schemas/product-change/`. OpenSpec reads
  * project-local schemas from that directory natively; installing files there uses the framework's
  * official extension surface, exactly as merging guidance into `openspec/config.yaml` does.
  *
@@ -14,10 +14,10 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 
 /** The OpenSpec schema name (the directory key OpenSpec resolves). */
-export const OPENSPEC_PRODUCT_SCHEMA_NAME = 'product';
+export const OPENSPEC_PRODUCT_CHANGE_SCHEMA_NAME = 'product-change';
 
 /** The repository-relative directory the product schema is installed into. */
-export const OPENSPEC_PRODUCT_SCHEMA_RELATIVE = 'openspec/schemas/product';
+export const OPENSPEC_PRODUCT_CHANGE_SCHEMA_RELATIVE = 'openspec/schemas/product-change';
 
 /**
  * The minimum OpenSpec CLI version the product workflow needs. Project-local schemas are far
@@ -28,17 +28,17 @@ export const OPENSPEC_PRODUCT_SCHEMA_RELATIVE = 'openspec/schemas/product';
  * files are inert data: the citation lane keeps working and the product workflow is reported
  * unavailable, never broken.
  */
-export const PRODUCT_SCHEMA_MIN_OPENSPEC = '1.7.0';
+export const PRODUCT_CHANGE_SCHEMA_MIN_OPENSPEC = '1.7.0';
 
 /** One bundled product-schema file: its path relative to the installed schema directory. */
-export interface ProductSchemaAsset {
+export interface ProductChangeSchemaAsset {
   relative: string;
   content: string;
 }
 
 /** The bundled asset directory, resolved from this module (both src/ and dist/ sit one level below the package root). */
 function assetsDir(): string {
-  return fileURLToPath(new URL('../assets/openspec-product-schema/', import.meta.url));
+  return fileURLToPath(new URL('../assets/openspec-product-change-schema/', import.meta.url));
 }
 
 async function collectFiles(dir: string, prefix: string): Promise<string[]> {
@@ -59,10 +59,10 @@ async function collectFiles(dir: string, prefix: string): Promise<string[]> {
  * Load the bundled product-schema assets, sorted by relative path so installation, metadata and
  * comparison all see one deterministic order.
  */
-export async function loadProductSchemaAssets(): Promise<ProductSchemaAsset[]> {
+export async function loadProductChangeSchemaAssets(): Promise<ProductChangeSchemaAsset[]> {
   const dir = assetsDir();
   const relatives = await collectFiles(dir, '');
-  const assets: ProductSchemaAsset[] = [];
+  const assets: ProductChangeSchemaAsset[] = [];
   for (const relative of relatives.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))) {
     assets.push({
       relative,

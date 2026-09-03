@@ -7,44 +7,44 @@ import { contentDigest } from '@prodshape/core';
 import {
   addOpenSpecIntegration,
   checkOpenSpecIntegration,
-  loadProductSchemaAssets,
-  OPENSPEC_PRODUCT_SCHEMA_RELATIVE,
-  PRODUCT_SCHEMA_MIN_OPENSPEC,
+  loadProductChangeSchemaAssets,
+  OPENSPEC_PRODUCT_CHANGE_SCHEMA_RELATIVE,
+  PRODUCT_CHANGE_SCHEMA_MIN_OPENSPEC,
   removeOpenSpecIntegration,
   updateOpenSpecIntegration,
 } from '@prodshape/integration-openspec';
 
 /**
- * The OpenSpec product schema ships as managed assets installed into openspec/schemas/product,
+ * The OpenSpec product schema ships as managed assets installed into openspec/schemas/product-change,
  * the framework's official project-local schema surface. These tests exercise the managed
  * lifecycle (install, idempotence, dry run, tamper repair, capability-specific availability,
  * removal) without requiring the OpenSpec CLI.
  */
 
 const SCHEMA_FILES = [
-  'openspec/schemas/product/schema.yaml',
-  'openspec/schemas/product/scripts/product-apply.mjs',
-  'openspec/schemas/product/scripts/product-validate.mjs',
-  'openspec/schemas/product/templates/change.md',
-  'openspec/schemas/product/templates/proposal.md',
+  'openspec/schemas/product-change/schema.yaml',
+  'openspec/schemas/product-change/scripts/product-apply.mjs',
+  'openspec/schemas/product-change/scripts/product-validate.mjs',
+  'openspec/schemas/product-change/templates/change.md',
+  'openspec/schemas/product-change/templates/proposal.md',
 ];
 
 async function scratchWorkspace(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'prodshape-openspec-product-schema-'));
+  const dir = await mkdtemp(join(tmpdir(), 'prodshape-openspec-product-change-schema-'));
   await mkdir(join(dir, 'openspec'), { recursive: true });
   return dir;
 }
 
 describe('openspec product schema assets', () => {
   it('bundles exactly the managed asset set', async () => {
-    const assets = await loadProductSchemaAssets();
-    expect(assets.map((asset) => `${OPENSPEC_PRODUCT_SCHEMA_RELATIVE}/${asset.relative}`)).toEqual(
-      SCHEMA_FILES,
-    );
+    const assets = await loadProductChangeSchemaAssets();
+    expect(
+      assets.map((asset) => `${OPENSPEC_PRODUCT_CHANGE_SCHEMA_RELATIVE}/${asset.relative}`),
+    ).toEqual(SCHEMA_FILES);
   });
 
   it('ships a schema.yaml with the intent -> delta DAG and an apply phase requiring the delta', async () => {
-    const assets = await loadProductSchemaAssets();
+    const assets = await loadProductChangeSchemaAssets();
     const schemaYaml = assets.find((asset) => asset.relative === 'schema.yaml');
     expect(schemaYaml).toBeDefined();
     const schema = parse(schemaYaml!.content) as {
@@ -53,7 +53,7 @@ describe('openspec product schema assets', () => {
       artifacts: { id: string; generates: string; template: string; requires?: string[] }[];
       apply: { requires: string[]; instruction: string };
     };
-    expect(schema.name).toBe('product');
+    expect(schema.name).toBe('product-change');
     expect(schema.version).toBe(1);
     expect(schema.artifacts.map((artifact) => artifact.id)).toEqual(['intent', 'delta']);
     const ids = new Set(schema.artifacts.map((artifact) => artifact.id));
@@ -64,7 +64,7 @@ describe('openspec product schema assets', () => {
     }
     const delta = schema.artifacts.find((artifact) => artifact.id === 'delta')!;
     expect(delta.requires).toEqual(['intent']);
-    expect(delta.generates).toBe('product/**/*.md');
+    expect(delta.generates).toBe('product-change/**/*.md');
     // Apply is the schema's apply phase, never a third artifact.
     expect(schema.apply.requires).toEqual(['delta']);
     expect(schema.apply.instruction).toContain('product-apply.mjs');
@@ -78,7 +78,7 @@ describe('openspec product schema assets', () => {
   });
 
   it('never points the delta at specs/, so OpenSpec records skip_specs for product changes', async () => {
-    const assets = await loadProductSchemaAssets();
+    const assets = await loadProductChangeSchemaAssets();
     const schemaYaml = assets.find((asset) => asset.relative === 'schema.yaml')!;
     const schema = parse(schemaYaml.content) as { artifacts: { generates: string }[] };
     for (const artifact of schema.artifacts) {
@@ -87,7 +87,7 @@ describe('openspec product schema assets', () => {
   });
 
   it('keeps citations at the intent boundary and keeps the canonical delta citation-free', async () => {
-    const assets = await loadProductSchemaAssets();
+    const assets = await loadProductChangeSchemaAssets();
     const proposal = assets.find((asset) => asset.relative === 'templates/proposal.md')!.content;
     const change = assets.find((asset) => asset.relative === 'templates/change.md')!.content;
     const schema = assets.find((asset) => asset.relative === 'schema.yaml')!.content;
@@ -98,13 +98,13 @@ describe('openspec product schema assets', () => {
     expect(change).not.toContain('pdac:cite');
     const compactSchema = schema.replace(/\s+/g, ' ');
     expect(compactSchema).toContain(
-      'product/change.md is a change manifest, not a consumer document',
+      'product-change/change.md is a change manifest, not a consumer document',
     );
     expect(compactSchema).toContain('Never add PDaC citations or a pdac-scope declaration');
   });
 
   it('stops for human clarification before an ambiguous intent becomes a delta or approval', async () => {
-    const assets = await loadProductSchemaAssets();
+    const assets = await loadProductChangeSchemaAssets();
     const schema = parse(assets.find((asset) => asset.relative === 'schema.yaml')!.content) as {
       artifacts: { id: string; instruction: string }[];
       apply: { instruction: string };
@@ -138,11 +138,11 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
         await expect(readFile(join(dir, ...relative.split('/')), 'utf8')).resolves.toBeTruthy();
       }
       expect(result.changes).toContain(
-        'Installed the OpenSpec product schema at openspec/schemas/product.',
+        'Installed the OpenSpec product schema at openspec/schemas/product-change.',
       );
       // The record carries the ownership proof: each managed file with its installed digest.
-      expect(result.meta.productSchema?.name).toBe('product');
-      expect(result.meta.productSchema?.requiresOpenspec).toBe(PRODUCT_SCHEMA_MIN_OPENSPEC);
+      expect(result.meta.productSchema?.name).toBe('product-change');
+      expect(result.meta.productSchema?.requiresOpenspec).toBe(PRODUCT_CHANGE_SCHEMA_MIN_OPENSPEC);
       expect(Object.keys(result.meta.productSchema?.files ?? {}).sort()).toEqual(SCHEMA_FILES);
       for (const [relative, digest] of Object.entries(result.meta.productSchema?.files ?? {})) {
         expect(digest).toMatch(/^sha256:[0-9a-f]{64}$/);
@@ -150,6 +150,54 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
           contentDigest(await readFile(join(dir, ...relative.split('/')), 'utf8')),
         );
       }
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('migrates an owned legacy product schema and preserves a diverged legacy file', async () => {
+    const dir = await scratchWorkspace();
+    try {
+      await addOpenSpecIntegration(dir, { cliVersion: '1.11.0' });
+      const metaPath = join(dir, '.product', 'integrations', 'openspec.json');
+      const meta = JSON.parse(await readFile(metaPath, 'utf8')) as {
+        productSchema: { name: string; files: Record<string, string> };
+      };
+      const legacyFiles: Record<string, string> = {};
+      for (const relative of SCHEMA_FILES) {
+        const current = join(dir, ...relative.split('/'));
+        const legacyRelative = relative.replace(
+          'openspec/schemas/product-change',
+          'openspec/schemas/product',
+        );
+        const legacy = join(dir, ...legacyRelative.split('/'));
+        await mkdir(join(legacy, '..'), { recursive: true });
+        await writeFile(legacy, await readFile(current), 'utf8');
+        legacyFiles[legacyRelative] = meta.productSchema.files[relative]!;
+      }
+      await rm(join(dir, 'openspec', 'schemas', 'product-change'), {
+        recursive: true,
+        force: true,
+      });
+      meta.productSchema.name = 'product';
+      meta.productSchema.files = legacyFiles;
+      await writeFile(metaPath, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
+
+      const diverged = join(dir, 'openspec', 'schemas', 'product', 'schema.yaml');
+      await writeFile(diverged, 'name: product\n# user edit\n', 'utf8');
+      const result = await updateOpenSpecIntegration(dir);
+
+      expect(result.written).toContain('openspec/schemas/product-change/schema.yaml');
+      expect(
+        await readFile(join(dir, 'openspec', 'schemas', 'product-change', 'schema.yaml'), 'utf8'),
+      ).toContain('name: product-change');
+      expect(await readFile(diverged, 'utf8')).toContain('# user edit');
+      expect(result.changes).toContain(
+        'Preserved hand-edited managed file openspec/schemas/product/schema.yaml; restore or delete it, then run: prodshape integration update.',
+      );
+      await expect(
+        stat(join(dir, 'openspec', 'schemas', 'product', 'templates', 'change.md')),
+      ).rejects.toThrow();
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
@@ -178,7 +226,7 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
     try {
       const result = await addOpenSpecIntegration(dir, { cliVersion: '1.11.0', dryRun: true });
       expect(result.changes).toContain(
-        'Installed the OpenSpec product schema at openspec/schemas/product.',
+        'Installed the OpenSpec product schema at openspec/schemas/product-change.',
       );
       expect(result.written).toEqual([]);
       await expect(stat(join(dir, 'openspec', 'schemas'))).rejects.toThrow();
@@ -197,7 +245,7 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
       expect(
         result.changes.some((change) =>
           change.startsWith(
-            `Product workflow unavailable until OpenSpec >= ${PRODUCT_SCHEMA_MIN_OPENSPEC}`,
+            `Product workflow unavailable until OpenSpec >= ${PRODUCT_CHANGE_SCHEMA_MIN_OPENSPEC}`,
           ),
         ),
       ).toBe(true);
@@ -212,7 +260,7 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
       await addOpenSpecIntegration(dir, { cliVersion: '1.11.0' });
       // Simulate a managed file from an OLDER integration version: different bytes on disk, and a
       // metadata record proving this integration wrote exactly those bytes.
-      const target = join(dir, 'openspec', 'schemas', 'product', 'schema.yaml');
+      const target = join(dir, 'openspec', 'schemas', 'product-change', 'schema.yaml');
       const olderManaged =
         'name: product\nversion: 1\ndescription: older managed revision\nartifacts: []\n';
       await writeFile(target, olderManaged, 'utf8');
@@ -220,12 +268,12 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
       const meta = JSON.parse(await readFile(metaPath, 'utf8')) as {
         productSchema: { files: Record<string, string> };
       };
-      meta.productSchema.files['openspec/schemas/product/schema.yaml'] =
+      meta.productSchema.files['openspec/schemas/product-change/schema.yaml'] =
         contentDigest(olderManaged);
       await writeFile(metaPath, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
 
       const result = await updateOpenSpecIntegration(dir);
-      expect(result.written).toContain('openspec/schemas/product/schema.yaml');
+      expect(result.written).toContain('openspec/schemas/product-change/schema.yaml');
       const restored = await readFile(target, 'utf8');
       expect(restored).toContain('name: product');
       expect(restored).not.toContain('older managed revision');
@@ -238,15 +286,15 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
     const dir = await scratchWorkspace();
     try {
       await addOpenSpecIntegration(dir, { cliVersion: '1.11.0' });
-      const target = join(dir, 'openspec', 'schemas', 'product', 'schema.yaml');
+      const target = join(dir, 'openspec', 'schemas', 'product-change', 'schema.yaml');
       const edited = 'name: tampered by hand\n';
       await writeFile(target, edited, 'utf8');
       const result = await updateOpenSpecIntegration(dir);
-      expect(result.written).not.toContain('openspec/schemas/product/schema.yaml');
+      expect(result.written).not.toContain('openspec/schemas/product-change/schema.yaml');
       expect(
         result.changes.some((change) =>
           change.startsWith(
-            'Preserved hand-edited managed file openspec/schemas/product/schema.yaml',
+            'Preserved hand-edited managed file openspec/schemas/product-change/schema.yaml',
           ),
         ),
       ).toBe(true);
@@ -260,7 +308,7 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
     const dir = await scratchWorkspace();
     try {
       await addOpenSpecIntegration(dir, { cliVersion: '1.11.0' });
-      const obsoleteRelative = 'openspec/schemas/product/templates/retired.md';
+      const obsoleteRelative = 'openspec/schemas/product-change/templates/retired.md';
       const obsolete = join(dir, ...obsoleteRelative.split('/'));
       const obsoleteContent = '# retired managed template\n';
       await writeFile(obsolete, obsoleteContent, 'utf8');
@@ -288,8 +336,8 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
     const dir = await scratchWorkspace();
     try {
       const userContent = 'name: product\ndescription: USER AUTHORED\nartifacts: []\n';
-      const target = join(dir, 'openspec', 'schemas', 'product', 'schema.yaml');
-      await mkdir(join(dir, 'openspec', 'schemas', 'product'), { recursive: true });
+      const target = join(dir, 'openspec', 'schemas', 'product-change', 'schema.yaml');
+      await mkdir(join(dir, 'openspec', 'schemas', 'product-change'), { recursive: true });
       await writeFile(target, userContent, 'utf8');
       await expect(addOpenSpecIntegration(dir, { cliVersion: '1.11.0' })).rejects.toThrow(
         'never overwrites user-authored files',
@@ -310,11 +358,11 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
   it('add does not claim a byte-identical pre-existing user schema without ownership metadata', async () => {
     const dir = await scratchWorkspace();
     try {
-      const schemaAsset = (await loadProductSchemaAssets()).find(
+      const schemaAsset = (await loadProductChangeSchemaAssets()).find(
         (asset) => asset.relative === 'schema.yaml',
       )!;
-      const target = join(dir, 'openspec', 'schemas', 'product', 'schema.yaml');
-      await mkdir(join(dir, 'openspec', 'schemas', 'product'), { recursive: true });
+      const target = join(dir, 'openspec', 'schemas', 'product-change', 'schema.yaml');
+      await mkdir(join(dir, 'openspec', 'schemas', 'product-change'), { recursive: true });
       await writeFile(target, schemaAsset.content, 'utf8');
 
       await expect(addOpenSpecIntegration(dir, { cliVersion: '1.11.0' })).rejects.toThrow(
@@ -330,11 +378,13 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
   it('add fails closed on a colliding template or script', async () => {
     const dir = await scratchWorkspace();
     try {
-      const target = join(dir, 'openspec', 'schemas', 'product', 'templates', 'proposal.md');
-      await mkdir(join(dir, 'openspec', 'schemas', 'product', 'templates'), { recursive: true });
+      const target = join(dir, 'openspec', 'schemas', 'product-change', 'templates', 'proposal.md');
+      await mkdir(join(dir, 'openspec', 'schemas', 'product-change', 'templates'), {
+        recursive: true,
+      });
       await writeFile(target, '# my own proposal template\n', 'utf8');
       await expect(addOpenSpecIntegration(dir, { cliVersion: '1.11.0' })).rejects.toThrow(
-        'openspec/schemas/product/templates/proposal.md',
+        'openspec/schemas/product-change/templates/proposal.md',
       );
       expect(await readFile(target, 'utf8')).toBe('# my own proposal template\n');
     } finally {
@@ -346,15 +396,15 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
     const dir = await scratchWorkspace();
     try {
       await addOpenSpecIntegration(dir, { cliVersion: '1.11.0' });
-      const target = join(dir, 'openspec', 'schemas', 'product', 'schema.yaml');
+      const target = join(dir, 'openspec', 'schemas', 'product-change', 'schema.yaml');
       const edited = 'name: edited after installation\n';
       await writeFile(target, edited, 'utf8');
       const result = await removeOpenSpecIntegration(dir);
-      expect(result.preserved).toEqual(['openspec/schemas/product/schema.yaml']);
-      expect(result.removed).not.toContain('openspec/schemas/product/schema.yaml');
+      expect(result.preserved).toEqual(['openspec/schemas/product-change/schema.yaml']);
+      expect(result.removed).not.toContain('openspec/schemas/product-change/schema.yaml');
       expect(await readFile(target, 'utf8')).toBe(edited);
       for (const relative of SCHEMA_FILES.filter(
-        (file) => file !== 'openspec/schemas/product/schema.yaml',
+        (file) => file !== 'openspec/schemas/product-change/schema.yaml',
       )) {
         expect(result.removed).toContain(relative);
         await expect(stat(join(dir, ...relative.split('/')))).rejects.toThrow();
@@ -369,8 +419,8 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
     const dir = await scratchWorkspace();
     try {
       const userContent = 'name: product\ndescription: USER AUTHORED\nartifacts: []\n';
-      const target = join(dir, 'openspec', 'schemas', 'product', 'schema.yaml');
-      await mkdir(join(dir, 'openspec', 'schemas', 'product'), { recursive: true });
+      const target = join(dir, 'openspec', 'schemas', 'product-change', 'schema.yaml');
+      await mkdir(join(dir, 'openspec', 'schemas', 'product-change'), { recursive: true });
       await writeFile(target, userContent, 'utf8');
       const result = await removeOpenSpecIntegration(dir);
       expect(result.removed.filter((entry) => entry.startsWith('openspec/schemas/'))).toEqual([]);
@@ -409,12 +459,12 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
   it('remove does not infer per-file ownership from a schema-level record and current bytes', async () => {
     const dir = await scratchWorkspace();
     try {
-      const schemaAsset = (await loadProductSchemaAssets()).find(
+      const schemaAsset = (await loadProductChangeSchemaAssets()).find(
         (asset) => asset.relative === 'schema.yaml',
       )!;
-      const relative = 'openspec/schemas/product/schema.yaml';
+      const relative = 'openspec/schemas/product-change/schema.yaml';
       const target = join(dir, ...relative.split('/'));
-      await mkdir(join(dir, 'openspec', 'schemas', 'product'), { recursive: true });
+      await mkdir(join(dir, 'openspec', 'schemas', 'product-change'), { recursive: true });
       await writeFile(target, schemaAsset.content, 'utf8');
       const metaPath = join(dir, '.product', 'integrations', 'openspec.json');
       await mkdir(join(dir, '.product', 'integrations'), { recursive: true });
@@ -429,7 +479,7 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
             configPath: 'openspec/config.yaml',
             productSchema: {
               name: 'product',
-              requiresOpenspec: PRODUCT_SCHEMA_MIN_OPENSPEC,
+              requiresOpenspec: PRODUCT_CHANGE_SCHEMA_MIN_OPENSPEC,
               files: {},
             },
           },
@@ -452,13 +502,13 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
     const dir = await scratchWorkspace();
     try {
       await addOpenSpecIntegration(dir, { cliVersion: '1.11.0' });
-      const target = join(dir, 'openspec', 'schemas', 'product', 'schema.yaml');
+      const target = join(dir, 'openspec', 'schemas', 'product-change', 'schema.yaml');
       await writeFile(target, 'name: edited\n', 'utf8');
       const result = await removeOpenSpecIntegration(dir, { dryRun: true });
-      expect(result.preserved).toEqual(['openspec/schemas/product/schema.yaml']);
-      expect(result.removed).toContain('openspec/schemas/product/scripts/product-apply.mjs');
+      expect(result.preserved).toEqual(['openspec/schemas/product-change/schema.yaml']);
+      expect(result.removed).toContain('openspec/schemas/product-change/scripts/product-apply.mjs');
       for (const relative of SCHEMA_FILES.filter(
-        (file) => file !== 'openspec/schemas/product/schema.yaml',
+        (file) => file !== 'openspec/schemas/product-change/schema.yaml',
       )) {
         await expect(readFile(join(dir, ...relative.split('/')), 'utf8')).resolves.toBeTruthy();
       }
@@ -483,7 +533,7 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
       expect(intactCheck!.detail).toMatch(/^Product workflow (available|UNAVAILABLE)/);
 
       await writeFile(
-        join(dir, 'openspec', 'schemas', 'product', 'schema.yaml'),
+        join(dir, 'openspec', 'schemas', 'product-change', 'schema.yaml'),
         'name: tampered\n',
         'utf8',
       );
@@ -491,7 +541,7 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
       const tamperedCheck = tampered.checks.find((check) => check.name === 'product workflow');
       expect(tamperedCheck!.ok).toBe(false);
       expect(tamperedCheck!.detail).toContain(
-        'hand-edited and preserved: openspec/schemas/product/schema.yaml',
+        'hand-edited and preserved: openspec/schemas/product-change/schema.yaml',
       );
       expect(tampered.ok).toBe(false);
     } finally {
@@ -507,13 +557,13 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
       const meta = JSON.parse(await readFile(metaPath, 'utf8')) as {
         productSchema: { files: Record<string, string> };
       };
-      delete meta.productSchema.files['openspec/schemas/product/schema.yaml'];
+      delete meta.productSchema.files['openspec/schemas/product-change/schema.yaml'];
       await writeFile(metaPath, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
 
       const result = await checkOpenSpecIntegration(dir);
       const check = result.checks.find((entry) => entry.name === 'product workflow');
       expect(check?.ok).toBe(false);
-      expect(check?.detail).toContain('unrecorded: openspec/schemas/product/schema.yaml');
+      expect(check?.detail).toContain('unrecorded: openspec/schemas/product-change/schema.yaml');
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
@@ -523,7 +573,7 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
     const dir = await scratchWorkspace();
     try {
       await addOpenSpecIntegration(dir, { cliVersion: '1.11.0' });
-      const obsoleteRelative = 'openspec/schemas/product/templates/retired.md';
+      const obsoleteRelative = 'openspec/schemas/product-change/templates/retired.md';
       const obsolete = join(dir, ...obsoleteRelative.split('/'));
       const obsoleteContent = '# retired managed template\n';
       await writeFile(obsolete, obsoleteContent, 'utf8');
@@ -568,7 +618,10 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
       // A user schema beside ours and a user file inside ours must both survive.
       await mkdir(join(dir, 'openspec', 'schemas', 'custom'), { recursive: true });
       await writeFile(join(dir, 'openspec', 'schemas', 'custom', 'schema.yaml'), 'name: custom\n');
-      await writeFile(join(dir, 'openspec', 'schemas', 'product', 'NOTES.md'), 'user notes\n');
+      await writeFile(
+        join(dir, 'openspec', 'schemas', 'product-change', 'NOTES.md'),
+        'user notes\n',
+      );
 
       const result = await removeOpenSpecIntegration(dir);
       for (const relative of SCHEMA_FILES) {
@@ -577,10 +630,14 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
       }
       // Emptied managed directories are pruned; directories still holding user files are not.
       await expect(
-        stat(join(dir, 'openspec', 'schemas', 'product', 'templates')),
+        stat(join(dir, 'openspec', 'schemas', 'product-change', 'templates')),
       ).rejects.toThrow();
-      await expect(stat(join(dir, 'openspec', 'schemas', 'product', 'scripts'))).rejects.toThrow();
-      expect(await readdir(join(dir, 'openspec', 'schemas', 'product'))).toEqual(['NOTES.md']);
+      await expect(
+        stat(join(dir, 'openspec', 'schemas', 'product-change', 'scripts')),
+      ).rejects.toThrow();
+      expect(await readdir(join(dir, 'openspec', 'schemas', 'product-change'))).toEqual([
+        'NOTES.md',
+      ]);
       expect(await readdir(join(dir, 'openspec', 'schemas', 'custom'))).toEqual(['schema.yaml']);
     } finally {
       await rm(dir, { recursive: true, force: true });

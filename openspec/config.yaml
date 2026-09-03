@@ -54,7 +54,7 @@ context: >-
   neither apply nor merge attests implementation, verification, release or
   deployment. A Product Change lives under docs/product/changes/ or hosted
   inside a valid OpenSpec change created with the product schema
-  (product/change.md plus product/proposed/**); its deterministically validated,
+  (product-change/change.md plus product-change/proposed/**); its deterministically validated,
   apply-authorised apply is the only write path into docs/product/model. A
   spec-driven OpenSpec delivery change never edits docs/product/model directly:
   it may share a pull request with an applied Product Change or follow later,
@@ -97,7 +97,7 @@ rules:
       overlay-validated, apply-authorised Product Change exists yet, stop and
       ask for one instead of proceeding. A spec-driven OpenSpec change is not
       the Product Change; product intent travels through a Product Change, under
-      docs/product/changes or hosted by a product-schema OpenSpec change.
+      docs/product/changes or hosted by a product-change OpenSpec change.
   specs:
     - Cite a specific verification scenario with an anchor when the requirement
       maps to one (anchor="<scenario id>").

@@ -1,32 +1,36 @@
 #!/usr/bin/env node
 // MANAGED FILE. Installed by `prodshape integration add openspec` as part of the OpenSpec product
-// schema. Deterministic overlay preflight for a hosted Product Change: the validation logic lives
-// in @prodshape/integration-openspec; this script only resolves the local installation, invokes it
-// and reports. It writes nothing.
+// schema. The executable bridge from the schema's apply instruction to the deterministic apply
+// rail: the apply logic lives in @prodshape/integration-openspec (applyOpenSpecProductChange);
+// this script only resolves the local installation, invokes it and reports. It revalidates the
+// overlay at apply time, refuses with the model untouched on any blocking diagnostic, requires
+// the apply-authorised state (status: approved) and never archives the change.
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import process from 'node:process';
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
-// openspec/schemas/product/scripts sits four levels below the repository root.
+// openspec/schemas/product-change/scripts sits four levels below the repository root.
 const defaultRoot = resolve(scriptDir, '..', '..', '..', '..');
 
 function usage(message) {
   console.error(message);
   console.error(
-    'Usage: node openspec/schemas/product/scripts/product-validate.mjs --change <name> [--root <dir>]',
+    'Usage: node openspec/schemas/product-change/scripts/product-apply.mjs --change <name> [--dry-run] [--root <dir>]',
   );
   process.exit(2);
 }
 
 function parseArgs(argv) {
-  const args = { change: undefined, root: undefined };
+  const args = { change: undefined, root: undefined, dryRun: false };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--change') {
       args.change = argv[(i += 1)];
     } else if (arg === '--root') {
       args.root = argv[(i += 1)];
+    } else if (arg === '--dry-run') {
+      args.dryRun = true;
     } else {
       usage(`Unknown argument: ${arg}`);
     }
@@ -67,11 +71,35 @@ function printDiagnostics(diagnostics) {
 const args = parseArgs(process.argv.slice(2));
 const repoRoot = args.root ? resolve(args.root) : defaultRoot;
 const integration = await loadIntegration();
-const result = await integration.validateOpenSpecProductChange(repoRoot, args.change);
-printDiagnostics(result.diagnostics);
-if (result.blocking.length > 0) {
-  const count = result.blocking.length;
-  console.log(`Overlay validation: FAIL (${count} blocking diagnostic${count === 1 ? '' : 's'}).`);
+const result = await integration.applyOpenSpecProductChange(repoRoot, args.change, {
+  dryRun: args.dryRun,
+});
+printDiagnostics(result.plan.diagnostics);
+if (result.outcome === 'refused') {
+  console.log('Apply refused; docs/product/model untouched.');
   process.exit(1);
 }
-console.log('Overlay validation: PASS.');
+for (const action of result.plan.actions) {
+  console.log(`${action.kind}: ${action.description}`);
+}
+const { added, modified, removed } = result.plan.diff;
+console.log(
+  `Product diff: ${added.length} added, ${modified.length} modified, ${removed.length} removed.`,
+);
+if (result.outcome === 'dry-run') {
+  console.log('Dry run; nothing was written.');
+  process.exit(0);
+}
+const resultingErrors = (result.resultingModel?.diagnostics ?? []).filter(
+  (diagnostic) => diagnostic.severity === 'error',
+);
+if (resultingErrors.length > 0) {
+  printDiagnostics(resultingErrors);
+  console.log(
+    'Applied, but the resulting accepted model reports errors. Investigate before archiving.',
+  );
+  process.exit(1);
+}
+console.log(
+  'Applied. Nothing was committed and the change was not archived: verify the model, then archive separately.',
+);
