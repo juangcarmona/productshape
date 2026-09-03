@@ -1,7 +1,7 @@
 {
   "managed": {
     "by": "prodshape",
-    "version": "0.19.0-alpha.1",
+    "version": "0.19.0-alpha.2",
     "source": "hooks/",
     "note": "Generated fragment. Wire these deterministic commands into your hook configuration; do not edit by hand - run: prodshape integration update"
   },
