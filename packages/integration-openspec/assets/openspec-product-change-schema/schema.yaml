@@ -112,9 +112,11 @@ artifacts:
 
       The semantic requests "refine", "review" and "challenge this product change", and the
       explicit `/product:refine <change>` command, resume this same OpenSpec product-change
-      same OpenSpec change container. The refine adapter may update proposal.md, change.md and proposed artifacts, but
+      container. The refine adapter may update proposal.md, change.md and proposed artifacts, but
       it must never approve, apply or archive. If no change is identifiable, ask the user to select
       one or create one through the normal OpenSpec workflow; do not create a second lifecycle.
+      This is the same OpenSpec change, not a new refinement workflow.
+      This is the same OpenSpec change, not a new refinement workflow.
     requires:
       - intent
 
