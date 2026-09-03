@@ -11,7 +11,7 @@
         ".claude/commands/product/explore.md": "sha256:52f733385ca1bb7d4f4e84e90b181e66644e676a47d17a2075c1e26c4088f1e1",
         ".claude/commands/product/impact.md": "sha256:d1922c34b67f14a06d629a415fa7e5cfc9267b7a15391dcd6de30b01b405e227",
         ".claude/commands/product/recover.md": "sha256:982482420e7850b1713c4825394c8b2b1a64c1a95a69b61e024f9d3a782de821",
-        ".claude/commands/product/refine.md": "sha256:a7206f8caa40095d715e68a518d82a55481fc58fe68d43dae0552aae151e33a1",
+        ".claude/commands/product/refine.md": "sha256:cfc30d36e5791629bfe647f1dfd5dc205c0e45a8dedf9a54b88d297cb27c882c",
         ".claude/commands/ps/audit.md": "sha256:51f66533f41df95f4995bc2b4e5ddd30ddc0dbd6b0a297b06bfa12bba98c9433",
         ".claude/commands/ps/bind.md": "sha256:8240935d36e2f76147c7c77d3e2cfa8b690e6d2887a3c82189b339d8792c10af",
         ".claude/commands/ps/change.md": "sha256:ac0783a668d06408d4b367590cd835fbbb83fe884af26d8422930f815fa091e1",
@@ -19,7 +19,7 @@
         ".claude/commands/ps/explore.md": "sha256:52f733385ca1bb7d4f4e84e90b181e66644e676a47d17a2075c1e26c4088f1e1",
         ".claude/commands/ps/impact.md": "sha256:d1922c34b67f14a06d629a415fa7e5cfc9267b7a15391dcd6de30b01b405e227",
         ".claude/commands/ps/recover.md": "sha256:982482420e7850b1713c4825394c8b2b1a64c1a95a69b61e024f9d3a782de821",
-        ".claude/commands/ps/refine.md": "sha256:a7206f8caa40095d715e68a518d82a55481fc58fe68d43dae0552aae151e33a1",
+        ".claude/commands/ps/refine.md": "sha256:cfc30d36e5791629bfe647f1dfd5dc205c0e45a8dedf9a54b88d297cb27c882c",
         ".claude/hooks/product-definition.json": "sha256:4b4050b6fb0de1d5561562b691064095471052e171519c7bd927ab2e4dd9d7fe",
         ".claude/skills/analyze-product-change/references/change-template-guide.md": "sha256:1bbc3ef03be66e680414340fd890da06a0096ad0ca6d62a8687457625a7bd36b",
         ".claude/skills/analyze-product-change/references/operations-checklist.md": "sha256:ab8adaed0cad93358669b9c350d18fa8e86a5ef04f3d6de70f48432ed9ac45c0",
@@ -42,8 +42,8 @@
         ".claude/skills/recover-product/references/reconciliation.md": "sha256:019b952323af17fad9677a19afded68ecbe64855dd83315dfc00a3d0f6006930",
         ".claude/skills/recover-product/references/recovery-workflow.md": "sha256:6fd7251cadcb3b1b0cd9181836c71cdcf17aed94f2fcb20f5dc83184e51eaaf6",
         ".claude/skills/recover-product/SKILL.md": "sha256:9fc737e74802fc442e588ebd167b34ebaf0e47985301d1659fe0a5c47444ccab",
-        ".claude/skills/refine-product/references/question-writing.md": "sha256:d84b61e1a58accb76c11558a171f1738bc96d75841d9fd7c6b03b76377344cac",
-        ".claude/skills/refine-product/SKILL.md": "sha256:bae2ca147477a5c2eebf2417a808f8b576ad9b435060bc6cfd5d816a69bd6431"
+        ".claude/skills/refine-product/references/question-writing.md": "sha256:0415522493190fc319aa0ff3a5c65ea3840a94a34dca2d195c10275b8c3c4342",
+        ".claude/skills/refine-product/SKILL.md": "sha256:d4bffec19f687d94dc8fccfcfa7850a0aa72edaeeaf0db8d1e1d76787196b5ac"
       }
     },
     "copilot": {
@@ -55,7 +55,7 @@
         ".github/prompts/product-explore.prompt.md": "sha256:52f733385ca1bb7d4f4e84e90b181e66644e676a47d17a2075c1e26c4088f1e1",
         ".github/prompts/product-impact.prompt.md": "sha256:d1922c34b67f14a06d629a415fa7e5cfc9267b7a15391dcd6de30b01b405e227",
         ".github/prompts/product-recover.prompt.md": "sha256:982482420e7850b1713c4825394c8b2b1a64c1a95a69b61e024f9d3a782de821",
-        ".github/prompts/product-refine.prompt.md": "sha256:a7206f8caa40095d715e68a518d82a55481fc58fe68d43dae0552aae151e33a1",
+        ".github/prompts/product-refine.prompt.md": "sha256:cfc30d36e5791629bfe647f1dfd5dc205c0e45a8dedf9a54b88d297cb27c882c",
         ".github/prompts/ps-audit.prompt.md": "sha256:51f66533f41df95f4995bc2b4e5ddd30ddc0dbd6b0a297b06bfa12bba98c9433",
         ".github/prompts/ps-bind.prompt.md": "sha256:8240935d36e2f76147c7c77d3e2cfa8b690e6d2887a3c82189b339d8792c10af",
         ".github/prompts/ps-change.prompt.md": "sha256:ac0783a668d06408d4b367590cd835fbbb83fe884af26d8422930f815fa091e1",
@@ -63,7 +63,7 @@
         ".github/prompts/ps-explore.prompt.md": "sha256:52f733385ca1bb7d4f4e84e90b181e66644e676a47d17a2075c1e26c4088f1e1",
         ".github/prompts/ps-impact.prompt.md": "sha256:d1922c34b67f14a06d629a415fa7e5cfc9267b7a15391dcd6de30b01b405e227",
         ".github/prompts/ps-recover.prompt.md": "sha256:982482420e7850b1713c4825394c8b2b1a64c1a95a69b61e024f9d3a782de821",
-        ".github/prompts/ps-refine.prompt.md": "sha256:a7206f8caa40095d715e68a518d82a55481fc58fe68d43dae0552aae151e33a1",
+        ".github/prompts/ps-refine.prompt.md": "sha256:cfc30d36e5791629bfe647f1dfd5dc205c0e45a8dedf9a54b88d297cb27c882c",
         ".github/skills/analyze-product-change/references/change-template-guide.md": "sha256:1bbc3ef03be66e680414340fd890da06a0096ad0ca6d62a8687457625a7bd36b",
         ".github/skills/analyze-product-change/references/operations-checklist.md": "sha256:ab8adaed0cad93358669b9c350d18fa8e86a5ef04f3d6de70f48432ed9ac45c0",
         ".github/skills/analyze-product-change/SKILL.md": "sha256:df78d8c45932811ea71dd30aa5e3582b8ad2f70a9fe668fa9fa2659a930e0e69",
@@ -85,8 +85,8 @@
         ".github/skills/recover-product/references/reconciliation.md": "sha256:019b952323af17fad9677a19afded68ecbe64855dd83315dfc00a3d0f6006930",
         ".github/skills/recover-product/references/recovery-workflow.md": "sha256:6fd7251cadcb3b1b0cd9181836c71cdcf17aed94f2fcb20f5dc83184e51eaaf6",
         ".github/skills/recover-product/SKILL.md": "sha256:9fc737e74802fc442e588ebd167b34ebaf0e47985301d1659fe0a5c47444ccab",
-        ".github/skills/refine-product/references/question-writing.md": "sha256:d84b61e1a58accb76c11558a171f1738bc96d75841d9fd7c6b03b76377344cac",
-        ".github/skills/refine-product/SKILL.md": "sha256:bae2ca147477a5c2eebf2417a808f8b576ad9b435060bc6cfd5d816a69bd6431"
+        ".github/skills/refine-product/references/question-writing.md": "sha256:0415522493190fc319aa0ff3a5c65ea3840a94a34dca2d195c10275b8c3c4342",
+        ".github/skills/refine-product/SKILL.md": "sha256:d4bffec19f687d94dc8fccfcfa7850a0aa72edaeeaf0db8d1e1d76787196b5ac"
       }
     }
   }

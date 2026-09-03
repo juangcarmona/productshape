@@ -41,12 +41,12 @@
     "name": "product-change",
     "requiresOpenspec": "1.7.0",
     "files": {
-      "openspec/schemas/product-change/schema.yaml": "sha256:76891a43a512426c6efc666a1ec531d110e0dcf5811eb58936a1e03b827595d4",
+      "openspec/schemas/product-change/schema.yaml": "sha256:374dcd1a436f5e2097635faf9702ad4efdaed778cc1f30c2c747676940a99395",
       "openspec/schemas/product-change/scripts/product-apply.mjs": "sha256:17f4d2f7476b4d26a34af64309542f927251e44f57ff7a9a66b30562943aa91f",
       "openspec/schemas/product-change/scripts/product-validate.mjs": "sha256:c423f92f308a9b9e3bc7c70663f7dc33e93bc85a9d6c5fb91dfb1f91a91f55c1",
-      "openspec/schemas/product-change/templates/change.md": "sha256:309d2ff83bfe9800a322ef0bad6daf08afef4b7cecc0f83e35d3f30c44a61a4b",
-      "openspec/schemas/product-change/templates/proposal.md": "sha256:9a7891ab08094f56eda1edc1bf9809a271f670569c8aeab2f8e924cc149a4aa6"
+      "openspec/schemas/product-change/templates/change.md": "sha256:af4fd10511f53a83ff5f452981178d62b74ae7128f8a84f1ad5ca5bd1b6748bb",
+      "openspec/schemas/product-change/templates/proposal.md": "sha256:150c2d313f939e1ceeac3416b073cc076487c990868a5cb1a22d2781a8b01f3d"
     }
   },
-  "updatedAt": "2026-09-02T11:42:00.618Z"
+  "updatedAt": "2026-09-03T16:20:22.132Z"
 }
