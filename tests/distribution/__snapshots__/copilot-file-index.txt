@@ -27,5 +27,6 @@
 .github/skills/recover-product/references/reconciliation.md
 .github/skills/recover-product/references/recovery-workflow.md
 .github/skills/recover-product/SKILL.md
+.github/skills/refine-product/references/host-adapter.md
 .github/skills/refine-product/references/question-writing.md
 .github/skills/refine-product/SKILL.md
