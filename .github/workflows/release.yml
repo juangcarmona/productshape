@@ -28,6 +28,24 @@ concurrency:
 permissions: {}
 
 jobs:
+  # Resolve pre-release mode in a runner step because hashFiles is not available in a job-level if.
+  release-mode:
+    name: determine release mode
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      mode: ${{ steps.mode.outputs.mode }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - id: mode
+        shell: bash
+        run: |
+          if [ -f .changeset/pre.json ]; then
+            echo "mode=prerelease" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=stable" >> "$GITHUB_OUTPUT"
+          fi
+
   # Keep the "Version Packages" PR up to date whenever changesets are pending on main.
   version-pr:
     name: maintain version PR
@@ -69,8 +87,9 @@ jobs:
   # maintainer to approve the deployment before anything reaches npm.
   publish-stable:
     name: publish stable
+    needs: release-mode
     if: >-
-      github.event_name == 'push' && startsWith(github.event.head_commit.message, 'chore: Version Packages')
+      github.event_name == 'push' && needs.release-mode.outputs.mode == 'stable' && startsWith(github.event.head_commit.message, 'chore: Version Packages')
     runs-on: ubuntu-latest
     environment: npm-publish
     permissions:
@@ -175,6 +194,65 @@ jobs:
           echo "prodshape-released dispatched for ${version}"
           echo "### Asked pdac.dev to rebuild for \`${version}\`" >> "$GITHUB_STEP_SUMMARY"
 
+  # A prerelease is published only from the merged version commit. Repository state therefore
+  # becomes authoritative before npm and tags change, and reruns safely skip immutable versions.
+  publish-prerelease:
+    name: publish prerelease
+    needs: release-mode
+    if: >-
+      github.event_name == 'push' && needs.release-mode.outputs.mode == 'prerelease' && contains(github.event.head_commit.message, 'Version Packages')
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm release-contract:smoke
+      - name: configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: publish prerelease packages
+        run: pnpm changeset publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'
+      - name: synchronize and verify prerelease tags
+        shell: bash
+        run: |
+          if ! git push origin --tags; then
+            echo "::error::npm publication succeeded, but tag synchronization failed"
+            echo "Re-run this workflow after tag push access is restored; immutable npm versions will be skipped."
+            exit 1
+          fi
+          missing=0
+          while read -r name version; do
+            tag="${name}@${version}"
+            if ! git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
+              echo "::error::published ${tag} but its tag is not on the remote"
+              missing=1
+            fi
+          done < <(pnpm -r --json list --depth -1 2>/dev/null \
+            | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{for(const p of JSON.parse(s))if(p.name&&p.name.startsWith("@prodshape/"))console.log(p.name,p.version)})')
+          if [ "$missing" -ne 0 ]; then
+            echo "::error::npm publication succeeded, but repository tag synchronization is incomplete"
+            echo "Re-run this workflow after tag push access is restored; immutable npm versions will be skipped."
+            exit 1
+          fi
+
   # Manual path: prerelease publishing (alpha/beta), recovery, and pre-mode management.
   dispatch:
     name: manual (${{ github.event.inputs.task }})
@@ -188,8 +266,9 @@ jobs:
     # entering/exiting a pre-release train are both releases.
     environment: npm-publish
     permissions:
-      contents: write # commit pre.json / push tags
+      contents: write # push release branches
       id-token: write # OIDC trusted publishing
+      pull-requests: write # open the protected-main release PR
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -210,35 +289,54 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      # Enter / exit a pre-release train and commit the marker back to main.
+      # Enter / exit a pre-release train through a PR. main is protected, so this job must never
+      # attempt to update it directly.
       - name: enter alpha
         if: github.event.inputs.task == 'pre-enter-alpha'
         run: |
-          pnpm changeset pre enter alpha
-          git add .changeset/pre.json
-          git commit -m "chore: enter alpha pre-release mode"
-          git push origin HEAD:main
+          if [ ! -f .changeset/pre.json ]; then pnpm changeset pre enter alpha; fi
+          pnpm exec prettier --write .changeset/pre.json
+          git add -A
+          git commit -m "chore: enter alpha pre-release mode" || true
+          branch="release/pre-enter-alpha-${GITHUB_RUN_ID}"
+          git switch -C "$branch"
+          git push --force-with-lease origin "HEAD:refs/heads/$branch"
+          gh pr create --base main --head "$branch" --title "chore: enter alpha pre-release mode" --body "Enter alpha prerelease mode through the protected-main release path." || gh pr view "$branch" --web=false
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: enter beta
         if: github.event.inputs.task == 'pre-enter-beta'
         run: |
-          pnpm changeset pre enter beta
-          git add .changeset/pre.json
-          git commit -m "chore: enter beta pre-release mode"
-          git push origin HEAD:main
+          if [ ! -f .changeset/pre.json ]; then pnpm changeset pre enter beta; fi
+          pnpm exec prettier --write .changeset/pre.json
+          git add -A
+          git commit -m "chore: enter beta pre-release mode" || true
+          branch="release/pre-enter-beta-${GITHUB_RUN_ID}"
+          git switch -C "$branch"
+          git push --force-with-lease origin "HEAD:refs/heads/$branch"
+          gh pr create --base main --head "$branch" --title "chore: enter beta pre-release mode" --body "Enter beta prerelease mode through the protected-main release path." || gh pr view "$branch" --web=false
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: exit pre mode
         if: github.event.inputs.task == 'pre-exit'
         run: |
-          pnpm changeset pre exit
-          git add .changeset/pre.json
-          git commit -m "chore: exit pre-release mode"
-          git push origin HEAD:main
+          if [ -f .changeset/pre.json ]; then pnpm changeset pre exit; fi
+          if [ -f .changeset/pre.json ]; then pnpm exec prettier --write .changeset/pre.json; fi
+          git add -A
+          git commit -m "chore: exit pre-release mode" || true
+          branch="release/pre-exit-${GITHUB_RUN_ID}"
+          git switch -C "$branch"
+          git push --force-with-lease origin "HEAD:refs/heads/$branch"
+          gh pr create --base main --head "$branch" --title "chore: exit pre-release mode" --body "Exit prerelease mode through the protected-main release path." || gh pr view "$branch" --web=false
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Apply pending bumps and publish. In pre mode versions become x.y.z-<tag>.N and changeset
-      # publish sets the matching dist-tag automatically; otherwise it publishes to `latest`.
+      # Versioning is separate from publication. The version commit must be merged into protected
+      # main before npm is touched, otherwise a rejected main push can leave npm ahead of Git.
       # `pnpm run version` bumps, rebuilds and regenerates the self-hosted integration lock in one
       # step (see the root "version" script) — the same path the automated version-pr job uses, so
       # the self-hosted repo's `.product/installation.lock.json` never goes stale from either path.
-      - name: version and publish
+      - name: prepare prerelease version PR
         if: github.event.inputs.task == 'publish'
         run: |
           pnpm build
@@ -247,9 +345,10 @@ jobs:
           pnpm release-contract:smoke
           pnpm run version
           git add -A
-          git commit -m "chore: version prerelease packages" || echo "nothing to version"
-          pnpm changeset publish
-          git push origin HEAD:main --follow-tags
+          git commit -m "chore: Version Packages (prerelease)" || true
+          branch="release/version-prerelease-${GITHUB_RUN_ID}"
+          git switch -C "$branch"
+          git push --force-with-lease origin "HEAD:refs/heads/$branch"
+          gh pr create --base main --head "$branch" --title "chore: Version Packages (prerelease)" --body "Publish the prerelease version from this merged release commit." || gh pr view "$branch" --web=false
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} # fallback; ignored when OIDC is configured
-          NPM_CONFIG_PROVENANCE: 'true'
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -32,7 +32,7 @@ Each sets `publishConfig.access: "public"` and `publishConfig.provenance: true`.
 
 **Environment**
 
-- `npm-publish` — a protected environment with required reviewers. The **stable** publish job runs inside it; alpha/beta trains and manual dispatch deliberately do not, so maintainer-driven prereleases are not gated on a review each time. Create it under _Settings → Environments_ and add reviewers before the first stable release.
+- `npm-publish` — a protected environment with required reviewers. The stable publish job, prerelease publish job, and all manual prerelease actions run inside it, so entering/exiting a train and publishing alpha/beta packages each require environment approval. Create it under _Settings → Environments_ and add reviewers before using any release path.
 
 **npm configuration (npmjs.com)**
 
@@ -49,9 +49,15 @@ Merging the Version Packages PR **is** the release decision: never merge it whil
 
 ## Pre-release (alpha / beta)
 
-1. Enter a train: run the workflow manually (**Actions → Release → Run workflow**) with `task = pre-enter-alpha` (or `pre-enter-beta`). This commits `.changeset/pre.json` to `main`.
-2. Continue adding changesets normally. Run the workflow with `task = publish` to cut prereleases; versions become `x.y.z-alpha.N` and are published under the `alpha` (or `beta`) dist-tag, so a default `npm install` never resolves a prerelease.
-3. When ready to stabilize, run the workflow with `task = pre-exit`, then follow the normal stable release flow.
+Every manual Release workflow run first waits for approval from the protected `npm-publish` environment. No prerelease action pushes directly to protected `main`; state changes always travel through a temporary release branch and a pull request.
+
+1. Enter a train: run the workflow manually (**Actions → Release → Run workflow**) with `task = pre-enter-alpha` (or `pre-enter-beta`), approve the environment deployment, and merge the generated PR containing `.changeset/pre.json`.
+2. Continue adding changesets normally. Run the workflow with `task = publish`, approve the environment deployment, and merge the generated version PR. The merged `Version Packages (prerelease)` commit triggers the prerelease publish job, which requests its own `npm-publish` approval before publishing. Package versions become `x.y.z-alpha.N` or `x.y.z-beta.N` and Changesets publishes them under the matching `alpha` or `beta` dist-tag.
+3. When ready to stabilize, run the workflow with `task = pre-exit`, approve the environment deployment, merge the generated PR removing `.changeset/pre.json`, and follow the normal stable release flow.
+
+Prerelease dist-tags are non-default: `npm install @prodshape/<pkg>` continues to resolve `latest`, while consumers opt in with `npm install @prodshape/<pkg>@alpha` or `@beta`. Stable releases use the `latest` dist-tag.
+
+If npm publication succeeds but tag synchronization fails, the job reports this as a repository-sync failure. Re-run the workflow after push access is restored; Changesets treats already-published npm versions as immutable and skips republishing them while the missing tags are synchronized.
 
 ## Rollback (publish-forward — npm versions are immutable)
 
