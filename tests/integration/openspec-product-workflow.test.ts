@@ -322,7 +322,7 @@ describe('openspec product workflow: apply', () => {
 
       // The hosted change.md was flipped to applied in place; the container was not moved.
       const changeFile = await readFile(
-        join(root, 'openspec', 'changes', 'chg-price-floor', 'product', 'change.md'),
+        join(root, 'openspec', 'changes', 'chg-price-floor', 'product-change', 'change.md'),
         'utf8',
       );
       expect(changeFile).toContain('status: applied');
@@ -377,7 +377,9 @@ describe('openspec product workflow: apply', () => {
       // container tree (no archive move) are byte-identical.
       expect(await snapshotTree(root, 'docs/product/model')).toEqual(modelBefore);
       expect(await snapshotTree(root, 'openspec/changes')).toEqual(changesBefore);
-      expect(changesBefore.get('chg-price-floor/product/change.md')).toContain('status: approved');
+      expect(changesBefore.get('chg-price-floor/product-change/change.md')).toContain(
+        'status: approved',
+      );
       expect(result.resultingModel).toBeUndefined();
 
       // The preflight surface reports the same blockers.
@@ -451,7 +453,7 @@ describe('openspec product workflow: apply', () => {
         'openspec',
         'changes',
         'chg-price-floor',
-        'product',
+        'product-change',
         'proposed',
         'behaviours',
         'sb-price-floor-rejected.md',
@@ -477,7 +479,7 @@ describe('openspec product workflow: apply', () => {
       await writeHostedChange(root, priceFloorSpec(base, { status: 'approved' }));
       const before = await snapshotTree(root, 'docs/product/model');
       const changeBefore = await readFile(
-        join(root, 'openspec', 'changes', 'chg-price-floor', 'product', 'change.md'),
+        join(root, 'openspec', 'changes', 'chg-price-floor', 'product-change', 'change.md'),
         'utf8',
       );
       const result = await applyOpenSpecProductChange(root, 'chg-price-floor', { dryRun: true });
@@ -486,7 +488,7 @@ describe('openspec product workflow: apply', () => {
       expect(await snapshotTree(root, 'docs/product/model')).toEqual(before);
       expect(
         await readFile(
-          join(root, 'openspec', 'changes', 'chg-price-floor', 'product', 'change.md'),
+          join(root, 'openspec', 'changes', 'chg-price-floor', 'product-change', 'change.md'),
           'utf8',
         ),
       ).toBe(changeBefore);
@@ -546,10 +548,10 @@ describe('openspec product workflow: apply', () => {
       const modelBefore = await snapshotTree(root, 'docs/product/model');
       const changesBefore = await snapshotTree(root, 'openspec/changes');
       await expect(validateOpenSpecProductChange(root, 'chg-price-floor')).rejects.toThrow(
-        "pinned to schema 'spec-driven', not 'product'",
+        "pinned to schema 'spec-driven', not 'product-change'",
       );
       await expect(applyOpenSpecProductChange(root, 'chg-price-floor')).rejects.toThrow(
-        "pinned to schema 'spec-driven', not 'product'",
+        "pinned to schema 'spec-driven', not 'product-change'",
       );
       expect(await snapshotTree(root, 'docs/product/model')).toEqual(modelBefore);
       expect(await snapshotTree(root, 'openspec/changes')).toEqual(changesBefore);
@@ -628,7 +630,7 @@ describe('openspec product workflow: apply', () => {
       expect(inspection.diagnostics).toEqual([]);
 
       // Restoring the product pin restores the rail.
-      await writeFile(metadataPath, 'schema: product\nskip_specs: true\n', 'utf8');
+      await writeFile(metadataPath, 'schema: product-change\nskip_specs: true\n', 'utf8');
       const result = await applyOpenSpecProductChange(root, 'chg-price-floor', { dryRun: true });
       expect(result.outcome).toBe('dry-run');
     } finally {
@@ -643,7 +645,7 @@ describe('openspec product workflow: apply', () => {
       const metadataPath = join(root, 'openspec', 'changes', 'chg-price-floor', '.openspec.yaml');
       await writeFile(
         metadataPath,
-        'schema: product\ncreated: yesterday\nskip_specs: true\n',
+        'schema: product-change\ncreated: yesterday\nskip_specs: true\n',
         'utf8',
       );
       const modelBefore = await snapshotTree(root, 'docs/product/model');
@@ -709,7 +711,7 @@ describe('openspec product workflow: apply', () => {
       );
       await writeFile(
         join(root, 'openspec', 'changes', 'chg-malformed', '.openspec.yaml'),
-        'schema: product\ncreated: yesterday\n',
+        'schema: product-change\ncreated: yesterday\n',
         'utf8',
       );
       await writeHostedChange(root, priceFloorSpec(base));
@@ -727,7 +729,11 @@ describe('openspec product workflow: apply', () => {
     try {
       const dir = join(root, 'openspec', 'changes', 'chg-docs-clarity');
       await mkdir(dir, { recursive: true });
-      await writeFile(join(dir, '.openspec.yaml'), 'schema: product\nskip_specs: true\n', 'utf8');
+      await writeFile(
+        join(dir, '.openspec.yaml'),
+        'schema: product-change\nskip_specs: true\n',
+        'utf8',
+      );
       await writeFile(
         join(dir, 'proposal.md'),
         '<!-- pdac-scope: none reason="no product-semantic dependency" -->\n\n# Clarify the contributing guide\n\n## No Product Delta\n\nThis request changes no product meaning; the workflow ends here.\n',

@@ -1,8 +1,8 @@
 /**
  * The deterministic rails of the OpenSpec-hosted PDaC product workflow.
  *
- * An OpenSpec change created with the `product` schema hosts a PDaC Product Change at
- * `openspec/changes/<name>/product/` (change.md plus proposed/**, the normative delta format).
+ * An OpenSpec change created with the `product-change` schema hosts a PDaC Product Change at
+ * `openspec/changes/<name>/product-change/` (change.md plus proposed/**, the normative delta format).
  * OpenSpec owns the workflow orchestration (`/opsx:new`, `/opsx:continue`, `/opsx:apply`,
  * `/opsx:archive`); this module owns what OpenSpec cannot provide: reading the accepted model,
  * compiling the semantic graph in memory, validating the hosted delta as an overlay on the
@@ -55,11 +55,11 @@ import type {
   ProductGraph,
   ProductRepository,
 } from '@prodshape/core';
-import { OPENSPEC_PRODUCT_SCHEMA_NAME } from './product-schema.js';
+import { OPENSPEC_PRODUCT_CHANGE_SCHEMA_NAME } from './product-change-schema.js';
 import { pathExists } from './workspace.js';
 
 /** The subdirectory of an OpenSpec change that hosts the PDaC Product Change delta. */
-export const OPENSPEC_PRODUCT_SUBDIR = 'product';
+export const OPENSPEC_PRODUCT_SUBDIR = 'product-change';
 
 /** OpenSpec 1.11's change-id grammar (`isKebabId`): one folder-safe path segment. */
 const OPENSPEC_CHANGE_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
@@ -101,7 +101,7 @@ export async function inspectProductModel(root: string): Promise<ProductModelIns
 export interface OpenSpecProductChangeRef {
   /** The OpenSpec change name (the directory under openspec/changes/). */
   name: string;
-  /** Absolute path of the hosted PDaC change directory (…/<name>/product). */
+  /** Absolute path of the hosted PDaC change directory (…/<name>/product-change). */
   dir: string;
   /** Repository-relative POSIX path of the hosted change.md. */
   file: string;
@@ -171,7 +171,7 @@ function openSpecChangeMetadataProblem(parsed: unknown): string | undefined {
 
 /**
  * Read the schema a change is pinned to. OpenSpec records it in the change's `.openspec.yaml`
- * (`openspec new change <name> --schema product` writes it), and the hosted product rail treats
+ * (`openspec new change <name> --schema product-change` writes it), and the hosted product rail treats
  * that pin as load-bearing: OpenSpec selects the workflow, so a change is a product change
  * because its container says so, never because a `product/` directory happens to exist.
  */
@@ -198,7 +198,7 @@ function hostedSchemaPinError(
 ): Error {
   if (pin.problem === 'missing') {
     return new Error(
-      `OpenSpec change '${changeName}' has no .openspec.yaml, so its schema pin is unknown; the hosted product rail refuses it. Create product changes with: openspec new change ${changeName} --schema ${OPENSPEC_PRODUCT_SCHEMA_NAME}.`,
+      `OpenSpec change '${changeName}' has no .openspec.yaml, so its schema pin is unknown; the hosted product rail refuses it. Create product changes with: openspec new change ${changeName} --schema ${OPENSPEC_PRODUCT_CHANGE_SCHEMA_NAME}.`,
     );
   }
   return new Error(
@@ -207,8 +207,8 @@ function hostedSchemaPinError(
 }
 
 /**
- * List the OpenSpec changes that host a PDaC Product Change: pinned to `schema: product` in
- * `.openspec.yaml` AND carrying `product/change.md`. The OpenSpec archive is history and is never
+ * List the OpenSpec changes that host a PDaC Product Change: pinned to `schema: product-change` in
+ * `.openspec.yaml` AND carrying `product-change/change.md`. The OpenSpec archive is history and is never
  * listed; a change without a product delta (for example one whose honest intent verdict was "no
  * product delta") is not a product change; and a change pinned to another schema is not one
  * either, whatever directories it contains, so it never enters the product rail or its
@@ -237,7 +237,7 @@ export async function listOpenSpecProductChanges(
     assertOpenSpecChangeName(name);
     const pin = await readHostedSchemaPin(changeDir);
     if ('problem' in pin) throw hostedSchemaPinError(name, pin);
-    if (pin.schema !== OPENSPEC_PRODUCT_SCHEMA_NAME) continue;
+    if (pin.schema !== OPENSPEC_PRODUCT_CHANGE_SCHEMA_NAME) continue;
     refs.push({
       name,
       dir,
@@ -273,7 +273,7 @@ async function loadHostedChange(
     const refs = await listOpenSpecProductChanges(root);
     const known = refs.map((candidate) => candidate.name).join(', ') || 'none';
     throw new Error(
-      `No OpenSpec product change named '${changeName}' under openspec/changes/ (a product change hosts product/change.md; found: ${known}).`,
+      `No OpenSpec product change named '${changeName}' under openspec/changes/ (a product change hosts product-change/change.md; found: ${known}).`,
     );
   }
   // The schema pin is load-bearing and fails closed: without a readable pin naming the product
@@ -282,9 +282,9 @@ async function loadHostedChange(
   if ('problem' in pin) {
     throw hostedSchemaPinError(changeName, pin);
   }
-  if (pin.schema !== OPENSPEC_PRODUCT_SCHEMA_NAME) {
+  if (pin.schema !== OPENSPEC_PRODUCT_CHANGE_SCHEMA_NAME) {
     throw new Error(
-      `OpenSpec change '${changeName}' is pinned to schema '${pin.schema}', not '${OPENSPEC_PRODUCT_SCHEMA_NAME}'; the hosted product rail refuses it. Product intent travels through a change created with: openspec new change <name> --schema ${OPENSPEC_PRODUCT_SCHEMA_NAME}.`,
+      `OpenSpec change '${changeName}' is pinned to schema '${pin.schema}', not '${OPENSPEC_PRODUCT_CHANGE_SCHEMA_NAME}'; the hosted product rail refuses it. Product intent travels through a change created with: openspec new change <name> --schema ${OPENSPEC_PRODUCT_CHANGE_SCHEMA_NAME}.`,
     );
   }
   return loadChange(deltaDir, repo.root, repo.registry);
@@ -373,7 +373,7 @@ function hostedName(root: string, change: LoadedChange): string | undefined {
   const relative = normalizedDir.startsWith(normalizedRoot)
     ? normalizedDir.slice(normalizedRoot.length).replace(/^\//, '')
     : normalizedDir;
-  const match = relative.match(/^openspec\/changes\/([^/]+)\/product$/);
+  const match = relative.match(/^openspec\/changes\/([^/]+)\/product-change$/);
   return match?.[1];
 }
 

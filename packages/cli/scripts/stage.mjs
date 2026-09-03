@@ -17,8 +17,14 @@ const targets = [
   // assets must ride inside the CLI package the same way the distribution assets do. Staged
   // after the distribution assets because that target replaces the whole assets directory.
   {
-    from: join(repoRoot, 'packages', 'integration-openspec', 'assets', 'openspec-product-schema'),
-    to: join(pkg, 'assets', 'openspec-product-schema'),
+    from: join(
+      repoRoot,
+      'packages',
+      'integration-openspec',
+      'assets',
+      'openspec-product-change-schema',
+    ),
+    to: join(pkg, 'assets', 'openspec-product-change-schema'),
   },
 ];
 

@@ -12,11 +12,11 @@ operations:
   remove: []
 ---
 
-This file lives at `product/change.md` inside the OpenSpec change directory, and the proposed future state lives beside it under `product/proposed/**`, laid out exactly as it will live in `docs/product/model` with files named by lowercase id.
+This file lives at `product-change/change.md` inside the OpenSpec change directory, and the proposed future state lives beside it under `product-change/proposed/**`, laid out exactly as it will live in `docs/product/model` with files named by lowercase id.
 
-This manifest and every artifact under `product/proposed/**` are Product Definition content, not consumer documents. Do not add `pdac-scope` declarations or PDaC citations here. Proposed artifacts express their internal connections through typed PDaC relationships; citations remain in `proposal.md` and other documents that consume the accepted model.
+This manifest and every artifact under `product-change/proposed/**` are Product Definition content, not consumer documents. Do not add `pdac-scope` declarations or PDaC citations here. Proposed artifacts express their internal connections through typed PDaC relationships; citations remain in `proposal.md` and other documents that consume the accepted model.
 
-Every ID under `operations.add` and `operations.modify` needs a complete proposed artifact under `product/proposed/`. Author each artifact from its current PDaC template (`prodshape template <kind>`). Set `base-revision` to the baseline commit this change was authored against, quoted so YAML reads an all-digit revision as a string.
+Every ID under `operations.add` and `operations.modify` needs a complete proposed artifact under `product-change/proposed/`. Author each artifact from its current PDaC template (`prodshape template <kind>`). Set `base-revision` to the baseline commit this change was authored against, quoted so YAML reads an all-digit revision as a string.
 
 Leave `status: draft` while authoring; `status: approved` is the apply-authorised protocol state and setting it is the caller's authorisation act, outside this workflow. Apply materializes the proposal into the accepted model on a working branch; it never archives this change, and a pull-request merge accepts the resulting baseline. Product Change status never records implementation, verification, release or deployment.
 

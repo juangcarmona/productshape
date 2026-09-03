@@ -40,7 +40,7 @@ v0.1 is delivered through four OpenSpec changes: `establish-product-definition-f
 | `integration-claude` | Claude Code-specific mapping and templates only (renders `.claude/` assets, including executable hooks). |
 | `integration-copilot` | GitHub Copilot-specific mapping and templates only (renders `.github/` assets; hooks render as documentation — see OD-002). |
 | `integration-codex` | Codex-specific mapping and templates only (renders `.agents/` assets). |
-| `integration-openspec` | Two lanes. The citation lane configures an OpenSpec workspace with PDaC citation rules (merges into `openspec/config.yaml`) and records integration metadata. The product lane installs the managed `product` schema at `openspec/schemas/product/` and provides the deterministic rails of the hosted product workflow (overlay validation, apply-time revalidation, delivery-context derivation). Never patches OpenSpec-generated files, never modifies OpenSpec's built-in schemas, never writes into a native spec-driven change's documents. |
+| `integration-openspec` | Two lanes. The citation lane configures an OpenSpec workspace with PDaC citation rules (merges into `openspec/config.yaml`) and records integration metadata. The product lane installs the managed `product` schema at `openspec/schemas/product-change/` and provides the deterministic rails of the hosted product workflow (overlay validation, apply-time revalidation, delivery-context derivation). Never patches OpenSpec-generated files, never modifies OpenSpec's built-in schemas, never writes into a native spec-driven change's documents. |
 
 ## Dependency graph
 

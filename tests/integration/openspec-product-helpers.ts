@@ -9,7 +9,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { repoRoot } from '../helpers.js';
 
-export const fixtureDir = join(repoRoot, 'tests', 'fixtures', 'openspec-product');
+export const fixtureDir = join(repoRoot, 'tests', 'fixtures', 'openspec-product-change');
 
 export function git(cwd: string, ...args: string[]): string {
   const result = spawnSync('git', args, { cwd, encoding: 'utf8' });
@@ -38,7 +38,7 @@ export interface HostedChangeSpec {
   status: string;
   baseRevision: string;
   operations: { add: string[]; modify: string[]; remove: string[] };
-  /** Relative path under product/proposed/ to file content. */
+  /** Relative path under product-change/proposed/ to file content. */
   proposed: Record<string, string>;
   openQuestions?: string;
 }
@@ -90,16 +90,20 @@ Delivery, technical design and implementation.
 
 export async function writeHostedChange(root: string, spec: HostedChangeSpec): Promise<void> {
   const dir = join(root, 'openspec', 'changes', spec.name);
-  await mkdir(join(dir, 'product'), { recursive: true });
-  await writeFile(join(dir, '.openspec.yaml'), 'schema: product\nskip_specs: true\n', 'utf8');
+  await mkdir(join(dir, 'product-change'), { recursive: true });
+  await writeFile(
+    join(dir, '.openspec.yaml'),
+    'schema: product-change\nskip_specs: true\n',
+    'utf8',
+  );
   await writeFile(
     join(dir, 'proposal.md'),
     `<!-- pdac-scope: none reason="library-rail fixture, no product text embedded" -->\n\n# ${spec.title}\n\nRequested intent for the fixture scenario.\n`,
     'utf8',
   );
-  await writeFile(join(dir, 'product', 'change.md'), changeMd(spec), 'utf8');
+  await writeFile(join(dir, 'product-change', 'change.md'), changeMd(spec), 'utf8');
   for (const [relative, content] of Object.entries(spec.proposed)) {
-    const target = join(dir, 'product', 'proposed', ...relative.split('/'));
+    const target = join(dir, 'product-change', 'proposed', ...relative.split('/'));
     await mkdir(dirname(target), { recursive: true });
     await writeFile(target, content, 'utf8');
   }
@@ -130,7 +134,7 @@ export async function snapshotTree(root: string, subdir: string): Promise<Map<st
 }
 
 export async function approve(root: string, name: string): Promise<void> {
-  const file = join(root, 'openspec', 'changes', name, 'product', 'change.md');
+  const file = join(root, 'openspec', 'changes', name, 'product-change', 'change.md');
   const content = await readFile(file, 'utf8');
   await writeFile(file, content.replace('status: draft', 'status: approved'), 'utf8');
 }
