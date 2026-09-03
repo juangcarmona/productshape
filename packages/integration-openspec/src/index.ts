@@ -1258,8 +1258,11 @@ export async function checkOpenSpecIntegration(root: string): Promise<{
   if (recoveryRecord === undefined) {
     checks.push({
       name: 'product recovery workflow',
-      ok: false,
-      detail: `OpenSpec product-recovery schema not installed (${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}). Run: prodshape integration update`,
+      // Existing installations predate #229. Keep the citation and existing product-change
+      // lanes healthy while advertising the opt-in migration; a fresh add/update records the
+      // recovery schema and is checked strictly below.
+      ok: true,
+      detail: `Product recovery workflow UNAVAILABLE: schema not installed (${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}). Run: prodshape integration update to enable it.`,
     });
   } else {
     const defects: string[] = [];
