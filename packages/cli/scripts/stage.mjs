@@ -26,6 +26,16 @@ const targets = [
     ),
     to: join(pkg, 'assets', 'openspec-product-change-schema'),
   },
+  {
+    from: join(
+      repoRoot,
+      'packages',
+      'integration-openspec',
+      'assets',
+      'openspec-product-recovery-schema',
+    ),
+    to: join(pkg, 'assets', 'openspec-product-recovery-schema'),
+  },
 ];
 
 for (const { from, to } of targets) {

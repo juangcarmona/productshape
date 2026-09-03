@@ -33,6 +33,9 @@ import {
   OPENSPEC_PRODUCT_CHANGE_SCHEMA_NAME,
   OPENSPEC_PRODUCT_CHANGE_SCHEMA_RELATIVE,
   PRODUCT_CHANGE_SCHEMA_MIN_OPENSPEC,
+  loadProductRecoverySchemaAssets,
+  OPENSPEC_PRODUCT_RECOVERY_SCHEMA_NAME,
+  OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE,
 } from './product-change-schema.js';
 import { runCommand } from './process.js';
 import { envWithLocalBin, isOpenSpecWorkspace, pathExists } from './workspace.js';
@@ -48,6 +51,9 @@ export {
   OPENSPEC_PRODUCT_CHANGE_SCHEMA_NAME,
   OPENSPEC_PRODUCT_CHANGE_SCHEMA_RELATIVE,
   PRODUCT_CHANGE_SCHEMA_MIN_OPENSPEC,
+  loadProductRecoverySchemaAssets,
+  OPENSPEC_PRODUCT_RECOVERY_SCHEMA_NAME,
+  OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE,
 } from './product-change-schema.js';
 export type { ProductChangeSchemaAsset } from './product-change-schema.js';
 export {
@@ -192,6 +198,7 @@ export interface OpenSpecIntegrationMeta {
    * recorded digest, so ownership then rests on matching the current assets.
    */
   productSchema?: { name: string; requiresOpenspec: string; files: Record<string, string> };
+  recoverySchema?: { name: string; requiresOpenspec: string; files: Record<string, string> };
 }
 
 /** The pre-#227 schema location accepted only for safe, ownership-proven migration. */
@@ -208,7 +215,8 @@ function recordedProductSchemaFiles(
     typeof record !== 'object' ||
     record === null ||
     (record.name !== OPENSPEC_PRODUCT_CHANGE_SCHEMA_NAME &&
-      record.name !== LEGACY_OPENSPEC_PRODUCT_SCHEMA_NAME) ||
+      record.name !== LEGACY_OPENSPEC_PRODUCT_SCHEMA_NAME &&
+      record.name !== OPENSPEC_PRODUCT_RECOVERY_SCHEMA_NAME) ||
     typeof record.requiresOpenspec !== 'string'
   ) {
     throw new Error(
@@ -219,7 +227,8 @@ function recordedProductSchemaFiles(
   const validatePath = (file: unknown): file is string =>
     typeof file === 'string' &&
     (file.startsWith(`${OPENSPEC_PRODUCT_CHANGE_SCHEMA_RELATIVE}/`) ||
-      file.startsWith(`${LEGACY_OPENSPEC_PRODUCT_SCHEMA_RELATIVE}/`)) &&
+      file.startsWith(`${LEGACY_OPENSPEC_PRODUCT_SCHEMA_RELATIVE}/`) ||
+      file.startsWith(`${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}/`)) &&
     isRepositoryRelativePath(file);
   if (Array.isArray(files)) {
     if (!files.every(validatePath)) {
@@ -246,6 +255,20 @@ function recordedProductSchemaFiles(
     return Object.fromEntries(entries as [string, string][]);
   }
   throw new Error("'productSchema.files' must be a path-to-digest object or legacy path array");
+}
+
+function recordedRecoverySchemaFiles(
+  meta: OpenSpecIntegrationMeta | null,
+): Record<string, string> | undefined {
+  const record = meta?.recoverySchema;
+  if (!record) return undefined;
+  if (record.name !== OPENSPEC_PRODUCT_RECOVERY_SCHEMA_NAME || typeof record.requiresOpenspec !== 'string') {
+    throw new Error("'recoverySchema' must name the product-recovery schema and carry a string 'requiresOpenspec'");
+  }
+  if (!record.files || typeof record.files !== 'object' || Array.isArray(record.files)) {
+    throw new Error("'recoverySchema.files' must be a path-to-digest object");
+  }
+  return record.files;
 }
 
 /** Repository-relative paths used by this integration. */
@@ -788,6 +811,45 @@ export async function addOpenSpecIntegration(
     );
   }
 
+  // The recovery workload has its own schema and ownership record. It is intentionally kept
+  // beside, rather than inside, product-change: recovery starts without an accepted baseline.
+  const recoveryAssets = await loadProductRecoverySchemaAssets();
+  const previousRecovery = recordedRecoverySchemaFiles(previousMeta);
+  const recoveryDigests: Record<string, string> = {};
+  const recoveryWrites: { relative: string; absolute: string; content: string }[] = [];
+  const recoveryCollisions: string[] = [];
+  for (const asset of recoveryAssets) {
+    const relative = `${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}/${asset.relative}`;
+    const absolute = resolveInRepository(root, relative, 'the OpenSpec integration');
+    const existing = (await pathExists(absolute)) ? await readFile(absolute, 'utf8') : null;
+    const digest = contentDigest(asset.content);
+    const recorded = previousRecovery?.[relative];
+    if (existing === null) {
+      recoveryWrites.push({ relative, absolute, content: asset.content });
+      recoveryDigests[relative] = digest;
+    } else if (recorded === undefined) {
+      recoveryCollisions.push(relative);
+    } else if (existing === asset.content) {
+      recoveryDigests[relative] = digest;
+    } else if (recorded !== '' && contentDigest(existing) === recorded) {
+      recoveryWrites.push({ relative, absolute, content: asset.content });
+      recoveryDigests[relative] = digest;
+    } else {
+      recoveryDigests[relative] = recorded;
+      changes.push(`Preserved hand-edited managed file ${relative}; restore or delete it, then run: prodshape integration update.`);
+    }
+  }
+  if (recoveryCollisions.length > 0) {
+    throw new Error(`Refusing to install the OpenSpec product-recovery schema: unrecorded files exist (${recoveryCollisions.join(', ')}). The integration never overwrites user-authored files.`);
+  }
+  if (recoveryWrites.length > 0) {
+    changes.push(
+      previousRecovery === undefined
+        ? `Installed the OpenSpec product-recovery schema at ${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}.`
+        : `Updated the OpenSpec product-recovery schema at ${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE} (${recoveryWrites.length} files).`,
+    );
+  }
+
   // `installedAt` records when this integration was first installed, and is preserved from here
   // on. Stamping a fresh timestamp on every invocation is what made a no-op `add` — and every
   // `integration update` — rewrite this file, so a command that reported "already up to date"
@@ -806,6 +868,11 @@ export async function addOpenSpecIntegration(
       name: OPENSPEC_PRODUCT_CHANGE_SCHEMA_NAME,
       requiresOpenspec: PRODUCT_CHANGE_SCHEMA_MIN_OPENSPEC,
       files: schemaFileDigests,
+    },
+    recoverySchema: {
+      name: OPENSPEC_PRODUCT_RECOVERY_SCHEMA_NAME,
+      requiresOpenspec: PRODUCT_CHANGE_SCHEMA_MIN_OPENSPEC,
+      files: recoveryDigests,
     },
   };
   const updatedAt =
@@ -833,6 +900,11 @@ export async function addOpenSpecIntegration(
       await rm(deletion.absolute, { force: true });
     }
     for (const write of schemaWrites) {
+      await mkdir(dirname(write.absolute), { recursive: true });
+      await writeFile(write.absolute, write.content, 'utf8');
+      written.push(write.relative);
+    }
+    for (const write of recoveryWrites) {
       await mkdir(dirname(write.absolute), { recursive: true });
       await writeFile(write.absolute, write.content, 'utf8');
       written.push(write.relative);
@@ -1170,6 +1242,41 @@ export async function checkOpenSpecIntegration(root: string): Promise<{
     }
   }
 
+  // 6. Hosted recovery schema ownership is checked independently from product-change because
+  // the two workloads have different preconditions and may evolve on different cadences.
+  const recoveryAssets = await loadProductRecoverySchemaAssets();
+  const recoveryRecord = recordedRecoverySchemaFiles(meta);
+  if (recoveryRecord === undefined) {
+    checks.push({
+      name: 'product recovery workflow',
+      ok: false,
+      detail: `OpenSpec product-recovery schema not installed (${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}). Run: prodshape integration update`,
+    });
+  } else {
+    const defects: string[] = [];
+    for (const asset of recoveryAssets) {
+      const relative = `${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}/${asset.relative}`;
+      const absolute = resolveInRepository(root, relative, 'the OpenSpec integration');
+      const expected = recoveryRecord[relative];
+      if (expected === undefined) defects.push(`unrecorded: ${relative}`);
+      else if (!(await pathExists(absolute))) defects.push(`missing: ${relative}`);
+      else {
+        const actual = await readFile(absolute, 'utf8');
+        if (actual !== asset.content && contentDigest(actual) !== expected) {
+          defects.push(`hand-edited and preserved: ${relative}`);
+        } else if (actual !== asset.content) defects.push(`outdated managed content: ${relative}`);
+      }
+    }
+    checks.push({
+      name: 'product recovery workflow',
+      ok: defects.length === 0,
+      detail:
+        defects.length === 0
+          ? `Product recovery workflow available: schema installed at ${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}.`
+          : `Product-recovery schema files need attention. ${defects.join(' ')}`,
+    });
+  }
+
   const ok = checks.every((c) => c.ok);
   return { ok, checks };
 }
@@ -1389,6 +1496,45 @@ export async function removeOpenSpecIntegration(
         try {
           const entries = await readdir(absolute);
           if (entries.length === 0) await rmdir(absolute);
+        } catch (error) {
+          if (!isNotFound(error)) throw error;
+        }
+      }
+    }
+  }
+
+  const recordedRecovery = recordedRecoverySchemaFiles(previousMeta);
+  if (recordedRecovery !== undefined) {
+    const recoveryAssets = new Map(
+      (await loadProductRecoverySchemaAssets()).map((asset) => [
+        `${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}/${asset.relative}`,
+        asset.content,
+      ]),
+    );
+    for (const relative of Object.keys(recordedRecovery).sort()) {
+      const absolute = resolveInRepository(root, relative, 'the OpenSpec integration');
+      if (!(await pathExists(absolute))) continue;
+      const existing = await readFile(absolute, 'utf8');
+      const recordedDigest = recordedRecovery[relative];
+      const proven =
+        existing === recoveryAssets.get(relative) ||
+        (recordedDigest !== '' && contentDigest(existing) === recordedDigest);
+      if (!proven) {
+        preserved.push(relative);
+      } else {
+        if (!dryRun) await rm(absolute, { force: true });
+        removed.push(relative);
+      }
+    }
+    if (!dryRun) {
+      for (const relative of [
+        `${OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE}/templates`,
+        OPENSPEC_PRODUCT_RECOVERY_SCHEMA_RELATIVE,
+        'openspec/schemas',
+      ]) {
+        const absolute = resolveInRepository(root, relative, 'the OpenSpec integration');
+        try {
+          if ((await readdir(absolute)).length === 0) await rmdir(absolute);
         } catch (error) {
           if (!isNotFound(error)) throw error;
         }
