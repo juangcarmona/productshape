@@ -160,11 +160,14 @@ describe('Claude-only installation', () => {
       join(claudeDir, '.claude', 'skills', 'refine-product', 'SKILL.md'),
       'utf8',
     );
-    expect(skill).toContain('existing OpenSpec change pinned to `schema: product-change`');
+    expect(skill).toContain('existing hosted product change identified by the host adapter');
+    expect(skill).toContain('references/host-adapter.md');
+    expect(skill).toContain('host adapter');
     expect(skill).toContain('impact polarity');
     expect(skill).toContain('Ask exactly one question at a time');
-    expect(skill).toContain('same OpenSpec change');
+    expect(skill).toContain('same hosted change');
     expect(skill).toContain('must never approve, apply or archive');
+    expect(skill.toLowerCase()).not.toContain('openspec');
     expect(skill).not.toContain('docs/product/changes/active/<chg-id>');
   });
 
