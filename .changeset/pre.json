@@ -1,0 +1,15 @@
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "@prodshape/cli": "0.18.0",
+    "@prodshape/core": "0.20.0",
+    "@prodshape/distribution": "0.15.0",
+    "@prodshape/integration-claude": "0.3.0",
+    "@prodshape/integration-codex": "0.1.0",
+    "@prodshape/integration-copilot": "0.3.0",
+    "@prodshape/integration-openspec": "0.5.3",
+    "@prodshape/integration-speckit": "0.3.5"
+  },
+  "changesets": []
+}
