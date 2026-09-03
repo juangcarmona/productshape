@@ -11,7 +11,7 @@
         "State which PDaC artifacts this change touches, each with a citation payload emitted by `npx prodshape cite --id <ID> --digest <digest>` and wrapped in the document native comment (`<!-- ... -->` in Markdown). Never write a citation record by hand.",
         "Find the impacted artifacts as a separate step, before writing any proposal content. Read the whole product definition (docs/product/model by default), compare it with what this change wants — the backlog item behind it, if there is one — and list every artifact the change depends on, alters or contradicts. Then widen the list: run `npx prodshape impact <ID>` on each artifact you found and check its direct and indirect neighbours. Put the resulting list in the proposal, cite every impacted artifact from each document that uses it (proposal, specs, design, tasks), and name any neighbour you checked and left out.",
         "If this change's goals contradict the product definition, or need behaviour it does not describe, that is product-definition drift. Record it in the proposal under a 'Product definition drift' note naming the artifacts involved, with the marker `<!-- pdac-drift ids=\"<ID>[, <ID>...]\" summary=\"<one line>\" -->` on its own line so `npx prodshape drift` can list it. The decision is human: the developer and the product owner agree whether to propose a Product Change or adjust this change. Never fix drift quietly, drop or weaken a citation to hide it, or write around the conflict.",
-        "If the change implements altered product behaviour, name the Product Change (CHG id) whose applied or accepted artifacts it implements. If no overlay-validated and human-approved Product Change exists yet, stop and ask for one instead of proceeding. The OpenSpec change is not the Product Change.",
+        "If the change implements altered product behaviour, name the Product Change (CHG id) whose applied or accepted artifacts it implements. If no overlay-validated, apply-authorised Product Change exists yet, stop and ask for one instead of proceeding. A spec-driven OpenSpec change is not the Product Change; product intent travels through a Product Change, under docs/product/changes or hosted by a product-schema OpenSpec change.",
         "Every document of this change must end up bound or exempt, each with an explicit declaration: declare `pdac-scope: cited` on a line of its own and cite the canonical text the document depends on, or declare `pdac-scope: none` with a non-empty reason (`pdac-scope-reason: <why>` in frontmatter, or `<!-- pdac-scope: none reason=\"<why>\" -->`) when a human judges the document has no product-semantic dependency. Citations alone never bind, and never declare an exemption just because citations are missing."
       ],
       "specs": [
@@ -36,5 +36,17 @@
         "Run `npx prodshape citations verify --provider openspec` one final time. Archive only when every document is bound or exempt and every citation is current."
       ]
     }
-  }
+  },
+  "productSchema": {
+    "name": "product",
+    "requiresOpenspec": "1.7.0",
+    "files": {
+      "openspec/schemas/product/schema.yaml": "sha256:ddb910f2c40695bbbcf7c84f851e1c51397bbae3f705120c2af884dd0b6c69f3",
+      "openspec/schemas/product/scripts/product-apply.mjs": "sha256:b97c8e5d1a138d8c12b7a72ef72db9b6358628bb081dced9446d09ae44cd7a08",
+      "openspec/schemas/product/scripts/product-validate.mjs": "sha256:093265cb65e629b533fc3798272f73d1ee2913402b82db71c4898e5e8e6331b3",
+      "openspec/schemas/product/templates/change.md": "sha256:bebb24c12daad7429701cf1c0b95e68b2667f5170a3598dc28c2964a48f0d241",
+      "openspec/schemas/product/templates/proposal.md": "sha256:9a7891ab08094f56eda1edc1bf9809a271f670569c8aeab2f8e924cc149a4aa6"
+    }
+  },
+  "updatedAt": "2026-09-02T11:42:00.618Z"
 }

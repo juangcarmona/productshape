@@ -26,7 +26,7 @@ jobs:
       # not a drifting CI surface. The consumer-install tests spawn the bare `openspec` command,
       # so it must be resolvable from PATH before the suite runs, not just before this last step.
       - name: install OpenSpec CLI
-        run: npm install -g @fission-ai/openspec@1.3.0
+        run: npm install -g @fission-ai/openspec@1.11.0
       # The packed-tarball test in the repo project installs the built CLI package.
       - run: pnpm build
       # Internal fixtures, schema/template/example contracts, the self-hosted

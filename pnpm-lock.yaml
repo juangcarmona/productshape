@@ -17,6 +17,9 @@ importers:
       '@prodshape/core':
         specifier: workspace:*
         version: link:packages/core
+      '@prodshape/integration-openspec':
+        specifier: workspace:*
+        version: link:packages/integration-openspec
       '@types/jsdom':
         specifier: ^28.0.3
         version: 28.0.3
