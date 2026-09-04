@@ -1,30 +1,42 @@
 /** Spec Kit's PRODUCT lane.  This adapter owns only container paths and lifecycle moves. */
-import { mkdir, readdir, rename, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rename, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import {
-  blockingDiagnostics,
   compareCodePoints,
-  dedupeDiagnostics,
   executeApply,
   gitHead,
   isNotFound,
   loadChange,
   openRepository,
-  planApply,
+  planHostedProductChange,
   preflightApply,
   validateBaseline,
-  validateChange,
+  validateHostedProductChange,
+  analyzeImpact,
+  stableJson,
   startRecoverySession,
   loadRecoverySession,
   resolveSessionId,
   nextBatch,
+  addLead,
+  addQuestion,
+  checkRecoverySession,
+  markEvidence,
+  scanCandidates,
+  markFamilyProbe,
+  unmarkEvidence,
+  writeRecoveryReport,
 } from '@prodshape/core';
 import type {
   ApplyPlan,
+  CandidateArtifact,
+  FindingClassification,
   LoadedChange,
   LoadedRecoverySession,
   ProductRepository,
   RecoveryBrief,
+  RecoveryCoverage,
+  RecoveryIssue,
 } from '@prodshape/core';
 import { resolveInRepository } from '@prodshape/core';
 import { pathExists } from './workspace.js';
@@ -111,8 +123,94 @@ export async function createSpecKitProductChange(
 
 export interface SpecKitProductValidation {
   change: LoadedChange;
-  diagnostics: ReturnType<typeof dedupeDiagnostics>;
-  blocking: ReturnType<typeof blockingDiagnostics>;
+  diagnostics: ReturnType<typeof validateHostedProductChange>['diagnostics'];
+  blocking: ReturnType<typeof validateHostedProductChange>['blocking'];
+}
+
+export interface SpecKitProductRefinement {
+  workingMemory?: string;
+  rationale?: string;
+  openQuestions?: string[];
+  outOfScope?: string[];
+  checkedArtifactIds?: string[];
+  excludedArtifactIds?: string[];
+}
+
+function replaceSection(body: string, heading: string, value: string): string {
+  const marker = `## ${heading}`;
+  const start = body.indexOf(marker);
+  if (start === -1) throw new Error(`Product Change is missing the '${heading}' section.`);
+  const contentStart = start + marker.length;
+  const next = body.indexOf('\n## ', contentStart);
+  const end = next === -1 ? body.length : next;
+  return `${body.slice(0, contentStart)}\n\n${value.trim()}\n${body.slice(end)}`;
+}
+
+export async function refineSpecKitProductChange(
+  root: string,
+  name: string,
+  refinement: SpecKitProductRefinement,
+): Promise<{ change: LoadedChange; proposal: string; impact: unknown }> {
+  const change = await loadSpecKitProductChange(root, name);
+  const proposalPath = join(change.dir, 'proposal.md');
+  const currentProposal = (await pathExists(proposalPath))
+    ? await readFile(proposalPath, 'utf8')
+    : '# Product Change working memory\n\n';
+  const workingMemory = refinement.workingMemory?.trim();
+  await writeFile(
+    proposalPath,
+    `${workingMemory !== undefined ? `${currentProposal.trimEnd()}\n\n${workingMemory}` : currentProposal.trimEnd()}\n`,
+    'utf8',
+  );
+
+  let body = change.body;
+  if (refinement.rationale !== undefined)
+    body = replaceSection(body, 'Rationale', refinement.rationale);
+  if (refinement.openQuestions !== undefined)
+    body = replaceSection(
+      body,
+      'Open Questions',
+      refinement.openQuestions.length > 0
+        ? refinement.openQuestions.map((q) => `- ${q}`).join('\n')
+        : 'None.',
+    );
+  if (refinement.outOfScope !== undefined)
+    body = replaceSection(
+      body,
+      'Out of Scope',
+      refinement.outOfScope.length > 0
+        ? refinement.outOfScope.map((q) => `- ${q}`).join('\n')
+        : 'None.',
+    );
+  if (body !== change.body) {
+    const changePath = join(change.dir, 'change.md');
+    const source = await readFile(changePath, 'utf8');
+    await writeFile(changePath, source.replace(change.body, body), 'utf8');
+  }
+
+  const repo = await openRepository(root);
+  const baseline = await validateBaseline(repo);
+  const ids = [
+    ...new Set([
+      ...change.operations.add,
+      ...change.operations.modify,
+      ...change.operations.remove,
+      ...(refinement.checkedArtifactIds ?? []),
+    ]),
+  ].sort(compareCodePoints);
+  const impacts = Object.fromEntries(
+    ids
+      .filter((id) => baseline.graph.nodeById.has(id))
+      .map((id) => [id, analyzeImpact(baseline.graph, id, { direction: 'both', depth: 2 })]),
+  );
+  const impact = {
+    schema: 'product-definition-as-code/product-change-impact/v1alpha1',
+    checked: [...new Set(refinement.checkedArtifactIds ?? ids)].sort(compareCodePoints),
+    excluded: [...new Set(refinement.excludedArtifactIds ?? [])].sort(compareCodePoints),
+    impacts,
+  };
+  await writeFile(join(change.dir, 'impact.json'), `${stableJson(impact)}\n`, 'utf8');
+  return { change: await loadSpecKitProductChange(root, name), proposal: proposalPath, impact };
 }
 
 async function validate(root: string, name: string): Promise<SpecKitProductValidation> {
@@ -122,16 +220,18 @@ async function validate(root: string, name: string): Promise<SpecKitProductValid
   const others: LoadedChange[] = [];
   for (const ref of await listSpecKitProductChanges(root))
     if (ref.name !== name) others.push(await loadChange(ref.dir, repo.root, repo.registry));
-  const result = validateChange(change, baseline.artifacts, others);
-  const diagnostics = dedupeDiagnostics([
-    ...repo.configDiagnostics,
-    ...baseline.diagnostics,
-    ...result.diagnostics,
-  ]);
+  const result = validateHostedProductChange(
+    repo,
+    baseline.artifacts,
+    change,
+    others,
+    baseline.diagnostics,
+  );
+  const diagnostics = result.diagnostics;
   return {
     change,
     diagnostics,
-    blocking: blockingDiagnostics(diagnostics, repo.config.validation['warnings-as-errors']),
+    blocking: result.blocking,
   };
 }
 
@@ -150,7 +250,7 @@ export async function applySpecKitProductChange(
   const repo = await openRepository(root);
   const baseline = await validateBaseline(repo);
   const checked = await validate(root, name);
-  const raw = await planApply({
+  const plan = await planHostedProductChange({
     repoRoot: root,
     modelRelative: repo.config.product.model,
     changesRelative: SPECKIT_PRODUCT_CHANGES,
@@ -158,7 +258,6 @@ export async function applySpecKitProductChange(
     baseline: baseline.artifacts,
     overlayErrors: checked.blocking,
   });
-  const plan = { ...raw, actions: raw.actions.filter((action) => action.kind !== 'move-change') };
   if (plan.diagnostics.some((d) => d.severity === 'error'))
     return { outcome: 'refused', plan, change: checked.change };
   if (options.dryRun) {
@@ -198,6 +297,131 @@ export async function startSpecKitRecovery(
     cliVersion: 'speckit-adapter',
     changeDir: `${SPECKIT_RECOVERY_ROOT}/${sessionId}/product`,
   });
+}
+
+export async function startOrResumeSpecKitRecovery(
+  root: string,
+  sessionId: string,
+  brief?: RecoveryBrief,
+): Promise<LoadedRecoverySession> {
+  const repo = adapterRepo(await openRepository(root));
+  const dir = resolveInRepository(
+    root,
+    `${SPECKIT_RECOVERY_ROOT}/${sessionId}`,
+    'the Spec Kit recovery session',
+  );
+  if (await pathExists(dir)) return loadRecoverySession(repo, sessionId);
+  return startRecoverySession(repo, {
+    sessionId,
+    brief,
+    cliVersion: 'speckit-adapter',
+    changeDir: `${SPECKIT_RECOVERY_ROOT}/${sessionId}/product`,
+  });
+}
+
+export interface SpecKitRecoveryFinding {
+  source: string;
+  classification?: FindingClassification;
+  artifacts?: string[];
+  question?: string;
+  reason?: string;
+  note?: string;
+  complete?: boolean;
+  exclude?: boolean;
+  acceptChanged?: boolean;
+}
+
+export interface SpecKitRecoveryRoundInput {
+  findings?: SpecKitRecoveryFinding[];
+  retractions?: { source: string; last?: boolean; index?: number; all?: boolean }[];
+  leads?: { description: string; source?: string; kind: 'repo' | 'external' | 'user' }[];
+  questions?: {
+    text: string;
+    context?: string;
+    options?: string[];
+    recommendation?: string;
+  }[];
+  familyProbes?: { family: string; note: string }[];
+}
+
+export async function recordSpecKitRecoveryBatch(
+  root: string,
+  sessionId: string,
+  input: SpecKitRecoveryRoundInput,
+): Promise<LoadedRecoverySession> {
+  const repo = adapterRepo(await openRepository(root));
+  const session = await loadRecoverySession(repo, sessionId);
+  for (const question of input.questions ?? []) await addQuestion(repo, session, question);
+  for (const lead of input.leads ?? []) await addLead(repo, session, lead);
+  for (const finding of input.findings ?? []) await markEvidence(repo, session, finding);
+  for (const retraction of input.retractions ?? []) await unmarkEvidence(repo, session, retraction);
+  for (const probe of input.familyProbes ?? [])
+    await markFamilyProbe(repo, session, probe.family, probe.note);
+  return session;
+}
+
+export async function writeSpecKitRecoveryCandidate(
+  root: string,
+  sessionId: string,
+  relativePath: string,
+  content: string,
+): Promise<string> {
+  const repo = adapterRepo(await openRepository(root));
+  const session = await loadRecoverySession(repo, sessionId);
+  if (!relativePath.toLowerCase().endsWith('.md'))
+    throw new Error('Recovery candidates must be Markdown files.');
+  const path = resolveInRepository(
+    root,
+    `${session.state.changeDir}/proposed/${relativePath}`,
+    'the Spec Kit recovery candidate',
+  );
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, content, 'utf8');
+  return `${session.state.changeDir}/proposed/${relativePath.replaceAll('\\', '/')}`;
+}
+
+export interface SpecKitRecoveryRoundResult {
+  session: LoadedRecoverySession;
+  batch: ReturnType<typeof nextBatch>;
+  candidates: CandidateArtifact[];
+  coverage: RecoveryCoverage;
+  issues: RecoveryIssue[];
+  outcome: 'insufficient-evidence' | 'needs-work' | 'ready-for-review';
+  recommendation: string;
+}
+
+export async function completeSpecKitRecoveryRound(
+  root: string,
+  sessionId: string,
+  limit?: number,
+): Promise<SpecKitRecoveryRoundResult> {
+  const repo = adapterRepo(await openRepository(root));
+  const session = await loadRecoverySession(repo, sessionId);
+  const checked = await checkRecoverySession(repo, session);
+  const candidates = await scanCandidates(repo, session.state);
+  const report = await writeRecoveryReport(repo, session);
+  const batch = nextBatch(session, limit);
+  const recommendation = checked.issues.some((item) => item.severity === 'error')
+    ? 'Resolve the reported drift or validation errors before processing another batch.'
+    : report.coverage.completion.complete
+      ? 'Recovery is complete enough for human review of the CHG-INITIAL overlay.'
+      : batch.length > 0
+        ? `Process the next bounded batch of ${batch.length} evidence source(s).`
+        : 'Record the remaining questions, leads, probes or candidate mappings, then re-check.';
+  const outcome = checked.issues.some((item) => item.severity === 'error')
+    ? 'needs-work'
+    : report.coverage.completion.complete
+      ? 'ready-for-review'
+      : 'insufficient-evidence';
+  return {
+    session,
+    batch,
+    candidates,
+    coverage: report.coverage,
+    issues: checked.issues,
+    outcome,
+    recommendation,
+  };
 }
 
 export async function nextSpecKitRecoveryBatch(

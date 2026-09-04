@@ -5,14 +5,20 @@ import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import { repoRoot } from '../helpers.js';
+import { defaultRecoveryBrief } from '@prodshape/core';
 import {
   applySpecKitProductChange,
   archiveSpecKitProductChange,
   createSpecKitProductChange,
+  completeSpecKitRecoveryRound,
   listSpecKitProductChanges,
   nextSpecKitRecoveryBatch,
+  recordSpecKitRecoveryBatch,
+  refineSpecKitProductChange,
+  startOrResumeSpecKitRecovery,
   startSpecKitRecovery,
   validateSpecKitProductChange,
+  writeSpecKitRecoveryCandidate,
 } from '@prodshape/integration-speckit';
 
 async function workspace(): Promise<string> {
@@ -99,6 +105,163 @@ describe('Spec Kit PRODUCT adapter', () => {
           join(root, '.specify', 'productshape', 'recoveries', 'first-round', 'state.json'),
         ),
       ).toBe(true);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('records one bounded recovery round and persists its recommendation', async () => {
+    const root = await workspace();
+    try {
+      await rm(join(root, 'docs', 'product', 'model'), { recursive: true, force: true });
+      const started = await startOrResumeSpecKitRecovery(root, 'bounded-round');
+      const resumed = await startOrResumeSpecKitRecovery(root, 'bounded-round');
+      expect(resumed.state.sessionId).toBe(started.state.sessionId);
+      const batch = await nextSpecKitRecoveryBatch(root, 'bounded-round', 1);
+      const item = batch.batch[0];
+      if (item) {
+        await recordSpecKitRecoveryBatch(root, 'bounded-round', {
+          findings: [
+            {
+              source: item.id,
+              classification: 'no-product-intent',
+              reason: 'Test fixture source is not product intent.',
+              complete: true,
+            },
+          ],
+        });
+      }
+      const candidatePath = await writeSpecKitRecoveryCandidate(
+        root,
+        'bounded-round',
+        'requirements/functional/fr-recovered-001.md',
+        '---\nid: FR-RECOVERED-001\ntype: functional-requirement\ntitle: Recovered\nstatus: draft\n---\n\n## Requirement\n\nRecovered outcome.\n',
+      );
+      expect(candidatePath).toContain(
+        '.specify/productshape/recoveries/bounded-round/product/proposed',
+      );
+      const round = await completeSpecKitRecoveryRound(root, 'bounded-round', 1);
+      expect(round.recommendation).toContain('Resolve');
+      expect(round.coverage.candidates.total).toBe(1);
+      expect(
+        existsSync(
+          join(root, '.specify', 'productshape', 'recoveries', 'bounded-round', 'report.md'),
+        ),
+      ).toBe(true);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('persists recovery provenance, questions, retractions, coverage and drift outcomes', async () => {
+    const root = await workspace();
+    try {
+      await rm(join(root, 'docs', 'product', 'model'), { recursive: true, force: true });
+      await mkdir(join(root, 'legacy'), { recursive: true });
+      const evidencePath = join(root, 'legacy', 'notes.md');
+      await writeFile(evidencePath, '# Legacy evidence\n', 'utf8');
+      const started = await startSpecKitRecovery(root, 'evidence-ledger', {
+        ...defaultRecoveryBrief(),
+        roots: ['legacy'],
+        include: ['**/*.md'],
+        batchSize: 1,
+      });
+      const item = (await nextSpecKitRecoveryBatch(root, 'evidence-ledger', 1)).batch[0];
+      expect(item?.authorization).toBe('brief');
+      expect(item?.path).toBe('legacy/notes.md');
+      const withQuestion = await recordSpecKitRecoveryBatch(root, 'evidence-ledger', {
+        questions: [
+          {
+            text: 'Does this legacy behavior remain intended?',
+            context: item?.id,
+            options: ['yes', 'no'],
+            recommendation: 'Ask the product owner.',
+          },
+        ],
+        leads: [
+          { description: 'Review the legacy decision record.', source: item?.id, kind: 'repo' },
+        ],
+        findings: [
+          {
+            source: item?.id ?? '',
+            classification: 'question',
+            question: 'Q-0001',
+            note: 'Meaning requires product confirmation.',
+          },
+        ],
+        familyProbes: [{ family: 'actor', note: 'No actor candidate was found in this evidence.' }],
+      });
+      expect(withQuestion.questions.questions[0]?.id).toBe('Q-0001');
+      expect(withQuestion.leads.leads[0]?.source).toBe(item?.id);
+      expect(withQuestion.state.familyProbes.actor?.outcome).toBe('none-found');
+
+      const retracted = await recordSpecKitRecoveryBatch(root, 'evidence-ledger', {
+        retractions: [{ source: item?.id ?? '', last: true }],
+      });
+      expect(retracted.inventory.items[0]?.findings).toEqual([]);
+      expect(retracted.inventory.items[0]?.status).toBe('pending');
+      await recordSpecKitRecoveryBatch(root, 'evidence-ledger', {
+        findings: [
+          {
+            source: item?.id ?? '',
+            classification: 'no-product-intent',
+            reason: 'Historical note is not a product decision.',
+            complete: true,
+          },
+        ],
+      });
+      await writeSpecKitRecoveryCandidate(
+        root,
+        'evidence-ledger',
+        'requirements/functional/fr-ledger-001.md',
+        '---\nid: FR-LEDGER-001\ntype: functional-requirement\ntitle: Ledger\nstatus: draft\nprovenance:\n  source:\n    - E-0001\n  confidence: low\n---\n\n## Requirement\n\nCandidate meaning.\n',
+      );
+      const complete = await completeSpecKitRecoveryRound(root, 'evidence-ledger', 1);
+      expect(complete.outcome).toBe('insufficient-evidence');
+      expect(complete.coverage.sources.processed).toBe(1);
+      expect(complete.coverage.classifications['no-product-intent']).toBe(1);
+      expect(complete.coverage.leads.open).toBe(1);
+      expect(complete.coverage.questions.open).toBe(1);
+      expect(complete.coverage.families.actor).toBe('none-found');
+      expect(complete.coverage.candidates.total).toBe(1);
+      expect(complete.coverage.completion.complete).toBe(false);
+
+      await writeFile(evidencePath, '# Legacy evidence changed\n', 'utf8');
+      const drifted = await completeSpecKitRecoveryRound(root, 'evidence-ledger', 1);
+      expect(drifted.outcome).toBe('needs-work');
+      expect(drifted.issues.some((issue) => issue.code.includes('stale'))).toBe(true);
+      expect(started.state.changeId).toBe('CHG-INITIAL');
+      expect(
+        existsSync(
+          join(root, '.specify', 'productshape', 'recoveries', 'evidence-ledger', 'coverage.json'),
+        ),
+      ).toBe(true);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('refines one hosted change with working memory and persisted impact exclusions', async () => {
+    const root = await workspace();
+    try {
+      await createSpecKitProductChange(root, 'same-change');
+      const result = await refineSpecKitProductChange(root, 'same-change', {
+        workingMemory: 'Human clarification: keep the outcome narrow.',
+        rationale: 'The clarified outcome is testable and bounded.',
+        openQuestions: ['Which actor owns the final decision?'],
+        outOfScope: ['Implementation details'],
+        checkedArtifactIds: ['UC-SHORTEN-001'],
+        excludedArtifactIds: ['ACT-VISITOR-001'],
+      });
+      expect(await readFile(result.proposal, 'utf8')).toContain('Human clarification');
+      const impact = JSON.parse(await readFile(join(result.change.dir, 'impact.json'), 'utf8')) as {
+        checked: string[];
+        excluded: string[];
+      };
+      expect(impact.checked).toEqual(['UC-SHORTEN-001']);
+      expect(impact.excluded).toEqual(['ACT-VISITOR-001']);
+      expect(result.change.body).toContain('Which actor owns the final decision?');
+      expect(result.change.body).toContain('Implementation details');
     } finally {
       await rm(root, { recursive: true, force: true });
     }

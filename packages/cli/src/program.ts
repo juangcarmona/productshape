@@ -93,15 +93,18 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
   const speckitProduct = program
     .command('speckit-product')
     .description('Run the deterministic ProductShape PRODUCT adapter used by Spec Kit');
-  for (const action of ['create', 'validate', 'apply', 'archive'] as const) {
+  for (const action of ['create', 'refine', 'validate', 'apply', 'archive'] as const) {
     const command = speckitProduct
       .command(action)
       .argument('<name>', 'named Spec Kit Product Change')
       .option('--dry-run', 'preflight apply without writing')
       .option('--format <format>', 'text or json', 'text');
-    command.action(async (name: string, options: { dryRun?: boolean; format?: string }) => {
-      capture.code = await runSpecKitProduct(io, action, name, options);
-    });
+    command.option('--input <file>', 'JSON refinement input for refine');
+    command.action(
+      async (name: string, options: { dryRun?: boolean; format?: string; input?: string }) => {
+        capture.code = await runSpecKitProduct(io, action, name, options);
+      },
+    );
   }
   speckitProduct
     .command('recover-start')
@@ -117,6 +120,31 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .option('--format <format>', 'text or json', 'text')
     .action(async (options: { session?: string; limit?: string; format?: string }) => {
       capture.code = await runSpecKitProduct(io, 'recover-next', undefined, options);
+    });
+  speckitProduct
+    .command('recover-record')
+    .requiredOption('--session <id>', 'recovery session id')
+    .requiredOption('--input <file>', 'JSON file containing one bounded recovery batch')
+    .option('--format <format>', 'text or json', 'text')
+    .action(async (options: { session: string; input: string; format?: string }) => {
+      capture.code = await runSpecKitProduct(io, 'recover-record', undefined, options);
+    });
+  speckitProduct
+    .command('recover-candidate')
+    .requiredOption('--session <id>', 'recovery session id')
+    .requiredOption('--path <path>', 'candidate path under the recovery proposed directory')
+    .requiredOption('--file <file>', 'source Markdown file')
+    .option('--format <format>', 'text or json', 'text')
+    .action(async (options: { session: string; path: string; file: string; format?: string }) => {
+      capture.code = await runSpecKitProduct(io, 'recover-candidate', undefined, options);
+    });
+  speckitProduct
+    .command('recover-round')
+    .requiredOption('--session <id>', 'recovery session id')
+    .option('--limit <n>', 'maximum evidence items in the next recommendation')
+    .option('--format <format>', 'text or json', 'text')
+    .action(async (options: { session: string; limit?: string; format?: string }) => {
+      capture.code = await runSpecKitProduct(io, 'recover-round', undefined, options);
     });
 
   program

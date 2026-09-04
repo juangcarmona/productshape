@@ -30,8 +30,8 @@ jobs:
         run: npm install -g @fission-ai/openspec@1.11.0
       # The Spec Kit CLI (specify) drives the real-workspace suite in
       # tests/conformance/speckit-consumer.test.ts; the fixture suite guards the same contract
-      # without it. Pinned to a commit so an upstream Spec Kit change is a deliberate bump, not a
-      # drifting CI surface. `specify init` scaffolds from assets bundled in the CLI, offline.
+      # without it. Pinned to the supported v1.0.4 commit so an upstream Spec Kit change is a
+      # deliberate bump, not a drifting CI surface.
       - name: install uv
         uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with:
@@ -39,8 +39,9 @@ jobs:
       - name: install Spec Kit CLI
         shell: bash
         run: |
-          uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@27f50f7e6b618ea14d74dd4037f9e7c60218b16c
+          uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@cb610277fdea781fcfa83d20522c2db37c94068d
           echo "$(uv tool dir --bin)" >> "$GITHUB_PATH"
+          echo "PRODSHAPE_REQUIRE_SPECKIT=1" >> "$GITHUB_ENV"
       - run: pnpm typecheck
       # Build before test: the packed-tarball test installs the built CLI package
       # (dist/ + staged schemas/assets) into a clean directory and runs its binaries.

@@ -31,18 +31,17 @@ import { join } from 'node:path';
 import { parse } from 'yaml';
 import {
   analyzeImpact,
-  blockingDiagnostics,
   compareCodePoints,
-  dedupeDiagnostics,
   discoverChanges,
   executeApply,
   isNotFound,
   loadChange,
   openRepository,
-  planApply,
+  planHostedProductChange,
   preflightApply,
   sortDiagnostics,
   validateBaseline,
+  validateHostedProductChange,
   validateChange,
 } from '@prodshape/core';
 import type {
@@ -349,20 +348,21 @@ export async function validateOpenSpecProductChange(
     all.find((candidate) => hostedName(root, candidate) === changeName) ??
     (await loadHostedChange(root, repo, changeName));
   const validation = validateChange(change, baseline.artifacts, all);
-  const diagnostics = sortDiagnostics(
-    dedupeDiagnostics([
-      ...repo.configDiagnostics,
-      ...baseline.diagnostics,
-      ...validation.diagnostics,
-    ]),
+  const hosted = validateHostedProductChange(
+    repo,
+    baseline.artifacts,
+    change,
+    all,
+    baseline.diagnostics,
   );
+  const diagnostics = hosted.diagnostics;
   return {
     change,
     baseline,
     overlayArtifacts: validation.overlayArtifacts,
     overlayGraph: validation.overlayGraph,
     diagnostics,
-    blocking: blockingDiagnostics(diagnostics, repo.config.validation['warnings-as-errors']),
+    blocking: hosted.blocking,
   };
 }
 
@@ -419,7 +419,13 @@ export async function applyOpenSpecProductChange(
     all.find((candidate) => hostedName(root, candidate) === changeName) ??
     (await loadHostedChange(root, repo, changeName));
 
-  const validation = validateChange(change, baseline.artifacts, all);
+  const hosted = validateHostedProductChange(
+    repo,
+    baseline.artifacts,
+    change,
+    all,
+    baseline.diagnostics,
+  );
   // Everything capable of making the resulting model invalid blocks BEFORE any write:
   // configuration diagnostics, the baseline's own load and per-document diagnostics, the change's
   // diagnostics and the full overlay revalidation. The overlay pass alone is not enough, because
@@ -427,24 +433,13 @@ export async function applyOpenSpecProductChange(
   // body-section defects) are load-time diagnostics that graph-level revalidation never re-emits;
   // omitting them let apply write into a model whose fresh validation then failed, violating the
   // resulting-model obligation. Refusal happens with the working tree byte-identical.
-  const overlayErrors = blockingDiagnostics(
-    sortDiagnostics(
-      dedupeDiagnostics([
-        ...repo.configDiagnostics,
-        ...baseline.diagnostics,
-        ...validation.diagnostics,
-      ]),
-    ),
-    repo.config.validation['warnings-as-errors'],
-  );
-
-  const rawPlan = await planApply({
+  const rawPlan = await planHostedProductChange({
     repoRoot: repo.root,
     modelRelative: repo.config.product.model,
     changesRelative: repo.config.product.changes,
     change,
     baseline: baseline.artifacts,
-    overlayErrors,
+    overlayErrors: hosted.blocking,
   });
   const plan: ApplyPlan = {
     ...rawPlan,
