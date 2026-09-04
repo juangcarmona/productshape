@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -41,6 +41,33 @@ async function scratchWorkspace(): Promise<string> {
   const dir = await mkdtemp(join(tmpdir(), 'prodshape-openspec-product-change-schema-'));
   await mkdir(join(dir, 'openspec'), { recursive: true });
   return dir;
+}
+
+async function withControlledOpenSpecPath<T>(path: string, callback: () => Promise<T>): Promise<T> {
+  const savedPath = process.env.PATH;
+  const savedWindowsPath = process.env.Path;
+  try {
+    delete process.env.Path;
+    process.env.PATH = path;
+    return await callback();
+  } finally {
+    delete process.env.PATH;
+    delete process.env.Path;
+    if (savedPath !== undefined) process.env.PATH = savedPath;
+    if (savedWindowsPath !== undefined) process.env.Path = savedWindowsPath;
+  }
+}
+
+async function fakeOpenSpecBin(root: string): Promise<string> {
+  const bin = join(root, 'fake-bin');
+  await mkdir(bin, { recursive: true });
+  const executable =
+    process.platform === 'win32' ? join(bin, 'openspec.cmd') : join(bin, 'openspec');
+  const contents =
+    process.platform === 'win32' ? '@echo 1.11.0\r\n' : '#!/bin/sh\nprintf "1.11.0\\n"\n';
+  await writeFile(executable, contents, 'utf8');
+  if (process.platform !== 'win32') await chmod(executable, 0o755);
+  return bin;
 }
 
 describe('openspec product schema assets', () => {
@@ -207,6 +234,28 @@ describe('openspec product schema assets', () => {
 });
 
 describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', () => {
+  it('initial installation fails honestly when OpenSpec is absent', async () => {
+    const dir = await scratchWorkspace();
+    try {
+      await expect(
+        withControlledOpenSpecPath(join(dir, 'no-openspec'), () => addOpenSpecIntegration(dir)),
+      ).rejects.toThrow(/OpenSpec CLI not found on PATH/);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('initial installation detects a compatible OpenSpec executable', async () => {
+    const dir = await scratchWorkspace();
+    try {
+      const bin = await fakeOpenSpecBin(dir);
+      const result = await withControlledOpenSpecPath(bin, () => addOpenSpecIntegration(dir));
+      expect(result.meta.openspecVersion).toBe('1.11.0');
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it('add installs the schema files and records them in the integration metadata', async () => {
     const dir = await scratchWorkspace();
     try {
@@ -263,7 +312,9 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
 
       const diverged = join(dir, 'openspec', 'schemas', 'product', 'schema.yaml');
       await writeFile(diverged, 'name: product\n# user edit\n', 'utf8');
-      const result = await updateOpenSpecIntegration(dir);
+      const result = await withControlledOpenSpecPath(join(dir, 'no-openspec'), () =>
+        updateOpenSpecIntegration(dir),
+      );
 
       expect(result.written).toContain('openspec/schemas/product-change/schema.yaml');
       expect(
@@ -350,7 +401,9 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
         contentDigest(olderManaged);
       await writeFile(metaPath, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
 
-      const result = await updateOpenSpecIntegration(dir);
+      const result = await withControlledOpenSpecPath(join(dir, 'no-openspec'), () =>
+        updateOpenSpecIntegration(dir),
+      );
       expect(result.written).toContain('openspec/schemas/product-change/schema.yaml');
       const restored = await readFile(target, 'utf8');
       expect(restored).toContain('name: product');
@@ -367,7 +420,9 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
       const target = join(dir, 'openspec', 'schemas', 'product-change', 'schema.yaml');
       const edited = 'name: tampered by hand\n';
       await writeFile(target, edited, 'utf8');
-      const result = await updateOpenSpecIntegration(dir);
+      const result = await withControlledOpenSpecPath(join(dir, 'no-openspec'), () =>
+        updateOpenSpecIntegration(dir),
+      );
       expect(result.written).not.toContain('openspec/schemas/product-change/schema.yaml');
       expect(
         result.changes.some((change) =>
@@ -398,7 +453,9 @@ describe('openspec product schema managed lifecycle (no OpenSpec CLI needed)', (
       meta.productSchema.files[obsoleteRelative] = contentDigest(obsoleteContent);
       await writeFile(metaPath, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
 
-      const result = await updateOpenSpecIntegration(dir);
+      const result = await withControlledOpenSpecPath(join(dir, 'no-openspec'), () =>
+        updateOpenSpecIntegration(dir),
+      );
       await expect(stat(obsolete)).rejects.toThrow();
       expect(result.changes).toContain(`Removed obsolete managed file ${obsoleteRelative}.`);
       const updatedMeta = JSON.parse(await readFile(metaPath, 'utf8')) as {

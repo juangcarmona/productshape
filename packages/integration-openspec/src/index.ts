@@ -1015,12 +1015,15 @@ export async function updateOpenSpecIntegration(
   root: string,
   options: { force?: boolean; dryRun?: boolean; warningsAsErrors?: boolean } = {},
 ): Promise<{ written: string[]; changes: string[] }> {
-  // `add` already re-merges idempotently; `force` ensures the metadata is refreshed even when
-  // the config content did not change.
+  // An existing metadata record is the compatibility verdict established during installation.
+  // Managed file reconciliation must remain usable in release jobs and repositories that no
+  // longer have OpenSpec on PATH; initial installation and explicit health checks still probe it.
+  const previousMeta = await readMeta(root);
   const result = await addOpenSpecIntegration(root, {
     force: true,
     dryRun: options.dryRun,
     warningsAsErrors: options.warningsAsErrors,
+    ...(previousMeta?.openspecVersion ? { cliVersion: previousMeta.openspecVersion } : {}),
   });
   return { written: result.written, changes: result.changes };
 }

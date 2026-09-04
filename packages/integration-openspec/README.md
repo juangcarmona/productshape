@@ -64,3 +64,5 @@ import {
 Concurrency (PRODUCT025) spans both change containers: a hosted OpenSpec product change and a native change under `docs/product/changes/active` touching the same artifact report against each other.
 
 The citation-lane surface (`addOpenSpecIntegration`, `updateOpenSpecIntegration`, `checkOpenSpecIntegration`, `removeOpenSpecIntegration`, `bootstrapOpenSpecWorkspace`, the population provider) is unchanged and documented in the module source.
+
+`addOpenSpecIntegration` and `checkOpenSpecIntegration` detect the OpenSpec CLI because they establish or verify the recorded compatibility verdict. `updateOpenSpecIntegration` uses that verdict from `.product/integrations/openspec.json`, so managed configuration and schema ownership reconciliation remains available when OpenSpec is not on `PATH`; an update without existing integration metadata follows the same detection requirement as a first installation.

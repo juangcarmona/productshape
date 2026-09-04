@@ -117,6 +117,11 @@ jobs:
       # Green build is a hard gate for any publish.
       - run: pnpm build
       - run: pnpm typecheck
+      # The full suite includes a separately named real-OpenSpec conformance lane. Managed
+      # integration reconciliation itself does not require this executable; this install makes
+      # the real-CLI lane explicit instead of allowing it to disappear on release runners.
+      - name: install OpenSpec CLI for real conformance
+        run: npm install -g @fission-ai/openspec@1.11.0
       - run: pnpm test
       - run: pnpm release-contract:smoke
       # `changeset publish` tags each published package with `git tag <name> -m <name>` — an
@@ -219,6 +224,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm typecheck
+      # The full suite includes a separately named real-OpenSpec conformance lane. Managed
+      # integration reconciliation itself does not require this executable; this install makes
+      # the real-CLI lane explicit instead of allowing it to disappear on release runners.
+      - name: install OpenSpec CLI for real conformance
+        run: npm install -g @fission-ai/openspec@1.11.0
       - run: pnpm test
       - run: pnpm release-contract:smoke
       - name: configure git identity
@@ -283,7 +293,8 @@ jobs:
       # `pnpm run version` ends in `integration update`, which regenerates every configured
       # integration of the self-hosted model; the OpenSpec adapter shells out to the `openspec`
       # CLI, which the runner does not carry. Same major the adapter's own error message names.
-      - run: npm install -g @fission-ai/openspec@1
+      - name: install OpenSpec CLI for versioning
+        run: npm install -g @fission-ai/openspec@1.11.0
       - name: configure git identity
         run: |
           git config user.name "github-actions[bot]"
