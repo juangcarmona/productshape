@@ -14,7 +14,8 @@ on:
         type: choice
         default: publish
         options:
-          - publish # apply pending version bumps and publish (used for alpha/beta and recovery)
+          - publish # prepare a Version Packages PR for pending alpha/beta changesets
+          - publish-current-prerelease # publish versions already committed to main but absent from npm
           - pre-enter-alpha # start an alpha pre-release train
           - pre-enter-beta # start a beta pre-release train
           - pre-exit # return to the stable train
@@ -263,6 +264,83 @@ jobs:
             exit 1
           fi
 
+  # Recovery only: publish prerelease versions already committed to main when a previous publish
+  # stopped before `changeset publish`. This job deliberately has no branch or PR permissions and
+  # never runs `changeset version`; the repository commit is already the source of truth.
+  publish-current-prerelease:
+    name: publish current prerelease
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.task == 'publish-current-prerelease'
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      - name: install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: false
+      - name: install pinned external tools
+        run: |
+          npm install -g @fission-ai/openspec@1.11.0
+          uv tool install specify-cli --from git+https://github.com/github/spec-kit.git@cb610277fdea781fcfa83d20522c2db37c94068d
+          echo "$(uv tool dir --bin)" >> "$GITHUB_PATH"
+          echo "PRODSHAPE_REQUIRE_SPECKIT=1" >> "$GITHUB_ENV"
+      - name: verify current main and build publication plan
+        shell: bash
+        run: |
+          git fetch --tags --force origin main
+          git checkout --detach origin/main
+          echo "Publishing exact main commit $(git rev-parse HEAD)"
+          set +e
+          node scripts/check-prerelease-publication.mjs | tee prerelease-publication-plan.md
+          status=${PIPESTATUS[0]}
+          set -e
+          cat prerelease-publication-plan.md >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm release-contract:smoke
+      - name: configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: publish current prerelease packages
+        run: pnpm changeset publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'
+      - name: push and verify prerelease tags and npm versions
+        shell: bash
+        run: |
+          git push origin --tags
+          missing=0
+          while read -r name version; do
+            tag="${name}@${version}"
+            if ! git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
+              echo "::error::expected tag ${tag} is not on the remote"
+              missing=1
+            fi
+            if ! npm view "${name}@${version}" version --json >/dev/null 2>&1; then
+              echo "::error::expected npm version ${name}@${version} is not published"
+              missing=1
+            fi
+          done < <(pnpm -r --json list --depth -1 2>/dev/null \
+            | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{for(const p of JSON.parse(s))if(p.name&&p.name.startsWith("@prodshape/"))console.log(p.name,p.version)})')
+          exit "$missing"
+
   # Manual path: prerelease publishing (alpha/beta), recovery, and pre-mode management.
   dispatch:
     name: manual (${{ github.event.inputs.task }})
@@ -355,8 +433,14 @@ jobs:
           pnpm test
           pnpm release-contract:smoke
           pnpm run version
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No changesets were consumed; main already contains the current version state."
+            echo "No Version Packages PR was created. Use publish-current-prerelease only when npm is missing a committed prerelease."
+            echo "### No prerelease version diff" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           git add -A
-          git commit -m "chore: Version Packages (prerelease)" || true
+          git commit -m "chore: Version Packages (prerelease)"
           branch="release/version-prerelease-${GITHUB_RUN_ID}"
           git switch -C "$branch"
           git push --force-with-lease origin "HEAD:refs/heads/$branch"

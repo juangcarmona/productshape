@@ -55,6 +55,14 @@ Every manual Release workflow run first waits for approval from the protected `n
 2. Continue adding changesets normally. Run the workflow with `task = publish`, approve the environment deployment, and merge the generated version PR. The merged `Version Packages (prerelease)` commit triggers the prerelease publish job, which requests its own `npm-publish` approval before publishing. Package versions become `x.y.z-alpha.N` or `x.y.z-beta.N` and Changesets publishes them under the matching `alpha` or `beta` dist-tag.
 3. When ready to stabilize, run the workflow with `task = pre-exit`, approve the environment deployment, merge the generated PR removing `.changeset/pre.json`, and follow the normal stable release flow.
 
+### Recovering a merged but unpublished prerelease
+
+Use the manual Release workflow operation `task = publish-current-prerelease` only when a prerelease version commit is already on `main` but the corresponding npm publication stopped before `changeset publish`. This is the recovery path for a failed publish, not an alternative versioning flow. It requires `.changeset/pre.json` to remain in alpha or beta mode and always reads the exact current `main` commit.
+
+The recovery job lists every publishable `@prodshape/*` workspace package, compares its exact committed version with npm, and writes an explicit plan to the workflow summary. It stops before npm mutation if a stable version is absent, npm is ahead, repository state is inconsistent, or no package is pending. Already-published immutable versions are skipped by `changeset publish`, so rerunning after partial publication is safe. The job runs the build, typecheck, full tests and packed release-contract smoke first, installs the pinned OpenSpec CLI for real conformance coverage, configures Git identity, publishes through the normal `pnpm changeset publish` command, pushes all generated tags, and verifies both npm versions and remote tags.
+
+For the currently recovered `main`, the expected pending candidates are `@prodshape/cli@0.19.0-alpha.3`, `@prodshape/distribution@0.16.0-alpha.0`, `@prodshape/integration-openspec@0.6.0-alpha.3`, and `@prodshape/integration-speckit@0.4.0-alpha.0`; the other publishable workspace packages are already stable releases and must already exist on npm. Do not use this operation for unversioned changesets, stable releases, or a repository whose npm versions are newer than its committed manifests.
+
 Prerelease dist-tags are non-default: `npm install @prodshape/<pkg>` continues to resolve `latest`, while consumers opt in with `npm install @prodshape/<pkg>@alpha` or `@beta`. Stable releases use the `latest` dist-tag.
 
 If npm publication succeeds but tag synchronization fails, the job reports this as a repository-sync failure. Re-run the workflow after push access is restored; Changesets treats already-published npm versions as immutable and skips republishing them while the missing tags are synchronized.

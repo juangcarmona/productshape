@@ -39,6 +39,32 @@ const checks = [
     /name: prepare prerelease version PR[\s\S]*?gh pr create/.test(workflow),
   ],
   [
+    'manual publish exits cleanly when there is no version diff',
+    /name: prepare prerelease version PR[\s\S]*?No changesets were consumed[\s\S]*?exit 0/.test(
+      workflow,
+    ),
+  ],
+  [
+    'publication recovery is a separate dispatch-only operation',
+    /publish-current-prerelease:[\s\S]*?github\.event_name == 'workflow_dispatch'[\s\S]*?task == 'publish-current-prerelease'/.test(
+      workflow,
+    ) &&
+      /publish-current-prerelease:[\s\S]*?pnpm changeset publish/.test(workflow) &&
+      !/publish-current-prerelease:[\s\S]*?changeset version/.test(workflow),
+  ],
+  [
+    'publication recovery has prerelease and npm-state gates',
+    /publish-current-prerelease:[\s\S]*?check-prerelease-publication\.mjs[\s\S]*?GITHUB_STEP_SUMMARY/.test(
+      workflow,
+    ),
+  ],
+  [
+    'publication recovery verifies npm versions and remote tags',
+    /push and verify prerelease tags and npm versions[\s\S]*?git ls-remote[\s\S]*?npm view/.test(
+      workflow,
+    ),
+  ],
+  [
     'release mode is resolved before publish jobs',
     /release-mode:[\s\S]*?outputs:\s*\n\s*mode:/.test(workflow),
   ],
