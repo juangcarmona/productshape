@@ -1,6 +1,6 @@
 {
   "provider": "openspec",
-  "version": "0.19.0-alpha.2",
+  "version": "0.19.0-alpha.3",
   "openspecVersion": "1.12.0",
   "installedAt": "2026-08-30T08:04:44.281Z",
   "configPath": "openspec/config.yaml",
@@ -48,5 +48,14 @@
       "openspec/schemas/product-change/templates/proposal.md": "sha256:150c2d313f939e1ceeac3416b073cc076487c990868a5cb1a22d2781a8b01f3d"
     }
   },
-  "updatedAt": "2026-09-03T16:28:52.544Z"
+  "recoverySchema": {
+    "name": "product-recovery",
+    "requiresOpenspec": "1.7.0",
+    "files": {
+      "openspec/schemas/product-recovery/schema.yaml": "sha256:ab6206a1a7fa43e233d2074c9f99e68c4e765807be6de2a948e844c798a4461d",
+      "openspec/schemas/product-recovery/templates/brief.md": "sha256:b00607c5c3f55fef6021c2377eaf52b189571f484aa2645c252f941a3d94f57b",
+      "openspec/schemas/product-recovery/templates/report.md": "sha256:b38d3a49f51f9b1a18b4ba7ddb3998ba46b625cdbec521a811f4c758f432fa14"
+    }
+  },
+  "updatedAt": "2026-09-04T12:16:12.168Z"
 }

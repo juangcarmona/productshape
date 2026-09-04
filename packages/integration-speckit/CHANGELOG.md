@@ -1,5 +1,11 @@
 # @prodshape/integration-speckit
 
+## 0.4.0-alpha.0
+
+### Minor Changes
+
+- 6035af8: Add the Spec Kit-native `pdac-product` PRODUCT authoring extension and host-owned Product Change/recovery adapter paths.
+
 ## 0.3.5
 
 ### Patch Changes

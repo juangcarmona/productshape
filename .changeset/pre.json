@@ -12,7 +12,9 @@
     "@prodshape/integration-speckit": "0.3.5"
   },
   "changesets": [
+    "bright-speckit-product",
     "graph-guided-product-change",
+    "hosted-product-recovery",
     "openspec-product-workflow",
     "product-change-schema"
   ]
