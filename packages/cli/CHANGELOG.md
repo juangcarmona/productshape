@@ -1,5 +1,11 @@
 # @prodshape/cli
 
+## 0.19.0-alpha.3
+
+### Minor Changes
+
+- 6035af8: Add the Spec Kit-native `pdac-product` PRODUCT authoring extension and host-owned Product Change/recovery adapter paths.
+
 ## 0.19.0-alpha.2
 
 ### Minor Changes

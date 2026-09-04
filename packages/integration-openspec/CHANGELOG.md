@@ -1,5 +1,11 @@
 # @prodshape/integration-openspec
 
+## 0.6.0-alpha.3
+
+### Minor Changes
+
+- d01fde2: Add the OpenSpec-hosted `product-recovery` workload for bounded, resumable brownfield recovery.
+
 ## 0.6.0-alpha.2
 
 ### Minor Changes
