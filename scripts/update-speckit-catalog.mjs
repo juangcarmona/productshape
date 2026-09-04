@@ -1,9 +1,9 @@
 /**
- * Update the pdac entry in the Spec Kit extension catalog (extensions/catalog.json).
+ * Update one ProductShape entry in the Spec Kit extension catalog (extensions/catalog.json).
  *
  * Called by the speckit-pdac release workflow after the release archive exists, because the
  * entry pins the archive's sha256 and that digest only exists once the zip is built. Usable
- * locally too: node scripts/update-speckit-catalog.mjs <version> <sha256hex> [catalogPath]
+ * locally too: node scripts/update-speckit-catalog.mjs <id> <version> <sha256hex> [catalogPath]
  *
  * The entry format follows what the specify CLI validates and displays: id, name, version,
  * description, author, repository, license, download_url (HTTPS), sha256 (verified against the
@@ -15,11 +15,11 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { parse } from 'yaml';
 import prettier from 'prettier';
 
-const [version, sha256, catalogPath = 'extensions/catalog.json'] = process.argv.slice(2);
+const [id, version, sha256, catalogPath = 'extensions/catalog.json'] = process.argv.slice(2);
 
-if (!version || !/^\d+\.\d+\.\d+$/.test(version)) {
+if (!id || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id) || !version || !/^\d+\.\d+\.\d+$/.test(version)) {
   console.error(
-    'usage: node scripts/update-speckit-catalog.mjs <version> <sha256hex> [catalogPath]',
+    'usage: node scripts/update-speckit-catalog.mjs <id> <version> <sha256hex> [catalogPath]',
   );
   process.exit(2);
 }
@@ -28,7 +28,14 @@ if (!sha256 || !/^[0-9a-f]{64}$/.test(sha256)) {
   process.exit(2);
 }
 
-const manifest = parse(readFileSync('extensions/speckit-pdac/extension.yml', 'utf8'));
+const extensionDir = `extensions/speckit-${id}`;
+const manifest = parse(readFileSync(`${extensionDir}/extension.yml`, 'utf8'));
+if (manifest.extension.id !== id) {
+  console.error(
+    `extension id mismatch: manifest declares ${manifest.extension.id}, requested ${id}`,
+  );
+  process.exit(1);
+}
 if (manifest.extension.version !== version) {
   console.error(
     `version mismatch: extension.yml declares ${manifest.extension.version}, release is ${version}`,
@@ -37,8 +44,8 @@ if (manifest.extension.version !== version) {
 }
 
 const catalog = JSON.parse(readFileSync(catalogPath, 'utf8'));
-catalog.extensions.pdac = {
-  id: 'pdac',
+catalog.extensions[id] = {
+  id,
   name: manifest.extension.name,
   version,
   description: manifest.extension.description,
@@ -47,7 +54,7 @@ catalog.extensions.pdac = {
   license: manifest.extension.license,
   category: manifest.extension.category,
   effect: manifest.extension.effect,
-  download_url: `https://github.com/juangcarmona/productshape/releases/download/speckit-pdac-v${version}/speckit-pdac.zip`,
+  download_url: `https://github.com/juangcarmona/productshape/releases/download/speckit-${id}-v${version}/speckit-${id}.zip`,
   sha256: `sha256:${sha256}`,
   requires: manifest.requires,
   provides: {
@@ -62,4 +69,4 @@ const formatted = await prettier.format(JSON.stringify(catalog, null, 2), {
   filepath: catalogPath,
 });
 writeFileSync(catalogPath, formatted, 'utf8');
-console.log(`updated ${catalogPath}: pdac ${version} (sha256:${sha256})`);
+console.log(`updated ${catalogPath}: ${id} ${version} (sha256:${sha256})`);

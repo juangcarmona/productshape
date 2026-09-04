@@ -52,6 +52,8 @@ export interface ProductRepository {
   modelDir: string;
   changesDir: string;
   generatedDir: string;
+  /** Optional host-owned root for recovery bookkeeping. Defaults to prodshape.generated.root. */
+  recoveryRoot?: string;
 }
 
 /** Open a repository: resolve configuration and the schema registry. */

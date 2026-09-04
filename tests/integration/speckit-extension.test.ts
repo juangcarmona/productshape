@@ -166,8 +166,8 @@ describe('pdac Spec Kit extension manifest', () => {
  * The installable catalog (extensions/catalog.json) and its release-time updater. The catalog is
  * served raw from main and consumed by `specify extension catalog add`; its pdac entry, when
  * present, must be internally consistent (the download URL pins the entry's own version tag, the
- * sha256 is well-formed, identity matches the manifest). The entry may lag the manifest version:
- * the catalog serves released versions, and a version in development is not released yet.
+ * sha256 is well-formed, identity matches the matching manifest). Each extension is independently
+ * releasable and the catalog may serve a version older than its working-tree manifest.
  */
 describe('pdac extension catalog', () => {
   const catalogPath = join(repoRoot, 'extensions', 'catalog.json');
@@ -196,20 +196,20 @@ describe('pdac extension catalog', () => {
     expect(Array.isArray(catalog.extensions)).toBe(false);
   });
 
-  it('keeps any pdac entry internally consistent with the manifest identity', async () => {
+  it('keeps the released pdac entry internally consistent with the manifest identity', async () => {
     const catalog = await loadCatalog();
-    const entry = catalog.extensions['pdac'];
-    if (!entry) return; // No release served yet; the empty catalog is a valid state.
-    const manifest = await loadManifest();
-    expect(entry.id).toBe('pdac');
-    expect(entry.name).toBe(manifest.extension.name);
-    expect(entry.repository).toBe(manifest.extension.repository);
-    expect(entry.license).toBe(manifest.extension.license);
-    expect(entry.version).toMatch(/^\d+\.\d+\.\d+$/);
-    expect(entry.download_url).toBe(
-      `https://github.com/juangcarmona/productshape/releases/download/speckit-pdac-v${entry.version}/speckit-pdac.zip`,
+    const entry = catalog.extensions.pdac;
+    expect(entry).toBeDefined();
+    expect(entry?.id).toBe('pdac');
+    expect(entry?.version).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(entry?.download_url).toBe(
+      `https://github.com/juangcarmona/productshape/releases/download/speckit-pdac-v${entry?.version}/speckit-pdac.zip`,
     );
-    expect(entry.sha256).toMatch(/^sha256:[0-9a-f]{64}$/);
+    expect(entry?.sha256).toMatch(/^sha256:[0-9a-f]{64}$/);
+    const manifest = await loadManifest();
+    expect(catalog.extensions.pdac?.name).toBe(manifest.extension.name);
+    expect(catalog.extensions.pdac?.repository).toBe(manifest.extension.repository);
+    expect(catalog.extensions.pdac?.license).toBe(manifest.extension.license);
   });
 
   it('the release updater writes a consistent entry for the manifest version', async () => {
@@ -222,7 +222,7 @@ describe('pdac extension catalog', () => {
       await copyFile(catalogPath, scratch);
       await execFileAsync(
         process.execPath,
-        [join(repoRoot, 'scripts', 'update-speckit-catalog.mjs'), version, sha, scratch],
+        [join(repoRoot, 'scripts', 'update-speckit-catalog.mjs'), 'pdac', version, sha, scratch],
         { cwd: repoRoot },
       );
       const updated = JSON.parse(await readFile(scratch, 'utf8'));
@@ -246,6 +246,7 @@ describe('pdac extension catalog', () => {
           process.execPath,
           [
             join(repoRoot, 'scripts', 'update-speckit-catalog.mjs'),
+            'pdac',
             '99.99.99',
             'b'.repeat(64),
             scratch,
@@ -253,6 +254,37 @@ describe('pdac extension catalog', () => {
           { cwd: repoRoot },
         ),
       ).rejects.toThrow(/version mismatch|Command failed/);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('updates a temporary catalog for pdac-product without advertising it in production', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'prodshape-catalog-'));
+    try {
+      const scratch = join(dir, 'catalog.json');
+      await copyFile(catalogPath, scratch);
+      await execFileAsync(
+        process.execPath,
+        [
+          join(repoRoot, 'scripts', 'update-speckit-catalog.mjs'),
+          'pdac-product',
+          '0.1.0',
+          'c'.repeat(64),
+          scratch,
+        ],
+        { cwd: repoRoot },
+      );
+      const updated = JSON.parse(await readFile(scratch, 'utf8'));
+      expect(updated.extensions['pdac-product']).toMatchObject({
+        id: 'pdac-product',
+        version: '0.1.0',
+        sha256: `sha256:${'c'.repeat(64)}`,
+        download_url:
+          'https://github.com/juangcarmona/productshape/releases/download/speckit-pdac-product-v0.1.0/speckit-pdac-product.zip',
+      });
+      const production = await loadCatalog();
+      expect(production.extensions['pdac-product']).toBeUndefined();
     } finally {
       await rm(dir, { recursive: true, force: true });
     }

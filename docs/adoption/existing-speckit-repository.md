@@ -74,3 +74,17 @@ specify extension add pdac
 `specify extension update pdac` follows new releases; every catalog entry pins the release asset and its sha256, verified before install. Alternatives: install from a checkout with `specify extension add /path/to/productshape/extensions/speckit-pdac --dev`, or from a release asset with `specify extension add pdac --from <url>` (the specify CLI asks you to confirm an untrusted source). Verify with `specify extension list`; remove with `specify extension remove pdac`. The extension only adds commands and hooks over the same deterministic operations; it gains no write authority over the product model, and its hooks degrade to a successful no-op in a workspace without ProductShape. The extension and `prodshape integration add speckit` compose; each also works alone.
 
 It requires Spec Kit 0.7.2 or newer and ProductShape 0.16.0 or newer, both verified. Spec Kit's own community catalog lists the extension so `specify extension search` finds it; it is discovery only, and the ProductShape catalog above stays the trusted installation source.
+
+## Optional: the pdac-product authoring lane
+
+For Spec Kit 1.0.4 or later, install the separate [`pdac-product` extension](../../extensions/speckit-pdac-product/README.md) to author product meaning. It contributes `speckit.pdac-product.change`, `refine`, `validate`, `apply`, `archive` and `recover` alongside the built-in SDD commands and the delivery-only `pdac` extension.
+
+The adapter stores live changes at `.specify/productshape/changes/<name>/` and recovery sessions at `.specify/productshape/recoveries/<session>/`. These repository-visible containers survive a new agent session and are not workflow-run state or installed extension files. `docs/product/model` remains the accepted truth. Apply requires human-recorded approval, revalidates immediately before writing, never commits or archives, and archive is a separate explicit action. Recovery processes at most one deterministic batch per invocation and reports insufficient evidence without applying anything.
+
+Install from a checkout while this extension is under development:
+
+```text
+specify extension add ./extensions/speckit-pdac-product --dev
+```
+
+This bounded spike intentionally does not publish a catalog entry, preset, bundle or automated workflow; those are follow-up work after the interactive and packed-consumer proofs are maintained independently.

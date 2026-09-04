@@ -7,8 +7,8 @@
  * CLI when it is installed (CI installs it; see .github/workflows/ci.yml) and skips elsewhere,
  * mirroring how the OpenSpec consumer tests treat the `openspec` CLI.
  */
-import { execFile } from 'node:child_process';
-import type { Server } from 'node:http';
+import { execFile, execFileSync } from 'node:child_process';
+import { createServer, type Server } from 'node:http';
 import { existsSync } from 'node:fs';
 import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -29,6 +29,19 @@ function specifyOnPath(): boolean {
     .some((dir) => dir.length > 0 && names.some((name) => existsSync(join(dir, name))));
 }
 const hasSpecify = specifyOnPath();
+const requireRealSpecify = process.env.PRODSHAPE_REQUIRE_SPECKIT === '1';
+
+function supportedSpecifyOnPath(): boolean {
+  if (!hasSpecify) return false;
+  try {
+    const output = execFileSync('specify', ['--version'], { encoding: 'utf8' });
+    return /^1\.0\.(?:[4-9]|\d{2,})(?:$|[-.])/u.test(output.trim());
+  } catch {
+    return false;
+  }
+}
+
+const hasSupportedSpecify = supportedSpecifyOnPath();
 
 interface RunResult {
   code: number;
@@ -41,6 +54,15 @@ async function run(argv: string[], cwd: string): Promise<RunResult> {
   const err: string[] = [];
   const code = await runCli(argv, { cwd, out: (l) => out.push(l), err: (l) => err.push(l) });
   return { code, out: out.join('\n'), err: err.join('\n') };
+}
+
+async function specifyVersion(): Promise<string> {
+  const { stdout } = await execFileAsync('specify', ['--version'], {
+    maxBuffer: 10 * 1024 * 1024,
+  });
+  const match = stdout.trim().match(/(?:^|\s)(\d+\.\d+\.\d+(?:[-.][0-9A-Za-z.-]+)?)\s*$/);
+  if (!match) throw new Error(`Could not parse specify version from ${JSON.stringify(stdout)}`);
+  return match[1];
 }
 
 /** Copy the minimal example model into a scratch repository root. */
@@ -207,7 +229,14 @@ describe('Spec Kit consumer conformance (fixture workspace)', () => {
   });
 });
 
-describe.skipIf(!hasSpecify)('pdac Spec Kit extension (real specify CLI)', () => {
+describe.skipIf(!hasSupportedSpecify)('pdac Spec Kit extension (real specify CLI)', () => {
+  it('reports the required Spec Kit version', async () => {
+    const version = await specifyVersion();
+    const [major, minor, patch] = version.split(/[.-]/u).map(Number);
+    expect([major, minor, patch]).toEqual(expect.arrayContaining([1, 0, expect.any(Number)]));
+    expect(patch).toBeGreaterThanOrEqual(4);
+  });
+
   it('installs from the repository checkout and registers commands and hooks', async (ctx) => {
     const dir = await mkdtemp(join(tmpdir(), 'prodshape-speckit-ext-'));
     try {
@@ -255,6 +284,115 @@ describe.skipIf(!hasSpecify)('pdac Spec Kit extension (real specify CLI)', () =>
         existsSync(join(dir, '.claude', 'skills', 'speckit-pdac-verify', 'SKILL.md')) ||
           existsSync(join(dir, '.claude', 'commands', 'speckit.pdac.verify.md')),
       ).toBe(true);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  }, 120_000);
+
+  it('installs, updates and removes the independent pdac-product extension', async (ctx) => {
+    const dir = await mkdtemp(join(tmpdir(), 'prodshape-speckit-product-ext-'));
+    const runExtensionCommand = async (args: string[]) => {
+      try {
+        return await execFileAsync('specify', args, {
+          cwd: dir,
+          maxBuffer: 10 * 1024 * 1024,
+          timeout: 15_000,
+        });
+      } catch (error) {
+        throw new Error(
+          `specify ${args.join(' ')} failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    };
+    try {
+      try {
+        await runExtensionCommand([
+          'init',
+          '--here',
+          '--force',
+          '--non-interactive',
+          '--integration',
+          'claude',
+          '--ignore-agent-tools',
+        ]);
+      } catch (error) {
+        ctx.skip(
+          `specify init failed in this environment: ${error instanceof Error ? error.message : String(error)}`,
+        );
+        return;
+      }
+
+      const extensionSource = join(repoRoot, 'extensions', 'speckit-pdac-product');
+      const added = await runExtensionCommand(['extension', 'add', extensionSource, '--dev']);
+      expect(added.stdout).toContain('speckit.pdac-product.change');
+      expect(existsSync(join(dir, '.specify', 'extensions', 'pdac-product', 'extension.yml'))).toBe(
+        true,
+      );
+
+      // A user-owned ProductShape container must survive extension lifecycle operations.
+      const userFile = join(dir, '.specify', 'productshape', 'user-owned.txt');
+      await mkdir(join(dir, '.specify', 'productshape'), { recursive: true });
+      await writeFile(userFile, 'must survive extension lifecycle\n', 'utf8');
+
+      // `extension update` resolves metadata from a catalog even for a development install. Serve
+      // a same-version local catalog so the command performs a real update check without network
+      // access or depending on the production catalog entry that is created after release.
+      let port = 0;
+      const server = createServer((req, res) => {
+        if (req.url === '/catalog.json') {
+          res.writeHead(200, { 'content-type': 'application/json' });
+          res.end(
+            JSON.stringify({
+              schema_version: '1.0',
+              extensions: {
+                'pdac-product': {
+                  id: 'pdac-product',
+                  name: 'ProductShape PRODUCT workflows',
+                  version: '0.1.0',
+                  description: 'Local lifecycle test',
+                  author: 'test',
+                  repository: 'https://github.com/juangcarmona/productshape',
+                  license: 'Apache-2.0',
+                  category: 'process',
+                  effect: 'read-write',
+                  download_url: `http://127.0.0.1:${port}/pdac-product.zip`,
+                  sha256: `sha256:${'0'.repeat(64)}`,
+                  tags: ['product'],
+                },
+              },
+            }),
+          );
+          return;
+        }
+        res.writeHead(404);
+        res.end();
+      });
+      await new Promise<void>((resolve) => server!.listen(0, '127.0.0.1', resolve));
+      const address = server.address();
+      port = typeof address === 'object' && address ? address.port : 0;
+      await runExtensionCommand([
+        'extension',
+        'catalog',
+        'add',
+        `http://127.0.0.1:${port}/catalog.json`,
+        '--name',
+        'pdac-product-local',
+        '--install-allowed',
+      ]);
+
+      const listed = await runExtensionCommand(['extension', 'list']);
+      expect(listed.stdout).toContain('pdac-product');
+
+      await runExtensionCommand(['extension', 'update', 'pdac-product']);
+      expect(existsSync(join(dir, '.specify', 'extensions', 'pdac-product', 'extension.yml'))).toBe(
+        true,
+      );
+      expect(await readFile(userFile, 'utf8')).toContain('must survive');
+
+      await runExtensionCommand(['extension', 'remove', 'pdac-product', '--force']);
+      expect(existsSync(join(dir, '.specify', 'extensions', 'pdac-product'))).toBe(false);
+      expect(await readFile(userFile, 'utf8')).toContain('must survive');
+      await new Promise<void>((resolve) => (server ? server.close(() => resolve()) : resolve()));
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
@@ -365,7 +503,16 @@ describe.skipIf(!hasSpecify)('pdac Spec Kit extension (real specify CLI)', () =>
   }, 120_000);
 });
 
-describe.skipIf(!hasSpecify)('Spec Kit consumer conformance (real specify init)', () => {
+describe('required Spec Kit verification mode', () => {
+  it('fails instead of skipping when CI requires Spec Kit 1.0.4+', async () => {
+    if (!requireRealSpecify) return;
+    expect(hasSpecify, 'PRODSHAPE_REQUIRE_SPECKIT=1 but specify is not on PATH').toBe(true);
+    const version = await specifyVersion();
+    expect(version).toMatch(/^1\.0\.(?:[4-9]|\d{2,})(?:$|[-.])/u);
+  });
+});
+
+describe.skipIf(!hasSupportedSpecify)('Spec Kit consumer conformance (real specify init)', () => {
   it('drives the full citation lifecycle over a workspace created by the specify CLI', async (ctx) => {
     const dir = await mkdtemp(join(tmpdir(), 'prodshape-speckit-real-'));
     try {

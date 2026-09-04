@@ -1,0 +1,47 @@
+schema_version: '1.0'
+
+extension:
+  id: pdac-product
+  name: 'ProductShape PRODUCT workflows'
+  version: '0.1.0'
+  description: 'Author, refine, validate, apply, archive and recover ProductShape product meaning in a separate Spec Kit lane.'
+  author: juangcarmona
+  repository: https://github.com/juangcarmona/productshape
+  homepage: https://pdac.dev
+  license: Apache-2.0
+  category: process
+  effect: read-write
+
+requires:
+  speckit_version: '>=1.0.4'
+  tools:
+    - name: prodshape
+      version: '>=0.19.0'
+      required: true
+
+provides:
+  commands:
+    - name: speckit.pdac-product.change
+      file: commands/speckit.pdac-product.change.md
+      description: 'Create or continue one Product Change under the Spec Kit product workspace'
+    - name: speckit.pdac-product.refine
+      file: commands/speckit.pdac-product.refine.md
+      description: 'Refine the same Product Change with graph-guided questions and recorded decisions'
+    - name: speckit.pdac-product.validate
+      file: commands/speckit.pdac-product.validate.md
+      description: 'Run deterministic Product Change overlay validation'
+    - name: speckit.pdac-product.apply
+      file: commands/speckit.pdac-product.apply.md
+      description: 'Human-authorized Product Change apply, revalidated immediately before writes'
+    - name: speckit.pdac-product.archive
+      file: commands/speckit.pdac-product.archive.md
+      description: 'Archive an applied Product Change without changing the accepted model'
+    - name: speckit.pdac-product.recover
+      file: commands/speckit.pdac-product.recover.md
+      description: 'Run one bounded, resumable recovery round from authorized evidence'
+
+tags:
+  - product
+  - product-change
+  - recovery
+  - pdac

@@ -28,8 +28,17 @@ async function run(
     env,
     encoding: 'utf8',
     maxBuffer: 10 * 1024 * 1024,
+    shell: process.platform === 'win32' && /\.(?:cmd|bat)$/iu.test(command),
   });
   return { stdout: result.stdout, stderr: result.stderr };
+}
+
+function packageManagerExecutable(): string {
+  return process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+}
+
+function npmExecutable(): string {
+  return process.platform === 'win32' ? 'npm.cmd' : 'npm';
 }
 
 function primaryQuickstart(readme: string): string {
@@ -171,8 +180,8 @@ for (const path of countSources) {
 const scratch = await mkdtemp(join(tmpdir(), 'prodshape-release-contract-'));
 try {
   process.stdout.write(`Building ${documentedSpec}\n`);
-  await run('pnpm', ['--filter', '@prodshape/cli', 'build'], repoRoot);
-  await run('npm', ['pack', '--pack-destination', scratch], cliDir);
+  await run(packageManagerExecutable(), ['--filter', '@prodshape/cli', 'build'], repoRoot);
+  await run(npmExecutable(), ['pack', '--pack-destination', scratch], cliDir);
   const tarballs = (await readdir(scratch)).filter((name) => name.endsWith('.tgz'));
   if (tarballs.length !== 1) {
     throw new Error(`expected one packed CLI tarball, found ${tarballs.length}`);
