@@ -34,6 +34,20 @@ import {
 import { isSpecKitWorkspace, pathExists } from './workspace.js';
 
 export { isSpecKitWorkspace } from './workspace.js';
+export {
+  SPECKIT_PRODUCT_ROOT,
+  SPECKIT_PRODUCT_CHANGES,
+  SPECKIT_PRODUCT_ARCHIVE,
+  SPECKIT_RECOVERY_ROOT,
+  archiveSpecKitProductChange,
+  applySpecKitProductChange,
+  createSpecKitProductChange,
+  listSpecKitProductChanges,
+  loadSpecKitProductChange,
+  nextSpecKitRecoveryBatch,
+  startSpecKitRecovery,
+  validateSpecKitProductChange,
+} from './product-workflow.js';
 export { enumerateSpecKitDocuments, specKitProvider } from './population.js';
 export {
   MANAGED_TEMPLATES,

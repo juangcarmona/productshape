@@ -51,6 +51,7 @@ import {
   type RecoverUnmarkOptions,
 } from './commands/recover.js';
 import { runSchema } from './commands/schema.js';
+import { runSpecKitProduct } from './commands/speckit-product.js';
 import { runTemplate } from './commands/template.js';
 import { runValidate } from './commands/validate.js';
 import { CliError, exitCodes, type CliIo } from './context.js';
@@ -88,6 +89,35 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
         capture.code = await runValidate(io, options);
       },
     );
+
+  const speckitProduct = program
+    .command('speckit-product')
+    .description('Run the deterministic ProductShape PRODUCT adapter used by Spec Kit');
+  for (const action of ['create', 'validate', 'apply', 'archive'] as const) {
+    const command = speckitProduct
+      .command(action)
+      .argument('<name>', 'named Spec Kit Product Change')
+      .option('--dry-run', 'preflight apply without writing')
+      .option('--format <format>', 'text or json', 'text');
+    command.action(async (name: string, options: { dryRun?: boolean; format?: string }) => {
+      capture.code = await runSpecKitProduct(io, action, name, options);
+    });
+  }
+  speckitProduct
+    .command('recover-start')
+    .requiredOption('--session <id>', 'recovery session id')
+    .option('--format <format>', 'text or json', 'text')
+    .action(async (options: { session: string; format?: string }) => {
+      capture.code = await runSpecKitProduct(io, 'recover-start', undefined, options);
+    });
+  speckitProduct
+    .command('recover-next')
+    .option('--session <id>', 'recovery session id')
+    .option('--limit <n>', 'maximum evidence items')
+    .option('--format <format>', 'text or json', 'text')
+    .action(async (options: { session?: string; limit?: string; format?: string }) => {
+      capture.code = await runSpecKitProduct(io, 'recover-next', undefined, options);
+    });
 
   program
     .command('init')

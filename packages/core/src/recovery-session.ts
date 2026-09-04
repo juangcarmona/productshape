@@ -53,7 +53,7 @@ function relPosix(repo: ProductRepository, absolute: string): string {
 }
 
 function recoveryRootRel(repo: ProductRepository): string {
-  return `${relPosix(repo, repo.generatedDir)}/recovery`;
+  return repo.recoveryRoot ?? `${relPosix(repo, repo.generatedDir)}/recovery`;
 }
 
 export function sessionDirRel(repo: ProductRepository, sessionId: string): string {
@@ -202,6 +202,8 @@ export interface StartRecoveryOptions {
   brief?: RecoveryBrief;
   cliVersion: string;
   clock?: RecoveryClock;
+  /** Optional adapter-owned Product Change container for CHG-INITIAL. */
+  changeDir?: string;
 }
 
 /**
@@ -337,7 +339,7 @@ export async function startRecoverySession(
     createdAt: now,
     updatedAt: now,
     changeId: recoveryChangeId,
-    changeDir: changeDirRel(repo),
+    changeDir: options.changeDir ?? changeDirRel(repo),
     brief,
     modelSnapshot: await snapshotModel(repo),
     familyProbes: {},
