@@ -1,5 +1,24 @@
 # @prodshape/integration-openspec
 
+## 0.6.0
+
+### Minor Changes
+
+- 1c38d4e: Strengthen the hosted `product-change` workflow with proportional graph-guided clarification, resumable refinement notes, explicit `/product:refine` continuation and packed-consumer coverage. Keep Changesets Action v1 aligned with the repository's Changesets CLI v2 release workflow.
+- d01fde2: Add the OpenSpec-hosted `product-recovery` workload for bounded, resumable brownfield recovery.
+- 07b8de2: Host the PDaC product workflow in OpenSpec. The integration now installs a managed project-local `product` schema (openspec/schemas/product: schema.yaml, authoring templates and the bridge scripts) whose OpenSpec changes host a Product Change delta, and exports the deterministic rails: inspectProductModel, listOpenSpecProductChanges, loadOpenSpecProductChange, validateOpenSpecProductChange (overlay validation with concurrency spanning both change containers), applyOpenSpecProductChange (revalidates configuration, baseline and overlay at apply time, requires the protocol state that records human product approval, fails closed before any write, never archives) and deriveDeliveryContext (fresh post-apply context for a future delivery workflow). Valid OpenSpec 1.11 metadata and the change container's `schema: product` pin are load-bearing; malformed product-shaped containers fail listing and concurrency closed. Managed schema ownership is proven per exact recorded path and digest: metadata is confined to `openspec/schemas/product`, install never adopts a pre-existing file even when byte-identical, update replaces or removes only proven-managed content, and remove preserves and reports unrecorded or diverged files. Compatibility is capability-specific: the product workflow requires OpenSpec 1.7.0 and reports itself unavailable below that floor while the citation lane keeps working. The agentic instructions now stop for user clarification before an ambiguous intent becomes a delta or approval, and keep citations at the consuming proposal boundary rather than in the change manifest or proposed canonical artifacts. The shipped guidance names the two lanes; the citation lane is unchanged. The CLI ships the bundled integration and stages the schema assets into its package.
+
+### Patch Changes
+
+- d0381f5: Hosted apply reports the affected citation set: every citation of a changed artifact with the status it will hold after apply, computed before any write. `prodshape speckit-product apply` and the OpenSpec bridge print it, and the result carries it as `affectedCitations`.
+- 4fd179c: Rename the hosted OpenSpec workload and schema to `product-change`, with safe migration of owned legacy `product` schema installations. Restore the Changesets action to the CLI-v2-compatible release workflow.
+- 7be7c61: One hosted Product Change rail in `@prodshape/core`, used by both adapters: terminal statuses are inert for concurrency, the live set spans the host's containers and the native `changes/active` directory, and apply revalidates, refuses before any write, executes and returns a fresh validation of the resulting model. The Spec Kit adapter gains all of that. `prodshape speckit-product apply` reports the resulting model and, on refusal, the blocking diagnostics. The OpenSpec adapter delegates with no behaviour change.
+- Updated dependencies [d0381f5]
+- Updated dependencies [7be7c61]
+- Updated dependencies [f1a1612]
+- Updated dependencies [5baaea2]
+  - @prodshape/core@0.21.0
+
 ## 0.6.0-alpha.5
 
 ### Patch Changes
