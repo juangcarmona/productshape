@@ -93,7 +93,15 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
   const speckitProduct = program
     .command('speckit-product')
     .description('Run the deterministic ProductShape PRODUCT adapter used by Spec Kit');
-  for (const action of ['create', 'refine', 'validate', 'apply', 'archive'] as const) {
+  speckitProduct
+    .command('create')
+    .argument('<name>', 'named Spec Kit Product Change')
+    .option('--initial', 'scaffold the reserved CHG-INITIAL baseline change')
+    .option('--format <format>', 'text or json', 'text')
+    .action(async (name: string, options: { initial?: boolean; format?: string }) => {
+      capture.code = await runSpecKitProduct(io, 'create', name, options);
+    });
+  for (const action of ['refine', 'validate', 'apply', 'archive'] as const) {
     const command = speckitProduct
       .command(action)
       .argument('<name>', 'named Spec Kit Product Change')
