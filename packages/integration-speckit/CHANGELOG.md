@@ -1,5 +1,22 @@
 # @prodshape/integration-speckit
 
+## 0.4.0
+
+### Minor Changes
+
+- 6035af8: Add the Spec Kit-native `pdac-product` PRODUCT authoring extension and host-owned Product Change/recovery adapter paths.
+- 7be7c61: One hosted Product Change rail in `@prodshape/core`, used by both adapters: terminal statuses are inert for concurrency, the live set spans the host's containers and the native `changes/active` directory, and apply revalidates, refuses before any write, executes and returns a fresh validation of the resulting model. The Spec Kit adapter gains all of that. `prodshape speckit-product apply` reports the resulting model and, on refusal, the blocking diagnostics. The OpenSpec adapter delegates with no behaviour change.
+- 5baaea2: `prodshape speckit-product create <name> --initial` scaffolds the reserved `CHG-INITIAL` baseline change in the Spec Kit lane. Hosted and native changes now share one scaffold (`scaffoldChangeDocument` in `@prodshape/core`).
+- 272930c: `prodshape speckit-product refine <name>` no longer requires a JSON file: it refreshes `impact.json` from the edited change, `--note` appends working memory to `proposal.md`, and `--input` remains for structured refinements. Recorded checked and excluded ids are preserved across refreshes.
+
+### Patch Changes
+
+- Updated dependencies [d0381f5]
+- Updated dependencies [7be7c61]
+- Updated dependencies [f1a1612]
+- Updated dependencies [5baaea2]
+  - @prodshape/core@0.21.0
+
 ## 0.4.0-alpha.2
 
 ### Minor Changes
