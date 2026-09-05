@@ -1,17 +1,16 @@
-/** Spec Kit's PRODUCT lane.  This adapter owns only container paths and lifecycle moves. */
+/** Spec Kit's PRODUCT lane: container paths and lifecycle moves. Product semantics live in @prodshape/core. */
 import { mkdir, readFile, readdir, rename, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import {
+  applyHostedProductChange,
+  assessHostedProductChange,
   compareCodePoints,
-  executeApply,
   gitHead,
   isNotFound,
   loadChange,
+  loadLiveChanges,
   openRepository,
-  planHostedProductChange,
-  preflightApply,
   validateBaseline,
-  validateHostedProductChange,
   analyzeImpact,
   stableJson,
   startRecoverySession,
@@ -28,9 +27,10 @@ import {
   writeRecoveryReport,
 } from '@prodshape/core';
 import type {
-  ApplyPlan,
   CandidateArtifact,
+  Diagnostic,
   FindingClassification,
+  HostedProductApplyResult,
   LoadedChange,
   LoadedRecoverySession,
   ProductRepository,
@@ -123,8 +123,8 @@ export async function createSpecKitProductChange(
 
 export interface SpecKitProductValidation {
   change: LoadedChange;
-  diagnostics: ReturnType<typeof validateHostedProductChange>['diagnostics'];
-  blocking: ReturnType<typeof validateHostedProductChange>['blocking'];
+  diagnostics: Diagnostic[];
+  blocking: Diagnostic[];
 }
 
 export interface SpecKitProductRefinement {
@@ -213,26 +213,19 @@ export async function refineSpecKitProductChange(
   return { change: await loadSpecKitProductChange(root, name), proposal: proposalPath, impact };
 }
 
+async function liveChanges(root: string, repo: ProductRepository): Promise<LoadedChange[]> {
+  const refs = await listSpecKitProductChanges(root);
+  return loadLiveChanges(
+    repo,
+    refs.map((ref) => ref.dir),
+  );
+}
+
 async function validate(root: string, name: string): Promise<SpecKitProductValidation> {
   const repo = await openRepository(root);
-  const baseline = await validateBaseline(repo);
   const change = await loadSpecKitProductChange(root, name);
-  const others: LoadedChange[] = [];
-  for (const ref of await listSpecKitProductChanges(root))
-    if (ref.name !== name) others.push(await loadChange(ref.dir, repo.root, repo.registry));
-  const result = validateHostedProductChange(
-    repo,
-    baseline.artifacts,
-    change,
-    others,
-    baseline.diagnostics,
-  );
-  const diagnostics = result.diagnostics;
-  return {
-    change,
-    diagnostics,
-    blocking: result.blocking,
-  };
+  const assessed = await assessHostedProductChange(repo, change, await liveChanges(root, repo));
+  return { change, diagnostics: assessed.diagnostics, blocking: assessed.blocking };
 }
 
 export async function validateSpecKitProductChange(
@@ -246,26 +239,15 @@ export async function applySpecKitProductChange(
   root: string,
   name: string,
   options: { dryRun?: boolean } = {},
-): Promise<{ outcome: 'applied' | 'dry-run' | 'refused'; plan: ApplyPlan; change: LoadedChange }> {
+): Promise<HostedProductApplyResult> {
   const repo = await openRepository(root);
-  const baseline = await validateBaseline(repo);
-  const checked = await validate(root, name);
-  const plan = await planHostedProductChange({
-    repoRoot: root,
-    modelRelative: repo.config.product.model,
-    changesRelative: SPECKIT_PRODUCT_CHANGES,
-    change: checked.change,
-    baseline: baseline.artifacts,
-    overlayErrors: checked.blocking,
+  const change = await loadSpecKitProductChange(root, name);
+  return applyHostedProductChange({
+    repo,
+    change,
+    liveChanges: await liveChanges(root, repo),
+    dryRun: options.dryRun,
   });
-  if (plan.diagnostics.some((d) => d.severity === 'error'))
-    return { outcome: 'refused', plan, change: checked.change };
-  if (options.dryRun) {
-    await preflightApply(root, plan);
-    return { outcome: 'dry-run', plan, change: checked.change };
-  }
-  await executeApply(root, plan);
-  return { outcome: 'applied', plan, change: checked.change };
 }
 
 export async function archiveSpecKitProductChange(root: string, name: string): Promise<string> {

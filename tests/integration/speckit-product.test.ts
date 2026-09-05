@@ -314,12 +314,95 @@ describe('Spec Kit PRODUCT adapter', () => {
         ),
       ).toBe(true);
       expect(await readFile(change, 'utf8')).toContain('status: applied');
+      expect(applied.resultingModel).toBeDefined();
+      expect(applied.resultingModel!.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+      expect(applied.resultingModel!.artifacts.map((a) => a.id)).toContain('FR-ADDED-001');
       await archiveSpecKitProductChange(root, 'add-outcome');
       expect(
         existsSync(
           join(root, 'docs', 'product', 'model', 'requirements', 'functional', 'fr-added-001.md'),
         ),
       ).toBe(true);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('refuses with the host-neutral authorisation message', async () => {
+    const root = await workspace();
+    try {
+      await createSpecKitProductChange(root, 'not-yet');
+      const result = await applySpecKitProductChange(root, 'not-yet', { dryRun: true });
+      expect(result.outcome).toBe('refused');
+      const gate = result.plan.diagnostics.find((d) => d.code === 'PRODUCT028');
+      expect(gate?.message).toContain("caller's authorisation policy");
+      expect(gate?.message).not.toMatch(/human|by hand/i);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  /** Point a hosted change at BR-VALID-URL-001 with an unchanged proposed copy of the rule. */
+  async function touchValidUrlRule(root: string, name: string): Promise<string> {
+    const dir = join(root, '.specify', 'productshape', 'changes', name);
+    const changeFile = join(dir, 'change.md');
+    const manifest = await readFile(changeFile, 'utf8');
+    await writeFile(
+      changeFile,
+      manifest.replace('  modify: []', '  modify:\n    - BR-VALID-URL-001'),
+      'utf8',
+    );
+    await mkdir(join(dir, 'proposed', 'business-rules'), { recursive: true });
+    await cp(
+      join(root, 'docs', 'product', 'model', 'business-rules', 'br-valid-url-001.md'),
+      join(dir, 'proposed', 'business-rules', 'br-valid-url-001.md'),
+    );
+    return changeFile;
+  }
+
+  it('an applied but unarchived hosted change is inert for concurrency', async () => {
+    const root = await workspace();
+    try {
+      await createSpecKitProductChange(root, 'done');
+      await createSpecKitProductChange(root, 'next');
+      const doneFile = await touchValidUrlRule(root, 'done');
+      await touchValidUrlRule(root, 'next');
+
+      const live = await validateSpecKitProductChange(root, 'next');
+      expect(live.diagnostics.some((d) => d.code === 'PRODUCT025')).toBe(true);
+
+      await writeFile(
+        doneFile,
+        (await readFile(doneFile, 'utf8')).replace('status: draft', 'status: applied'),
+        'utf8',
+      );
+      const inert = await validateSpecKitProductChange(root, 'next');
+      expect(inert.diagnostics.filter((d) => d.code === 'PRODUCT025')).toEqual([]);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('concurrency spans the native changes/active container', async () => {
+    const root = await workspace();
+    try {
+      await createSpecKitProductChange(root, 'hosted-touch');
+      await touchValidUrlRule(root, 'hosted-touch');
+      const nativeDir = join(root, 'docs', 'product', 'changes', 'active', 'chg-native-touch-001');
+      await mkdir(join(nativeDir, 'proposed', 'business-rules'), { recursive: true });
+      await writeFile(
+        join(nativeDir, 'change.md'),
+        `---\nid: CHG-NATIVE-TOUCH-001\ntype: product-change\ntitle: Native change touching the same rule\nstatus: draft\nbase-revision: '0000000'\noperations:\n  add: []\n  modify:\n    - BR-VALID-URL-001\n  remove: []\n---\n\n## Problem\n\nNative.\n\n## Intended Product Outcome\n\nNative.\n\n## Rationale\n\nNative.\n\n## Affected Product Areas\n\nBR-VALID-URL-001.\n\n## Open Questions\n\nNone.\n\n## Product Acceptance\n\nNone.\n\n## Out of Scope\n\nNone.\n`,
+        'utf8',
+      );
+      await cp(
+        join(root, 'docs', 'product', 'model', 'business-rules', 'br-valid-url-001.md'),
+        join(nativeDir, 'proposed', 'business-rules', 'br-valid-url-001.md'),
+      );
+      const result = await validateSpecKitProductChange(root, 'hosted-touch');
+      const overlaps = result.diagnostics.filter((d) => d.code === 'PRODUCT025');
+      expect(overlaps.length).toBeGreaterThan(0);
+      expect(overlaps.some((d) => d.message.includes('CHG-NATIVE-TOUCH-001'))).toBe(true);
     } finally {
       await rm(root, { recursive: true, force: true });
     }

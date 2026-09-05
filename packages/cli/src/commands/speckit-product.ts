@@ -12,8 +12,30 @@ import {
   validateSpecKitProductChange,
   writeSpecKitRecoveryCandidate,
 } from '@prodshape/integration-speckit';
-import { stableJson } from '@prodshape/core';
+import {
+  stableJson,
+  type BaselineValidation,
+  type Diagnostic,
+  type HostedProductApplyResult,
+} from '@prodshape/core';
 import { exitCodes, resolveRepository, type CliIo } from '../context.js';
+
+function formatDiagnostic(diagnostic: Diagnostic): string {
+  return `${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`;
+}
+
+function summarizeModel(model: BaselineValidation): string {
+  const count = (severity: Diagnostic['severity']) =>
+    model.diagnostics.filter((diagnostic) => diagnostic.severity === severity).length;
+  return `resulting model: ${count('error')} error(s), ${count('warning')} warning(s) across ${model.artifacts.length} artifact(s)`;
+}
+
+function formatApplyResult(result: HostedProductApplyResult, name: string): string {
+  const lines = [`${result.outcome}: ${result.change.id ?? name}`];
+  if (result.outcome === 'refused') lines.push(...result.plan.diagnostics.map(formatDiagnostic));
+  if (result.resultingModel) lines.push(summarizeModel(result.resultingModel));
+  return lines.join('\n');
+}
 
 export async function runSpecKitProduct(
   io: CliIo,
@@ -60,7 +82,7 @@ export async function runSpecKitProduct(
   if (action === 'apply') {
     if (!name) throw new Error('A Product Change name is required.');
     const result = await applySpecKitProductChange(repo.root, name, { dryRun: options.dryRun });
-    io.out(json ? stableJson(result) : `${result.outcome}: ${result.change.id ?? name}`);
+    io.out(json ? stableJson(result) : formatApplyResult(result, name));
     return result.outcome === 'refused' ? exitCodes.validationErrors : exitCodes.success;
   }
   if (action === 'archive') {

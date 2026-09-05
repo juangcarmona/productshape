@@ -107,8 +107,21 @@ export type {
 } from './impact.js';
 export { inspectArtifact } from './inspect.js';
 export type { InspectReport } from './inspect.js';
-export { planHostedProductChange, validateHostedProductChange } from './hosted-product-workflow.js';
-export type { HostedProductValidation } from './hosted-product-workflow.js';
+export {
+  TERMINAL_CHANGE_STATUSES,
+  applyHostedProductChange,
+  assessHostedProductChange,
+  isTerminalChange,
+  loadLiveChanges,
+  planHostedProductChange,
+  validateHostedProductChange,
+} from './hosted-product-workflow.js';
+export type {
+  HostedProductApplyOutcome,
+  HostedProductApplyResult,
+  HostedProductAssessment,
+  HostedProductValidation,
+} from './hosted-product-workflow.js';
 export { discoverModelFiles, loadArtifactFile, loadModel, toPosixRelative } from './model.js';
 export type { LoadedArtifact, LoadedModel } from './model.js';
 export {
