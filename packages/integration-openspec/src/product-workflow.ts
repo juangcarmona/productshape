@@ -31,23 +31,21 @@ import { join } from 'node:path';
 import { parse } from 'yaml';
 import {
   analyzeImpact,
+  applyHostedProductChange,
+  assessHostedProductChange,
   compareCodePoints,
-  discoverChanges,
-  executeApply,
   isNotFound,
   loadChange,
+  loadLiveChanges,
   openRepository,
-  planHostedProductChange,
-  preflightApply,
   sortDiagnostics,
   validateBaseline,
-  validateHostedProductChange,
-  validateChange,
 } from '@prodshape/core';
 import type {
-  ApplyPlan,
   BaselineValidation,
   Diagnostic,
+  HostedProductApplyOutcome,
+  HostedProductApplyResult,
   ImpactReport,
   LoadedArtifact,
   LoadedChange,
@@ -289,32 +287,12 @@ async function loadHostedChange(
   return loadChange(deltaDir, repo.root, repo.registry);
 }
 
-/**
- * A hosted change in a terminal status is change history awaiting its container move: the native
- * lifecycle expresses that state by location (changes/completed, rejected, superseded), while the
- * hosted container keeps the directory in place until `openspec archive` moves it, so status is
- * the lifecycle carrier here.
- */
-const TERMINAL_CHANGE_STATUSES = new Set(['applied', 'rejected', 'superseded']);
-
-/**
- * Every live change the concurrency rule (PRODUCT025) must see: hosted OpenSpec product changes
- * that are not in a terminal status, plus every native change under `<changes>/active`.
- * Concurrency spans BOTH containers, so a hosted change and a native change touching the same
- * artifact report against each other; a terminal hosted change is inert exactly like the native
- * archives.
- */
 async function loadAllLiveChanges(root: string, repo: ProductRepository): Promise<LoadedChange[]> {
-  const changes: LoadedChange[] = [];
-  for (const ref of await listOpenSpecProductChanges(root)) {
-    const loaded = await loadChange(ref.dir, repo.root, repo.registry);
-    if (loaded.status !== undefined && TERMINAL_CHANGE_STATUSES.has(loaded.status)) continue;
-    changes.push(loaded);
-  }
-  for (const dir of await discoverChanges(join(repo.changesDir, 'active'))) {
-    changes.push(await loadChange(dir, repo.root, repo.registry));
-  }
-  return changes;
+  const refs = await listOpenSpecProductChanges(root);
+  return loadLiveChanges(
+    repo,
+    refs.map((ref) => ref.dir),
+  );
 }
 
 /** The result of validating a hosted Product Change as an overlay on the untouched baseline. */
@@ -341,28 +319,19 @@ export async function validateOpenSpecProductChange(
   changeName: string,
 ): Promise<OpenSpecProductChangeValidation> {
   const repo = await openRepository(root);
-  const baseline = await validateBaseline(repo);
   const all = await loadAllLiveChanges(root, repo);
   // An unknown name resolves through the loader, whose error names the known product changes.
   const change =
     all.find((candidate) => hostedName(root, candidate) === changeName) ??
     (await loadHostedChange(root, repo, changeName));
-  const validation = validateChange(change, baseline.artifacts, all);
-  const hosted = validateHostedProductChange(
-    repo,
-    baseline.artifacts,
-    change,
-    all,
-    baseline.diagnostics,
-  );
-  const diagnostics = hosted.diagnostics;
+  const assessed = await assessHostedProductChange(repo, change, all);
   return {
     change,
-    baseline,
-    overlayArtifacts: validation.overlayArtifacts,
-    overlayGraph: validation.overlayGraph,
-    diagnostics,
-    blocking: hosted.blocking,
+    baseline: assessed.baseline,
+    overlayArtifacts: assessed.overlayArtifacts,
+    overlayGraph: assessed.overlayGraph,
+    diagnostics: assessed.diagnostics,
+    blocking: assessed.blocking,
   };
 }
 
@@ -378,97 +347,27 @@ function hostedName(root: string, change: LoadedChange): string | undefined {
 }
 
 /** How an apply invocation ended. */
-export type OpenSpecProductApplyOutcome = 'applied' | 'dry-run' | 'refused';
+export type OpenSpecProductApplyOutcome = HostedProductApplyOutcome;
 
-export interface OpenSpecProductApplyResult {
-  outcome: OpenSpecProductApplyOutcome;
-  /**
-   * The executed (or refused) plan. The ProductShape lifecycle's `move-change` action is already
-   * filtered out: the hosted change directory belongs to OpenSpec and only `openspec archive`
-   * moves it, as a separate action after apply.
-   */
-  plan: ApplyPlan;
-  change: LoadedChange;
-  /** Fresh read and validation of the accepted model after a real apply. */
-  resultingModel?: BaselineValidation;
-}
+/** The container move is `openspec archive`, never part of apply. */
+export type OpenSpecProductApplyResult = HostedProductApplyResult;
 
-/**
- * Apply one hosted Product Change to the accepted model, deterministically and fail closed.
- *
- * The sequence mirrors the native apply and is fail closed end to end: full revalidation at apply
- * time of the configuration, the baseline (including its per-document load diagnostics) and the
- * overlay, the apply-authorised state gate (PRODUCT028; the integration never performs the
- * authorising transition), base-revision drift by content digest (PRODUCT027), write and delete
- * actions named by lowercase id, the product diff computed from the result, and the hosted
- * change.md status flipped to applied in place. Any blocking diagnostic refuses BEFORE any
- * mutation, with `docs/product/model` and the change container byte-identical. A dry run still
- * preflights every action. Nothing is committed and nothing is archived: verification and the
- * container move remain separate, later actions.
- */
 export async function applyOpenSpecProductChange(
   root: string,
   changeName: string,
   options: { dryRun?: boolean } = {},
 ): Promise<OpenSpecProductApplyResult> {
-  const { dryRun = false } = options;
   const repo = await openRepository(root);
-  const baseline = await validateBaseline(repo);
   const all = await loadAllLiveChanges(root, repo);
   const change =
     all.find((candidate) => hostedName(root, candidate) === changeName) ??
     (await loadHostedChange(root, repo, changeName));
-
-  const hosted = validateHostedProductChange(
+  return applyHostedProductChange({
     repo,
-    baseline.artifacts,
     change,
-    all,
-    baseline.diagnostics,
-  );
-  // Everything capable of making the resulting model invalid blocks BEFORE any write:
-  // configuration diagnostics, the baseline's own load and per-document diagnostics, the change's
-  // diagnostics and the full overlay revalidation. The overlay pass alone is not enough, because
-  // per-document defects of UNTOUCHED baseline artifacts (parse failures, schema violations,
-  // body-section defects) are load-time diagnostics that graph-level revalidation never re-emits;
-  // omitting them let apply write into a model whose fresh validation then failed, violating the
-  // resulting-model obligation. Refusal happens with the working tree byte-identical.
-  const rawPlan = await planHostedProductChange({
-    repoRoot: repo.root,
-    modelRelative: repo.config.product.model,
-    changesRelative: repo.config.product.changes,
-    change,
-    baseline: baseline.artifacts,
-    overlayErrors: hosted.blocking,
+    liveChanges: all,
+    dryRun: options.dryRun ?? false,
   });
-  const plan: ApplyPlan = {
-    ...rawPlan,
-    actions: rawPlan.actions.filter((action) => action.kind !== 'move-change'),
-    // The hosted rail states authorisation as policy. Core's PRODUCT028 wording prescribes a
-    // human hand edit, which is the native lifecycle's own contract; here the code, severity,
-    // file and fields stay core's while the message (implementation-defined and never compared)
-    // says what the hosted contract requires. A message rewrite of an existing diagnostic, never
-    // a new emission.
-    diagnostics: rawPlan.diagnostics.map((diagnostic) =>
-      diagnostic.code === 'PRODUCT028'
-        ? {
-            ...diagnostic,
-            message: `Apply requires status 'approved'; the change is '${change.status ?? 'unknown'}'. The transition into the apply-authorised state belongs to the caller's authorisation policy; the integration never performs or judges it.`,
-          }
-        : diagnostic,
-    ),
-  };
-
-  if (plan.diagnostics.some((diagnostic) => diagnostic.severity === 'error')) {
-    return { outcome: 'refused', plan, change };
-  }
-  if (dryRun) {
-    await preflightApply(repo.root, plan);
-    return { outcome: 'dry-run', plan, change };
-  }
-  await executeApply(repo.root, plan);
-  const resultingModel = await validateBaseline(repo);
-  return { outcome: 'applied', plan, change, resultingModel };
 }
 
 /** One artifact carried into delivery context, with the digest of its current accepted content. */
