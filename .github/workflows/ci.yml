@@ -116,3 +116,19 @@ jobs:
         run: |
           pnpm changeset status --since=origin/${{ github.base_ref }} \
             || echo "::warning::No changeset found for changed packages. Run 'pnpm changeset' if this change should be released."
+
+  # Fail when a package's shipped source differs from the tag of its current version and no
+  # changeset names the package: npm would keep serving the old version while dependents built
+  # against the new source break at import time. Needs the full history, because the tags are the
+  # record of the commit each version was published from.
+  release-drift:
+    name: release drift (shipped source vs published tag)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+      - run: node scripts/check-release-drift.mjs

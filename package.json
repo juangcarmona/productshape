@@ -26,7 +26,8 @@
     "version": "changeset version && pnpm exec prettier --write .changeset/pre.json && pnpm build && node packages/cli/dist/bin.js integration update && node --import tsx scripts/bump-baseline-docs.mts",
     "release": "changeset publish",
     "measure:snapshot": "tsx scripts/measure-snapshot.mts",
-    "shots:snapshot": "tsx scripts/screenshot-snapshot.mts"
+    "shots:snapshot": "tsx scripts/screenshot-snapshot.mts",
+    "release-drift:check": "node scripts/check-release-drift.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0",
