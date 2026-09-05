@@ -44,6 +44,7 @@ export async function runSpecKitProduct(
   name: string | undefined,
   options: {
     dryRun?: boolean;
+    initial?: boolean;
     session?: string;
     limit?: string;
     format?: string;
@@ -56,7 +57,7 @@ export async function runSpecKitProduct(
   const json = options.format === 'json';
   if (action === 'create') {
     if (!name) throw new Error('A Product Change name is required.');
-    const result = await createSpecKitProductChange(repo.root, name);
+    const result = await createSpecKitProductChange(repo.root, name, { initial: options.initial });
     io.out(json ? stableJson(result) : `Created ${result.file}`);
     return exitCodes.success;
   }

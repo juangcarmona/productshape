@@ -23,6 +23,12 @@ export type {
 export { checkRequiredBodySections } from './body-sections.js';
 export { discoverChanges, loadChange } from './changes.js';
 export type { ChangeOperations, LoadedChange } from './changes.js';
+export {
+  INITIAL_CHANGE_ID,
+  NO_BASELINE_REVISION,
+  defaultChangeTitle,
+  scaffoldChangeDocument,
+} from './change-scaffold.js';
 export { configVersion, defaultConfig, loadConfig, parseConfig } from './config.js';
 export type { ConfigResult, ProductConfig } from './config.js';
 export {

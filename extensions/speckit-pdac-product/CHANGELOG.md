@@ -4,3 +4,4 @@
 
 - Add independent ProductShape product authoring and bounded recovery commands for Spec Kit 1.0.4+.
 - Apply reports the citations the change affects, with the status each will hold.
+- `create --initial` scaffolds the reserved `CHG-INITIAL` baseline change.

@@ -52,6 +52,25 @@ describe('Spec Kit PRODUCT adapter', () => {
     );
   });
 
+  it('scaffolds the native change document, with CHG-INITIAL on request', async () => {
+    const root = await workspace();
+    try {
+      await createSpecKitProductChange(root, 'checkout-copy');
+      await createSpecKitProductChange(root, 'baseline', { initial: true });
+      const changes = join(root, '.specify', 'productshape', 'changes');
+      const regular = await readFile(join(changes, 'checkout-copy', 'change.md'), 'utf8');
+      const initial = await readFile(join(changes, 'baseline', 'change.md'), 'utf8');
+      expect(regular).toContain('id: CHG-CHECKOUT-COPY-001');
+      expect(regular).toContain("title: 'Checkout copy'");
+      expect(regular).toContain('State the problem, not the solution.');
+      expect(initial).toContain('id: CHG-INITIAL');
+      expect(initial).toContain("base-revision: '0000000'");
+      expect((await validateSpecKitProductChange(root, 'baseline')).blocking).toEqual([]);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it('keeps multiple named changes in an adapter-owned area and validates from disk', async () => {
     const root = await workspace();
     try {
@@ -289,15 +308,15 @@ describe('Spec Kit PRODUCT adapter', () => {
   it('applies a valid authorized delta into the accepted model, then archives separately', async () => {
     const root = await workspace();
     try {
-      await createSpecKitProductChange(root, 'add-outcome');
+      await createSpecKitProductChange(root, 'add-outcome', { initial: true });
       const dir = join(root, '.specify', 'productshape', 'changes', 'add-outcome');
       const change = join(dir, 'change.md');
       const manifest = await readFile(change, 'utf8');
+      expect(manifest).toContain('id: CHG-INITIAL');
       await writeFile(
         change,
         manifest
           .replace('status: draft', 'status: approved')
-          .replace('id: CHG-ADD-OUTCOME-001', 'id: CHG-INITIAL')
           .replace('  add: []', '  add:\n    - FR-ADDED-001'),
         'utf8',
       );

@@ -2,6 +2,8 @@
 import { mkdir, readFile, readdir, rename, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import {
+  INITIAL_CHANGE_ID,
+  NO_BASELINE_REVISION,
   applyHostedProductChange,
   assessHostedProductChange,
   compareCodePoints,
@@ -10,6 +12,7 @@ import {
   loadChange,
   loadLiveChanges,
   openRepository,
+  scaffoldChangeDocument,
   validateBaseline,
   analyzeImpact,
   stableJson,
@@ -103,19 +106,26 @@ export async function loadSpecKitProductChange(root: string, name: string): Prom
   return loadChange(dir, repo.root, repo.registry);
 }
 
+function titleFromName(name: string): string {
+  const words = name.split('-');
+  return [words[0]!.charAt(0).toUpperCase() + words[0]!.slice(1), ...words.slice(1)].join(' ');
+}
+
 export async function createSpecKitProductChange(
   root: string,
   name: string,
+  options: { initial?: boolean } = {},
 ): Promise<SpecKitProductChangeRef> {
   await openRepository(root);
   const dir = changeDir(root, name);
   if (await pathExists(join(dir, 'change.md')))
     throw new Error(`Spec Kit Product Change '${name}' already exists.`);
-  const revision = (await gitHead(root)) ?? '0000000';
+  const id = options.initial ? INITIAL_CHANGE_ID : `CHG-${name.toUpperCase()}-001`;
+  const revision = (await gitHead(root)) ?? NO_BASELINE_REVISION;
   await mkdir(join(dir, 'proposed'), { recursive: true });
   await writeFile(
     join(dir, 'change.md'),
-    `---\nid: CHG-${name.toUpperCase().replaceAll('-', '-')}-001\ntype: product-change\ntitle: ${name.replaceAll('-', ' ')}\nstatus: draft\nbase-revision: '${revision}'\noperations:\n  add: []\n  modify: []\n  remove: []\n---\n\n## Problem\n\nDescribe the product problem.\n\n## Intended Product Outcome\n\nDescribe the accepted outcome.\n\n## Rationale\n\nExplain why this change is needed.\n\n## Affected Product Areas\n\nName affected product areas.\n\n## Open Questions\n\nNone.\n\n## Product Acceptance\n\nDescribe how a human accepts the outcome.\n\n## Out of Scope\n\nRecord conscious exclusions.\n`,
+    `${scaffoldChangeDocument(id, titleFromName(name), revision)}\n`,
     'utf8',
   );
   return { name, dir, file: `${SPECKIT_PRODUCT_CHANGES}/${name}/change.md` };
