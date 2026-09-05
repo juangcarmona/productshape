@@ -41,8 +41,6 @@ specify extension add pdac --from https://github.com/juangcarmona/productshape/r
 
 Verify the installation with `specify extension list` and `specify extension info pdac`.
 
-Spec Kit's own community catalog lists this extension for discovery — `specify extension search` finds it there. It is not an install source: installs come from the ProductShape catalog above, which is the one that pins each release asset and its sha256.
-
 ## Uninstall
 
 ```bash

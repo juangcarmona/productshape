@@ -73,7 +73,7 @@ specify extension add pdac
 
 `specify extension update pdac` follows new releases; every catalog entry pins the release asset and its sha256, verified before install. Alternatives: install from a checkout with `specify extension add /path/to/productshape/extensions/speckit-pdac --dev`, or from a release asset with `specify extension add pdac --from <url>` (the specify CLI asks you to confirm an untrusted source). Verify with `specify extension list`; remove with `specify extension remove pdac`. The extension only adds commands and hooks over the same deterministic operations; it gains no write authority over the product model, and its hooks degrade to a successful no-op in a workspace without ProductShape. The extension and `prodshape integration add speckit` compose; each also works alone.
 
-It requires Spec Kit 0.7.2 or newer and ProductShape 0.16.0 or newer, both verified. Spec Kit's own community catalog lists the extension so `specify extension search` finds it; it is discovery only, and the ProductShape catalog above stays the trusted installation source.
+It requires Spec Kit 0.7.2 or newer and ProductShape 0.16.0 or newer, both verified.
 
 ## Optional: the pdac-product authoring lane
 
