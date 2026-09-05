@@ -4,6 +4,7 @@ import {
   findRepositoryRoot,
   openRepository,
   stableJson,
+  type AffectedCitation,
   type ProductRepository,
 } from '@prodshape/core';
 
@@ -128,4 +129,21 @@ export function formatDiagnosticLine(diagnostic: {
       ? ` (${[diagnostic.field, diagnostic.target].filter(Boolean).join(' -> ')})`
       : '';
   return `${diagnostic.severity} ${diagnostic.code} ${location}: ${diagnostic.message}${relation}`;
+}
+
+function citationLocation(citation: AffectedCitation['citation']): string {
+  return citation.form === 'sidecar-ledger'
+    ? `${citation.source} entry ${citation.line}`
+    : `${citation.source}:${citation.line}`;
+}
+
+/** The RFC 0048 report: the count, then one line per citation with its prospective status. */
+export function formatAffectedCitations(affected: AffectedCitation[]): string[] {
+  return [
+    `Affected citations: ${affected.length}`,
+    ...affected.map(({ citation, prospectiveStatus }) => {
+      const anchor = citation.anchor ? `#${citation.anchor}` : '';
+      return `  ${citationLocation(citation)}\t${citation.id}${anchor}\t${prospectiveStatus}`;
+    }),
+  ];
 }

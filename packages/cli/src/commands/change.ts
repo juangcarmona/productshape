@@ -23,7 +23,13 @@ import {
   type LoadedChange,
   type ProductRepository,
 } from '@prodshape/core';
-import { exitCodes, formatDiagnosticLine, resolveRepository, type CliIo } from '../context.js';
+import {
+  exitCodes,
+  formatAffectedCitations,
+  formatDiagnosticLine,
+  resolveRepository,
+  type CliIo,
+} from '../context.js';
 import { consumerCitationDiagnostics, loadActiveChanges } from './verdict.js';
 
 export interface ChangeFormatOptions {
@@ -329,16 +335,6 @@ export interface ChangeApplyOptions extends ChangeFormatOptions {
   dryRun?: boolean;
 }
 
-/**
- * A citation's point of use: file and line for a payload-carried citation, ledger file and entry
- * for a sidecar citation, whose `line` is the 1-based entry ordinal rather than a file line.
- */
-function citationLocation(citation: AffectedCitation['citation']): string {
-  return citation.form === 'sidecar-ledger'
-    ? `${citation.source} entry ${citation.line}`
-    : `${citation.source}:${citation.line}`;
-}
-
 function reportPlan(
   io: CliIo,
   plan: ApplyPlan,
@@ -358,11 +354,7 @@ function reportPlan(
   }
   // The count is stated even at zero: absence of impact is a claim the reviewer relies on,
   // silence is not (RFC 0048).
-  io.out(`Affected citations: ${affected.length}`);
-  for (const { citation, prospectiveStatus } of affected) {
-    const anchor = citation.anchor ? `#${citation.anchor}` : '';
-    io.out(`  ${citationLocation(citation)}\t${citation.id}${anchor}\t${prospectiveStatus}`);
-  }
+  for (const line of formatAffectedCitations(affected)) io.out(line);
 }
 
 /**

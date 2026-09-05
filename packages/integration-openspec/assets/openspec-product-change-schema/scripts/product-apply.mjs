@@ -86,6 +86,14 @@ const { added, modified, removed } = result.plan.diff;
 console.log(
   `Product diff: ${added.length} added, ${modified.length} modified, ${removed.length} removed.`,
 );
+const affected = result.affectedCitations ?? [];
+console.log(`Affected citations: ${affected.length}`);
+for (const { citation, prospectiveStatus } of affected) {
+  const anchor = citation.anchor ? `#${citation.anchor}` : '';
+  console.log(
+    `  ${citation.source}:${citation.line}\t${citation.id}${anchor}\t${prospectiveStatus}`,
+  );
+}
 if (result.outcome === 'dry-run') {
   console.log('Dry run; nothing was written.');
   process.exit(0);

@@ -5,7 +5,8 @@ import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import { repoRoot } from '../helpers.js';
-import { defaultRecoveryBrief } from '@prodshape/core';
+import { git } from './openspec-product-helpers.js';
+import { contentDigest, defaultRecoveryBrief } from '@prodshape/core';
 import {
   applySpecKitProductChange,
   archiveSpecKitProductChange,
@@ -378,6 +379,78 @@ describe('Spec Kit PRODUCT adapter', () => {
       );
       const inert = await validateSpecKitProductChange(root, 'next');
       expect(inert.diagnostics.filter((d) => d.code === 'PRODUCT025')).toEqual([]);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('apply reports the citations the change affects with their prospective status', async () => {
+    const root = await workspace();
+    try {
+      const rulePath = join(
+        root,
+        'docs',
+        'product',
+        'model',
+        'business-rules',
+        'br-valid-url-001.md',
+      );
+      const digest = contentDigest(await readFile(rulePath, 'utf8'));
+      await mkdir(join(root, 'specs', '001-shorten'), { recursive: true });
+      await writeFile(
+        join(root, 'specs', '001-shorten', 'spec.md'),
+        `<!-- pdac-scope: cited -->\n\n# Shorten\n\nOnly well-formed URLs are shortened.\n<!-- pdac:cite id="BR-VALID-URL-001" digest="${digest}" -->\n`,
+        'utf8',
+      );
+      git(root, 'init', '-q');
+      git(root, 'add', '-A');
+      git(
+        root,
+        '-c',
+        'user.name=test',
+        '-c',
+        'user.email=test@example.invalid',
+        'commit',
+        '-q',
+        '-m',
+        'baseline',
+      );
+
+      await createSpecKitProductChange(root, 'tighten-rule');
+      const changeFile = await touchValidUrlRule(root, 'tighten-rule');
+      const proposed = join(
+        root,
+        '.specify',
+        'productshape',
+        'changes',
+        'tighten-rule',
+        'proposed',
+        'business-rules',
+        'br-valid-url-001.md',
+      );
+      await writeFile(
+        proposed,
+        (await readFile(proposed, 'utf8')).replace(
+          'absolute web address',
+          'absolute https address',
+        ),
+        'utf8',
+      );
+      await writeFile(
+        changeFile,
+        (await readFile(changeFile, 'utf8')).replace('status: draft', 'status: approved'),
+        'utf8',
+      );
+
+      const result = await applySpecKitProductChange(root, 'tighten-rule', { dryRun: true });
+      expect(result.outcome).toBe('dry-run');
+      expect(
+        result.affectedCitations?.map(({ citation, prospectiveStatus }) => [
+          citation.id,
+          citation.source,
+          prospectiveStatus,
+        ]),
+      ).toEqual([['BR-VALID-URL-001', 'specs/001-shorten/spec.md', 'stale']]);
     } finally {
       await rm(root, { recursive: true, force: true });
     }

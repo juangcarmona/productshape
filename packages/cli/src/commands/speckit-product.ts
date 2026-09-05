@@ -18,7 +18,7 @@ import {
   type Diagnostic,
   type HostedProductApplyResult,
 } from '@prodshape/core';
-import { exitCodes, resolveRepository, type CliIo } from '../context.js';
+import { exitCodes, formatAffectedCitations, resolveRepository, type CliIo } from '../context.js';
 
 function formatDiagnostic(diagnostic: Diagnostic): string {
   return `${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`;
@@ -33,6 +33,7 @@ function summarizeModel(model: BaselineValidation): string {
 function formatApplyResult(result: HostedProductApplyResult, name: string): string {
   const lines = [`${result.outcome}: ${result.change.id ?? name}`];
   if (result.outcome === 'refused') lines.push(...result.plan.diagnostics.map(formatDiagnostic));
+  if (result.affectedCitations) lines.push(...formatAffectedCitations(result.affectedCitations));
   if (result.resultingModel) lines.push(summarizeModel(result.resultingModel));
   return lines.join('\n');
 }

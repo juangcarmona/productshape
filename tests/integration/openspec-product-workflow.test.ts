@@ -336,6 +336,7 @@ describe('openspec product workflow: apply', () => {
       expect(result.plan.diff.removed).toEqual([]);
       expect(result.plan.diff.modified[0]!.digest).toBe(contentDigest(BR_PRICING_V2));
 
+      expect(result.affectedCitations).toEqual([]);
       // The resulting accepted model validates from a fresh disk read.
       expect(result.resultingModel!.diagnostics).toEqual([]);
       expect(result.resultingModel!.artifacts).toHaveLength(12);
