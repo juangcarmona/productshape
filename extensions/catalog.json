@@ -31,6 +31,34 @@
         "hooks": 3
       },
       "tags": ["product", "citations", "pdac", "traceability", "governance"]
+    },
+    "pdac-product": {
+      "id": "pdac-product",
+      "name": "ProductShape PRODUCT workflows",
+      "version": "0.1.0",
+      "description": "Author, refine, validate, apply, archive and recover ProductShape product meaning in a separate Spec Kit lane.",
+      "author": "juangcarmona",
+      "repository": "https://github.com/juangcarmona/productshape",
+      "license": "Apache-2.0",
+      "category": "process",
+      "effect": "read-write",
+      "download_url": "https://github.com/juangcarmona/productshape/releases/download/speckit-pdac-product-v0.1.0/speckit-pdac-product.zip",
+      "sha256": "sha256:68e7bbfc3b601f091ff5c166205bf54e66c7c86041519f374e142afd69990009",
+      "requires": {
+        "speckit_version": ">=1.0.4",
+        "tools": [
+          {
+            "name": "prodshape",
+            "version": ">=0.19.0",
+            "required": true
+          }
+        ]
+      },
+      "provides": {
+        "commands": 6,
+        "hooks": 0
+      },
+      "tags": ["product", "product-change", "recovery", "pdac"]
     }
   }
 }
