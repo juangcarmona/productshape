@@ -1,5 +1,14 @@
 # @prodshape/distribution
 
+## 0.16.0-alpha.2
+
+### Patch Changes
+
+- Updated dependencies [d0381f5]
+- Updated dependencies [7be7c61]
+- Updated dependencies [5baaea2]
+  - @prodshape/core@0.21.0-alpha.1
+
 ## 0.16.0-alpha.1
 
 ### Patch Changes
