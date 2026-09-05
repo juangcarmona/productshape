@@ -10,6 +10,28 @@ The supported published CLI baseline is `@prodshape/cli@0.19.0`. Every stable pu
 
 ## [0.19.0]
 
+The hosted product workflow release. A Product Change can be authored, validated and applied inside the SDD host that owns delivery work, with one deterministic rail shared by every host and `docs/product/model` as the only accepted truth.
+
+### Added
+
+- OpenSpec hosts the product workflow: `prodshape integration add openspec` installs a managed project-local `product-change` schema whose changes carry a Product Change delta, with bridge scripts that validate the overlay and apply through `@prodshape/integration-openspec` (PR #216, renamed to `product-change` in PR #230). Graph-guided clarification and resumable refinement notes for hosted changes (PR #232), and brownfield recovery hosted in OpenSpec through the `product-recovery` schema.
+- Spec Kit hosts the product workflow through the separate `pdac-product` extension and `prodshape speckit-product create|refine|validate|apply|archive|recover` (PR #238). `create --initial` scaffolds the reserved `CHG-INITIAL` (PR #246); `refine` works on the edited change and `--note` records working memory (PR #247).
+- Hosted apply reports the affected citation set: every citation of a changed artifact with the status it will hold after apply, computed before any write (PR #245).
+- A `release drift` CI check that fails when a package's shipped source differs from the tag of its current version and no changeset names it (PR #241).
+
+### Changed
+
+- One hosted Product Change rail in `@prodshape/core` (`loadLiveChanges`, `assessHostedProductChange`, `applyHostedProductChange`): terminal statuses are inert for concurrency, the live set spans the host's containers and the native `changes/active` directory, and apply revalidates, refuses before any write, executes and returns a fresh validation of the resulting model. Both adapters delegate to it (PR #243).
+- `FR-SPECKIT-001` states the hosted lane as a third mechanism, applied through `CHG-SPECKIT-003`; `FR-OPENSPEC-001` states its hosted workflow through `CHG-OPENSPEC-PRODUCT-001`.
+- `@prodshape/integration-copilot` renders skills in the Agent Skills layout, `.github/skills/<name>/SKILL.md` with the references beside it.
+
+### Fixed
+
+- The published `@prodshape/integration-speckit` and `@prodshape/integration-openspec` resolve against a `@prodshape/core` that exports the shared rail; the alpha builds imported symbols the published core did not have (PR #241).
+- `prodshape speckit-product apply` prints the blocking diagnostics on refusal and the resulting model verdict on apply, instead of only the outcome (PR #243).
+
+Normative diagnostics, deterministic ordering and the documented exit codes are unchanged.
+
 ## [0.18.0]
 
 The repository-mutation safety release (PR #210, the safety phase of #208, which stays open for the architecture and performance work it also tracks). Every mutation this CLI performs on a repository is now contained inside that repository, planned before it acts, drift-safe over content a human has touched, and closed against state it cannot trust.
