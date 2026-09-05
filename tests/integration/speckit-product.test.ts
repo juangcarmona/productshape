@@ -274,6 +274,11 @@ describe('Spec Kit PRODUCT adapter', () => {
         excludedArtifactIds: ['ACT-VISITOR-001'],
       });
       expect(await readFile(result.proposal, 'utf8')).toContain('Human clarification');
+      expect(result.written).toEqual([
+        '.specify/productshape/changes/same-change/proposal.md',
+        '.specify/productshape/changes/same-change/change.md',
+        '.specify/productshape/changes/same-change/impact.json',
+      ]);
       const impact = JSON.parse(await readFile(join(result.change.dir, 'impact.json'), 'utf8')) as {
         checked: string[];
         excluded: string[];
@@ -294,6 +299,7 @@ describe('Spec Kit PRODUCT adapter', () => {
       await touchValidUrlRule(root, 'in-place');
 
       const refreshed = await refineSpecKitProductChange(root, 'in-place');
+      expect(refreshed.written).toEqual(['.specify/productshape/changes/in-place/impact.json']);
       expect(refreshed.impact.checked).toEqual(['BR-VALID-URL-001']);
       expect(Object.keys(refreshed.impact.impacts)).toEqual(['BR-VALID-URL-001']);
       expect(existsSync(refreshed.proposal)).toBe(false);
@@ -426,7 +432,7 @@ describe('Spec Kit PRODUCT adapter', () => {
     }
   });
 
-  it('apply reports the citations the change affects with their prospective status', async () => {
+  it('apply reports the citations the change affects, skipping its own container and the archive', async () => {
     const root = await workspace();
     try {
       const rulePath = join(
@@ -438,12 +444,13 @@ describe('Spec Kit PRODUCT adapter', () => {
         'br-valid-url-001.md',
       );
       const digest = contentDigest(await readFile(rulePath, 'utf8'));
+      const citing = (title: string) =>
+        `<!-- pdac-scope: cited -->\n\n# ${title}\n\nOnly well-formed URLs are shortened.\n<!-- pdac:cite id="BR-VALID-URL-001" digest="${digest}" -->\n`;
       await mkdir(join(root, 'specs', '001-shorten'), { recursive: true });
-      await writeFile(
-        join(root, 'specs', '001-shorten', 'spec.md'),
-        `<!-- pdac-scope: cited -->\n\n# Shorten\n\nOnly well-formed URLs are shortened.\n<!-- pdac:cite id="BR-VALID-URL-001" digest="${digest}" -->\n`,
-        'utf8',
-      );
+      await writeFile(join(root, 'specs', '001-shorten', 'spec.md'), citing('Shorten'), 'utf8');
+      const archived = join(root, '.specify', 'productshape', 'archive', 'older');
+      await mkdir(archived, { recursive: true });
+      await writeFile(join(archived, 'proposal.md'), citing('Older'), 'utf8');
       git(root, 'init', '-q');
       git(root, 'add', '-A');
       git(
@@ -459,6 +466,11 @@ describe('Spec Kit PRODUCT adapter', () => {
       );
 
       await createSpecKitProductChange(root, 'tighten-rule');
+      await writeFile(
+        join(root, '.specify', 'productshape', 'changes', 'tighten-rule', 'proposal.md'),
+        citing('Tighten rule'),
+        'utf8',
+      );
       const changeFile = await touchValidUrlRule(root, 'tighten-rule');
       const proposed = join(
         root,
@@ -493,6 +505,8 @@ describe('Spec Kit PRODUCT adapter', () => {
           prospectiveStatus,
         ]),
       ).toEqual([['BR-VALID-URL-001', 'specs/001-shorten/spec.md', 'stale']]);
+      expect(result.resultingModel!.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+      expect(result.resultingModel!.artifacts.map((a) => a.id)).toContain('BR-VALID-URL-001');
     } finally {
       await rm(root, { recursive: true, force: true });
     }
