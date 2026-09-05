@@ -1,5 +1,12 @@
 # @prodshape/integration-openspec
 
+## 0.6.0-alpha.4
+
+### Patch Changes
+
+- Updated dependencies [f1a1612]
+  - @prodshape/core@0.21.0-alpha.0
+
 ## 0.6.0-alpha.3
 
 ### Minor Changes

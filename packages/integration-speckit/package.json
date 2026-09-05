@@ -1,6 +1,6 @@
 {
   "name": "@prodshape/integration-speckit",
-  "version": "0.4.0-alpha.0",
+  "version": "0.4.0-alpha.1",
   "description": "Spec Kit integration for Product Definition as Code: delivery grounding plus a native PRODUCT authoring and recovery adapter.",
   "license": "Apache-2.0",
   "type": "module",
