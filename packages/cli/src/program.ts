@@ -101,18 +101,27 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .action(async (name: string, options: { initial?: boolean; format?: string }) => {
       capture.code = await runSpecKitProduct(io, 'create', name, options);
     });
-  for (const action of ['refine', 'validate', 'apply', 'archive'] as const) {
-    const command = speckitProduct
+  speckitProduct
+    .command('refine')
+    .argument('<name>', 'named Spec Kit Product Change')
+    .option(
+      '--input <file>',
+      'JSON refinement: rationale, open questions, out of scope, checked and excluded ids',
+    )
+    .option('--note <text>', 'append working memory to proposal.md')
+    .option('--format <format>', 'text or json', 'text')
+    .action(async (name: string, options: { input?: string; note?: string; format?: string }) => {
+      capture.code = await runSpecKitProduct(io, 'refine', name, options);
+    });
+  for (const action of ['validate', 'apply', 'archive'] as const) {
+    speckitProduct
       .command(action)
       .argument('<name>', 'named Spec Kit Product Change')
       .option('--dry-run', 'preflight apply without writing')
-      .option('--format <format>', 'text or json', 'text');
-    command.option('--input <file>', 'JSON refinement input for refine');
-    command.action(
-      async (name: string, options: { dryRun?: boolean; format?: string; input?: string }) => {
+      .option('--format <format>', 'text or json', 'text')
+      .action(async (name: string, options: { dryRun?: boolean; format?: string }) => {
         capture.code = await runSpecKitProduct(io, action, name, options);
-      },
-    );
+      });
   }
   speckitProduct
     .command('recover-start')
