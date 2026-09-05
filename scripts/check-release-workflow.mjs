@@ -81,8 +81,8 @@ const checks = [
     /name: synchronize and verify prerelease tags/.test(workflow),
   ],
   [
-    'version command formats prerelease state',
-    /"version": "changeset version && pnpm exec prettier --write \.changeset\/pre\.json/.test(
+    'version command formats prerelease state and tolerates its absence',
+    /"version": "changeset version && pnpm exec prettier --write --no-error-on-unmatched-pattern \.changeset\/pre\.json/.test(
       packageJson,
     ),
   ],
