@@ -14,9 +14,13 @@
   "changesets": [
     "bright-speckit-product",
     "graph-guided-product-change",
+    "hosted-apply-affected-citations",
     "hosted-product-recovery",
     "openspec-product-workflow",
     "product-change-schema",
-    "shared-rail-published"
+    "shared-hosted-change-rail",
+    "shared-rail-published",
+    "speckit-product-initial",
+    "speckit-product-refine-in-place"
   ]
 }

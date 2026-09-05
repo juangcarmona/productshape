@@ -4,7 +4,7 @@ This guide covers adopting Product Definition as Code for an existing system: so
 
 Read this first: **no tool will scan your codebase and emit a product model.** Semantic extraction stays with you and the AI assistant executing the `recover-product` skill, and a human validates everything before it becomes canonical. What is deterministic is the session around that work: `prodshape recover` manages the evidence inventory, content hashes, bounded batches, coverage, leads, user questions, checkpoints and the final report, so a recovery that spans days and many assistant conversations never loses track of what was examined, what changed and what remains. Plan for recovery to be real analytical work; the tooling structures it, it does not eliminate it.
 
-> These commands target the supported published baseline, [`@prodshape/cli@0.19.0-alpha.3`](https://www.npmjs.com/package/@prodshape/cli/v/0.19.0-alpha.3). They use `prodshape`; the `product-definition` alias is equivalent through v0.x. See [Limitations](../limitations.md).
+> These commands target the supported published baseline, [`@prodshape/cli@0.19.0-alpha.4`](https://www.npmjs.com/package/@prodshape/cli/v/0.19.0-alpha.4). They use `prodshape`; the `product-definition` alias is equivalent through v0.x. See [Limitations](../limitations.md).
 
 ## 1. Initialize
 
