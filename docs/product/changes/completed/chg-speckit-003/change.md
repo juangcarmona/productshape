@@ -2,7 +2,7 @@
 id: CHG-SPECKIT-003
 type: product-change
 title: Host the product workflow in Spec Kit through a separate product-authoring extension
-status: draft
+status: applied
 base-revision: 'f1a1612e1b382a75869b07688c3dd3a7aea626a3'
 operations:
   add: []
