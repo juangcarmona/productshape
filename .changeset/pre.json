@@ -16,6 +16,7 @@
     "graph-guided-product-change",
     "hosted-product-recovery",
     "openspec-product-workflow",
-    "product-change-schema"
+    "product-change-schema",
+    "shared-rail-published"
   ]
 }

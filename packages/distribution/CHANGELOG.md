@@ -1,5 +1,13 @@
 # @prodshape/distribution
 
+## 0.16.0-alpha.1
+
+### Patch Changes
+
+- Updated dependencies [f1a1612]
+  - @prodshape/core@0.21.0-alpha.0
+  - @prodshape/integration-copilot@0.4.0-alpha.0
+
 ## 0.16.0-alpha.0
 
 ### Minor Changes
