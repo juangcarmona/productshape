@@ -81,10 +81,11 @@ For Spec Kit 1.0.4 or later, install the separate [`pdac-product` extension](../
 
 The adapter stores live changes at `.specify/productshape/changes/<name>/` and recovery sessions at `.specify/productshape/recoveries/<session>/`. These repository-visible containers survive a new agent session and are not workflow-run state or installed extension files. The first definition of an empty model is a hosted change created with `--initial`, which reserves the id `CHG-INITIAL`; every later change takes an id derived from its name. `docs/product/model` remains the accepted truth. Apply requires human-recorded approval, revalidates immediately before writing, never commits or archives, and archive is a separate explicit action. A hosted change that is applied but not yet archived is inert for concurrency, and concurrency spans the native `docs/product/changes/active` container, so a hosted and a native change touching the same artifact report against each other. Apply lists the citations the change affects with the status each will hold, so the delivery documents to re-ground are named at once. Recovery processes at most one deterministic batch per invocation and reports insufficient evidence without applying anything.
 
-Install from a checkout while this extension is under development:
+Install it from the ProductShape extension catalog, the same trusted source as `pdac`, then by name:
 
-```text
-specify extension add ./extensions/speckit-pdac-product --dev
+```bash
+specify extension catalog add https://raw.githubusercontent.com/juangcarmona/productshape/main/extensions/catalog.json --name pdac --install-allowed
+specify extension add pdac-product
 ```
 
-This bounded spike intentionally does not publish a catalog entry, preset, bundle or automated workflow; those are follow-up work after the interactive and packed-consumer proofs are maintained independently.
+It requires Spec Kit 1.0.4 or newer and ProductShape 0.19.0 or newer. `specify extension update pdac-product` follows new releases; a checkout installs with `specify extension add /path/to/productshape/extensions/speckit-pdac-product --dev`. Presets, bundles and automated Spec Kit workflows are not part of the extension.

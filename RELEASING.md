@@ -143,3 +143,40 @@ The download URL pins the release tag rather than using the `releases/latest/dow
 ```
 
 Every field above is derived from `extensions/speckit-pdac/extension.yml` and must stay identical to it. `speckit_version` is `>=0.7.2` because that is the lowest Spec Kit the extension has been installed and registered on; `prodshape` is `>=0.16.0` because `citations verify --provider speckit --format json` and the `pdac-scope` exemption carrier that `speckit.pdac.verify` depends on do not work on 0.14.0, and 0.15.0 was never published.
+
+The `pdac-product` extension is submitted through the same form, with its own entry derived from `extensions/speckit-pdac-product/extension.yml`:
+
+```json
+"pdac-product": {
+  "name": "ProductShape PRODUCT workflows",
+  "id": "pdac-product",
+  "description": "Author, refine, validate, apply, archive and recover ProductShape product meaning in a separate Spec Kit lane.",
+  "author": "Juan G. Carmona (@juangcarmona)",
+  "version": "0.1.0",
+  "download_url": "https://github.com/juangcarmona/productshape/releases/download/speckit-pdac-product-v0.1.0/speckit-pdac-product.zip",
+  "repository": "https://github.com/juangcarmona/productshape",
+  "homepage": "https://pdac.dev",
+  "documentation": "https://github.com/juangcarmona/productshape/blob/main/extensions/speckit-pdac-product/README.md",
+  "changelog": "https://github.com/juangcarmona/productshape/blob/main/extensions/speckit-pdac-product/CHANGELOG.md",
+  "license": "Apache-2.0",
+  "category": "process",
+  "effect": "read-write",
+  "requires": {
+    "speckit_version": ">=1.0.4",
+    "tools": [
+      {
+        "name": "prodshape",
+        "version": ">=0.19.0",
+        "required": true
+      }
+    ]
+  },
+  "provides": {
+    "commands": 6,
+    "hooks": 0
+  },
+  "tags": ["product", "product-change", "recovery", "pdac"]
+}
+```
+
+`speckit_version` is `>=1.0.4` because the extension relies on the skills-based agent registration and the extension lifecycle that release introduced; `prodshape` is `>=0.19.0` because `prodshape speckit-product` first shipped in that release.

@@ -259,7 +259,25 @@ describe('pdac extension catalog', () => {
     }
   });
 
-  it('updates a temporary catalog for pdac-product without advertising it in production', async () => {
+  it('keeps the released pdac-product entry internally consistent with its manifest', async () => {
+    const catalog = await loadCatalog();
+    const entry = catalog.extensions['pdac-product'];
+    expect(entry).toBeDefined();
+    expect(entry?.id).toBe('pdac-product');
+    expect(entry?.version).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(entry?.download_url).toBe(
+      `https://github.com/juangcarmona/productshape/releases/download/speckit-pdac-product-v${entry?.version}/speckit-pdac-product.zip`,
+    );
+    expect(entry?.sha256).toMatch(/^sha256:[0-9a-f]{64}$/);
+    const manifest = parse(
+      await readFile(join(repoRoot, 'extensions', 'speckit-pdac-product', 'extension.yml'), 'utf8'),
+    ) as ExtensionManifest;
+    expect(entry?.name).toBe(manifest.extension.name);
+    expect(entry?.repository).toBe(manifest.extension.repository);
+    expect(entry?.license).toBe(manifest.extension.license);
+  });
+
+  it('the release updater writes a consistent pdac-product entry into a scratch catalog', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'prodshape-catalog-'));
     try {
       const scratch = join(dir, 'catalog.json');
@@ -283,8 +301,6 @@ describe('pdac extension catalog', () => {
         download_url:
           'https://github.com/juangcarmona/productshape/releases/download/speckit-pdac-product-v0.1.0/speckit-pdac-product.zip',
       });
-      const production = await loadCatalog();
-      expect(production.extensions['pdac-product']).toBeUndefined();
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
@@ -321,52 +337,62 @@ describe('the community submission payload documented in RELEASING.md', () => {
     tags: string[];
   }
 
-  async function loadSubmissionEntry(): Promise<SubmissionEntry> {
+  async function loadSubmissionEntry(id: string): Promise<SubmissionEntry> {
     const releasing = await readFile(join(repoRoot, 'RELEASING.md'), 'utf8');
-    const start = releasing.indexOf('"pdac": {');
-    expect(start, 'RELEASING.md must carry the pdac submission entry').toBeGreaterThan(-1);
+    const start = releasing.indexOf(`"${id}": {`);
+    expect(start, `RELEASING.md must carry the ${id} submission entry`).toBeGreaterThan(-1);
     const fence = releasing.indexOf('```', start);
     const body = releasing.slice(start, fence);
     return (JSON.parse(`{${body.trimEnd().replace(/,$/, '')}}`) as Record<string, SubmissionEntry>)[
-      'pdac'
+      id
     ] as SubmissionEntry;
   }
 
-  it('matches the manifest field for field', async () => {
-    const manifest = await loadManifest();
-    const entry = await loadSubmissionEntry();
-    expect(entry.id).toBe(manifest.extension.id);
-    expect(entry.name).toBe(manifest.extension.name);
-    expect(entry.version).toBe(manifest.extension.version);
-    expect(entry.description).toBe(manifest.extension.description);
-    expect(entry.repository).toBe(manifest.extension.repository);
-    expect(entry.homepage).toBe(manifest.extension.homepage);
-    expect(entry.license).toBe(manifest.extension.license);
-    expect(entry.category).toBe(manifest.extension.category);
-    expect(entry.effect).toBe(manifest.extension.effect);
-    expect(entry.requires.speckit_version).toBe(manifest.requires.speckit_version);
-    expect(entry.requires.tools).toEqual(manifest.requires.tools);
-    expect(entry.provides.commands).toBe(manifest.provides.commands.length);
-    expect(entry.provides.hooks).toBe(Object.keys(manifest.hooks).length);
-    expect(entry.tags).toEqual(manifest.tags);
-  });
-
-  /**
-   * A catalog entry names exactly one version, so its download URL must name exactly one
-   * release. The `releases/latest/download` alias the entry used to carry would start serving a
-   * different artifact than the entry's own `version` field names at the very next release.
-   */
-  it('pins the download URL to the release tag its version names', async () => {
-    const entry = await loadSubmissionEntry();
-    expect(entry.download_url).toBe(
-      `https://github.com/juangcarmona/productshape/releases/download/speckit-pdac-v${entry.version}/speckit-pdac.zip`,
+  async function loadExtensionManifest(id: string): Promise<ExtensionManifest> {
+    const content = await readFile(
+      join(repoRoot, 'extensions', `speckit-${id}`, 'extension.yml'),
+      'utf8',
     );
-  });
+    return parse(content) as ExtensionManifest;
+  }
 
-  it('names the documentation and changelog files that exist', async () => {
-    const entry = await loadSubmissionEntry();
-    expect(existsSync(join(extensionDir, 'CHANGELOG.md'))).toBe(true);
-    expect(entry.changelog).toContain('extensions/speckit-pdac/CHANGELOG.md');
+  describe.each(['pdac', 'pdac-product'])('%s', (id) => {
+    it('matches the manifest field for field', async () => {
+      const manifest = await loadExtensionManifest(id);
+      const entry = await loadSubmissionEntry(id);
+      expect(entry.id).toBe(manifest.extension.id);
+      expect(entry.name).toBe(manifest.extension.name);
+      expect(entry.version).toBe(manifest.extension.version);
+      expect(entry.description).toBe(manifest.extension.description);
+      expect(entry.repository).toBe(manifest.extension.repository);
+      expect(entry.homepage).toBe(manifest.extension.homepage);
+      expect(entry.license).toBe(manifest.extension.license);
+      expect(entry.category).toBe(manifest.extension.category);
+      expect(entry.effect).toBe(manifest.extension.effect);
+      expect(entry.requires.speckit_version).toBe(manifest.requires.speckit_version);
+      expect(entry.requires.tools).toEqual(manifest.requires.tools);
+      expect(entry.provides.commands).toBe(manifest.provides.commands.length);
+      expect(entry.provides.hooks).toBe(Object.keys(manifest.hooks ?? {}).length);
+      expect(entry.tags).toEqual(manifest.tags);
+    });
+
+    /**
+     * A catalog entry names exactly one version, so its download URL must name exactly one
+     * release. The `releases/latest/download` alias would start serving a different artifact than
+     * the entry's own `version` field names at the very next release.
+     */
+    it('pins the download URL to the release tag its version names', async () => {
+      const entry = await loadSubmissionEntry(id);
+      expect(entry.download_url).toBe(
+        `https://github.com/juangcarmona/productshape/releases/download/speckit-${id}-v${entry.version}/speckit-${id}.zip`,
+      );
+    });
+
+    it('names the documentation and changelog files that exist', async () => {
+      const entry = await loadSubmissionEntry(id);
+      expect(existsSync(join(repoRoot, 'extensions', `speckit-${id}`, 'CHANGELOG.md'))).toBe(true);
+      expect(entry.changelog).toContain(`extensions/speckit-${id}/CHANGELOG.md`);
+    });
   });
 
   /**
