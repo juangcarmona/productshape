@@ -1,11 +1,13 @@
 import { join } from 'node:path';
-import { executeApply, planApply, preflightApply } from './apply.js';
+import { appliedArtifacts, executeApply, planApply, preflightApply } from './apply.js';
 import { discoverChanges, loadChange } from './changes.js';
+import { computeAffectedCitations, scanCitations } from './citations.js';
 import { blockingDiagnostics, dedupeDiagnostics, sortDiagnostics } from './diagnostics.js';
 import { validateChange } from './overlay.js';
 import { validateBaseline } from './repository.js';
 import type { ApplyPlan } from './apply.js';
 import type { LoadedChange } from './changes.js';
+import type { AffectedCitation } from './citations.js';
 import type { Diagnostic } from './diagnostics.js';
 import type { ProductGraph } from './graph.js';
 import type { LoadedArtifact } from './model.js';
@@ -109,7 +111,22 @@ export interface HostedProductApplyResult {
   outcome: HostedProductApplyOutcome;
   plan: ApplyPlan;
   change: LoadedChange;
+  /** Citations of changed artifacts with the status each will hold after apply. Absent on refusal. */
+  affectedCitations?: AffectedCitation[];
   resultingModel?: BaselineValidation;
+}
+
+async function affectedCitationsOf(
+  repo: ProductRepository,
+  plan: ApplyPlan,
+  baseline: LoadedArtifact[],
+  change: LoadedChange,
+): Promise<AffectedCitation[]> {
+  const changedIds = [...plan.diff.added, ...plan.diff.modified, ...plan.diff.removed].map(
+    (entry) => entry.id,
+  );
+  const scan = await scanCitations(repo.root, repo.root);
+  return computeAffectedCitations(scan.records, changedIds, appliedArtifacts(baseline, change));
 }
 
 function hostedStatusGateMessage(status: string | undefined): string {
@@ -149,10 +166,22 @@ export async function applyHostedProductChange(options: {
   if (plan.diagnostics.some((diagnostic) => diagnostic.severity === 'error')) {
     return { outcome: 'refused', plan, change };
   }
+  const affectedCitations = await affectedCitationsOf(
+    repo,
+    plan,
+    assessed.baseline.artifacts,
+    change,
+  );
   if (dryRun) {
     await preflightApply(repo.root, plan);
-    return { outcome: 'dry-run', plan, change };
+    return { outcome: 'dry-run', plan, change, affectedCitations };
   }
   await executeApply(repo.root, plan);
-  return { outcome: 'applied', plan, change, resultingModel: await validateBaseline(repo) };
+  return {
+    outcome: 'applied',
+    plan,
+    change,
+    affectedCitations,
+    resultingModel: await validateBaseline(repo),
+  };
 }

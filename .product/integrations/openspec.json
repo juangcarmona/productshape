@@ -41,8 +41,8 @@
     "name": "product-change",
     "requiresOpenspec": "1.7.0",
     "files": {
-      "openspec/schemas/product-change/schema.yaml": "sha256:17770c527b417c5ba9f3151f3a1b685c596053ecdda9ad82e4880700f1445a28",
-      "openspec/schemas/product-change/scripts/product-apply.mjs": "sha256:17f4d2f7476b4d26a34af64309542f927251e44f57ff7a9a66b30562943aa91f",
+      "openspec/schemas/product-change/schema.yaml": "sha256:709d748a65cefec43fba78e46ec9d9583cae577569ca424dfc71afe3dd74a90b",
+      "openspec/schemas/product-change/scripts/product-apply.mjs": "sha256:f33ea47dadeacdc60956de4da1faf4661f3169a14ced737b3956f26e34064b67",
       "openspec/schemas/product-change/scripts/product-validate.mjs": "sha256:c423f92f308a9b9e3bc7c70663f7dc33e93bc85a9d6c5fb91dfb1f91a91f55c1",
       "openspec/schemas/product-change/templates/change.md": "sha256:af4fd10511f53a83ff5f452981178d62b74ae7128f8a84f1ad5ca5bd1b6748bb",
       "openspec/schemas/product-change/templates/proposal.md": "sha256:150c2d313f939e1ceeac3416b073cc076487c990868a5cb1a22d2781a8b01f3d"
@@ -57,5 +57,5 @@
       "openspec/schemas/product-recovery/templates/report.md": "sha256:b38d3a49f51f9b1a18b4ba7ddb3998ba46b625cdbec521a811f4c758f432fa14"
     }
   },
-  "updatedAt": "2026-09-04T12:16:12.168Z"
+  "updatedAt": "2026-09-05T11:21:08.624Z"
 }

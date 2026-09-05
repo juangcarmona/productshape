@@ -145,7 +145,8 @@ apply:
        apply-authorised state (PRODUCT028), writes the delta into the model, reports the product diff
        computed from the result and flips this change's status to applied in place.
     3. Re-read docs/product/model and validate the resulting accepted model: `prodshape validate` must
-       report zero errors. Refresh any citations the reported diff made stale.
+       report zero errors. Relay the affected citations the script lists: each names a consumer
+       document that now cites old meaning and must be re-grounded.
     4. STOP. Do not archive this change as part of apply: archiving is a separate OpenSpec action
        performed after successful Product apply and verification. Do not implement delivery work, do
        not modify implementation code and never edit docs/product/model by hand.
