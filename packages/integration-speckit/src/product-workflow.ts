@@ -184,7 +184,7 @@ async function appendWorkingMemory(path: string, text: string): Promise<void> {
 async function updateSections(
   change: LoadedChange,
   refinement: SpecKitProductRefinement,
-): Promise<void> {
+): Promise<boolean> {
   let body = change.body;
   if (refinement.rationale !== undefined) {
     body = replaceSection(body, 'Rationale', refinement.rationale);
@@ -195,9 +195,10 @@ async function updateSections(
   if (refinement.outOfScope !== undefined) {
     body = replaceSection(body, 'Out of Scope', listOrNone(refinement.outOfScope));
   }
-  if (body === change.body) return;
+  if (body === change.body) return false;
   const path = join(change.dir, 'change.md');
   await writeFile(path, (await readFile(path, 'utf8')).replace(change.body, body), 'utf8');
+  return true;
 }
 
 async function readImpact(path: string): Promise<SpecKitProductImpact | undefined> {
@@ -233,18 +234,35 @@ async function refreshImpact(
   return impact;
 }
 
+export interface SpecKitProductRefineResult {
+  change: LoadedChange;
+  proposal: string;
+  impact: SpecKitProductImpact;
+  /** Repo-relative files this refinement wrote. */
+  written: string[];
+}
+
 export async function refineSpecKitProductChange(
   root: string,
   name: string,
   refinement: SpecKitProductRefinement = {},
-): Promise<{ change: LoadedChange; proposal: string; impact: SpecKitProductImpact }> {
+): Promise<SpecKitProductRefineResult> {
   const change = await loadSpecKitProductChange(root, name);
   const proposal = join(change.dir, 'proposal.md');
-  if (refinement.workingMemory?.trim())
+  const written: string[] = [];
+  if (refinement.workingMemory?.trim()) {
     await appendWorkingMemory(proposal, refinement.workingMemory);
-  await updateSections(change, refinement);
+    written.push('proposal.md');
+  }
+  if (await updateSections(change, refinement)) written.push('change.md');
   const impact = await refreshImpact(root, change, refinement);
-  return { change: await loadSpecKitProductChange(root, name), proposal, impact };
+  written.push('impact.json');
+  return {
+    change: await loadSpecKitProductChange(root, name),
+    proposal,
+    impact,
+    written: written.map((file) => `${SPECKIT_PRODUCT_CHANGES}/${name}/${file}`),
+  };
 }
 
 async function liveChanges(root: string, repo: ProductRepository): Promise<LoadedChange[]> {
@@ -281,6 +299,7 @@ export async function applySpecKitProductChange(
     change,
     liveChanges: await liveChanges(root, repo),
     dryRun: options.dryRun,
+    excludeDocumentsUnder: [`${SPECKIT_PRODUCT_CHANGES}/${name}`, SPECKIT_PRODUCT_ARCHIVE],
   });
 }
 

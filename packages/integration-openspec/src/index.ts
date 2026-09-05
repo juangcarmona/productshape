@@ -121,6 +121,7 @@ export const PDAC_RULES: Record<string, string[]> = {
     'When a design decision depends on canonical product text, cite the artifact it depends on.',
   ],
   tasks: [
+    "A task that depends on a business rule's parameter cites the rule itself, not only the requirement derived from it: staleness follows the cited artifact's own digest, never its relationships.",
     'A task that changes cited behaviour must include a follow-up task to refresh the affected citations.',
     'Never infer implementation, verification, release or deployment from Product Change status; record that evidence in the delivery workflow.',
   ],
@@ -1307,14 +1308,16 @@ export async function checkOpenSpecIntegration(root: string): Promise<{
  *   asset bytes); hand-edited managed files are preserved and reported in `preserved`, and with
  *   no recorded product schema nothing under openspec/schemas is touched.
  * - Deletes `.product/integrations/openspec.json`.
- * - `--dry-run` reports what would be removed and preserved without writing.
+ * - `openspec/config.yaml` stays on disk with the PDaC content stripped and is reported in `restored`.
+ * - `--dry-run` reports what would be removed, restored and preserved without writing.
  */
 export async function removeOpenSpecIntegration(
   root: string,
   options: { dryRun?: boolean } = {},
-): Promise<{ removed: string[]; preserved: string[] }> {
+): Promise<{ removed: string[]; restored: string[]; preserved: string[] }> {
   const { dryRun = false } = options;
   const removed: string[] = [];
+  const restored: string[] = [];
   const preserved: string[] = [];
 
   // Remove both what the metadata recorded as injected and what the current guidance would
@@ -1433,12 +1436,9 @@ export async function removeOpenSpecIntegration(
       }
     }
 
-    if (configChanged && !dryRun) {
-      const serialized = serializeConfig(config);
-      await writeFile(configPath(root), serialized, 'utf8');
-      removed.push(CONFIG_RELATIVE);
-    } else if (configChanged && dryRun) {
-      removed.push(CONFIG_RELATIVE);
+    if (configChanged) {
+      if (!dryRun) await writeFile(configPath(root), serializeConfig(config), 'utf8');
+      restored.push(CONFIG_RELATIVE);
     }
   }
 
@@ -1565,5 +1565,5 @@ export async function removeOpenSpecIntegration(
     removed.push(META_RELATIVE);
   }
 
-  return { removed, preserved };
+  return { removed, restored, preserved };
 }

@@ -259,7 +259,9 @@ describe('integration-openspec managed lifecycle on disk (no OpenSpec CLI needed
       meta.managed.rules['specs'] = [oldRule, ...meta.managed.rules['specs']!];
       await writeFile(metaPath, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
 
-      await removeOpenSpecIntegration(dir);
+      const removal = await removeOpenSpecIntegration(dir);
+      expect(removal.restored).toEqual(['openspec/config.yaml']);
+      expect(removal.removed).not.toContain('openspec/config.yaml');
       const cleaned = parse(await readFile(configPath, 'utf8')) as {
         rules?: Record<string, string[]>;
       };

@@ -43,6 +43,7 @@ export {
   applySpecKitProductChange,
   createSpecKitProductChange,
   refineSpecKitProductChange,
+  type SpecKitProductRefineResult,
   listSpecKitProductChanges,
   loadSpecKitProductChange,
   nextSpecKitRecoveryBatch,
@@ -126,6 +127,9 @@ widen the result with \`npx prodshape impact <ID>\`.
 - Every requirement derived from canonical product text carries a citation to every PDaC artifact
   it derives from, not only the closest one, one citation per line under the text it grounds.
 - When a plan decision depends on canonical product text, cite the artifact it depends on.
+- Staleness follows the cited artifact's own digest, never its relationships: a plan decision or
+  a task that depends on a business rule's parameter cites the rule itself, not only the
+  requirement derived from it.
 - A task that changes cited behaviour includes a follow-up task to refresh the affected citations.
 - Every gated document (spec.md, plan.md, tasks.md) of a feature must end up bound or exempt,
   each with an explicit declaration. A declaration is only read from one of two carriers: an HTML
@@ -613,9 +617,10 @@ export async function checkSpecKitIntegration(root: string): Promise<{
 export async function removeSpecKitIntegration(
   root: string,
   options: { dryRun?: boolean } = {},
-): Promise<{ removed: string[] }> {
+): Promise<{ removed: string[]; restored: string[] }> {
   const { dryRun = false } = options;
   const removed: string[] = [];
+  const restored: string[] = [];
 
   for (const managed of MANAGED_TEMPLATES) {
     const absolute = templatePath(root, managed.relative);
@@ -625,7 +630,7 @@ export async function removeSpecKitIntegration(
       if (!dryRun) {
         await writeFile(absolute, stripped.content, 'utf8');
       }
-      removed.push(managed.relative);
+      restored.push(managed.relative);
     }
   }
 
@@ -639,5 +644,5 @@ export async function removeSpecKitIntegration(
     }
   }
 
-  return { removed };
+  return { removed, restored };
 }

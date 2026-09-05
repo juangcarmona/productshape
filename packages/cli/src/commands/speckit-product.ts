@@ -82,7 +82,11 @@ export async function runSpecKitProduct(
     const refinement = options.input ? await readJson(io.cwd, options.input) : {};
     if (options.note) refinement.workingMemory = options.note;
     const result = await refineSpecKitProductChange(repo.root, name, refinement);
-    io.out(json ? stableJson(result) : `Refined ${result.change.file}`);
+    io.out(
+      json
+        ? stableJson(result)
+        : [`Refined ${name}`, ...result.written.map((file) => `  ${file}`)].join('\n'),
+    );
     return exitCodes.success;
   }
   if (action === 'apply') {

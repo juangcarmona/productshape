@@ -151,7 +151,7 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
       ok: !lockError,
       detail: lockError
         ? 'unknown: the installation lock could not be read'
-        : 'no integrations installed (no installation.lock.json)',
+        : 'no AI integration installed (no installation.lock.json)',
     });
   }
 

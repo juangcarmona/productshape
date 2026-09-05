@@ -5,6 +5,7 @@ import { computeAffectedCitations, scanCitations } from './citations.js';
 import { blockingDiagnostics, dedupeDiagnostics, sortDiagnostics } from './diagnostics.js';
 import { validateChange } from './overlay.js';
 import { validateBaseline } from './repository.js';
+import { validateModel } from './validate.js';
 import type { ApplyPlan } from './apply.js';
 import type { LoadedChange } from './changes.js';
 import type { AffectedCitation } from './citations.js';
@@ -113,6 +114,7 @@ export interface HostedProductApplyResult {
   change: LoadedChange;
   /** Citations of changed artifacts with the status each will hold after apply. Absent on refusal. */
   affectedCitations?: AffectedCitation[];
+  /** The model the plan yields: projected in memory on a dry run, re-read from disk after apply. */
   resultingModel?: BaselineValidation;
 }
 
@@ -121,12 +123,21 @@ async function affectedCitationsOf(
   plan: ApplyPlan,
   baseline: LoadedArtifact[],
   change: LoadedChange,
+  excludedDirs: readonly string[],
 ): Promise<AffectedCitation[]> {
   const changedIds = [...plan.diff.added, ...plan.diff.modified, ...plan.diff.removed].map(
     (entry) => entry.id,
   );
   const scan = await scanCitations(repo.root, repo.root);
-  return computeAffectedCitations(scan.records, changedIds, appliedArtifacts(baseline, change));
+  const reGroundable = scan.records.filter(
+    (record) => !excludedDirs.some((dir) => record.source.startsWith(`${dir}/`)),
+  );
+  return computeAffectedCitations(reGroundable, changedIds, appliedArtifacts(baseline, change));
+}
+
+function projectedModel(assessed: HostedProductAssessment): BaselineValidation {
+  const { overlayArtifacts: artifacts, overlayGraph: graph } = assessed;
+  return { artifacts, graph, diagnostics: sortDiagnostics(validateModel(artifacts, graph)) };
 }
 
 function hostedStatusGateMessage(status: string | undefined): string {
@@ -149,8 +160,13 @@ export async function applyHostedProductChange(options: {
   change: LoadedChange;
   liveChanges: LoadedChange[];
   dryRun?: boolean;
+  /**
+   * Repo-relative directories whose documents are never re-grounded: the change's own container
+   * and the host archive.
+   */
+  excludeDocumentsUnder?: readonly string[];
 }): Promise<HostedProductApplyResult> {
-  const { repo, change, liveChanges, dryRun = false } = options;
+  const { repo, change, liveChanges, dryRun = false, excludeDocumentsUnder = [] } = options;
   const assessed = await assessHostedProductChange(repo, change, liveChanges);
   const plan = withHostedStatusGateMessage(
     await planHostedProductChange({
@@ -171,10 +187,17 @@ export async function applyHostedProductChange(options: {
     plan,
     assessed.baseline.artifacts,
     change,
+    excludeDocumentsUnder,
   );
   if (dryRun) {
     await preflightApply(repo.root, plan);
-    return { outcome: 'dry-run', plan, change, affectedCitations };
+    return {
+      outcome: 'dry-run',
+      plan,
+      change,
+      affectedCitations,
+      resultingModel: projectedModel(assessed),
+    };
   }
   await executeApply(repo.root, plan);
   return {

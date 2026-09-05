@@ -111,8 +111,9 @@ describe('integration lifecycle over templates', () => {
     expect(healthy.ok).toBe(true);
 
     const removed = await removeSpecKitIntegration(workDir);
+    expect(removed.removed).not.toContain(MANAGED_TEMPLATES[0]!.relative);
     for (const managed of MANAGED_TEMPLATES) {
-      expect(removed.removed).toContain(managed.relative);
+      expect(removed.restored).toContain(managed.relative);
       const content = await readFile(join(workDir, ...managed.relative.split('/')), 'utf8');
       expect(content).not.toContain('pdac:template');
       expect(content).toContain('## User Scenarios');
