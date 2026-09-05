@@ -34,6 +34,7 @@ import type {
   Diagnostic,
   FindingClassification,
   HostedProductApplyResult,
+  ImpactReport,
   LoadedChange,
   LoadedRecoverySession,
   ProductRepository,
@@ -146,6 +147,23 @@ export interface SpecKitProductRefinement {
   excludedArtifactIds?: string[];
 }
 
+export interface SpecKitProductImpact {
+  schema: string;
+  checked: string[];
+  excluded: string[];
+  impacts: Record<string, ImpactReport>;
+}
+
+const IMPACT_SCHEMA = 'product-definition-as-code/product-change-impact/v1alpha1';
+
+function unique(ids: Iterable<string>): string[] {
+  return [...new Set(ids)].sort(compareCodePoints);
+}
+
+function listOrNone(items: string[]): string {
+  return items.length > 0 ? items.map((item) => `- ${item}`).join('\n') : 'None.';
+}
+
 function replaceSection(body: string, heading: string, value: string): string {
   const marker = `## ${heading}`;
   const start = body.indexOf(marker);
@@ -156,71 +174,77 @@ function replaceSection(body: string, heading: string, value: string): string {
   return `${body.slice(0, contentStart)}\n\n${value.trim()}\n${body.slice(end)}`;
 }
 
+async function appendWorkingMemory(path: string, text: string): Promise<void> {
+  const current = (await pathExists(path))
+    ? await readFile(path, 'utf8')
+    : '# Product Change working memory\n';
+  await writeFile(path, `${current.trimEnd()}\n\n${text.trim()}\n`, 'utf8');
+}
+
+async function updateSections(
+  change: LoadedChange,
+  refinement: SpecKitProductRefinement,
+): Promise<void> {
+  let body = change.body;
+  if (refinement.rationale !== undefined) {
+    body = replaceSection(body, 'Rationale', refinement.rationale);
+  }
+  if (refinement.openQuestions !== undefined) {
+    body = replaceSection(body, 'Open Questions', listOrNone(refinement.openQuestions));
+  }
+  if (refinement.outOfScope !== undefined) {
+    body = replaceSection(body, 'Out of Scope', listOrNone(refinement.outOfScope));
+  }
+  if (body === change.body) return;
+  const path = join(change.dir, 'change.md');
+  await writeFile(path, (await readFile(path, 'utf8')).replace(change.body, body), 'utf8');
+}
+
+async function readImpact(path: string): Promise<SpecKitProductImpact | undefined> {
+  if (!(await pathExists(path))) return undefined;
+  return JSON.parse(await readFile(path, 'utf8')) as SpecKitProductImpact;
+}
+
+async function refreshImpact(
+  root: string,
+  change: LoadedChange,
+  refinement: SpecKitProductRefinement,
+): Promise<SpecKitProductImpact> {
+  const path = join(change.dir, 'impact.json');
+  const previous = await readImpact(path);
+  const operationIds = [
+    ...change.operations.add,
+    ...change.operations.modify,
+    ...change.operations.remove,
+  ];
+  const checked = unique([
+    ...operationIds,
+    ...(refinement.checkedArtifactIds ?? previous?.checked ?? []),
+  ]);
+  const excluded = unique(refinement.excludedArtifactIds ?? previous?.excluded ?? []);
+  const { graph } = await validateBaseline(await openRepository(root));
+  const impacts = Object.fromEntries(
+    checked
+      .filter((id) => graph.nodeById.has(id))
+      .map((id) => [id, analyzeImpact(graph, id, { direction: 'both', depth: 2 })]),
+  );
+  const impact = { schema: IMPACT_SCHEMA, checked, excluded, impacts };
+  await writeFile(path, `${stableJson(impact)}\n`, 'utf8');
+  return impact;
+}
+
 export async function refineSpecKitProductChange(
   root: string,
   name: string,
-  refinement: SpecKitProductRefinement,
-): Promise<{ change: LoadedChange; proposal: string; impact: unknown }> {
+  refinement: SpecKitProductRefinement = {},
+): Promise<{ change: LoadedChange; proposal: string; impact: SpecKitProductImpact }> {
   const change = await loadSpecKitProductChange(root, name);
-  const proposalPath = join(change.dir, 'proposal.md');
-  const currentProposal = (await pathExists(proposalPath))
-    ? await readFile(proposalPath, 'utf8')
-    : '# Product Change working memory\n\n';
-  const workingMemory = refinement.workingMemory?.trim();
-  await writeFile(
-    proposalPath,
-    `${workingMemory !== undefined ? `${currentProposal.trimEnd()}\n\n${workingMemory}` : currentProposal.trimEnd()}\n`,
-    'utf8',
-  );
-
-  let body = change.body;
-  if (refinement.rationale !== undefined)
-    body = replaceSection(body, 'Rationale', refinement.rationale);
-  if (refinement.openQuestions !== undefined)
-    body = replaceSection(
-      body,
-      'Open Questions',
-      refinement.openQuestions.length > 0
-        ? refinement.openQuestions.map((q) => `- ${q}`).join('\n')
-        : 'None.',
-    );
-  if (refinement.outOfScope !== undefined)
-    body = replaceSection(
-      body,
-      'Out of Scope',
-      refinement.outOfScope.length > 0
-        ? refinement.outOfScope.map((q) => `- ${q}`).join('\n')
-        : 'None.',
-    );
-  if (body !== change.body) {
-    const changePath = join(change.dir, 'change.md');
-    const source = await readFile(changePath, 'utf8');
-    await writeFile(changePath, source.replace(change.body, body), 'utf8');
-  }
-
-  const repo = await openRepository(root);
-  const baseline = await validateBaseline(repo);
-  const ids = [
-    ...new Set([
-      ...change.operations.add,
-      ...change.operations.modify,
-      ...change.operations.remove,
-      ...(refinement.checkedArtifactIds ?? []),
-    ]),
-  ].sort(compareCodePoints);
-  const impacts = Object.fromEntries(
-    ids
-      .filter((id) => baseline.graph.nodeById.has(id))
-      .map((id) => [id, analyzeImpact(baseline.graph, id, { direction: 'both', depth: 2 })]),
-  );
-  const impact = {
-    schema: 'product-definition-as-code/product-change-impact/v1alpha1',
-    checked: [...new Set(refinement.checkedArtifactIds ?? ids)].sort(compareCodePoints),
-    excluded: [...new Set(refinement.excludedArtifactIds ?? [])].sort(compareCodePoints),
-    impacts,
-  };
-  await writeFile(join(change.dir, 'impact.json'), `${stableJson(impact)}\n`, 'utf8');
-  return { change: await loadSpecKitProductChange(root, name), proposal: proposalPath, impact };
+  const proposal = join(change.dir, 'proposal.md');
+  if (refinement.workingMemory?.trim())
+    await appendWorkingMemory(proposal, refinement.workingMemory);
+  await updateSections(change, refinement);
+  const impact = await refreshImpact(root, change, refinement);
+  return { change: await loadSpecKitProductChange(root, name), proposal, impact };
 }
 
 async function liveChanges(root: string, repo: ProductRepository): Promise<LoadedChange[]> {

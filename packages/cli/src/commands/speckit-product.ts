@@ -20,6 +20,10 @@ import {
 } from '@prodshape/core';
 import { exitCodes, formatAffectedCitations, resolveRepository, type CliIo } from '../context.js';
 
+async function readJson(cwd: string, file: string) {
+  return JSON.parse(await readFile(isAbsolute(file) ? file : join(cwd, file), 'utf8'));
+}
+
 function formatDiagnostic(diagnostic: Diagnostic): string {
   return `${diagnostic.severity} ${diagnostic.code}: ${diagnostic.message}`;
 }
@@ -49,6 +53,7 @@ export async function runSpecKitProduct(
     limit?: string;
     format?: string;
     input?: string;
+    note?: string;
     path?: string;
     file?: string;
   } = {},
@@ -74,9 +79,8 @@ export async function runSpecKitProduct(
   }
   if (action === 'refine') {
     if (!name) throw new Error('A Product Change name is required.');
-    if (!options.input) throw new Error('A JSON refinement is required with --input.');
-    const inputPath = isAbsolute(options.input) ? options.input : join(io.cwd, options.input);
-    const refinement = JSON.parse(await readFile(inputPath, 'utf8'));
+    const refinement = options.input ? await readJson(io.cwd, options.input) : {};
+    if (options.note) refinement.workingMemory = options.note;
     const result = await refineSpecKitProductChange(repo.root, name, refinement);
     io.out(json ? stableJson(result) : `Refined ${result.change.file}`);
     return exitCodes.success;
@@ -117,8 +121,7 @@ export async function runSpecKitProduct(
   if (action === 'recover-record') {
     if (!options.session) throw new Error('A recovery session is required with --session.');
     if (!options.input) throw new Error('A JSON recovery batch is required with --input.');
-    const inputPath = isAbsolute(options.input) ? options.input : join(io.cwd, options.input);
-    const input = JSON.parse(await readFile(inputPath, 'utf8'));
+    const input = await readJson(io.cwd, options.input);
     const session = await recordSpecKitRecoveryBatch(repo.root, options.session, input);
     io.out(
       json

@@ -287,6 +287,29 @@ describe('Spec Kit PRODUCT adapter', () => {
     }
   });
 
+  it('refine refreshes impact from the edited change and keeps recorded exclusions', async () => {
+    const root = await workspace();
+    try {
+      await createSpecKitProductChange(root, 'in-place');
+      await touchValidUrlRule(root, 'in-place');
+
+      const refreshed = await refineSpecKitProductChange(root, 'in-place');
+      expect(refreshed.impact.checked).toEqual(['BR-VALID-URL-001']);
+      expect(Object.keys(refreshed.impact.impacts)).toEqual(['BR-VALID-URL-001']);
+      expect(existsSync(refreshed.proposal)).toBe(false);
+
+      await refineSpecKitProductChange(root, 'in-place', {
+        workingMemory: 'Visitor unaffected.',
+        excludedArtifactIds: ['ACT-VISITOR'],
+      });
+      const again = await refineSpecKitProductChange(root, 'in-place');
+      expect(again.impact.excluded).toEqual(['ACT-VISITOR']);
+      expect(await readFile(again.proposal, 'utf8')).toContain('Visitor unaffected.');
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it('archives only an applied change and leaves the accepted model untouched', async () => {
     const root = await workspace();
     try {
