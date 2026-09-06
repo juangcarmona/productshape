@@ -2,6 +2,10 @@
 
 All notable changes to the pdac Spec Kit extension. This file tracks the extension (`extensions/speckit-pdac`), which releases on its own `speckit-pdac-v*` tags. The ProductShape CLI and `@prodshape/integration-speckit` have their own changelogs.
 
+## 0.2.1
+
+The 0.2.0 release archive was built from a tag that predates the manifest and license work listed under 0.2.0 below: it ships without `LICENSE`, `homepage` and the `requires.tools` entry, with `category: docs` instead of `process`, and with the earlier description. This release cuts the archive again from the current directory, so the published artifact matches its manifest and the catalog entries derived from it. Commands, hooks and requirements are unchanged.
+
 ## 0.2.0
 
 Verified against Spec Kit 1.0.1: the extension installs from the release archive and from a development path, registers both commands as agent skills, lands all three hooks, reports its facets through `specify extension info`, and removes cleanly. The `specs/<feature>/` layout, the managed template names and the hook names are unchanged on the 1.x line. Also re-verified installing and registering on 0.7.2, the declared floor.
