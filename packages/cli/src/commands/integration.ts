@@ -321,6 +321,38 @@ export async function runIntegrationCheck(io: CliIo): Promise<number> {
   return aiOk && sddOk ? exitCodes.success : exitCodes.validationErrors;
 }
 
+interface SddRemoval {
+  removed: string[];
+  /** Files kept on disk with the PDaC content stripped. */
+  restored: string[];
+  preserved?: string[];
+}
+
+const SDD_REMOVALS = new Map<
+  string,
+  { label: string; remove: (root: string, options: { dryRun?: boolean }) => Promise<SddRemoval> }
+>([
+  ['openspec', { label: 'OpenSpec', remove: removeOpenSpecIntegration }],
+  ['speckit', { label: 'Spec Kit', remove: removeSpecKitIntegration }],
+]);
+
+function reportSddRemoval(io: CliIo, label: string, result: SddRemoval, dryRun: boolean): void {
+  if (result.removed.length + result.restored.length === 0) {
+    io.out(`${label} integration is not installed.`);
+    return;
+  }
+  io.out(
+    dryRun
+      ? 'Dry run: nothing was changed.'
+      : `Removed ${label} integration (${result.removed.length} file(s) deleted, ${result.restored.length} restored):`,
+  );
+  const deleted = dryRun ? 'would delete' : 'deleted';
+  const restored = dryRun ? 'would restore' : 'restored';
+  for (const path of result.removed) io.out(`  ${deleted}: ${path}`);
+  for (const path of result.restored) io.out(`  ${restored}: ${path}`);
+  for (const path of result.preserved ?? []) io.out(`  kept, edited by hand: ${path}`);
+}
+
 export async function runIntegrationRemove(
   io: CliIo,
   provider: string,
@@ -328,51 +360,11 @@ export async function runIntegrationRemove(
 ): Promise<number> {
   const repo = await resolveRepository(io);
 
-  if (provider === 'openspec') {
+  const sdd = SDD_REMOVALS.get(provider);
+  if (sdd) {
     try {
-      const result = await removeOpenSpecIntegration(repo.root, { dryRun: options?.dryRun });
-      if (options?.dryRun) {
-        io.out('Dry run — no files removed.');
-        if (result.removed.length === 0) {
-          io.out('  OpenSpec integration is not installed.');
-        } else {
-          for (const path of result.removed) io.out(`  would remove: ${path}`);
-        }
-        return exitCodes.success;
-      }
-      if (result.removed.length === 0) {
-        io.out('OpenSpec integration is not installed.');
-        return exitCodes.success;
-      }
-      io.out(`Removed OpenSpec integration (${result.removed.length} file(s)):`);
-      for (const path of result.removed) io.out(`  ${path}`);
-    } catch (error) {
-      throw new CliError(
-        error instanceof Error ? error.message : String(error),
-        exitCodes.validationErrors,
-      );
-    }
-    return exitCodes.success;
-  }
-
-  if (provider === 'speckit') {
-    try {
-      const result = await removeSpecKitIntegration(repo.root, { dryRun: options?.dryRun });
-      if (options?.dryRun) {
-        io.out('Dry run — no files removed.');
-        if (result.removed.length === 0) {
-          io.out('  Spec Kit integration is not installed.');
-        } else {
-          for (const path of result.removed) io.out(`  would remove: ${path}`);
-        }
-        return exitCodes.success;
-      }
-      if (result.removed.length === 0) {
-        io.out('Spec Kit integration is not installed.');
-        return exitCodes.success;
-      }
-      io.out(`Removed Spec Kit integration (${result.removed.length} file(s)):`);
-      for (const path of result.removed) io.out(`  ${path}`);
+      const result = await sdd.remove(repo.root, { dryRun: options?.dryRun });
+      reportSddRemoval(io, sdd.label, result, options?.dryRun ?? false);
     } catch (error) {
       throw new CliError(
         error instanceof Error ? error.message : String(error),

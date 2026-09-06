@@ -54,11 +54,11 @@ context: >-
   neither apply nor merge attests implementation, verification, release or
   deployment. A Product Change lives under docs/product/changes/ or hosted
   inside a valid OpenSpec change created with the product schema
-  (product-change/change.md plus product-change/proposed/**); its deterministically validated,
-  apply-authorised apply is the only write path into docs/product/model. A
-  spec-driven OpenSpec delivery change never edits docs/product/model directly:
-  it may share a pull request with an applied Product Change or follow later,
-  but it never supplies Product Change status.
+  (product-change/change.md plus product-change/proposed/**); its
+  deterministically validated, apply-authorised apply is the only write path
+  into docs/product/model. A spec-driven OpenSpec delivery change never edits
+  docs/product/model directly: it may share a pull request with an applied
+  Product Change or follow later, but it never supplies Product Change status.
 
   <!-- pdac:context end -->
 rules:
@@ -120,6 +120,9 @@ rules:
       refresh the affected citations.
     - Never infer implementation, verification, release or deployment from
       Product Change status; record that evidence in the delivery workflow.
+    - "A task that depends on a business rule's parameter cites the rule itself,
+      not only the requirement derived from it: staleness follows the cited
+      artifact's own digest, never its relationships."
 operations:
   apply:
     guidance:

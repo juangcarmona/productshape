@@ -108,7 +108,7 @@ export async function runChangeValidate(
   } else {
     for (const diagnostic of sorted) io.out(formatDiagnosticLine(diagnostic));
     io.out(
-      `${errors.length} error(s), ${warnings.length} warning(s) across ${baseline.graph.nodes.length} artifact(s) and ${targets.length} live change(s)`,
+      `${errors.length} error(s), ${warnings.length} warning(s) across ${baseline.graph.nodes.length} accepted artifact(s) and ${targets.length} live change(s)`,
     );
     if (targets.length === 0) io.out('No live changes under docs/product/changes/active/.');
   }

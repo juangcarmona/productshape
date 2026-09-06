@@ -367,6 +367,7 @@ export async function applyOpenSpecProductChange(
     change,
     liveChanges: all,
     dryRun: options.dryRun ?? false,
+    excludeDocumentsUnder: [`openspec/changes/${changeName}`, 'openspec/changes/archive'],
   });
 }
 

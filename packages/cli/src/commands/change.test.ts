@@ -182,6 +182,7 @@ describe('change validate', () => {
     );
     const result = await run(['change', 'validate']);
     expect(result.out.join('\n')).toContain('0 error(s)');
+    expect(result.out.join('\n')).toContain('accepted artifact(s) and 1 live change(s)');
     expect(result.code).toBe(0);
   });
 

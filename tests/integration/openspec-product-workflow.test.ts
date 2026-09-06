@@ -301,6 +301,18 @@ describe('openspec product workflow: apply', () => {
       await writeHostedChange(root, priceFloorSpec(base));
       await approve(root, 'chg-price-floor');
       const before = await snapshotTree(root, 'docs/product/model');
+      const citing = (title: string) =>
+        `<!-- pdac-scope: cited -->\n\n# ${title}\n\nFloor.\n<!-- pdac:cite id="BR-PRICING-001" digest="${contentDigest(before.get('business-rules/br-pricing-001.md')!)}" -->\n`;
+      const changes = join(root, 'openspec', 'changes');
+      await writeFile(join(changes, 'chg-price-floor', 'proposal.md'), citing('Own'), 'utf8');
+      await mkdir(join(changes, 'archive', '2026-01-01-older'), { recursive: true });
+      await writeFile(
+        join(changes, 'archive', '2026-01-01-older', 'proposal.md'),
+        citing('Older'),
+        'utf8',
+      );
+      await mkdir(join(changes, 'checkout-button'), { recursive: true });
+      await writeFile(join(changes, 'checkout-button', 'proposal.md'), citing('Delivery'), 'utf8');
 
       const result = await applyOpenSpecProductChange(root, 'chg-price-floor');
       expect(result.outcome).toBe('applied');
@@ -336,7 +348,13 @@ describe('openspec product workflow: apply', () => {
       expect(result.plan.diff.removed).toEqual([]);
       expect(result.plan.diff.modified[0]!.digest).toBe(contentDigest(BR_PRICING_V2));
 
-      expect(result.affectedCitations).toEqual([]);
+      // Only delivery documents are named: the change's own proposal and the archive are never re-grounded.
+      expect(
+        result.affectedCitations!.map(({ citation, prospectiveStatus }) => [
+          citation.source,
+          prospectiveStatus,
+        ]),
+      ).toEqual([['openspec/changes/checkout-button/proposal.md', 'stale']]);
       // The resulting accepted model validates from a fresh disk read.
       expect(result.resultingModel!.diagnostics).toEqual([]);
       expect(result.resultingModel!.artifacts).toHaveLength(12);
@@ -486,6 +504,9 @@ describe('openspec product workflow: apply', () => {
       const result = await applyOpenSpecProductChange(root, 'chg-price-floor', { dryRun: true });
       expect(result.outcome).toBe('dry-run');
       expect(result.plan.actions.filter((action) => action.kind === 'write')).toHaveLength(3);
+      // The projected model is validated in memory, like the disk read after a real apply.
+      expect(result.resultingModel!.diagnostics).toEqual([]);
+      expect(result.resultingModel!.artifacts).toHaveLength(12);
       expect(await snapshotTree(root, 'docs/product/model')).toEqual(before);
       expect(
         await readFile(

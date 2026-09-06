@@ -437,6 +437,8 @@ describe.skipIf(!hasOpenspec)('OpenSpec integration', () => {
   it('integration remove cleans up', async () => {
     const result = await run(['integration', 'remove', 'openspec'], openspecDir);
     expect(result.code, result.err).toBe(0);
+    expect(result.out).toContain('restored: openspec/config.yaml');
+    expect(result.out).not.toContain('deleted: openspec/config.yaml');
 
     // Metadata should be gone
     const metaPath = join(openspecDir, '.product', 'integrations', 'openspec.json');

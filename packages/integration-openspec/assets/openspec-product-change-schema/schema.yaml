@@ -116,7 +116,6 @@ artifacts:
       it must never approve, apply or archive. If no change is identifiable, ask the user to select
       one or create one through the normal OpenSpec workflow; do not create a second lifecycle.
       This is the same OpenSpec change, not a new refinement workflow.
-      This is the same OpenSpec change, not a new refinement workflow.
     requires:
       - intent
 
@@ -149,4 +148,7 @@ apply:
        document that now cites old meaning and must be re-grounded.
     4. STOP. Do not archive this change as part of apply: archiving is a separate OpenSpec action
        performed after successful Product apply and verification. Do not implement delivery work, do
-       not modify implementation code and never edit docs/product/model by hand.
+       not modify implementation code and never edit docs/product/model by hand. When `openspec
+       archive` runs later, its non-blocking warning that proposal.md lacks a "## What Changes"
+       section comes from the spec-driven parser; this schema has no such section and the warning
+       needs no action.

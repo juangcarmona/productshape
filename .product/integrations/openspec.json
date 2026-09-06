@@ -24,6 +24,7 @@
         "When a design decision depends on canonical product text, cite the artifact it depends on."
       ],
       "tasks": [
+        "A task that depends on a business rule's parameter cites the rule itself, not only the requirement derived from it: staleness follows the cited artifact's own digest, never its relationships.",
         "A task that changes cited behaviour must include a follow-up task to refresh the affected citations.",
         "Never infer implementation, verification, release or deployment from Product Change status; record that evidence in the delivery workflow."
       ]
@@ -41,7 +42,7 @@
     "name": "product-change",
     "requiresOpenspec": "1.7.0",
     "files": {
-      "openspec/schemas/product-change/schema.yaml": "sha256:709d748a65cefec43fba78e46ec9d9583cae577569ca424dfc71afe3dd74a90b",
+      "openspec/schemas/product-change/schema.yaml": "sha256:b1442da5f418a81d959b9294848923dffb873124719116ff5efbb317563106bc",
       "openspec/schemas/product-change/scripts/product-apply.mjs": "sha256:f33ea47dadeacdc60956de4da1faf4661f3169a14ced737b3956f26e34064b67",
       "openspec/schemas/product-change/scripts/product-validate.mjs": "sha256:c423f92f308a9b9e3bc7c70663f7dc33e93bc85a9d6c5fb91dfb1f91a91f55c1",
       "openspec/schemas/product-change/templates/change.md": "sha256:af4fd10511f53a83ff5f452981178d62b74ae7128f8a84f1ad5ca5bd1b6748bb",
@@ -57,5 +58,5 @@
       "openspec/schemas/product-recovery/templates/report.md": "sha256:b38d3a49f51f9b1a18b4ba7ddb3998ba46b625cdbec521a811f4c758f432fa14"
     }
   },
-  "updatedAt": "2026-09-05T11:21:08.624Z"
+  "updatedAt": "2026-09-05T21:16:40.630Z"
 }
