@@ -4,9 +4,27 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-The supported published CLI baseline is `@prodshape/cli@0.19.0`. Every stable public CLI release from `0.1.0` through that baseline is recorded below; package-specific dependency changes remain in each package's changelog.
+The supported published CLI baseline is `@prodshape/cli@0.19.1`. Every stable public CLI release from `0.1.0` through that baseline is recorded below; package-specific dependency changes remain in each package's changelog.
 
 ## [Unreleased]
+
+## [0.19.1]
+
+Output clarity from the two consumer spikes run against the published 0.19.0, one on Spec Kit and one on OpenSpec. No contract change: normative diagnostics, deterministic ordering and the documented exit codes are unchanged.
+
+### Changed
+
+- Hosted `apply --dry-run` prints the projected `resulting model:` line, validated in memory with the validator the real apply runs on disk (PR #256).
+- The affected-citation forecast skips the applying change's own container and the host archive, so apply and `citations verify` name the same documents to re-ground (PR #256).
+- `prodshape integration remove openspec|speckit` separates deleted files from files restored to their pre-PDaC content and reports hand-edited files it kept (PR #256).
+- Citation guidance for tasks, in the Spec Kit memory and tasks template and in the OpenSpec `tasks` rules: a task that depends on a business rule's parameter cites the rule itself, not only the requirement derived from it (PR #256).
+
+### Fixed
+
+- `prodshape speckit-product refine` lists the files it wrote instead of naming `change.md` (PR #256).
+- `prodshape change validate` reports `accepted artifact(s)`, so an additions-only change no longer reads as "0 artifact(s)" (PR #256).
+- `prodshape doctor` says `no AI integration installed` instead of `no integrations installed` beside a healthy OpenSpec or Spec Kit integration (PR #256).
+- The `product-change` schema notes that OpenSpec's archive warning about a missing `## What Changes` section comes from the spec-driven parser and needs no action; a duplicated sentence in the schema was removed (PR #256).
 
 ## [0.19.0]
 
@@ -294,7 +312,8 @@ Published as `@prodshape/cli` 0.2.0, `core` and `distribution` 0.3.0, `integrati
 - Promotion applies its plan in two phases (preflight, then execute with the change-directory move last), so a failed promotion no longer leaves a partially promoted baseline.
 - `validation.warnings-as-errors` is enforced uniformly across baseline validate, change validate, handoff generation, graph generation and promotion.
 
-[unreleased]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.19.0...HEAD
+[unreleased]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.19.1...HEAD
+[0.19.1]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.19.0...@prodshape/cli@0.19.1
 [0.19.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.18.0...@prodshape/cli@0.19.0
 [0.18.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.17.0...@prodshape/cli@0.18.0
 [0.17.0]: https://github.com/juangcarmona/productshape/compare/@prodshape/cli@0.16.0...@prodshape/cli@0.17.0
