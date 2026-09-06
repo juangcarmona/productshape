@@ -49,11 +49,7 @@ describe('self-hosted model through the full pipeline', () => {
     const graph = compileGraph(model.artifacts);
     const diagnostics = [...model.diagnostics, ...validateModel(model.artifacts, graph)];
     expect(diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
-    // PRODUCT102 is a normative warning the contract forbids configuration from suppressing, and
-    // the self-model has known journey-coverage debt. Every warning must be that debt; any other
-    // warning is a regression.
-    const warnings = diagnostics.filter((d) => d.severity === 'warning');
-    expect([...new Set(warnings.map((d) => d.code))]).toEqual(['PRODUCT102']);
+    expect(diagnostics.filter((d) => d.severity === 'warning')).toEqual([]);
     expect(graph.nodes).toHaveLength(model.artifacts.length);
     expect(graph.edges.length).toBeGreaterThan(60);
   });

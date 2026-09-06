@@ -543,8 +543,6 @@ describe('self-application', () => {
   it('validates this repository with exit 0', async () => {
     const result = await run(['validate'], repoRoot);
     expect(result.code).toBe(0);
-    // Zero errors; the self-model carries known PRODUCT102 journey-coverage debt, which the
-    // contract forbids configuration from suppressing.
-    expect(result.out.at(-1)).toMatch(/0 error\(s\), \d+ warning\(s\) across \d+ artifact\(s\)/);
+    expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across \d+ artifact\(s\)/);
   });
 });

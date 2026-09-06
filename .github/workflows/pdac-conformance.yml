@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 env:
-  PDAC_SPEC_SHA: 7feb4ec9081443740caa597fa3a695ea4e9d049f
+  PDAC_SPEC_SHA: b3f44d2179a58bbee0478fae517ab75f3249ca39
   PDAC_RUNNER_VERSION: 1.0.1
   PDAC_REPORTS_DIR: ${{ github.workspace }}/pdac-conformance-reports
 
