@@ -10,7 +10,7 @@ The supported published CLI baseline is `@prodshape/cli@0.19.1`. Every stable pu
 
 ### Changed
 
-- `PRODUCT102` (active use case in no journey) is retired: [RFC 0112](https://github.com/product-definition-as-code/spec/blob/main/rfcs/0112-optional-use-case-journey-context.md) made Journey context optional for a Use Case. The pinned specification moves to `b3f44d2`, whose 45 conformance cases include `use-case-without-journey`, and the self-model validates with zero warnings.
+- `PRODUCT102` (active use case in no journey) is retired: [RFC 0112](https://github.com/product-definition-as-code/spec/blob/main/rfcs/0112-optional-use-case-journey-context.md) made Journey context optional for a Use Case. The pinned specification moves to `b3f44d2`, whose 45 conformance cases include `use-case-without-journey`, and the self-model validates with zero warnings (PR #260).
 
 ## [0.19.1]
 
