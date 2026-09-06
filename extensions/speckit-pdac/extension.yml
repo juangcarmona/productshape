@@ -3,7 +3,7 @@ schema_version: '1.0'
 extension:
   id: pdac
   name: 'Product Definition as Code (PDaC)'
-  version: '0.2.0'
+  version: '0.2.1'
   # Under the 200-character limit the extension API reference states, and it states the
   # boundary: the extension reads the product model and never writes it. A catalog reader
   # decides whether to trust an extension from this line alone.
