@@ -7,15 +7,15 @@
     "pdac": {
       "id": "pdac",
       "name": "Product Definition as Code (PDaC)",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "description": "Ground Spec Kit features in an accepted product definition: fetch a cited context projection before specifying, then verify citations after specify, plan and tasks. Never writes the product model.",
       "author": "juangcarmona",
       "repository": "https://github.com/juangcarmona/productshape",
       "license": "Apache-2.0",
       "category": "process",
       "effect": "read-write",
-      "download_url": "https://github.com/juangcarmona/productshape/releases/download/speckit-pdac-v0.2.0/speckit-pdac.zip",
-      "sha256": "sha256:93a891caaf8b05fd1595fc528bc13d9b82594bbb3f698cc18a9d905fd7a83dec",
+      "download_url": "https://github.com/juangcarmona/productshape/releases/download/speckit-pdac-v0.2.1/speckit-pdac.zip",
+      "sha256": "sha256:0a6722d920ecbdae583b5e2e91da949f096e712d9a6825a4fc0ce0df94a49b05",
       "requires": {
         "speckit_version": ">=0.7.2",
         "tools": [
