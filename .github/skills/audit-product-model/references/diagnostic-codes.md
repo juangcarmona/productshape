@@ -50,7 +50,6 @@ Warnings are severity `warning`. They do not block validation unless the reposit
 | Code | Condition |
 | --- | --- |
 | `PRODUCT101` | Artifact file name not aligned with its ID |
-| `PRODUCT102` | Active use case not present in any journey (configuration-gated) |
 | `PRODUCT103` | Requirement not reachable from any actor (configuration-gated) |
 | `PRODUCT104` | Deprecated artifact still referenced by an active artifact |
 | `PRODUCT105` | Business rule with no consumers |

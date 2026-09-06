@@ -74,9 +74,9 @@ describe('validateModel warnings', () => {
     expect(run([misnamed]).filter((d) => d.code === 'PRODUCT101')).toHaveLength(1);
   });
 
-  it('always reports PRODUCT102: no configuration can suppress a normative warning', () => {
+  it('never reports PRODUCT102: journey context is optional since RFC 0112', () => {
     const uc = artifact('UC-LONELY', 'use-case', { 'primary-actor': 'ACT-A' });
-    expect(run([baseActor, uc]).filter((d) => d.code === 'PRODUCT102')).toHaveLength(1);
+    expect(run([baseActor, uc]).filter((d) => d.code === 'PRODUCT102')).toEqual([]);
   });
 
   it('flags unreachable requirements (PRODUCT103)', () => {

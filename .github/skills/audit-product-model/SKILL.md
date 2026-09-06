@@ -35,7 +35,7 @@ Do not use this skill to author artifacts (use `define-product`) or to reconstru
 
 Run these FIRST and treat their output as the authoritative structural baseline:
 
-- `prodshape validate --format json`: all structural diagnostics (PRODUCT0xx errors, PRODUCT1xx warnings). Never re-derive by reading files anything this command reports: duplicate IDs, unknown references, missing sections, orphaned use cases (PRODUCT102), unreachable requirements (PRODUCT103), unused rules and terms (PRODUCT105, PRODUCT106), file names that do not match their IDs (PRODUCT101), and low-confidence drafts (PRODUCT111).
+- `prodshape validate --format json`: all structural diagnostics (PRODUCT0xx errors, PRODUCT1xx warnings). Never re-derive by reading files anything this command reports: duplicate IDs, unknown references, missing sections, unreachable requirements (PRODUCT103), unused rules and terms (PRODUCT105, PRODUCT106), file names that do not match their IDs (PRODUCT101), and low-confidence drafts (PRODUCT111).
 - `prodshape graph --format json`: the compiled graph for connectivity questions.
 - `prodshape impact <ID> [--depth n] [--direction incoming|outgoing|both]`: incoming and outgoing reach of a suspect artifact.
 - `prodshape inspect <ID>`: the resolved view of a single artifact.
@@ -46,7 +46,7 @@ Run these FIRST and treat their output as the authoritative structural baseline:
 1. Run `prodshape validate --format json`. Record every diagnostic as a structural finding, citing its code, file and artifact. This is the baseline; do not second-guess it and do not repeat its work manually.
 2. Build the semantic reading list: the in-scope artifacts, plus `graph` output to see how they connect. Use `impact` on artifacts that look isolated or over-connected.
 3. Review semantically, looking for each of these classes:
-   - Orphaned product knowledge: artifacts formally connected (or flagged by PRODUCT102/103/105/106) whose content no longer serves any journey or outcome.
+   - Orphaned product knowledge: artifacts formally connected (or flagged by PRODUCT103/105/106) whose content no longer serves any journey or outcome.
    - Contradictory business rules: two rules whose normative statements cannot both hold, or a rule contradicted by a use case flow it governs.
    - Ambiguous or overlapping domain terminology: terms whose definitions overlap, a definition that merely repeats its title, or one concept split across synonymous terms in one context.
    - Duplicate or near-duplicate requirements: obligations that restate each other with different IDs, or differ only in wording.

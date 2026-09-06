@@ -108,7 +108,7 @@ export function validateModel(artifacts: LoadedArtifact[], graph: ProductGraph):
     }
   }
 
-  // PRODUCT111: a low-confidence draft needs human validation. Unlike PRODUCT102/103 this is
+  // PRODUCT111: a low-confidence draft needs human validation. Unlike PRODUCT103 this is
   // not configuration-gated: it reports what the artifact says about itself, not a model-shape
   // policy a repository may reasonably reject.
   for (const artifact of artifacts) {
@@ -124,26 +124,6 @@ export function validateModel(artifacts: LoadedArtifact[], graph: ProductGraph):
       artifact: artifact.id,
       field: 'provenance.confidence',
     });
-  }
-
-  // PRODUCT102: active use case in no journey. Normative warning; the contract forbids
-  // configuration from suppressing it.
-  {
-    for (const node of graph.nodes) {
-      if (node.type !== 'use-case' || node.status !== 'active') continue;
-      const inJourney = (graph.incoming.get(node.id) ?? []).some(
-        (e) => e.kind === 'steps[].use-case',
-      );
-      if (!inJourney) {
-        diagnostics.push({
-          severity: 'warning',
-          code: 'PRODUCT102',
-          message: `Active use case '${node.id}' is not part of any journey`,
-          file: node.path,
-          artifact: node.id,
-        });
-      }
-    }
   }
 
   // PRODUCT103: requirement unreachable from any actor. Normative warning; the contract forbids

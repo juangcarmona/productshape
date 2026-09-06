@@ -33,7 +33,7 @@ Deterministic graph-level validation of the product model with stable diagnostic
 
 ### Requirement: Model-quality warnings are reported without failing the run
 
-Validation SHALL report the warnings PRODUCT101 (file-name misalignment), PRODUCT102 (active use case in no journey, when enabled), PRODUCT103 (requirement unreachable from any actor, when enabled), PRODUCT104 (active references deprecated), PRODUCT105 (business rule with no consumers), PRODUCT106 (domain term with no usage) and PRODUCT107 (bounded context owning no terms), and SHALL exit 0 when only warnings exist unless `validation.warnings-as-errors` is set. The `validation.warnings-as-errors` escalation SHALL apply uniformly to every validating command — baseline `validate`, `change validate`, Product Change apply and graph generation — so a repository that opts in cannot validate strictly at the baseline while applying a change whose overlay carries warnings.
+Validation SHALL report the warnings PRODUCT101 (file-name misalignment), PRODUCT103 (requirement unreachable from any actor), PRODUCT104 (active references deprecated), PRODUCT105 (business rule with no consumers), PRODUCT106 (domain term with no usage) and PRODUCT107 (bounded context owning no terms), and SHALL exit 0 when only warnings exist unless `validation.warnings-as-errors` is set. The `validation.warnings-as-errors` escalation SHALL apply uniformly to every validating command — baseline `validate`, `change validate`, Product Change apply and graph generation — so a repository that opts in cannot validate strictly at the baseline while applying a change whose overlay carries warnings.
 
 {pdac:cite id="FR-VALIDATE-002" digest="sha256:a9e15d3c013ca4534d4e7c94df7a70de582b590b6eed52799172ce3c00eb1e5d"}
 
