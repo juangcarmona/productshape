@@ -58,11 +58,81 @@ function requireText(haystack: string, needle: string, label: string): void {
     throw new Error(`${label} did not contain ${JSON.stringify(needle)}`);
 }
 
+/** The file a README heredoc writes, so the walkthrough runs the documented artifact byte for byte. */
+function documentedHeredoc(readme: string, path: string): string {
+  const marker = `cat > ${path} <<'EOF'\n`;
+  const start = readme.indexOf(marker);
+  if (start === -1) throw new Error(`cli README has no heredoc writing ${path}`);
+  const rest = readme.slice(start + marker.length);
+  const end = rest.indexOf('\nEOF\n');
+  if (end === -1) throw new Error(`cli README heredoc for ${path} has no EOF`);
+  return rest.slice(0, end);
+}
+
+function replaceInFile(path: string, from: string, to: string): string {
+  return `node --input-type=module -e "import { readFileSync, writeFileSync } from 'node:fs'; const s = readFileSync('${path}', 'utf8'); if (!s.includes('${from}')) throw new Error('${path} lacks ${from}'); writeFileSync('${path}', s.replace('${from}', '${to}'));"`;
+}
+
+const CHANGES = 'docs/product/changes/active';
+
+/**
+ * The governed citation-first walkthrough from packages/cli/README.md, as one script: CHG-INITIAL
+ * adds ACT-USER, a consumer cites it, CHG-USER-SCOPE modifies it and apply names the citation that
+ * goes stale. Every prodshape command line must appear in that README, so the two cannot drift.
+ */
+function governedWalkthrough(cliReadme: string): string {
+  const actor = `${CHANGES}/chg-initial/proposed/act-user.md`;
+  const initial = `${CHANGES}/chg-initial/change.md`;
+  const scope = `${CHANGES}/chg-user-scope`;
+  const commit = 'git -c user.name=smoke -c user.email=smoke@example.invalid commit -q -m';
+  const script = [
+    'set -eu',
+    'mkdir productshape-governed && cd productshape-governed',
+    'git init -q && printf "node_modules\\n" > .gitignore',
+    'npm init -y >/dev/null',
+    'npm install --save-dev --save-exact "$PRODSHAPE_PACKAGE"',
+    `git add -A && ${commit} "scaffold"`,
+    'npx --no-install prodshape init',
+    'npx --no-install prodshape validate',
+    'npx --no-install prodshape change create CHG-INITIAL',
+    `cat > ${actor} <<'EOF'`,
+    documentedHeredoc(cliReadme, actor),
+    'EOF',
+    replaceInFile(initial, 'add: []', 'add: [ACT-USER]'),
+    'npx --no-install prodshape change validate CHG-INITIAL',
+    replaceInFile(initial, 'status: draft', 'status: approved'),
+    'npx --no-install prodshape change apply CHG-INITIAL --dry-run',
+    'npx --no-install prodshape change apply CHG-INITIAL',
+    `git add -A && ${commit} "accept CHG-INITIAL"`,
+    'DIGEST=$(npx --no-install prodshape inspect ACT-USER --format json | node -p "JSON.parse(require(\'fs\').readFileSync(0)).digest")',
+    'mkdir -p docs/decisions',
+    `printf '# ADR 001: single-user focus\\n\\n<!-- %s -->\\n' "$(npx --no-install prodshape cite --id ACT-USER --digest "$DIGEST")" > docs/decisions/adr-001.md`,
+    'npx --no-install prodshape citations verify docs/decisions',
+    'npx --no-install prodshape change create CHG-USER-SCOPE',
+    `cp docs/product/model/actors/act-user.md ${scope}/proposed/act-user.md`,
+    replaceInFile(
+      `${scope}/proposed/act-user.md`,
+      'The person this product serves.',
+      'The one person this product serves.',
+    ),
+    replaceInFile(`${scope}/change.md`, 'modify: []', 'modify: [ACT-USER]'),
+    replaceInFile(`${scope}/change.md`, 'status: draft', 'status: approved'),
+    'npx --no-install prodshape change apply CHG-USER-SCOPE',
+    'npx --no-install prodshape citations verify docs/decisions',
+  ];
+  for (const line of script) {
+    if (!line.includes('npx --no-install prodshape ')) continue;
+    requireText(cliReadme, line.trim(), 'cli README governed walkthrough');
+  }
+  return script.join('\n');
+}
+
 const cliPackage = JSON.parse(await readFile(join(cliDir, 'package.json'), 'utf8')) as {
   name: string;
   version: string;
 };
 const readme = await readFile(join(repoRoot, 'README.md'), 'utf8');
+const cliReadme = await readFile(join(cliDir, 'README.md'), 'utf8');
 const quickstart = primaryQuickstart(readme);
 const documentedSpec = `${cliPackage.name}@${cliPackage.version}`;
 
@@ -206,6 +276,24 @@ try {
   requireText(workflow.stdout, 'stale', 'stale citation verification');
   requireText(workflow.stdout, 'PRODUCT061', 'stale citation diagnostic');
 
+  const governed = await run('bash', ['-c', governedWalkthrough(cliReadme)], scratch, {
+    ...process.env,
+    CI: '1',
+    PRODSHAPE_PACKAGE: tarball,
+  });
+  process.stdout.write(governed.stdout);
+  process.stderr.write(governed.stderr);
+  requireText(governed.stdout, 'Affected citations: 0', 'CHG-INITIAL apply');
+  requireText(governed.stdout, '1 current', 'ADR citation verification');
+  requireText(governed.stdout, 'Affected citations: 1', 'CHG-USER-SCOPE apply');
+  requireText(governed.stdout, 'ACT-USER\tstale', 'CHG-USER-SCOPE affected citation');
+  requireText(governed.stdout, '1 stale', 'stale ADR citation');
+  requireText(governed.stdout, 'PRODUCT061', 'stale ADR citation diagnostic');
+  await readFile(
+    join(scratch, 'productshape-governed', 'docs', 'product', 'model', 'actors', 'act-user.md'),
+    'utf8',
+  );
+
   const consumer = join(scratch, 'productshape-quickstart');
   const installedManifest = JSON.parse(
     await readFile(join(consumer, 'node_modules', '@prodshape', 'cli', 'package.json'), 'utf8'),
@@ -229,7 +317,7 @@ try {
   }
 
   process.stdout.write(
-    `Release contract passed: packed ${documentedSpec}, init/validate, current -> stale PRODUCT061, --version ${cliPackage.version}\n`,
+    `Release contract passed: packed ${documentedSpec}, sandbox quickstart (current -> stale PRODUCT061), governed walkthrough (CHG-INITIAL applied, CHG-USER-SCOPE named 1 affected citation, 1 stale PRODUCT061), --version ${cliPackage.version}\n`,
   );
 } finally {
   await rm(scratch, { recursive: true, force: true });

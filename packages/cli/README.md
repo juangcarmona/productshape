@@ -118,9 +118,12 @@ printf '# ADR 001: single-user focus\n\n<!-- %s -->\n' "$(npx --no-install prods
 npx --no-install prodshape citations verify docs/decisions   # 1 current
 ```
 
-The definition evolves through the same mechanism, never by editing the accepted baseline. A second Product Change that modifies `ACT-USER` (copy `docs/product/model/actors/act-user.md` into its `proposed/`, edit it, declare `operations.modify: [ACT-USER]`, approve, apply) turns the recorded dependency visible:
+The definition evolves through the same mechanism, never by editing the accepted baseline. A second Product Change that modifies `ACT-USER` turns the recorded dependency visible: copy the accepted artifact into the change's `proposed/`, edit it, declare `operations.modify: [ACT-USER]` in its `change.md`, approve, apply:
 
 ```bash
+npx --no-install prodshape change create CHG-USER-SCOPE
+cp docs/product/model/actors/act-user.md docs/product/changes/active/chg-user-scope/proposed/act-user.md
+# edit the proposed copy; in change.md declare operations.modify: [ACT-USER] and set status: approved
 npx --no-install prodshape change apply CHG-USER-SCOPE   # reports: affected citation, stale
 npx --no-install prodshape citations verify docs/decisions   # 1 stale (PRODUCT061)
 ```
