@@ -10,6 +10,22 @@ The supported published CLI baseline is `@prodshape/cli@0.19.1`. Every stable pu
 
 ## [0.19.1]
 
+Output clarity from the two consumer spikes run against the published 0.19.0, one on Spec Kit and one on OpenSpec. No contract change: normative diagnostics, deterministic ordering and the documented exit codes are unchanged.
+
+### Changed
+
+- Hosted `apply --dry-run` prints the projected `resulting model:` line, validated in memory with the validator the real apply runs on disk (PR #256).
+- The affected-citation forecast skips the applying change's own container and the host archive, so apply and `citations verify` name the same documents to re-ground (PR #256).
+- `prodshape integration remove openspec|speckit` separates deleted files from files restored to their pre-PDaC content and reports hand-edited files it kept (PR #256).
+- Citation guidance for tasks, in the Spec Kit memory and tasks template and in the OpenSpec `tasks` rules: a task that depends on a business rule's parameter cites the rule itself, not only the requirement derived from it (PR #256).
+
+### Fixed
+
+- `prodshape speckit-product refine` lists the files it wrote instead of naming `change.md` (PR #256).
+- `prodshape change validate` reports `accepted artifact(s)`, so an additions-only change no longer reads as "0 artifact(s)" (PR #256).
+- `prodshape doctor` says `no AI integration installed` instead of `no integrations installed` beside a healthy OpenSpec or Spec Kit integration (PR #256).
+- The `product-change` schema notes that OpenSpec's archive warning about a missing `## What Changes` section comes from the spec-driven parser and needs no action; a duplicated sentence in the schema was removed (PR #256).
+
 ## [0.19.0]
 
 The hosted product workflow release. A Product Change can be authored, validated and applied inside the SDD host that owns delivery work, with one deterministic rail shared by every host and `docs/product/model` as the only accepted truth.
