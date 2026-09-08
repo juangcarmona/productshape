@@ -15,12 +15,20 @@ This project is in an early bootstrap phase (v0.1). The methodology, specificati
 
 ```bash
 pnpm install
+pnpm verify
+```
+
+`pnpm verify` is those five checks in the order CI runs them:
+
+```bash
 pnpm lint
 pnpm format:check
 pnpm typecheck
 pnpm build
 pnpm test
 ```
+
+Run the single command rather than the five: a partial run passes locally and fails in CI, and `format:check` is the one that gets skipped.
 
 `pnpm build` before `pnpm test`: one test packs the CLI tarball and needs `dist/`. If you changed a JSON Schema, also run `pnpm docs:frontmatter`. If you changed anything under `skills/`, `commands/` or `templates/`, run `pnpm sync:assets` to mirror it into `packages/distribution/assets/` and then `prodshape integration update`, or CI's drift check will fail.
 
