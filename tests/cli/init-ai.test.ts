@@ -72,7 +72,7 @@ describe('init AI provider selection', () => {
     expect(out).toContain(
       '  OpenCode reads .agents/skills too, so the two overlap on skills and differ on commands.',
     );
-    expect(out).toContain('  detected: OpenCode (.opencode/ present; no ProductShape renderer)');
+    expect(out).toContain('  detected: OpenCode (.opencode/ present)');
   });
 
   it('lets an explicit --ai flag win over the detection, without asking', async () => {
@@ -114,7 +114,7 @@ describe('init AI provider selection', () => {
     expect(out).toContain(
       'No AI provider detected. ProductShape can install its skills and commands for:',
     );
-    expect(out).toContain('  4) Skip');
+    expect(out).toContain('  5) Skip');
     expect(await exists('.claude', 'skills', 'define-product', 'SKILL.md')).toBe(false);
   });
 

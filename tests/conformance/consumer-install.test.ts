@@ -313,6 +313,74 @@ describe('Codex-compatible installation', () => {
   });
 });
 
+describe('OpenCode installation', () => {
+  let opencodeDir: string;
+
+  beforeAll(async () => {
+    opencodeDir = await mkdtemp(join(tmpdir(), 'prodshape-opencode-'));
+    const result = await run(['init', '--ai', 'opencode'], opencodeDir);
+    expect(result.code, result.err).toBe(0);
+  });
+
+  afterAll(async () => {
+    await rm(opencodeDir, { recursive: true, force: true });
+  });
+
+  it('creates .opencode/skills/<name>/SKILL.md for every skill', async () => {
+    const skillsDir = join(opencodeDir, '.opencode', 'skills');
+    const entries = await readdir(skillsDir);
+    expect(entries.sort()).toEqual(
+      [
+        'analyze-product-change',
+        'audit-product-model',
+        'bind-consumers',
+        'define-product',
+        'explore-product',
+        'recover-product',
+        'refine-product',
+      ].sort(),
+    );
+    for (const name of entries) {
+      const skillFile = join(skillsDir, name, 'SKILL.md');
+      expect(await exists(skillFile), `${name}/SKILL.md`).toBe(true);
+    }
+  });
+
+  it('places references inside the skill directory', async () => {
+    const refDir = join(opencodeDir, '.opencode', 'skills', 'define-product', 'references');
+    expect(await exists(refDir)).toBe(true);
+    const refs = await readdir(refDir);
+    expect(refs.length).toBeGreaterThan(0);
+  });
+
+  it('creates flat .opencode/commands/product-<name>.md, which OpenCode needs unnamespaced', async () => {
+    const commandsDir = join(opencodeDir, '.opencode', 'commands');
+    const entries = await readdir(commandsDir, { withFileTypes: true });
+    expect(entries.every((e) => e.isFile())).toBe(true);
+    expect(entries.map((e) => e.name).sort()).toEqual(
+      [
+        'product-audit.md',
+        'product-bind.md',
+        'product-change.md',
+        'product-define.md',
+        'product-explore.md',
+        'product-impact.md',
+        'product-recover.md',
+        'product-refine.md',
+      ].sort(),
+    );
+  });
+
+  it('gives every command the frontmatter description the TUI lists it by', async () => {
+    const commandsDir = join(opencodeDir, '.opencode', 'commands');
+    for (const name of await readdir(commandsDir)) {
+      const content = await readFile(join(commandsDir, name), 'utf8');
+      expect(content.startsWith('---\ndescription: "'), name).toBe(true);
+      expect(content.match(/^---$/gm), name).toHaveLength(2);
+    }
+  });
+});
+
 describe('collision detection and file preservation', () => {
   it('detects collisions and preserves pre-existing user files', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'prodshape-collision-'));

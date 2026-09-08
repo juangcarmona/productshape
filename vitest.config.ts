@@ -20,6 +20,9 @@ export const workspaceSourceAliases = {
   '@prodshape/integration-codex': fileURLToPath(
     new URL('./packages/integration-codex/src/index.ts', import.meta.url),
   ),
+  '@prodshape/integration-opencode': fileURLToPath(
+    new URL('./packages/integration-opencode/src/index.ts', import.meta.url),
+  ),
   '@prodshape/integration-copilot': fileURLToPath(
     new URL('./packages/integration-copilot/src/index.ts', import.meta.url),
   ),

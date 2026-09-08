@@ -17,7 +17,8 @@ packages/
 ├── distribution/          # init, provider-asset rendering, update/drift/doctor
 ├── integration-claude/    # Claude Code provider mapping and templates
 ├── integration-copilot/   # GitHub Copilot provider mapping and templates
-├── integration-codex/     # Codex provider mapping and templates
+├── integration-codex/     # Agent Skills provider mapping and templates
+├── integration-opencode/  # OpenCode provider mapping and templates
 ├── integration-openspec/  # OpenSpec citation lane + hosted product workflow
 └── integration-speckit/   # Spec Kit guidance and metadata integration
 skills/                    # canonical AI skills (7)
@@ -39,7 +40,8 @@ v0.1 is delivered through four OpenSpec changes: `establish-product-definition-f
 | `integration-speckit` | Configures a Spec Kit workspace with PDaC guidance (managed memory file plus sentinel-delimited template blocks) and records integration metadata. Never writes the constitution or feature directories. |
 | `integration-claude` | Claude Code-specific mapping and templates only (renders `.claude/` assets, including executable hooks). |
 | `integration-copilot` | GitHub Copilot-specific mapping and templates only (renders `.github/` assets; hooks render as documentation — see OD-002). |
-| `integration-codex` | Codex-specific mapping and templates only (renders `.agents/` assets). |
+| `integration-codex` | Agent Skills mapping and templates only (renders `.agents/` assets, read by OpenAI Codex, OpenCode, Gemini CLI, VS Code, Cursor and others). |
+| `integration-opencode` | OpenCode-specific mapping and templates only (renders `.opencode/` assets: skills, and flat commands, which OpenCode reads from nowhere else). |
 | `integration-openspec` | Two lanes. The citation lane configures an OpenSpec workspace with PDaC citation rules (merges into `openspec/config.yaml`) and records integration metadata. The product lane installs the managed `product` schema at `openspec/schemas/product-change/` and provides the deterministic rails of the hosted product workflow (overlay validation, apply-time revalidation, delivery-context derivation). Never patches OpenSpec-generated files, never modifies OpenSpec's built-in schemas, never writes into a native spec-driven change's documents. |
 
 ## Dependency graph
@@ -53,11 +55,13 @@ cli ─────────────► integration-speckit ───► 
 cli ─────────────► distribution ─┬───► core
                                  ├───► integration-claude
                                  ├───► integration-copilot
-                                 └───► integration-codex
+                                 ├───► integration-codex
+                                 └───► integration-opencode
 
 integration-claude:   no internal dependencies
 integration-copilot:  no internal dependencies
 integration-codex:    no internal dependencies
+integration-opencode: no internal dependencies
 ```
 
 The provider integration packages export their renderers as plain, structurally typed objects. `distribution` consumes them through TypeScript structural typing; there is deliberately no shared types package. This keeps the provider packages dependency-free and lets a future provider integration be added without touching any existing package's imports.

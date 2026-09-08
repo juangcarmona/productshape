@@ -14,6 +14,7 @@ The `@prodshape/*` packages are published to npm **only from GitHub Actions** ([
 | `@prodshape/integration-claude`   | library                                                      |
 | `@prodshape/integration-copilot`  | library                                                      |
 | `@prodshape/integration-codex`    | library                                                      |
+| `@prodshape/integration-opencode` | library                                                      |
 
 Each sets `publishConfig.access: "public"` and `publishConfig.provenance: true`. Only packages that receive a changeset are versioned and published, in dependency order. The `release drift` CI job (`pnpm release-drift:check`) compares every package's shipped source with the tag of its current version and fails when they differ without a changeset naming the package, so a library never silently keeps serving code its published dependents no longer compile against.
 

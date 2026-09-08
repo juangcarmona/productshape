@@ -98,8 +98,6 @@ function reportPlan(io: CliIo, plan: InitPlan): number {
 
 interface AiContext {
   detected: AiProvider[];
-  /** Detected providers ProductShape renders for; the rest are reported but never offered. */
-  installable: AiProvider[];
   choice: string[] | undefined;
 }
 
@@ -110,8 +108,7 @@ function reportAiDetection(io: CliIo, context: AiContext): void {
     return;
   }
   for (const provider of context.detected) {
-    const renderable = rendererFor(provider.id) ? '' : '; no ProductShape renderer';
-    io.out(`  detected: ${provider.name} (${provider.marker}/ present${renderable})`);
+    io.out(`  detected: ${provider.name} (${provider.marker}/ present)`);
   }
   const ids = context.detected.map((provider) => provider.id);
   if (ids.includes('codex') && ids.includes('opencode')) {
@@ -143,19 +140,19 @@ async function resolveAiChoice(
   if (options.ai) return undefined;
   if (!io.prompt || options.dryRun) return undefined;
 
-  if (context.installable.length > 1) {
+  if (context.detected.length > 1) {
     io.out('Install the ProductShape skills and commands for the detected providers?');
-    context.installable.forEach((provider, index) => {
+    context.detected.forEach((provider, index) => {
       io.out(`  ${index + 1}) ${provider.name.padEnd(14)} ${provider.marker}/`);
     });
     const answer = (await io.prompt('Choose [comma-separated, default all detected]: ')).trim();
     return answer === ''
-      ? context.installable.map((provider) => provider.id)
-      : pickByNumber(answer, context.installable);
+      ? context.detected.map((provider) => provider.id)
+      : pickByNumber(answer, context.detected);
   }
 
-  if (context.installable.length === 1) {
-    const provider = context.installable[0]!;
+  if (context.detected.length === 1) {
+    const provider = context.detected[0]!;
     const answer = (
       await io.prompt(
         `${provider.name} detected (${provider.marker}/). Install the ProductShape skills and commands for it now? [Y/n] `,
@@ -166,16 +163,15 @@ async function resolveAiChoice(
     return answer === '' || answer === 'y' || answer === 'yes' ? [provider.id] : [];
   }
 
-  const supported = aiProviders.filter((provider) => rendererFor(provider.id));
   io.out('No AI provider detected. ProductShape can install its skills and commands for:');
-  supported.forEach((provider, index) => {
+  aiProviders.forEach((provider, index) => {
     io.out(`  ${index + 1}) ${provider.name.padEnd(14)} ${provider.notes}`);
   });
-  io.out(`  ${supported.length + 1}) Skip`);
+  io.out(`  ${aiProviders.length + 1}) Skip`);
   const answer = (
-    await io.prompt(`Choose [comma-separated, default ${supported.length + 1}]: `)
+    await io.prompt(`Choose [comma-separated, default ${aiProviders.length + 1}]: `)
   ).trim();
-  return answer === '' ? [] : pickByNumber(answer, supported);
+  return answer === '' ? [] : pickByNumber(answer, aiProviders);
 }
 
 interface SddContext {
@@ -413,7 +409,7 @@ export async function runInit(io: CliIo, options: InitCliOptions): Promise<numbe
   for (const provider of explicitAi) {
     if (!rendererFor(provider)) {
       throw new CliError(
-        `Unknown AI provider '${provider}' (supported: claude, copilot, codex)`,
+        `Unknown AI provider '${provider}' (supported: claude, copilot, codex, opencode)`,
         exitCodes.invalidInvocation,
       );
     }
@@ -426,11 +422,7 @@ export async function runInit(io: CliIo, options: InitCliOptions): Promise<numbe
   }
 
   const detectedAi = await detectAiProviders(io.cwd);
-  const aiContext: AiContext = {
-    detected: detectedAi,
-    installable: detectedAi.filter((provider) => rendererFor(provider.id)),
-    choice: undefined,
-  };
+  const aiContext: AiContext = { detected: detectedAi, choice: undefined };
   reportAiDetection(io, aiContext);
   aiContext.choice = await resolveAiChoice(io, options, aiContext);
   const ai = aiContext.choice ?? explicitAi;
