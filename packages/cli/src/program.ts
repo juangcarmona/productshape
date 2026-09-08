@@ -201,7 +201,9 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .description('Manage generated AI provider integrations');
   integration
     .command('add')
-    .description('Install a provider integration (claude, copilot, codex, opencode, openspec, speckit)')
+    .description(
+      'Install a provider integration (claude, copilot, codex, opencode, openspec, speckit)',
+    )
     .argument('<provider>', 'provider name')
     .option('--force', 'overwrite existing unmanaged or hand-edited files')
     .option('--dry-run', 'report what would change without writing anything')

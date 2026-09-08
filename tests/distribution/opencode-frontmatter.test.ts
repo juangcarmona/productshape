@@ -9,7 +9,12 @@ import { opencodeRenderer, type CanonicalAssets } from '@prodshape/integration-o
  */
 describe('opencode command frontmatter', () => {
   function assetsWith(content: string): CanonicalAssets {
-    return { version: '0.0.0-test', skills: [], commands: [{ name: 'change', content }], hooks: [] };
+    return {
+      version: '0.0.0-test',
+      skills: [],
+      commands: [{ name: 'change', content }],
+      hooks: [],
+    };
   }
 
   function render(content: string): string {
@@ -33,9 +38,7 @@ describe('opencode command frontmatter', () => {
 
   it('escapes a summary that would otherwise break the YAML scalar', () => {
     const rendered = render('# /product:change\n\nUse "change": it is a \\ backslash.\n');
-    expect(rendered).toContain(
-      'description: "Use \\"change\\": it is a \\\\ backslash."',
-    );
+    expect(rendered).toContain('description: "Use \\"change\\": it is a \\\\ backslash."');
   });
 
   it('merges into an asset that already carries frontmatter, emitting one block', () => {
