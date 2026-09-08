@@ -14,6 +14,7 @@ The `@prodshape/*` packages are published to npm **only from GitHub Actions** ([
 | `@prodshape/integration-claude`   | library                                                      |
 | `@prodshape/integration-copilot`  | library                                                      |
 | `@prodshape/integration-codex`    | library                                                      |
+| `@prodshape/integration-opencode` | library                                                      |
 
 Each sets `publishConfig.access: "public"` and `publishConfig.provenance: true`. Only packages that receive a changeset are versioned and published, in dependency order. The `release drift` CI job (`pnpm release-drift:check`) compares every package's shipped source with the tag of its current version and fails when they differ without a changeset naming the package, so a library never silently keeps serving code its published dependents no longer compile against.
 
@@ -36,7 +37,18 @@ Each sets `publishConfig.access: "public"` and `publishConfig.provenance: true`.
 
 **npm configuration (npmjs.com)**
 
-- For each package, add a **Trusted Publisher**: GitHub Actions, repo `juangcarmona/productshape`, workflow `release.yml`, environment `npm-publish` (for the stable job). npm has no pending-publisher concept, so a package must exist before its trusted publisher can be added — see Migration below.
+- For each package, add a **Trusted Publisher**: GitHub Actions, repo `juangcarmona/productshape`, workflow `release.yml`, environment `npm-publish` (for the stable job). npm has no pending-publisher concept, so a package must exist before its trusted publisher can be added; see [First publish of a new package](#first-publish-of-a-new-package).
+
+## First publish of a new package
+
+A trusted publisher can only be attached to a package npm already knows about, so a package added to this repository cannot use OIDC for its own first publish. The `NPM_TOKEN` fallback exists for exactly this, and it keeps the bootstrap inside CI rather than on a laptop:
+
+1. Before the release, check on npmjs.com that `NPM_TOKEN` is unexpired and scoped to the whole `@prodshape` scope. A granular token scoped to an allowlist of existing package names cannot create a new one, and the failure surfaces only at publish time.
+2. Release normally. The first `changeset publish` that includes the new package authenticates with the token, creates the package with provenance, and publishes it from the `npm-publish` environment.
+3. On npmjs.com, add the trusted publisher to the package that now exists: _Packages → the package → Settings → Trusted publishing_, with the values above.
+4. Every later release of that package authenticates through OIDC like the rest.
+
+Step 3 is not optional housekeeping. Until it is done the package depends on a token the rest of the package set no longer needs, which is the state the trusted-publisher migration exists to end.
 
 ## Normal (stable) release
 
