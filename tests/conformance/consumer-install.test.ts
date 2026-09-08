@@ -513,7 +513,7 @@ describe.skipIf(!hasOpenspec)('SDD-aware init (one-command OpenSpec adoption)', 
         },
       });
       expect(code).toBe(0);
-      expect(questions[0]).toContain('OpenSpec workspace detected');
+      expect(questions.some((q) => q.includes('OpenSpec workspace detected'))).toBe(true);
       expect(await exists(join(dir, '.product', 'integrations', 'openspec.json'))).toBe(true);
     } finally {
       await rm(dir, { recursive: true, force: true });

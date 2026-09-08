@@ -30,7 +30,7 @@ One command, three effects, all reversible:
 
 - `init --full` creates `docs/product/` (the model, the change lifecycle, the archives) and `.product/` (configuration, authoring templates, generated outputs). Prefer `--full` for a real system; the default kernel layout is deliberately minimal.
 - `--sdd openspec` merges the PDaC citation rules additively into `openspec/config.yaml` (your entries survive; `prodshape integration remove openspec` takes it back out) and installs a CI-ready example at `.product/integrations/openspec.ci.yml`.
-- `--ai copilot` generates the agent surface described next. Pick your provider, or several: `--ai claude,copilot,codex`.
+- `--ai copilot` generates the agent surface described next. Pick your provider, or several: `--ai claude,copilot,codex`. Without the flag, an interactive run reports which AI providers the repository already uses and offers those.
 
 Add `--dry-run` first to see every file the command would write. Check the result any time with `prodshape doctor`, and after upgrading the CLI regenerate everything with `prodshape integration update`.
 
