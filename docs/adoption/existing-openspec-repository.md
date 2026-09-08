@@ -30,7 +30,7 @@ One command, three effects, all reversible:
 
 - `init --full` creates `docs/product/` (the model, the change lifecycle, the archives) and `.product/` (configuration, authoring templates, generated outputs). Prefer `--full` for a real system; the default kernel layout is deliberately minimal.
 - `--sdd openspec` merges the PDaC citation rules additively into `openspec/config.yaml` (your entries survive; `prodshape integration remove openspec` takes it back out) and installs a CI-ready example at `.product/integrations/openspec.ci.yml`.
-- `--ai copilot` generates the agent surface described next. Pick your provider, or several: `--ai claude,copilot,codex`. Without the flag, an interactive run reports which AI providers the repository already uses and offers those.
+- `--ai copilot` generates the agent surface described next. Pick your provider, or several: `--ai claude,copilot,codex,opencode`. Without the flag, an interactive run reports which AI providers the repository already uses and offers those.
 
 Add `--dry-run` first to see every file the command would write. Check the result any time with `prodshape doctor`, and after upgrading the CLI regenerate everything with `prodshape integration update`.
 
@@ -43,6 +43,9 @@ Every provider gets the same command and skill set, rendered where that tool loo
 | `copilot` | `.github/prompts/product-*.prompt.md` and `.github/skills/<name>/` | `/product-recover`, `/product-define`, `/product-change`, ... |
 | `claude` | `.claude/commands/product/*.md` and `.claude/skills/<name>/` | `/product:recover`, `/product:define`, `/product:change`, ... |
 | `codex` | `.agents/commands/product/*.md` and `.agents/skills/<name>/` | the Agent Skills open standard layout; works with any tool that reads it |
+| `opencode` | `.opencode/commands/product-*.md` and `.opencode/skills/<name>/` | `/product-recover`, `/product-define`, `/product-change`, ... |
+
+OpenCode reads `.agents/skills` and `.claude/skills` as well as its own, so `opencode` alongside `codex` or `claude` installs the same skills twice; the providers differ on commands, which OpenCode reads only from `.opencode/commands/`. Pick `opencode` when you want its slash commands, and pick it alone unless another tool in the repository needs `.agents/` or `.claude/`.
 
 The commands: `recover` (rebuild the definition from an existing system), `define` (author new product intent), `change` (elaborate a Product Change), `explore` (think through a fuzzy idea against the model), `impact` (structural impact of touching an artifact), `audit` (review model quality), `bind` (backfill scope declarations and citations into existing SDD documents once a baseline exists), `refine` (interview you through the model's weak spots and turn the answers into a Product Change). All of them propose; none of them can accept, apply to the baseline, or merge. `--shorthand` adds `/ps:` aliases.
 

@@ -1,6 +1,7 @@
 import { claudeRenderer } from '@prodshape/integration-claude';
 import { codexRenderer } from '@prodshape/integration-codex';
 import { copilotRenderer } from '@prodshape/integration-copilot';
+import { opencodeRenderer } from '@prodshape/integration-opencode';
 import type { CanonicalAssets, ProviderRenderer, RenderOptions } from './assets.js';
 import { loadBundledAssets } from './assets.js';
 import {
@@ -27,7 +28,12 @@ function compareCodeUnits(left: string, right: string): number {
 }
 
 /** Renderers consumed via structural typing; integrations never import distribution. */
-export const renderers: ProviderRenderer[] = [claudeRenderer, copilotRenderer, codexRenderer];
+export const renderers: ProviderRenderer[] = [
+  claudeRenderer,
+  copilotRenderer,
+  codexRenderer,
+  opencodeRenderer,
+];
 
 export function rendererFor(provider: string): ProviderRenderer | undefined {
   return renderers.find((r) => r.provider === provider);

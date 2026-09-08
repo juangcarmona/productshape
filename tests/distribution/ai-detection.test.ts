@@ -2,7 +2,12 @@ import { mkdir, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { aiProviderById, aiProviders, detectAiProviders } from '@prodshape/distribution';
+import {
+  aiProviderById,
+  aiProviders,
+  detectAiProviders,
+  rendererFor,
+} from '@prodshape/distribution';
 
 /**
  * Detection is a passive filesystem inspection: a marker directory per provider, no provider
@@ -59,6 +64,12 @@ describe('AI provider detection', () => {
       expect(await detectAiProviders(dir)).toEqual([]);
     } finally {
       await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('has a renderer for every provider it can detect', () => {
+    for (const provider of aiProviders) {
+      expect(rendererFor(provider.id), provider.id).toBeDefined();
     }
   });
 

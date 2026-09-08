@@ -167,7 +167,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
   program
     .command('init')
     .description('Initialize Product Definition as Code in this repository')
-    .option('--ai <providers>', 'comma-separated AI integrations: claude, copilot, codex')
+    .option('--ai <providers>', 'comma-separated AI integrations: claude, copilot, codex, opencode')
     .option('--sdd <framework>', 'SDD framework: openspec, kiro, speckit, or none to skip')
     .option(
       '--full',
@@ -201,7 +201,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .description('Manage generated AI provider integrations');
   integration
     .command('add')
-    .description('Install a provider integration (claude, copilot, codex, openspec, speckit)')
+    .description('Install a provider integration (claude, copilot, codex, opencode, openspec, speckit)')
     .argument('<provider>', 'provider name')
     .option('--force', 'overwrite existing unmanaged or hand-edited files')
     .option('--dry-run', 'report what would change without writing anything')

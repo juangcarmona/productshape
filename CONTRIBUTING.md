@@ -43,7 +43,7 @@ pnpm changeset
 
 Choose the affected packages and bump type and write a short, user-facing summary. Only packages that receive a changeset are released. A non-blocking CI check reminds you when a changeset is missing. The full release process, pre-release (alpha/beta) tracks and rollback are documented in [RELEASING.md](RELEASING.md).
 
-> **CLI bundling:** `@prodshape/cli` bundles the other packages at build time and declares no `@prodshape/*` dependencies, so Changesets cannot bump it automatically. When you change a bundled package (`core`, `distribution`, `integration-openspec`, `integration-claude`, `integration-copilot`, `integration-codex`) **and want the CLI to ship that change, add `@prodshape/cli` to the changeset yourself.**
+> **CLI bundling:** `@prodshape/cli` bundles the other packages at build time and declares no `@prodshape/*` dependencies, so Changesets cannot bump it automatically. When you change a bundled package (`core`, `distribution`, `integration-openspec`, `integration-claude`, `integration-copilot`, `integration-codex`, `integration-opencode`) **and want the CLI to ship that change, add `@prodshape/cli` to the changeset yourself.**
 
 > **Dependent libraries:** `@prodshape/integration-*` and `@prodshape/distribution` resolve `@prodshape/core` from npm once published, not from this workspace. A change to a package that another published package depends on needs a changeset for the dependency too; otherwise the published dependents keep resolving the old version and fail at import time. The `release drift` CI job fails when a package's shipped source differs from the tag of its current version and no changeset names it; `pnpm release-drift:check` runs the same check locally (it needs the tags fetched).
 
