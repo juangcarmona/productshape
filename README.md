@@ -192,7 +192,18 @@ What to read next:
 
 ## Agent skills
 
-`prodshape init --ai claude,codex,copilot` installs generated commands and skills for the chosen providers, so an AI agent works the model through the same operations you do: explore, define, change, audit, impact, recover, bind (backfill citations into existing SDD documents) and refine (interview-driven model improvement). The assets are canonical to the CLI. Run `prodshape integration update` to refresh them after an upgrade. [The methodology overview](docs/methodology/overview.md) explains what each operation does.
+`prodshape init --ai claude,codex,copilot,opencode` installs generated commands and skills for the chosen providers, so an AI agent works the model through the same operations you do: explore, define, change, audit, impact, recover, bind (backfill citations into existing SDD documents) and refine (interview-driven model improvement). The assets are canonical to the CLI. Run `prodshape integration update` to refresh them after an upgrade. [The methodology overview](docs/methodology/overview.md) explains what each operation does.
+
+Install the CLI as above, then pick one provider or several. Every provider gets the same commands and skills, rendered where that tool looks for them:
+
+| `--ai` | Generated | You trigger |
+| --- | --- | --- |
+| `claude` | `.claude/commands/product/*.md` and `.claude/skills/<name>/` | `/product:define`, `/product:change`, ... |
+| `copilot` | `.github/prompts/product-*.prompt.md` and `.github/skills/<name>/` | `/product-define`, `/product-change`, ... |
+| `codex` | `.agents/commands/product/*.md` and `.agents/skills/<name>/` | the Agent Skills open standard layout; any tool that reads it |
+| `opencode` | `.opencode/commands/product-*.md` and `.opencode/skills/<name>/` | `/product-define`, `/product-change`, ... |
+
+Running `init` with no `--ai` in an interactive terminal reports which of these the repository already uses and offers those, so the flag is for scripts and for overriding what was found. Add a provider later with `prodshape integration add <provider>`, and `--shorthand` adds `/ps:` aliases. OpenCode also reads `.agents/skills` and `.claude/skills`, so pairing `opencode` with `codex` or `claude` installs the same skills twice; they differ on commands, which OpenCode reads only from `.opencode/commands/`.
 
 ## PDaC conformance
 

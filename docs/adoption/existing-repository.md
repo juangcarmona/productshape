@@ -7,7 +7,7 @@ This guide covers what Product Definition as Code physically adds to any existin
 ## What init touches
 
 ```bash
-prodshape init [--ai claude|copilot|codex] [--flat] [--shorthand] [--dry-run]
+prodshape init [--ai claude|copilot|codex|opencode] [--flat] [--shorthand] [--dry-run]
 ```
 
 `init` adds exactly three areas and modifies nothing else:
@@ -21,7 +21,8 @@ docs/product/                    # canonical product definition
 ├── installation.lock.json       # only with --ai; commit it
 ├── integrations/openspec.json   # only after integration add openspec; commit it
 └── templates/
-.claude/, .github/, .agents/     # optional, only with --ai: generated AI integrations
+.claude/, .github/, .agents/,    # optional, only with --ai: generated AI integrations
+.opencode/
 openspec/config.yaml             # after integration add openspec: PDaC guidance merged additively
 ```
 
