@@ -1,6 +1,8 @@
 export { runFix, fixPlanSchemaId } from './commands/fix.js';
 export { runGraph } from './commands/graph.js';
 export { runImpact } from './commands/impact.js';
+export { runInit } from './commands/init.js';
+export type { InitCliOptions } from './commands/init.js';
 export { runInspect } from './commands/inspect.js';
 export { runSchema, schemaReferenceId } from './commands/schema.js';
 export { runValidate } from './commands/validate.js';

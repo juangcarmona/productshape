@@ -1,7 +1,9 @@
 import { join } from 'node:path';
 import { loadConfig } from '@prodshape/core';
 import {
+  aiProviders,
   applyInitPlan,
+  detectAiProviders,
   detectSddFrameworks,
   gitignoreRelativePath,
   InstallConflictError,
@@ -9,6 +11,7 @@ import {
   planInit,
   rendererFor,
   sddFrameworkById,
+  type AiProvider,
   type InitAction,
   type InitActionKind,
   type InitPlan,
@@ -91,6 +94,88 @@ function reportPlan(io: CliIo, plan: InitPlan): number {
   io.out('Next steps once applied:');
   for (const step of plan.nextSteps) io.out(`  - ${step}`);
   return exitCodes.success;
+}
+
+interface AiContext {
+  detected: AiProvider[];
+  /** Detected providers ProductShape renders for; the rest are reported but never offered. */
+  installable: AiProvider[];
+  choice: string[] | undefined;
+}
+
+function reportAiDetection(io: CliIo, context: AiContext): void {
+  io.out('AI providers:');
+  if (context.detected.length === 0) {
+    io.out('  detected: none');
+    return;
+  }
+  for (const provider of context.detected) {
+    const renderable = rendererFor(provider.id) ? '' : '; no ProductShape renderer';
+    io.out(`  detected: ${provider.name} (${provider.marker}/ present${renderable})`);
+  }
+  const ids = context.detected.map((provider) => provider.id);
+  if (ids.includes('codex') && ids.includes('opencode')) {
+    io.out(
+      '  OpenCode reads .agents/skills too, so the two overlap on skills and differ on commands.',
+    );
+  }
+}
+
+/** Map a comma-separated answer of list positions onto the offered providers. */
+function pickByNumber(answer: string, offered: readonly AiProvider[]): string[] {
+  return answer
+    .split(',')
+    .map((part) => Number.parseInt(part.trim(), 10))
+    .filter((index) => Number.isInteger(index) && index >= 1 && index <= offered.length)
+    .map((index) => offered[index - 1]!.id);
+}
+
+/**
+ * Resolve the AI providers: an explicit flag always wins; otherwise an interactive terminal is
+ * asked, informed by the detection; otherwise there is no choice and init only reports.
+ * Prompting is skipped for --dry-run, which must run no external command and decide nothing.
+ */
+async function resolveAiChoice(
+  io: CliIo,
+  options: InitCliOptions,
+  context: AiContext,
+): Promise<string[] | undefined> {
+  if (options.ai) return undefined;
+  if (!io.prompt || options.dryRun) return undefined;
+
+  if (context.installable.length > 1) {
+    io.out('Install the ProductShape skills and commands for the detected providers?');
+    context.installable.forEach((provider, index) => {
+      io.out(`  ${index + 1}) ${provider.name.padEnd(14)} ${provider.marker}/`);
+    });
+    const answer = (await io.prompt('Choose [comma-separated, default all detected]: ')).trim();
+    return answer === ''
+      ? context.installable.map((provider) => provider.id)
+      : pickByNumber(answer, context.installable);
+  }
+
+  if (context.installable.length === 1) {
+    const provider = context.installable[0]!;
+    const answer = (
+      await io.prompt(
+        `${provider.name} detected (${provider.marker}/). Install the ProductShape skills and commands for it now? [Y/n] `,
+      )
+    )
+      .trim()
+      .toLowerCase();
+    return answer === '' || answer === 'y' || answer === 'yes' ? [provider.id] : [];
+  }
+
+  const supported = aiProviders.filter((provider) => rendererFor(provider.id));
+  io.out('No AI provider detected. ProductShape can install its skills and commands for:');
+  supported.forEach((provider, index) => {
+    io.out(`  ${index + 1}) ${provider.name.padEnd(14)} ${provider.notes}`);
+  });
+  io.out(`  ${supported.length + 1}) Skip`);
+  const answer = (
+    await io.prompt(`Choose [comma-separated, default ${supported.length + 1}]: `)
+  ).trim();
+  return answer === '' ? [] : pickByNumber(answer, supported);
 }
 
 interface SddContext {
@@ -321,11 +406,11 @@ async function executeSddChoice(
 }
 
 export async function runInit(io: CliIo, options: InitCliOptions): Promise<number> {
-  const ai = (options.ai ?? '')
+  const explicitAi = (options.ai ?? '')
     .split(',')
     .map((p) => p.trim())
     .filter(Boolean);
-  for (const provider of ai) {
+  for (const provider of explicitAi) {
     if (!rendererFor(provider)) {
       throw new CliError(
         `Unknown AI provider '${provider}' (supported: claude, copilot, codex)`,
@@ -339,6 +424,16 @@ export async function runInit(io: CliIo, options: InitCliOptions): Promise<numbe
       exitCodes.invalidInvocation,
     );
   }
+
+  const detectedAi = await detectAiProviders(io.cwd);
+  const aiContext: AiContext = {
+    detected: detectedAi,
+    installable: detectedAi.filter((provider) => rendererFor(provider.id)),
+    choice: undefined,
+  };
+  reportAiDetection(io, aiContext);
+  aiContext.choice = await resolveAiChoice(io, options, aiContext);
+  const ai = aiContext.choice ?? explicitAi;
 
   const detected = await detectSddFrameworks(io.cwd);
   const openspecDetected = detected.some((framework) => framework.id === 'openspec');

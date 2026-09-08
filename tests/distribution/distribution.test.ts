@@ -389,11 +389,13 @@ describe('init SDD detection and --sdd', () => {
         err: () => {},
         prompt: async (question) => {
           questions.push(question);
-          return '2';
+          // The AI question is asked first and is a separate decision: only the SDD menu is
+          // answered here, so the selection under test is the framework one.
+          return question.includes('[1-4') ? '2' : '';
         },
       });
       expect(code).toBe(0);
-      expect(questions[0]).toContain('Choose [1-4');
+      expect(questions.some((q) => q.includes('Choose [1-4'))).toBe(true);
       const output = out.join('\n');
       expect(output).toContain('1) OpenSpec');
       expect(output).toContain('Kiro is set up from its own tooling');
