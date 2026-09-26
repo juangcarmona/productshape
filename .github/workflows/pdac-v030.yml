@@ -11,7 +11,7 @@ permissions:
 
 env:
   # Includes the independent-diagnostic expectation corrections in spec#118.
-  PDAC_SPEC_SHA: ce256cf17a6c36bfae1085fbc37cf7186ba13caf
+  PDAC_SPEC_SHA: 197353d4ab82e107ec277458bf81354617d62e7b
   PDAC_RUNNER_SHA: 252f8171b34ee9bff29716043cc69b53155a9dad
 
 jobs:
@@ -40,9 +40,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
         working-directory: pdac-runner
-      - run: npm run build
+      - run: pnpm build
         working-directory: pdac-runner
       - name: qualify the isolated CLI package
         shell: bash
