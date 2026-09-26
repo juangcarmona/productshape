@@ -1,0 +1,65 @@
+name: PDaC v0.3 candidate qualification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  # Includes the independent-diagnostic expectation corrections in spec#118.
+  PDAC_SPEC_SHA: ce256cf17a6c36bfae1085fbc37cf7186ba13caf
+  PDAC_RUNNER_SHA: 252f8171b34ee9bff29716043cc69b53155a9dad
+
+jobs:
+  qualification:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: product-definition-as-code/spec
+          ref: ${{ env.PDAC_SPEC_SHA }}
+          path: pdac-spec
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: product-definition-as-code/pdac-conformance
+          ref: ${{ env.PDAC_RUNNER_SHA }}
+          path: pdac-runner
+          persist-credentials: false
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: npm ci
+        working-directory: pdac-runner
+      - run: npm run build
+        working-directory: pdac-runner
+      - name: qualify the isolated CLI package
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/v030-package" "$RUNNER_TEMP/v030-install"
+          pnpm --dir packages/cli pack --pack-destination "$RUNNER_TEMP/v030-package"
+          tarball="$(find "$RUNNER_TEMP/v030-package" -name '*.tgz' -print -quit)"
+          npm install --prefix "$RUNNER_TEMP/v030-install" --ignore-scripts "$tarball"
+          node scripts/verify-v030-conformance.mjs \
+            --cli "$RUNNER_TEMP/v030-install/node_modules/@prodshape/cli/dist/bin.js" \
+            --runner "$GITHUB_WORKSPACE/pdac-runner/dist/bin.js" \
+            --spec "$GITHUB_WORKSPACE/pdac-spec" \
+            --tarball "$tarball" --reports "$RUNNER_TEMP/v030-reports"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: pdac-v030-${{ github.sha }}
+          path: ${{ runner.temp }}/v030-reports/
+          if-no-files-found: error

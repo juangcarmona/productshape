@@ -290,7 +290,10 @@ export async function validateSpecKitProductChange(
 export async function applySpecKitProductChange(
   root: string,
   name: string,
-  options: { dryRun?: boolean } = {},
+  options: {
+    dryRun?: boolean;
+    reportBeforeWrite?: Parameters<typeof applyHostedProductChange>[0]['reportBeforeWrite'];
+  } = {},
 ): Promise<HostedProductApplyResult> {
   const repo = await openRepository(root);
   const change = await loadSpecKitProductChange(root, name);
@@ -299,6 +302,7 @@ export async function applySpecKitProductChange(
     change,
     liveChanges: await liveChanges(root, repo),
     dryRun: options.dryRun,
+    reportBeforeWrite: options.reportBeforeWrite,
     excludeDocumentsUnder: [`${SPECKIT_PRODUCT_CHANGES}/${name}`, SPECKIT_PRODUCT_ARCHIVE],
   });
 }

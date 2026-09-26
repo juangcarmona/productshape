@@ -5,6 +5,7 @@ import { codes, sortDiagnostics } from './diagnostics.js';
 import type { ProductGraph } from './graph.js';
 import type { LoadedArtifact } from './model.js';
 import { allowedTargets } from './relationships.js';
+import { validateLifecycles } from './lifecycle.js';
 
 const requirementTypes = new Set(['functional-requirement', 'quality-requirement', 'constraint']);
 
@@ -55,7 +56,7 @@ export function validateModel(artifacts: LoadedArtifact[], graph: ProductGraph):
       continue;
     }
 
-    const allowed = allowedTargets(source.type, edge.kind);
+    const allowed = allowedTargets(source.type, edge.kind, graph.serializationVersion);
     if (!allowed.includes(target.type as (typeof allowed)[number])) {
       diagnostics.push({
         severity: 'error',
@@ -137,7 +138,9 @@ export function validateModel(artifacts: LoadedArtifact[], graph: ProductGraph):
       // says what the constraint needs, not where it applies.
       if (
         node.type === 'constraint' &&
-        !(graph.outgoing.get(node.id) ?? []).some((e) => e.kind === 'applies-to')
+        (graph.serializationVersion === 'v1alpha2'
+          ? !Object.hasOwn(byId.get(node.id)?.[0]?.frontmatter ?? {}, 'applies-to')
+          : !(graph.outgoing.get(node.id) ?? []).some((e) => e.kind === 'applies-to'))
       ) {
         continue;
       }
@@ -168,10 +171,19 @@ export function validateModel(artifacts: LoadedArtifact[], graph: ProductGraph):
       // demonstrates the rule, it does not establish where the rule governs. Valid means valid:
       // an applies-to whose target does not resolve, or resolves to a disallowed type, is a
       // broken reference (PRODUCT006/PRODUCT007), not consumption.
-      const appliesToTargets = allowedTargets(node.type, 'applies-to') as readonly string[];
+      const appliesToTargets = allowedTargets(
+        node.type,
+        'applies-to',
+        graph.serializationVersion,
+      ) as readonly string[];
       const consumed =
         incoming.some(
-          (e) => (e.kind === 'governed-by' || e.kind === 'derived-from') && nonRetiredSource(e),
+          (e) =>
+            (e.kind === 'governed-by' ||
+              e.kind === 'derived-from' ||
+              (graph.serializationVersion === 'v1alpha2' &&
+                e.kind === 'transitions[].governed-by')) &&
+            nonRetiredSource(e),
         ) ||
         outgoing.some((e) => {
           if (e.kind !== 'applies-to') return false;
@@ -193,7 +205,12 @@ export function validateModel(artifacts: LoadedArtifact[], graph: ProductGraph):
       // permitted source kind; a prose mention of the term's id or title never counts
       // (RFC 0072). A term's self-reference counts by the letter of the contract; that hole is
       // spec#96, deferred to an 0.3.0 RFC.
-      const used = incoming.some((e) => e.kind === 'uses-terms' && nonRetiredSource(e));
+      const used = incoming.some(
+        (e) =>
+          (e.kind === 'uses-terms' ||
+            (graph.serializationVersion === 'v1alpha2' && e.kind === 'subject')) &&
+          nonRetiredSource(e),
+      );
       if (!used) {
         diagnostics.push({
           severity: 'warning',
@@ -218,6 +235,7 @@ export function validateModel(artifacts: LoadedArtifact[], graph: ProductGraph):
     }
   }
 
+  if (graph.serializationVersion === 'v1alpha2') diagnostics.push(...validateLifecycles(artifacts));
   return sortDiagnostics(diagnostics);
 }
 

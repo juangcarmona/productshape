@@ -5,6 +5,7 @@ import type { ProductGraph } from './graph.js';
 import { compileGraph } from './graph.js';
 import type { LoadedArtifact } from './model.js';
 import { validateModel } from './validate.js';
+import { accountImpact, unresolvedImpactDiagnostics } from './impact-accounting.js';
 
 /**
  * Apply a Product Change's operations to the baseline artifact list.
@@ -222,7 +223,7 @@ export function validateChange(
   otherChanges: LoadedChange[],
 ): ChangeValidation {
   const overlayArtifacts = applyOverlay(baseline, change);
-  const overlayGraph = compileGraph(overlayArtifacts);
+  const overlayGraph = compileGraph(overlayArtifacts, change.serializationVersion);
   const removed = new Set(change.operations.remove);
 
   const overlayDiagnostics = validateModel(overlayArtifacts, overlayGraph).map(
@@ -245,12 +246,21 @@ export function validateChange(
     },
   );
 
+  const accounting =
+    change.serializationVersion === 'v1alpha2'
+      ? accountImpact(baseline, overlayArtifacts, change)
+      : undefined;
   const diagnostics = sortDiagnostics([
     ...change.diagnostics,
+    ...baseline
+      .filter((artifact) => overlayArtifacts.includes(artifact))
+      .flatMap((artifact) => artifact.documentDiagnostics ?? []),
     ...validateOperations(change, baseline),
     ...validateConcurrency(change, otherChanges),
     ...validateOpenQuestions(change),
     ...overlayDiagnostics,
+    ...(accounting?.diagnostics ?? []),
+    ...(accounting ? unresolvedImpactDiagnostics(change, accounting.unresolved, false) : []),
   ]);
 
   return { overlayArtifacts, overlayGraph, diagnostics };

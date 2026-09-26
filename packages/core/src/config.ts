@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import { parseAllDocuments } from 'yaml';
 import { configSchema } from './config-schema.js';
+import type { SerializationVersion } from './contract.js';
 import type { Diagnostic } from './diagnostics.js';
 import { compareCodePoints } from './diagnostics.js';
 import { appendPointerToken } from './json-pointer.js';
@@ -67,7 +68,7 @@ export interface ProdshapeSettings {
  * the repository layout fixes `model/` and `changes/` beneath it.
  */
 export interface ProductConfig {
-  version: 'v1alpha1';
+  version: SerializationVersion;
   'product-root': string;
   validation: {
     'warnings-as-errors': boolean;
@@ -127,6 +128,11 @@ interface Violation {
 }
 
 const validateKernelSchema = new Ajv2020({ allErrors: true }).compile(configSchema);
+const validateKernelSchemaV2 = new Ajv2020({ allErrors: true }).compile({
+  ...configSchema,
+  $id: 'urn:product-definition-as-code:schema:configuration:v1alpha2',
+  properties: { ...configSchema.properties, version: { const: 'v1alpha2' } },
+});
 
 /** Convert an ajv error to a violation, naming the offending property like PRODUCT002 does. */
 function ajvViolation(error: {
@@ -298,7 +304,11 @@ function parseProdshapeSettings(raw: unknown, out: Violation[]): ProdshapeSettin
  * The caller stops before artifact discovery or command-specific work and never continues with
  * defaults after an invalid file.
  */
-export function parseConfig(content: string, file: string): ConfigResult {
+export function parseConfig(
+  content: string,
+  file: string,
+  selectedVersion?: SerializationVersion,
+): ConfigResult {
   const one = (message: string, field?: string): ConfigResult => ({
     config: defaultConfig(),
     diagnostics: [
@@ -345,14 +355,18 @@ export function parseConfig(content: string, file: string): ConfigResult {
     return one('Configuration must be a YAML mapping', '');
   }
 
-  if (!validateKernelSchema(data)) {
-    for (const error of validateKernelSchema.errors ?? []) {
+  const version = (data as Record<string, unknown>).version;
+  const validator =
+    (selectedVersion ?? version) === 'v1alpha2' ? validateKernelSchemaV2 : validateKernelSchema;
+  if (!validator(data)) {
+    for (const error of validator.errors ?? []) {
       violations.push(ajvViolation(error));
     }
   }
 
   const record = data as Record<string, unknown>;
   const config = defaultConfig();
+  if (version === 'v1alpha2') config.version = version;
   if (violations.length === 0) {
     if (typeof record['product-root'] === 'string') {
       config['product-root'] = record['product-root'];
@@ -383,12 +397,20 @@ export function parseConfig(content: string, file: string): ConfigResult {
  * `product-root`, the generated root and the consumer roots would all revert, and the commands
  * that follow would validate a different tree than the one the repository configured.
  */
-export async function loadConfig(configPath: string, file: string): Promise<ConfigResult> {
+export async function loadConfig(
+  configPath: string,
+  file: string,
+  selectedVersion?: SerializationVersion,
+): Promise<ConfigResult> {
   let content: string;
   try {
     content = await readFile(configPath, 'utf8');
   } catch (error) {
-    if (isNotFound(error)) return { config: defaultConfig(), diagnostics: [] };
+    if (isNotFound(error))
+      return {
+        config: { ...defaultConfig(), version: selectedVersion ?? 'v1alpha1' },
+        diagnostics: [],
+      };
     const reason = error instanceof Error ? error.message : String(error);
     return {
       config: defaultConfig(),
@@ -402,5 +424,5 @@ export async function loadConfig(configPath: string, file: string): Promise<Conf
       ],
     };
   }
-  return parseConfig(content, file);
+  return parseConfig(content, file, selectedVersion);
 }

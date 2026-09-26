@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:product-definition-as-code:schema:domain-lifecycle:v1alpha2",
+  "title": "Domain lifecycle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "type",
+    "title",
+    "status",
+    "subject",
+    "states",
+    "transitions"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/domainLifecycleId"
+    },
+    "type": {
+      "const": "domain-lifecycle"
+    },
+    "title": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/title"
+    },
+    "status": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/artifactStatus"
+    },
+    "subject": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/domainTermId"
+    },
+    "states": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/localLifecycleId"
+          },
+          "title": {
+            "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/title"
+          },
+          "initial": {
+            "type": "boolean",
+            "default": false
+          },
+          "terminal": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "transitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title",
+          "from",
+          "to",
+          "trigger"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/localLifecycleId"
+          },
+          "title": {
+            "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/title"
+          },
+          "from": {
+            "type": "array",
+            "items": {
+              "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/localLifecycleId"
+            },
+            "minItems": 1
+          },
+          "to": {
+            "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/localLifecycleId"
+          },
+          "trigger": {
+            "type": "string",
+            "minLength": 1
+          },
+          "initiated-by": {
+            "type": "array",
+            "items": {
+              "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/actorId"
+            }
+          },
+          "governed-by": {
+            "type": "array",
+            "items": {
+              "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/businessRuleId"
+            }
+          },
+          "realized-by": {
+            "type": "array",
+            "items": {
+              "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/useCaseId"
+            }
+          }
+        }
+      }
+    },
+    "uses-terms": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/domainTermId"
+      }
+    },
+    "provenance": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/provenance"
+    }
+  }
+}

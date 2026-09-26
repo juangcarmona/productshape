@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:product-definition-as-code:schema:verification-evidence:v1alpha2",
+  "title": "Verification evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "provider",
+    "run-id",
+    "revision",
+    "results"
+  ],
+  "properties": {
+    "format": {
+      "const": "pdac-verification-evidence/v1alpha1"
+    },
+    "provider": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "run-id": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "revision": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{40}|[0-9a-f]{64})$"
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "test-id",
+          "level",
+          "outcome",
+          "citations"
+        ],
+        "properties": {
+          "test-id": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "level": {
+            "enum": [
+              "domain",
+              "component",
+              "integration",
+              "end-to-end",
+              "manual",
+              "exploratory"
+            ]
+          },
+          "outcome": {
+            "enum": [
+              "passed",
+              "failed",
+              "inconclusive"
+            ]
+          },
+          "citations": {
+            "type": "array",
+            "items": {
+              "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/citationRecord"
+            },
+            "minItems": 1
+          }
+        }
+      },
+      "minItems": 1
+    }
+  }
+}

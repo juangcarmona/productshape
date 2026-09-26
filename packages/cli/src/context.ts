@@ -6,6 +6,8 @@ import {
   stableJson,
   type AffectedCitation,
   type ProductRepository,
+  type SerializationVersion,
+  isEntryCitation,
 } from '@prodshape/core';
 
 /** Documented exit codes (docs/specification/validation.md). */
@@ -27,6 +29,8 @@ export class CliError extends Error {
 }
 
 export interface CliIo {
+  serializationVersion?: SerializationVersion;
+  currentEvidence?: string[];
   cwd: string;
   out: (line: string) => void;
   err: (line: string) => void;
@@ -80,7 +84,7 @@ export async function resolveRepository(
     }
     root = candidate;
   }
-  const repo = await openRepository(root);
+  const repo = await openRepository(root, io.serializationVersion);
   if (repo.configDiagnostics.some((d) => d.severity === 'error')) {
     // The configuration contract promises the diagnostic in machine-readable JSON too, so a JSON
     // invocation gets the envelope on stdout before the invalid-invocation exit.
@@ -132,7 +136,7 @@ export function formatDiagnosticLine(diagnostic: {
 }
 
 function citationLocation(citation: AffectedCitation['citation']): string {
-  return citation.form === 'sidecar-ledger'
+  return isEntryCitation(citation)
     ? `${citation.source} entry ${citation.line}`
     : `${citation.source}:${citation.line}`;
 }

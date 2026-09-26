@@ -1,4 +1,4 @@
-import { access, mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, rename, rm, rmdir, stat, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { modelSubdirByType } from './artifact.js';
 import type { LoadedChange } from './changes.js';
@@ -6,6 +6,7 @@ import { contentDigestBytes } from './digest.js';
 import { sortDiagnostics, type Diagnostic } from './diagnostics.js';
 import { gitRevisionExists, gitShowBytes } from './git.js';
 import type { LoadedArtifact } from './model.js';
+import { accountImpact, unresolvedImpactDiagnostics } from './impact-accounting.js';
 
 export interface ApplyAction {
   kind: 'write' | 'delete' | 'set-status' | 'move-change';
@@ -104,13 +105,23 @@ function computeDiff(
  */
 export async function planApply(options: PlanApplyOptions): Promise<ApplyPlan> {
   const { repoRoot, modelRelative, changesRelative, change, baseline, overlayErrors } = options;
-  const diagnostics: Diagnostic[] = [...overlayErrors];
+  const v2 = change.serializationVersion === 'v1alpha2';
+  const diagnostics: Diagnostic[] = overlayErrors.filter(
+    (d) => !v2 || (d.code !== 'PRODUCT029' && d.code !== 'PRODUCT033'),
+  );
   const actions: ApplyAction[] = [];
+  const refused = (): ApplyPlan => ({
+    changeId: change.id ?? '',
+    actions: [],
+    diff: { added: [], modified: [], removed: [] },
+    diagnostics: sortDiagnostics(diagnostics),
+  });
 
   // The status gate (PRODUCT028). `status` is a field in change.md, so refusing on it is a finding
   // about the model rather than a complaint about the invocation: the invocation is well formed,
   // and the caller exits 1 rather than 2. Approval stays a human product decision no tool may make.
   if (change.status !== 'approved') {
+    if (v2) diagnostics.length = 0;
     diagnostics.push({
       severity: 'error',
       code: 'PRODUCT028',
@@ -119,7 +130,9 @@ export async function planApply(options: PlanApplyOptions): Promise<ApplyPlan> {
       change: change.id,
       field: 'status',
     });
+    if (v2) return refused();
   }
+  if (v2 && diagnostics.length > 0) return refused();
 
   // Baseline-revision compatibility: artifacts the change touches must be unchanged since
   // base-revision (PRODUCT027). The exact CHG-INITIAL/0000000 pair is the no-baseline sentinel;
@@ -168,6 +181,15 @@ export async function planApply(options: PlanApplyOptions): Promise<ApplyPlan> {
         });
       }
     }
+  }
+
+  if (v2 && diagnostics.length > 0) return refused();
+  if (v2) {
+    const accounting = accountImpact(baseline, appliedArtifacts(baseline, change), change);
+    diagnostics.push(...accounting.diagnostics);
+    if (diagnostics.length > 0) return refused();
+    diagnostics.push(...unresolvedImpactDiagnostics(change, accounting.unresolved, true));
+    if (diagnostics.length > 0) return refused();
   }
 
   // Plan: writes for additions and modifications.
@@ -279,8 +301,8 @@ export async function preflightApply(
 ): Promise<Map<string, string>> {
   // Both apply preconditions arrive as error diagnostics, so one guard covers the status gate,
   // baseline drift and every overlay error alike.
-  if (plan.diagnostics.some((d) => d.severity === 'error')) {
-    throw new Error('Refusing to apply a plan with unresolved errors');
+  if (plan.diagnostics.length > 0) {
+    throw new Error('Refusing to apply a plan with unresolved blocking diagnostics');
   }
 
   const staged = new Map<string, string>();
@@ -314,16 +336,40 @@ export async function preflightApply(
  */
 export async function executeApply(repoRoot: string, plan: ApplyPlan): Promise<void> {
   const staged = await preflightApply(repoRoot, plan);
+  const undo: (() => Promise<void>)[] = [];
+  const createdDirectories: string[] = [];
+  const ensureDirectory = async (path: string) => {
+    const missing: string[] = [];
+    for (let current = path; !(await pathExists(current)); current = dirname(current))
+      missing.push(current);
+    await mkdir(path, { recursive: true });
+    createdDirectories.push(...missing.reverse());
+  };
+  const preserve = async (path: string) => {
+    let previous: Buffer | undefined;
+    try {
+      previous = await readFile(path);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+    }
+    undo.push(async () => {
+      if (previous === undefined) await rm(path, { force: true });
+      else await writeFile(path, previous);
+    });
+  };
 
   try {
     for (const action of plan.actions) {
       if (action.kind === 'write' && action.to) {
         const target = join(repoRoot, ...action.to.split('/'));
-        await mkdir(dirname(target), { recursive: true });
+        await preserve(target);
+        await ensureDirectory(dirname(target));
         await writeFile(target, staged.get(action.to) as string, 'utf8');
       } else if (action.kind === 'delete' && action.from) {
+        await preserve(join(repoRoot, ...action.from.split('/')));
         await rm(join(repoRoot, ...action.from.split('/')));
       } else if (action.kind === 'set-status' && action.from) {
+        await preserve(join(repoRoot, ...action.from.split('/')));
         await writeFile(
           join(repoRoot, ...action.from.split('/')),
           staged.get(action.from) as string,
@@ -331,15 +377,33 @@ export async function executeApply(repoRoot: string, plan: ApplyPlan): Promise<v
         );
       } else if (action.kind === 'move-change' && action.from && action.to) {
         const target = join(repoRoot, ...action.to.split('/'));
-        await mkdir(dirname(target), { recursive: true });
+        await ensureDirectory(dirname(target));
         await rename(join(repoRoot, ...action.from.split('/')), target);
+        const source = join(repoRoot, ...action.from.split('/'));
+        undo.push(() => rename(target, source));
       }
     }
   } catch (error) {
+    const failures: unknown[] = [];
+    for (const restore of undo.reverse()) {
+      try {
+        await restore();
+      } catch (failure) {
+        failures.push(failure);
+      }
+    }
+    for (const directory of createdDirectories.reverse()) {
+      try {
+        await rmdir(directory);
+      } catch (failure) {
+        failures.push(failure);
+      }
+    }
     throw new Error(
       `Apply failed while executing the plan: ${error instanceof Error ? error.message : String(error)}. ` +
-        "Apply never creates commits, so 'git status' shows exactly what was written; " +
-        "restore with 'git checkout -- <path>' (and remove untracked files) before retrying.",
+        (failures.length
+          ? `Rollback encountered ${failures.length} failure(s); inspect the working tree before retrying.`
+          : 'The original working tree was restored.'),
       { cause: error },
     );
   }

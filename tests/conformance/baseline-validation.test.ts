@@ -58,9 +58,9 @@ describe('self-hosted model through the full pipeline', () => {
 describe('bundled schemas', () => {
   it('are byte-identical to the canonical schemas directory', async () => {
     const canonical = await listFilesRecursive(schemasDir, '.schema.json');
-    expect(canonical.length).toBe(12);
+    expect(canonical.length).toBe(28);
     for (const file of canonical) {
-      const name = file.split(/[\\/]/).pop() as string;
+      const name = file.slice(schemasDir.length + 1);
       const bundled = join(repoRoot, 'packages', 'core', 'schemas', name);
       expect(await readFile(bundled, 'utf8'), name).toBe(await readFile(file, 'utf8'));
     }

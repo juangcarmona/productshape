@@ -11,10 +11,12 @@ import {
   planApply,
   preflightApply,
   scanCitations,
+  scanLiveCitations,
+  isEntryCitation,
   NO_BASELINE_REVISION,
   defaultChangeTitle,
   scaffoldChangeDocument,
-  dedupeDiagnostics,
+  mergeDiagnosticReports,
   sortDiagnostics,
   stableJson,
   validateBaseline,
@@ -80,19 +82,19 @@ export async function runChangeValidate(
   const targets = selected ? [selected] : changes;
 
   // The baseline must be sound before an overlay on it means anything.
-  const diagnostics: Diagnostic[] = [...baseline.diagnostics];
+  const diagnostics: Diagnostic[][] = [baseline.diagnostics];
   for (const change of targets) {
-    diagnostics.push(...validateChange(change, baseline.artifacts, changes).diagnostics);
+    diagnostics.push(validateChange(change, baseline.artifacts, changes).diagnostics);
   }
   // With a consumer scope, citation defects join the verdict: every validation command reports
   // an exit code for the whole repository, not only its own focus.
   if (options.consumers !== undefined) {
     diagnostics.push(
-      ...(await consumerCitationDiagnostics(repo, baseline.artifacts, options.consumers)),
+      await consumerCitationDiagnostics(repo, baseline.artifacts, options.consumers),
     );
   }
 
-  const sorted = sortDiagnostics(dedupeDiagnostics(diagnostics));
+  const sorted = sortDiagnostics(mergeDiagnosticReports(diagnostics));
   const blocking = blockingDiagnostics(sorted, repo.config.validation['warnings-as-errors']);
   const errors = sorted.filter((d) => d.severity === 'error');
   const warnings = sorted.filter((d) => d.severity === 'warning');
@@ -274,7 +276,7 @@ function reportPlan(
   affected: AffectedCitation[],
   dryRun: boolean,
 ): void {
-  io.out(`${dryRun ? 'Would apply' : 'Applied'} ${plan.changeId}:`);
+  io.out(`${dryRun ? 'Would apply' : 'Applying'} ${plan.changeId}:`);
   for (const action of plan.actions) io.out(`  ${action.description}`);
   const { added, modified, removed } = plan.diff;
   io.out(
@@ -303,7 +305,7 @@ export async function runChangeApply(
   id: string,
   options: ChangeApplyOptions,
 ): Promise<number> {
-  const repo = await resolveRepository(io);
+  const repo = await resolveRepository(io, options.root, options.format);
   const baseline = await validateBaseline(repo);
   const changes = await loadActiveChanges(repo);
   const change = findChange(changes, id);
@@ -327,7 +329,10 @@ export async function runChangeApply(
   // Both apply preconditions are diagnostics: the status gate is PRODUCT028 and baseline drift is
   // PRODUCT027. Nothing has been written at this point, so a refusal leaves the working tree
   // untouched. The invocation is well formed, so this is exit 1 and not 2.
-  const blocking = plan.diagnostics.filter((d) => d.severity === 'error');
+  const blocking = blockingDiagnostics(
+    plan.diagnostics,
+    repo.config.validation['warnings-as-errors'],
+  );
   if (blocking.length > 0) {
     for (const diagnostic of blocking) io.err(formatDiagnosticLine(diagnostic));
     if (options.format === 'json') {
@@ -351,8 +356,15 @@ export async function runChangeApply(
   const changedIds = [...plan.diff.added, ...plan.diff.modified, ...plan.diff.removed].map(
     (entry) => entry.id,
   );
+  const v2 = repo.config.version === 'v1alpha2';
+  const scan = v2
+    ? await scanLiveCitations(repo, baseline.artifacts, {
+        excludeDocumentsUnder: [change.file.replace(/\/change\.md$/, '')],
+        currentEvidence: io.currentEvidence,
+      })
+    : await scanCitations(repo.root, repo.root);
   const affected = computeAffectedCitations(
-    (await scanCitations(repo.root, repo.root)).records,
+    scan.records,
     changedIds,
     appliedArtifacts(baseline.artifacts, change),
   );
@@ -360,7 +372,7 @@ export async function runChangeApply(
   // A dry run still preflights: it reads every write source, confirms every delete target and
   // verifies the archive destination is absent, so it fails the same way a real apply would
   // instead of reporting "Would apply" for a plan that cannot execute.
-  if (options.dryRun) {
+  if (options.dryRun || v2) {
     await preflightApply(repo.root, plan);
   } else {
     await executeApply(repo.root, plan);
@@ -369,7 +381,9 @@ export async function runChangeApply(
   if (options.format === 'json') {
     io.out(
       stableJson({
-        applied: !options.dryRun,
+        ...(v2
+          ? { phase: 'preflight', dryRun: options.dryRun ?? false }
+          : { applied: !options.dryRun }),
         change: plan.changeId,
         actions: plan.actions,
         diff: plan.diff,
@@ -377,7 +391,7 @@ export async function runChangeApply(
           id: citation.id,
           anchor: citation.anchor,
           source: citation.source,
-          line: citation.line,
+          ...(v2 && isEntryCitation(citation) ? { entry: citation.line } : { line: citation.line }),
           form: citation.form,
           prospectiveStatus,
         })),
@@ -385,6 +399,9 @@ export async function runChangeApply(
     );
   } else {
     reportPlan(io, plan, affected, options.dryRun ?? false);
+  }
+  if (v2 && !options.dryRun) await executeApply(repo.root, plan);
+  if (options.format !== 'json') {
     io.out(
       options.dryRun
         ? 'Dry run: nothing was written.'

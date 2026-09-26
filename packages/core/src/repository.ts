@@ -10,6 +10,7 @@ import type { LoadedArtifact } from './model.js';
 import { loadModel } from './model.js';
 import { SchemaRegistry } from './schema-registry.js';
 import { validateModel } from './validate.js';
+import type { SerializationVersion } from './contract.js';
 
 async function exists(path: string): Promise<boolean> {
   try {
@@ -57,10 +58,17 @@ export interface ProductRepository {
 }
 
 /** Open a repository: resolve configuration and the schema registry. */
-export async function openRepository(root: string): Promise<ProductRepository> {
+export async function openRepository(
+  root: string,
+  selectedVersion?: SerializationVersion,
+): Promise<ProductRepository> {
   const configPath = join(root, '.product', 'config.yaml');
-  const { config, diagnostics } = await loadConfig(configPath, '.product/config.yaml');
-  const registry = await SchemaRegistry.loadBundled();
+  const { config, diagnostics } = await loadConfig(
+    configPath,
+    '.product/config.yaml',
+    selectedVersion,
+  );
+  const registry = await SchemaRegistry.loadBundled(config.version);
   return {
     root,
     config,
@@ -87,7 +95,7 @@ export interface BaselineValidation {
  */
 export async function validateBaseline(repo: ProductRepository): Promise<BaselineValidation> {
   const model = await loadModel(repo.modelDir, repo.root, repo.registry);
-  const graph = compileGraph(model.artifacts);
+  const graph = compileGraph(model.artifacts, repo.config.version);
   const diagnostics = sortDiagnostics([
     ...model.diagnostics,
     ...validateModel(model.artifacts, graph),

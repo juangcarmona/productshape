@@ -1,0 +1,6 @@
+{
+  "repo": "product-definition-as-code/spec",
+  "path": "schemas/v1alpha2",
+  "ref": "ec68206de270b0d3102ab03a5a9dc9c5785d356a",
+  "note": "Candidate v0.3 contract. The root schemas remain the independently pinned v1alpha1 contract."
+}
