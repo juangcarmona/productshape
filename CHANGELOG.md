@@ -10,6 +10,10 @@ The supported published CLI baseline is `@prodshape/cli@0.21.0`. Every stable pu
 
 ## [0.21.0]
 
+### Changed
+
+- Add explicit PDaC v0.3 support through the selected `v1alpha2` contract: Domain Lifecycles, accountable one-hop Product Changes, pre-write citation forecasts, external Verification Evidence, and rollback of failed apply execution. The existing `v1alpha1` contract remains supported.
+
 ## [0.20.0]
 
 ### Changed
