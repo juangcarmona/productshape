@@ -1,4 +1,5 @@
 import type { ProductArtifactType } from './artifact.js';
+import type { SerializationVersion } from './contract.js';
 
 /**
  * The canonical relationship vocabulary (https://github.com/product-definition-as-code/spec/blob/main/spec/relationships.md).
@@ -113,6 +114,66 @@ export const relationshipSpecs: RelationshipSpec[] = [
   },
 ];
 
+const lifecycleRelationships: RelationshipSpec[] = [
+  {
+    source: 'domain-lifecycle',
+    field: 'subject',
+    targets: ['domain-term'],
+    polarity: 'dependency',
+  },
+  {
+    source: 'domain-lifecycle',
+    field: 'uses-terms',
+    targets: ['domain-term'],
+    polarity: 'dependency',
+  },
+  {
+    source: 'domain-lifecycle',
+    field: 'transitions[].initiated-by',
+    targets: ['actor'],
+    polarity: 'dependency',
+  },
+  {
+    source: 'domain-lifecycle',
+    field: 'transitions[].governed-by',
+    targets: ['business-rule'],
+    polarity: 'dependency',
+  },
+  {
+    source: 'domain-lifecycle',
+    field: 'transitions[].realized-by',
+    targets: ['use-case'],
+    polarity: 'dependency',
+  },
+  {
+    source: 'structured-behaviour',
+    field: 'covers-transition.lifecycle',
+    targets: ['domain-lifecycle'],
+    polarity: 'dependency',
+  },
+];
+
+export const relationshipSpecsV2: RelationshipSpec[] = [
+  ...relationshipSpecs.map((spec): RelationshipSpec => {
+    if (spec.source === 'business-rule' && spec.field === 'applies-to') {
+      return { ...spec, targets: ['journey', 'bounded-context'] };
+    }
+    if (
+      (spec.source === 'functional-requirement' && spec.field === 'derived-from') ||
+      ((spec.source === 'quality-requirement' || spec.source === 'constraint') &&
+        spec.field === 'applies-to')
+    ) {
+      return { ...spec, targets: [...spec.targets, 'domain-lifecycle'] };
+    }
+    return spec;
+  }),
+  ...lifecycleRelationships,
+];
+
+function vocabulary(version: SerializationVersion): RelationshipSpec[] {
+  return version === 'v1alpha2' ? relationshipSpecsV2 : relationshipSpecs;
+}
+
 export interface Edge {
   from: string;
   kind: string;
@@ -127,9 +188,10 @@ export function extractEdges(
   id: string,
   type: string,
   frontmatter: Record<string, unknown>,
+  version: SerializationVersion = 'v1alpha1',
 ): Edge[] {
   const edges: Edge[] = [];
-  for (const spec of relationshipSpecs) {
+  for (const spec of vocabulary(version)) {
     if (spec.source !== type) continue;
 
     const arrayMember = arrayMemberField.exec(spec.field);
@@ -139,13 +201,23 @@ export function extractEdges(
       if (Array.isArray(value)) {
         for (const entry of value) {
           const target = (entry as Record<string, unknown> | null)?.[member as string];
-          if (typeof target === 'string') edges.push({ from: id, kind: spec.field, to: target });
+          for (const item of Array.isArray(target) ? target : [target]) {
+            if (typeof item === 'string') edges.push({ from: id, kind: spec.field, to: item });
+          }
         }
       }
       continue;
     }
 
-    const value = frontmatter[spec.field];
+    const value = spec.field
+      .split('.')
+      .reduce<unknown>(
+        (value, key) =>
+          typeof value === 'object' && value !== null
+            ? (value as Record<string, unknown>)[key]
+            : undefined,
+        frontmatter,
+      );
     if (value === undefined || value === null) continue;
     const targets = Array.isArray(value) ? value : [value];
     for (const target of targets) {
@@ -155,12 +227,20 @@ export function extractEdges(
   return edges;
 }
 
-export function allowedTargets(sourceType: string, field: string): ProductArtifactType[] {
-  const spec = relationshipSpecs.find((s) => s.source === sourceType && s.field === field);
+export function allowedTargets(
+  sourceType: string,
+  field: string,
+  version: SerializationVersion = 'v1alpha1',
+): ProductArtifactType[] {
+  const spec = vocabulary(version).find((s) => s.source === sourceType && s.field === field);
   return spec?.targets ?? [];
 }
 
 /** The polarity of one authored relationship, or undefined for a field outside the vocabulary. */
-export function polarityOf(sourceType: string, field: string): RelationshipPolarity | undefined {
-  return relationshipSpecs.find((s) => s.source === sourceType && s.field === field)?.polarity;
+export function polarityOf(
+  sourceType: string,
+  field: string,
+  version: SerializationVersion = 'v1alpha1',
+): RelationshipPolarity | undefined {
+  return vocabulary(version).find((s) => s.source === sourceType && s.field === field)?.polarity;
 }

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:product-definition-as-code:schema:use-case:v1alpha2",
+  "title": "Use case frontmatter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "title", "status", "primary-actor"],
+  "properties": {
+    "id": { "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/useCaseId" },
+    "type": { "const": "use-case" },
+    "title": { "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/title" },
+    "status": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/artifactStatus"
+    },
+    "primary-actor": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/actorId"
+    },
+    "supporting-actors": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/actorId"
+      }
+    },
+    "bounded-context": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/boundedContextId"
+    },
+    "governed-by": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/businessRuleId"
+      }
+    },
+    "uses-terms": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/domainTermId"
+      }
+    },
+    "provenance": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/provenance"
+    }
+  }
+}

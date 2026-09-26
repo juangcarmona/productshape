@@ -34,6 +34,17 @@ afterEach(async () => {
 });
 
 describe('preflightApply', () => {
+  it('refuses a warning passed in as a blocking diagnostic without rewriting its severity', async () => {
+    const plan = emptyPlan([]);
+    plan.diagnostics.push({
+      severity: 'warning',
+      code: 'PRODUCT113',
+      file: 'lc-a.md',
+      message: 'Blocked by warnings-as-errors',
+    });
+    await expect(preflightApply(repoRoot, plan)).rejects.toThrow('blocking diagnostics');
+    expect(plan.diagnostics[0]?.severity).toBe('warning');
+  });
   it('throws on an unreadable write source and touches nothing', async () => {
     const plan = emptyPlan([
       { kind: 'write', description: 'Add', from: 'missing-source.md', to: 'model/target.md' },
@@ -86,6 +97,30 @@ describe('preflightApply', () => {
 });
 
 describe('executeApply', () => {
+  it('restores earlier writes and deletions when a later destination cannot be created', async () => {
+    await mkdir(join(repoRoot, 'model'), { recursive: true });
+    await writeFile(join(repoRoot, 'source.md'), 'replacement\n');
+    await writeFile(
+      join(repoRoot, 'model', 'existing.md'),
+      Buffer.from([0xef, 0xbb, 0xbf, 65, 13, 10]),
+    );
+    await writeFile(join(repoRoot, 'model', 'deleted.md'), 'keep me\r\n');
+    await writeFile(join(repoRoot, 'occupied'), 'a file, not a directory');
+    const plan = emptyPlan([
+      { kind: 'write', description: 'Replace', from: 'source.md', to: 'model/existing.md' },
+      { kind: 'delete', description: 'Remove', from: 'model/deleted.md' },
+      { kind: 'write', description: 'New', from: 'source.md', to: 'new/nested/new.md' },
+      { kind: 'write', description: 'Fail', from: 'source.md', to: 'occupied/impossible.md' },
+    ]);
+    await expect(executeApply(repoRoot, plan)).rejects.toThrow(
+      'original working tree was restored',
+    );
+    expect(await readFile(join(repoRoot, 'model', 'existing.md'))).toEqual(
+      Buffer.from([0xef, 0xbb, 0xbf, 65, 13, 10]),
+    );
+    expect(await readFile(join(repoRoot, 'model', 'deleted.md'), 'utf8')).toBe('keep me\r\n');
+    await expect(stat(join(repoRoot, 'new'))).rejects.toThrow();
+  });
   it('runs the same preflight before writing anything, and refuses identically', async () => {
     const plan = emptyPlan([
       { kind: 'write', description: 'Add', from: 'missing-source.md', to: 'model/target.md' },

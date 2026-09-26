@@ -158,7 +158,8 @@ describe('diagnostic codes', () => {
       // (stale citation) is a warning despite its 0xx numbering, per the citation contract.
       // A code in the wrong table means the severity in the source and the severity in the
       // specification disagree.
-      const isWarning = code.startsWith('PRODUCT1') || code === 'PRODUCT061';
+      const isWarning =
+        code.startsWith('PRODUCT1') || code === 'PRODUCT061' || code === 'PRODUCT029';
       const expected = isWarning ? warnings : errors;
       const table = isWarning ? 'Warning codes' : 'Error codes';
       expect.soft([...expected], `${code} should be under '## ${table}'`).toContain(code);
@@ -190,7 +191,10 @@ describe('diagnostic codes', () => {
     );
 
     for (const emission of found) {
-      const isWarning = emission.code.startsWith('PRODUCT1') || emission.code === 'PRODUCT061';
+      const isWarning =
+        emission.code.startsWith('PRODUCT1') ||
+        emission.code === 'PRODUCT061' ||
+        emission.code === 'PRODUCT029';
       const expected = isWarning ? 'warning' : 'error';
       expect
         .soft(
@@ -273,7 +277,7 @@ describe('diagnostic codes', () => {
     // contract fixes as a warning despite its 0xx numbering.
     expect(
       [...documentedCodes(doc, 'Warning codes')].filter(
-        (c) => !/^PRODUCT1/.test(c) && c !== 'PRODUCT061',
+        (c) => !/^PRODUCT1/.test(c) && c !== 'PRODUCT061' && c !== 'PRODUCT029',
       ),
     ).toEqual([]);
   });

@@ -5,6 +5,9 @@ tests/conformance/cases/
 # Derived outputs are never formatted by hand.
 .product/generated/
 pnpm-lock.yaml
+# Vendored v1alpha2 schemas retain the exact upstream bytes at their recorded revision.
+schemas/v1alpha2/*.schema.json
+packages/core/schemas/v1alpha2/*.schema.json
 # Generated, managed AI-integration files are produced by the renderers, not hand-formatted;
 # formatting them would break the installation-lock hashes (managed-file drift).
 # openspec/config.yaml and .product/integrations/ are the OpenSpec renderer's managed outputs,

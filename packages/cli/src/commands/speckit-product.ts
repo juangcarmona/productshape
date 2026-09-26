@@ -91,7 +91,20 @@ export async function runSpecKitProduct(
   }
   if (action === 'apply') {
     if (!name) throw new Error('A Product Change name is required.');
-    const result = await applySpecKitProductChange(repo.root, name, { dryRun: options.dryRun });
+    let reported = false;
+    const result = await applySpecKitProductChange(repo.root, name, {
+      dryRun: options.dryRun,
+      reportBeforeWrite: (affectedCitations, plan) => {
+        reported = true;
+        io.out(
+          json
+            ? stableJson({ phase: 'preflight', affectedCitations, plan })
+            : formatAffectedCitations(affectedCitations).join('\n'),
+        );
+      },
+    });
+    if (reported && json)
+      return result.outcome === 'refused' ? exitCodes.validationErrors : exitCodes.success;
     io.out(json ? stableJson(result) : formatApplyResult(result, name));
     return result.outcome === 'refused' ? exitCodes.validationErrors : exitCodes.success;
   }

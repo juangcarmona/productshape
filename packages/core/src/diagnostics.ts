@@ -98,6 +98,33 @@ export function compareCodePoints(left: string, right: string): number {
  * live change. Only fully identical diagnostics collapse: an overlay-recoded duplicate
  * (PRODUCT023/PRODUCT024) differs in code and message and is preserved.
  */
+export function mergeDiagnosticReports(reports: Diagnostic[][]): Diagnostic[] {
+  const counts = new Map<string, number>();
+  const merged: Diagnostic[] = [];
+  for (const report of reports) {
+    const occurrences = new Map<string, number>();
+    for (const diagnostic of report) {
+      const key = JSON.stringify([
+        diagnostic.severity,
+        diagnostic.code,
+        diagnostic.message,
+        diagnostic.file,
+        diagnostic.artifact,
+        diagnostic.change,
+        diagnostic.field,
+        diagnostic.target,
+        diagnostic.line,
+        diagnostic.entry,
+      ]);
+      const count = (occurrences.get(key) ?? 0) + 1;
+      occurrences.set(key, count);
+      if (count > (counts.get(key) ?? 0)) merged.push(diagnostic);
+    }
+    for (const [key, count] of occurrences) counts.set(key, Math.max(count, counts.get(key) ?? 0));
+  }
+  return merged;
+}
+
 export function dedupeDiagnostics(diagnostics: Diagnostic[]): Diagnostic[] {
   const seen = new Set<string>();
   return diagnostics.filter((diagnostic) => {

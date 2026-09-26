@@ -48,12 +48,14 @@ export interface CitationRecord {
    */
   line: number;
   /** The form the citation was found in. */
-  form: 'inline' | 'marker-block' | 'sidecar-ledger';
+  form: 'inline' | 'marker-block' | 'sidecar-ledger' | 'verification-evidence';
   /**
    * For marker-block citations only: the embedded text between the markers (if any).
    * Used to detect tampering (PRODUCT062).
    */
   embeddedText?: string;
+  /** Exact nested selector retained by the explicit evidence adapter. */
+  evidenceField?: string;
 }
 
 /** The result of verifying one citation against the loaded model. */
@@ -485,9 +487,13 @@ function resolveAnchor(
 function citationAttribution(
   citation: CitationRecord,
 ): Pick<Diagnostic, 'target' | 'line' | 'entry'> {
-  return citation.form === 'sidecar-ledger'
+  return isEntryCitation(citation)
     ? { target: citation.id, entry: citation.line }
     : { target: citation.id, line: citation.line };
+}
+
+export function isEntryCitation(citation: CitationRecord): boolean {
+  return citation.form === 'sidecar-ledger' || citation.form === 'verification-evidence';
 }
 
 /**
@@ -499,6 +505,30 @@ export function verifyCitation(
   artifactIndex: Map<string, LoadedArtifact>,
 ): CitationVerification {
   const diagnostics: Diagnostic[] = [];
+  const evidenceTarget = artifactIndex.get(citation.id);
+  if (
+    citation.form === 'verification-evidence' &&
+    evidenceTarget &&
+    !['structured-behaviour', 'functional-requirement', 'quality-requirement'].includes(
+      evidenceTarget.type ?? '',
+    )
+  ) {
+    return {
+      citation,
+      status: 'unresolved',
+      diagnostics: [
+        {
+          severity: 'error',
+          code: 'PRODUCT081',
+          file: citation.source,
+          entry: citation.line,
+          target: citation.id,
+          message: 'Evidence target kind is not permitted',
+          field: citation.evidenceField,
+        },
+      ],
+    };
+  }
 
   // PRODUCT042: invalid digest format.
   if (!DIGEST_PATTERN.test(citation.digest)) {
@@ -636,9 +666,11 @@ export function computeAffectedCitations(
   return affected.sort(
     (a, b) =>
       compareCodePoints(a.citation.source, b.citation.source) ||
+      Number(isEntryCitation(a.citation)) - Number(isEntryCitation(b.citation)) ||
       a.citation.line - b.citation.line ||
       compareCodePoints(a.citation.id, b.citation.id) ||
-      compareCodePoints(a.citation.anchor ?? '', b.citation.anchor ?? ''),
+      compareCodePoints(a.citation.anchor ?? '', b.citation.anchor ?? '') ||
+      compareCodePoints(a.prospectiveStatus, b.prospectiveStatus),
   );
 }
 

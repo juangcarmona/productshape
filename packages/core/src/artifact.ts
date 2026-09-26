@@ -1,3 +1,4 @@
+/** Retained v1alpha1 family list: default recovery must not acquire a new completion obligation. */
 export const productArtifactTypes = [
   'actor',
   'journey',
@@ -11,10 +12,11 @@ export const productArtifactTypes = [
   'structured-behaviour',
 ] as const;
 
-export type ProductArtifactType = (typeof productArtifactTypes)[number];
+export const productArtifactTypesV2 = [...productArtifactTypes, 'domain-lifecycle'] as const;
+export type ProductArtifactType = (typeof productArtifactTypesV2)[number];
 
 /** Markdown-authored document types (product artifacts plus the Product Change definition). */
-export const markdownDocumentTypes = [...productArtifactTypes, 'product-change'] as const;
+export const markdownDocumentTypes = [...productArtifactTypesV2, 'product-change'] as const;
 
 export type MarkdownDocumentType = (typeof markdownDocumentTypes)[number];
 
@@ -30,6 +32,7 @@ export const idPrefixByType: Record<MarkdownDocumentType, string> = {
   'quality-requirement': 'QR',
   constraint: 'CON',
   'structured-behaviour': 'SB',
+  'domain-lifecycle': 'LC',
   'product-change': 'CHG',
 };
 
@@ -39,7 +42,7 @@ export const idPrefixByType: Record<MarkdownDocumentType, string> = {
  * when this pattern lived as a literal (issue #206).
  */
 export const productArtifactIdPattern = new RegExp(
-  `^(${productArtifactTypes.map((type) => idPrefixByType[type]).join('|')})-[A-Z0-9]+(-[A-Z0-9]+)*$`,
+  `^(${productArtifactTypesV2.map((type) => idPrefixByType[type]).join('|')})-[A-Z0-9]+(-[A-Z0-9]+)*$`,
 );
 
 export const requiredBodySections: Record<MarkdownDocumentType, string[]> = {
@@ -67,6 +70,13 @@ export const requiredBodySections: Record<MarkdownDocumentType, string[]> = {
   'quality-requirement': ['Requirement', 'Measurement'],
   constraint: ['Constraint', 'Rationale', 'Consequences'],
   'structured-behaviour': ['Intent', 'Boundaries'],
+  'domain-lifecycle': [
+    'Purpose',
+    'Invariants',
+    'State Semantics',
+    'Transition Semantics',
+    'Boundaries',
+  ],
   'product-change': [
     'Problem',
     'Intended Product Outcome',
@@ -79,7 +89,7 @@ export const requiredBodySections: Record<MarkdownDocumentType, string[]> = {
 };
 
 export function isProductArtifactType(value: unknown): value is ProductArtifactType {
-  return typeof value === 'string' && (productArtifactTypes as readonly string[]).includes(value);
+  return typeof value === 'string' && (productArtifactTypesV2 as readonly string[]).includes(value);
 }
 
 export function isMarkdownDocumentType(value: unknown): value is MarkdownDocumentType {
@@ -108,6 +118,7 @@ export const modelSubdirByType: Record<string, string> = {
   'quality-requirement': 'requirements/quality',
   constraint: 'requirements/constraints',
   'structured-behaviour': 'behaviours',
+  'domain-lifecycle': 'domain/lifecycles',
 };
 
 /**

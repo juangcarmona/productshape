@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:product-definition-as-code:schema:product-change:v1alpha2",
+  "title": "Product change frontmatter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "type",
+    "title",
+    "status",
+    "base-revision",
+    "operations"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/productChangeId"
+    },
+    "type": {
+      "const": "product-change"
+    },
+    "title": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/title"
+    },
+    "status": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/productChangeStatus"
+    },
+    "base-revision": {
+      "description": "The baseline Git revision this change was created against. The exact string 0000000 is the no-baseline sentinel only for CHG-INITIAL.",
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/gitRevision"
+    },
+    "operations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "add",
+        "modify",
+        "remove"
+      ],
+      "properties": {
+        "add": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/productArtifactId"
+          }
+        },
+        "modify": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/productArtifactId"
+          }
+        },
+        "remove": {
+          "type": "array",
+          "items": {
+            "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/productArtifactId"
+          }
+        }
+      }
+    },
+    "unaffected": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "cause",
+              "relationship",
+              "digest",
+              "cause-digest",
+              "reason"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/productArtifactId"
+              },
+              "cause": {
+                "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/productArtifactId"
+              },
+              "relationship": {
+                "type": "string",
+                "pattern": "\\S"
+              },
+              "digest": {
+                "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/digest"
+              },
+              "cause-digest": {
+                "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/digest"
+              },
+              "reason": {
+                "type": "string",
+                "pattern": "\\S"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "scope",
+              "cause",
+              "relationship",
+              "cause-digest",
+              "reason"
+            ],
+            "properties": {
+              "scope": {
+                "const": "product"
+              },
+              "cause": {
+                "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/constraintId"
+              },
+              "relationship": {
+                "const": "applies-to"
+              },
+              "cause-digest": {
+                "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/digest"
+              },
+              "reason": {
+                "type": "string",
+                "pattern": "\\S"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

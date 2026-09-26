@@ -7,8 +7,11 @@ import { contentDigestBytes } from './digest.js';
 import type { Diagnostic } from './diagnostics.js';
 import { parseArtifactDocument } from './parse.js';
 import type { SchemaRegistry } from './schema-registry.js';
+import type { SerializationVersion } from './contract.js';
 
 export interface LoadedArtifact {
+  serializationVersion?: SerializationVersion;
+  documentDiagnostics?: Diagnostic[];
   /** Repository-relative path, POSIX separators. */
   file: string;
   absolutePath: string;
@@ -61,11 +64,26 @@ export async function loadArtifactFile(
   const id = typeof frontmatter.id === 'string' ? frontmatter.id : undefined;
 
   const diagnostics = [
-    ...registry.validate(type, frontmatter, file),
-    ...(isMarkdownDocumentType(type) ? checkRequiredBodySections(type, body, file, id) : []),
+    ...(isMarkdownDocumentType(type) && registry.has(type)
+      ? registry.validate(type, frontmatter, file)
+      : [
+          {
+            severity: 'error' as const,
+            code: 'PRODUCT003',
+            file,
+            artifact: id,
+            field: 'type',
+            message: `Unknown artifact type '${type}'`,
+          },
+        ]),
+    ...(isMarkdownDocumentType(type) && registry.has(type)
+      ? checkRequiredBodySections(type, body, file, id)
+      : []),
   ];
 
   const artifact: LoadedArtifact = {
+    serializationVersion: registry.version,
+    documentDiagnostics: diagnostics,
     file,
     absolutePath,
     frontmatter,

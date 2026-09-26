@@ -50,7 +50,7 @@ export async function runSchema(
   kind: string | undefined,
   options: SchemaOptions,
 ): Promise<number> {
-  const registry = await SchemaRegistry.loadBundled();
+  const registry = await SchemaRegistry.loadBundled(io.serializationVersion);
   const schemas = registry.rawSchemas();
   const kinds = registry.kinds();
   const aliases = aliasesFor(kinds);

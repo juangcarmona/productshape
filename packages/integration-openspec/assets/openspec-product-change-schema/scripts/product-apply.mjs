@@ -71,8 +71,24 @@ function printDiagnostics(diagnostics) {
 const args = parseArgs(process.argv.slice(2));
 const repoRoot = args.root ? resolve(args.root) : defaultRoot;
 const integration = await loadIntegration();
+let forecastReported = false;
+function reportForecast(affected) {
+  console.log(`Affected citations: ${affected.length}`);
+  for (const { citation, prospectiveStatus } of affected) {
+    const anchor = citation.anchor ? `#${citation.anchor}` : '';
+    const entry = citation.form === 'sidecar-ledger' || citation.form === 'verification-evidence';
+    const location = entry
+      ? `${citation.source} entry ${citation.line}`
+      : `${citation.source}:${citation.line}`;
+    console.log(`  ${location}\t${citation.id}${anchor}\t${prospectiveStatus}`);
+  }
+}
 const result = await integration.applyOpenSpecProductChange(repoRoot, args.change, {
   dryRun: args.dryRun,
+  reportBeforeWrite: (affected) => {
+    forecastReported = true;
+    reportForecast(affected);
+  },
 });
 printDiagnostics(result.plan.diagnostics);
 if (result.outcome === 'refused') {
@@ -87,13 +103,7 @@ console.log(
   `Product diff: ${added.length} added, ${modified.length} modified, ${removed.length} removed.`,
 );
 const affected = result.affectedCitations ?? [];
-console.log(`Affected citations: ${affected.length}`);
-for (const { citation, prospectiveStatus } of affected) {
-  const anchor = citation.anchor ? `#${citation.anchor}` : '';
-  console.log(
-    `  ${citation.source}:${citation.line}\t${citation.id}${anchor}\t${prospectiveStatus}`,
-  );
-}
+if (!forecastReported) reportForecast(affected);
 if (result.outcome === 'dry-run') {
   console.log('Dry run; nothing was written.');
   process.exit(0);

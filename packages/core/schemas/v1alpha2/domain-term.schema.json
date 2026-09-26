@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:product-definition-as-code:schema:domain-term:v1alpha2",
+  "title": "Domain term frontmatter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "title", "status", "defined-in"],
+  "properties": {
+    "id": { "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/domainTermId" },
+    "type": { "const": "domain-term" },
+    "title": { "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/title" },
+    "status": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/artifactStatus"
+    },
+    "defined-in": {
+      "description": "Canonical direction of term ownership. Bounded contexts never author owns-terms.",
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/boundedContextId"
+    },
+    "synonyms": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "uses-terms": {
+      "type": "array",
+      "items": { "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/domainTermId" }
+    },
+    "provenance": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/provenance"
+    }
+  }
+}

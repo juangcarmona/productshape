@@ -7,6 +7,7 @@ import type { LoadedArtifact } from './model.js';
 import { loadArtifactFile, toPosixRelative } from './model.js';
 import { parseArtifactDocument } from './parse.js';
 import type { SchemaRegistry } from './schema-registry.js';
+import type { SerializationVersion } from './contract.js';
 
 export interface ChangeOperations {
   add: string[];
@@ -15,6 +16,7 @@ export interface ChangeOperations {
 }
 
 export interface LoadedChange {
+  serializationVersion?: SerializationVersion;
   dir: string;
   file: string;
   frontmatter: Record<string, unknown>;
@@ -111,6 +113,7 @@ export async function loadChange(
 
   return {
     dir: changeDir,
+    serializationVersion: registry.version,
     file,
     frontmatter,
     body,

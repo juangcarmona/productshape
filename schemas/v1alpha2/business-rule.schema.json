@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:product-definition-as-code:schema:business-rule:v1alpha2",
+  "title": "Business rule frontmatter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "type",
+    "title",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/businessRuleId"
+    },
+    "type": {
+      "const": "business-rule"
+    },
+    "title": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/title"
+    },
+    "status": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/artifactStatus"
+    },
+    "applies-to": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/businessRuleScopeId"
+      }
+    },
+    "uses-terms": {
+      "type": "array",
+      "items": {
+        "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/domainTermId"
+      }
+    },
+    "provenance": {
+      "$ref": "urn:product-definition-as-code:schema:common:v1alpha2#/$defs/provenance"
+    }
+  }
+}

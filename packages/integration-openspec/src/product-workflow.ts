@@ -355,7 +355,10 @@ export type OpenSpecProductApplyResult = HostedProductApplyResult;
 export async function applyOpenSpecProductChange(
   root: string,
   changeName: string,
-  options: { dryRun?: boolean } = {},
+  options: {
+    dryRun?: boolean;
+    reportBeforeWrite?: Parameters<typeof applyHostedProductChange>[0]['reportBeforeWrite'];
+  } = {},
 ): Promise<OpenSpecProductApplyResult> {
   const repo = await openRepository(root);
   const all = await loadAllLiveChanges(root, repo);
@@ -367,6 +370,7 @@ export async function applyOpenSpecProductChange(
     change,
     liveChanges: all,
     dryRun: options.dryRun ?? false,
+    reportBeforeWrite: options.reportBeforeWrite,
     excludeDocumentsUnder: [`openspec/changes/${changeName}`, 'openspec/changes/archive'],
   });
 }

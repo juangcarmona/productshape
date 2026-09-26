@@ -1,5 +1,7 @@
 # Frontmatter reference
 
+These generated tables describe the retained v1alpha1 contract. For the explicitly selected v1alpha2 candidate, see [v0.3 support and migration](v030.md) and `prodshape --serialization-version v1alpha2 schema <kind>`.
+
 The exhaustive field contract of every document kind: which properties are allowed, which are required, and what values they accept.
 
 [Artifacts](artifacts.md) defines what each artifact type _means_ and why it exists; this chapter defines the _fields_. Where the two appear to disagree, the JSON Schemas under `schemas/` win — the tables below are generated from them (`pnpm docs:frontmatter`) and a conformance test fails the build if they drift.

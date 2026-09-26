@@ -1,6 +1,7 @@
 import type { LoadedArtifact } from './model.js';
 import type { Edge } from './relationships.js';
 import { extractEdges } from './relationships.js';
+import type { SerializationVersion } from './contract.js';
 
 export interface GraphNode {
   id: string;
@@ -12,6 +13,7 @@ export interface GraphNode {
 }
 
 export interface ProductGraph {
+  serializationVersion?: SerializationVersion;
   nodes: GraphNode[];
   edges: Edge[];
   nodeById: Map<string, GraphNode>;
@@ -27,7 +29,10 @@ function compareEdges(a: Edge, b: Edge): number {
  * Compile the product graph from loaded artifacts. Purely derived, deterministic:
  * nodes sorted by ID, edges by from/kind/to, reverse indexes computed, never authored.
  */
-export function compileGraph(artifacts: LoadedArtifact[]): ProductGraph {
+export function compileGraph(
+  artifacts: LoadedArtifact[],
+  version: SerializationVersion = artifacts[0]?.serializationVersion ?? 'v1alpha1',
+): ProductGraph {
   const nodes: GraphNode[] = [];
   const edges: Edge[] = [];
 
@@ -41,7 +46,7 @@ export function compileGraph(artifacts: LoadedArtifact[]): ProductGraph {
       path: artifact.file,
       digest: artifact.digest,
     });
-    edges.push(...extractEdges(artifact.id, artifact.type, artifact.frontmatter));
+    edges.push(...extractEdges(artifact.id, artifact.type, artifact.frontmatter, version));
   }
 
   nodes.sort((a, b) => a.id.localeCompare(b.id));
@@ -55,7 +60,7 @@ export function compileGraph(artifacts: LoadedArtifact[]): ProductGraph {
     incoming.set(edge.to, [...(incoming.get(edge.to) ?? []), edge]);
   }
 
-  return { nodes, edges, nodeById, outgoing, incoming };
+  return { nodes, edges, nodeById, outgoing, incoming, serializationVersion: version };
 }
 
 /** Derived view: the domain terms defined in a bounded context (owns-terms is never authored). */

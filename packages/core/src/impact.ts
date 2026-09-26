@@ -139,7 +139,7 @@ export function putInQuestionBy(graph: ProductGraph, changedId: string): Questio
   for (const edge of graph.incoming.get(changedId) ?? []) {
     const source = graph.nodeById.get(edge.from);
     if (!source) continue;
-    const polarity = polarityOf(source.type, edge.kind);
+    const polarity = polarityOf(source.type, edge.kind, graph.serializationVersion);
     // Both polarities question the author of an edge whose target changed: a dependency source
     // builds on the target, and a governance coupling works in either direction.
     if (polarity !== undefined) consider(edge.from, edge, polarity);
@@ -147,7 +147,7 @@ export function putInQuestionBy(graph: ProductGraph, changedId: string): Questio
   for (const edge of graph.outgoing.get(changedId) ?? []) {
     const source = graph.nodeById.get(changedId);
     if (!source) continue;
-    const polarity = polarityOf(source.type, edge.kind);
+    const polarity = polarityOf(source.type, edge.kind, graph.serializationVersion);
     // Outbound, only a governance edge questions its target: a changed dependency source cites
     // differently, it does not change what it cited.
     if (polarity === 'governance') consider(edge.to, edge, polarity);

@@ -7,6 +7,7 @@ import { idPrefixByType, isMarkdownDocumentType } from './artifact.js';
 import type { Diagnostic } from './diagnostics.js';
 import { codes } from './diagnostics.js';
 import { appendPointerToken } from './json-pointer.js';
+import type { SerializationVersion } from './contract.js';
 
 /** A loaded JSON Schema document, keyed by kind. Retained so the schemas can be described. */
 export type RawSchema = Record<string, unknown>;
@@ -21,18 +22,29 @@ export class SchemaRegistry {
    */
   private readonly sources = new Map<string, RawSchema>();
 
-  private constructor(private readonly ajv: Ajv2020) {}
+  private constructor(
+    private readonly ajv: Ajv2020,
+    readonly version: SerializationVersion,
+  ) {}
 
   /** Load the schemas bundled with this package. */
-  static loadBundled(): Promise<SchemaRegistry> {
-    return SchemaRegistry.load(fileURLToPath(new URL('../schemas/', import.meta.url)));
+  static loadBundled(version: SerializationVersion = 'v1alpha1'): Promise<SchemaRegistry> {
+    return SchemaRegistry.load(
+      fileURLToPath(
+        new URL(version === 'v1alpha2' ? '../schemas/v1alpha2/' : '../schemas/', import.meta.url),
+      ),
+      version,
+    );
   }
 
   /** Load every *.schema.json file from a directory (typically the repository's schemas/). */
-  static async load(schemaDir: string): Promise<SchemaRegistry> {
+  static async load(
+    schemaDir: string,
+    version: SerializationVersion = 'v1alpha1',
+  ): Promise<SchemaRegistry> {
     const ajv = new Ajv2020({ allErrors: true, allowUnionTypes: true });
     addFormats.default(ajv);
-    const registry = new SchemaRegistry(ajv);
+    const registry = new SchemaRegistry(ajv, version);
 
     const entries = (await readdir(schemaDir)).filter((f) => f.endsWith('.schema.json')).sort();
     const schemas = new Map<string, Record<string, unknown>>();
@@ -48,7 +60,20 @@ export class SchemaRegistry {
     for (const [kind, schema] of schemas) {
       registry.sources.set(kind, schema);
       if (kind === 'common') continue;
-      registry.validators.set(kind, ajv.compile({ $ref: schema.$id as string }));
+      if (kind === 'product-change' && version === 'v1alpha2') {
+        // Select the authored union arm so unrelated-arm errors cannot invent missing fields.
+        const selected = structuredClone(schema);
+        delete selected.$id;
+        const properties = selected.properties as Record<string, RawSchema>;
+        const unaffected = properties.unaffected!;
+        const alternatives = (unaffected.items as RawSchema).oneOf as RawSchema[];
+        unaffected.items = {
+          if: { type: 'object', required: ['scope'] },
+          then: alternatives[1],
+          else: alternatives[0],
+        };
+        registry.validators.set(kind, ajv.compile(selected));
+      } else registry.validators.set(kind, ajv.compile({ $ref: schema.$id as string }));
     }
     return registry;
   }
@@ -118,7 +143,8 @@ export class SchemaRegistry {
       // same path count once, per the validation contract's emission granularity.
       const reportedPaths = new Set<string>();
       for (const error of validator.errors ?? []) {
-        if (prefixMismatch && error.instancePath === '/id') continue;
+        if (error.keyword === 'if') continue;
+        if (this.version === 'v1alpha1' && prefixMismatch && error.instancePath === '/id') continue;
         // Property-level failures name their property only in `params`: without it, ajv's
         // "must NOT have additional properties" never says which field broke the closed
         // contract. A missing or additional property is identified as though it were present,

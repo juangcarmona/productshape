@@ -1,4 +1,4 @@
-import { Command, CommanderError } from 'commander';
+import { Command, CommanderError, Option } from 'commander';
 import { createRequire } from 'node:module';
 import {
   runChangeApply,
@@ -8,6 +8,7 @@ import {
   runChangeValidate,
 } from './commands/change.js';
 import { runCite } from './commands/cite.js';
+import { runEvidenceVerify } from './commands/evidence.js';
 import { runCitationsVerify } from './commands/citations.js';
 import { runContext } from './commands/context.js';
 import { runDrift } from './commands/drift.js';
@@ -60,6 +61,22 @@ const cliPackage = createRequire(import.meta.url)('../package.json') as { versio
 
 export function buildProgram(io: CliIo, capture: { code: number }): Command {
   const program = new Command('prodshape');
+  program.addOption(
+    new Option(
+      '--serialization-version <version>',
+      'select the PDaC serialization contract',
+    ).choices(['v1alpha1', 'v1alpha2']),
+  );
+  program.option(
+    '--current-evidence <path>',
+    'include an explicitly current external evidence document (repeatable)',
+    (value: string, previous: string[]) => [...previous, value],
+    [],
+  );
+  program.hook('preAction', () => {
+    io.serializationVersion = program.opts()['serializationVersion'];
+    io.currentEvidence = program.opts()['currentEvidence'];
+  });
   program
     .description('ProductShape - the reference implementation of Product Definition as Code')
     .version(cliPackage.version, '-v, --version', 'output the version number')
@@ -677,6 +694,15 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
       },
     );
 
+  program
+    .command('evidence')
+    .description('Inspect claims from external verification providers')
+    .command('verify')
+    .argument('<paths...>', 'explicit evidence JSON documents')
+    .option('--format <format>', 'text or json', 'text')
+    .action(async (paths: string[], options: { format: 'text' | 'json' }) => {
+      capture.code = await runEvidenceVerify(io, paths, options);
+    });
   return program;
 }
 

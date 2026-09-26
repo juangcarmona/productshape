@@ -1,5 +1,7 @@
 # Validation
 
+The v1alpha2 additions and their version-specific prerequisites are documented in [v0.3 support](v030.md). The diagnostic registry below includes both supported contracts.
+
 Structural validation is deterministic. Given the same repository content, validation MUST produce the same diagnostics in the same order on every platform. AI is never used to enforce structural invariants.
 
 ## Diagnostics
@@ -38,6 +40,11 @@ Warnings are not errors. `validation.warnings-as-errors` in `.product/config.yam
 | `PRODUCT007` | Relationship targets a disallowed artifact type |
 | `PRODUCT008` | Active artifact references a retired artifact |
 | `PRODUCT009` | Required body section missing or out of order |
+| `PRODUCT010` | Duplicate local lifecycle state or transition ID |
+| `PRODUCT011` | Transition references an unknown local state |
+| `PRODUCT012` | Lifecycle has other than one initial state |
+| `PRODUCT013` | Terminal state used as a transition source |
+| `PRODUCT014` | Coverage selects an unknown local transition |
 | `PRODUCT020` | Product Change addition whose ID already exists in the baseline |
 | `PRODUCT021` | Product Change modification of an ID that does not exist in the baseline |
 | `PRODUCT022` | Product Change removal of an ID that does not exist in the baseline |
@@ -47,6 +54,8 @@ Warnings are not errors. `validation.warnings-as-errors` in `.product/config.yam
 | `PRODUCT026` | Proposed artifact not listed in operations, or operation without its proposed artifact |
 | `PRODUCT027` | Baseline revision incompatible at apply: either the base-revision could not be resolved to a commit, or it resolved and a touched artifact's content digest differs from it |
 | `PRODUCT028` | Apply attempted on a Product Change whose status is not `approved` |
+| `PRODUCT033` | Invalid or stale unaffected-impact acknowledgement |
+| `PRODUCT034` | Unaccounted model impact blocks apply |
 | `PRODUCT042` | Invalid or unverifiable citation digest |
 | `PRODUCT050` | Invalid configuration or unknown top-level configuration key |
 | `PRODUCT051` | Managed integration file modified by hand |
@@ -60,6 +69,8 @@ Warnings are not errors. `validation.warnings-as-errors` in `.product/config.yam
 | `PRODUCT067` | Malformed citation carrier: a malformed payload candidate or sidecar file, a sidecar without its consumer file, or a consumer using both carriers |
 | `PRODUCT068` | Provider workspace cannot be resolved: no `openspec/` directory found and no alternative root configured |
 | `PRODUCT069` | OpenSpec CLI missing or unsupported version: `openspec` is not on PATH or reports an unparseable version |
+| `PRODUCT080` | Malformed or schema-invalid explicitly selected Verification Evidence |
+| `PRODUCT081` | Duplicate external test ID or evidence citation of a disallowed target kind |
 
 `PRODUCT020` to `PRODUCT028` apply to Product Changes and their overlays. They are reported when a change is validated or applied, never when validating the baseline alone, and never against the inert archives under `changes/completed/`, `changes/rejected/` and `changes/superseded/`.
 
@@ -78,6 +89,7 @@ A citation's status is evaluated in a fixed order: invalid digest, unresolved ta
 | Code | Condition |
 | --- | --- |
 | `PRODUCT061` | Stale citation: the target resolves but its canonical content changed since the citation was recorded |
+| `PRODUCT029` | Direct model impact remains unaccounted for during change validation |
 | `PRODUCT101` | Artifact file name not aligned with its ID |
 | `PRODUCT103` | Requirement not reachable from any actor (see [Relationships → Reachability](https://github.com/product-definition-as-code/spec/blob/main/spec/relationships.md#reachability)); product-wide constraints are reachable by definition |
 | `PRODUCT104` | Deprecated artifact still referenced by an active artifact |
@@ -86,6 +98,8 @@ A citation's status is evaluated in a fixed order: invalid digest, unresolved ta
 | `PRODUCT107` | Bounded context with no owned domain language |
 | `PRODUCT108` | Product Change in status `approved` with an unresolved question (a list item) under `## Open Questions` |
 | `PRODUCT111` | Draft artifact whose `provenance.confidence` is `low` |
+| `PRODUCT112` | Non-initial state unreachable in an active Domain Lifecycle |
+| `PRODUCT113` | Transition in an active Domain Lifecycle lacks active Structured Behaviour coverage |
 
 `PRODUCT061` is a warning despite its `0xx` numbering: the citation contract (spec/citation-contract.md) fixes it as a warning so a stale citation does not block a consumer pipeline unless the repository escalates it via `warnings-as-errors`. Tools MUST NOT apply per-artifact-type severity defaults.
 

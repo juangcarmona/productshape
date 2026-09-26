@@ -6,6 +6,7 @@ import {
   parseCitations,
   scanCitations,
   validateChange,
+  mergeDiagnosticReports,
   verifyCitations,
   type BaselineValidation,
   type Diagnostic,
@@ -37,8 +38,8 @@ export async function liveChangeDiagnostics(
   baseline: BaselineValidation,
 ): Promise<Diagnostic[]> {
   const changes = await loadActiveChanges(repo);
-  return changes.flatMap(
-    (change) => validateChange(change, baseline.artifacts, changes).diagnostics,
+  return mergeDiagnosticReports(
+    changes.map((change) => validateChange(change, baseline.artifacts, changes).diagnostics),
   );
 }
 

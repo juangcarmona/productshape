@@ -1,0 +1,250 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:product-definition-as-code:schema:common:v1alpha2",
+  "title": "Common definitions",
+  "description": "Shared identifier patterns and lifecycle enums. Lifecycles are deliberately separate definitions: product artifacts and product changes each have their own state machine.",
+  "$defs": {
+    "artifactStatus": {
+      "description": "Lifecycle of a product artifact.",
+      "enum": [
+        "draft",
+        "active",
+        "deprecated",
+        "retired"
+      ]
+    },
+    "productChangeStatus": {
+      "description": "Lifecycle of a product change.",
+      "enum": [
+        "draft",
+        "proposed",
+        "approved",
+        "applied",
+        "rejected",
+        "superseded"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "actorId": {
+      "type": "string",
+      "pattern": "^ACT-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "journeyId": {
+      "type": "string",
+      "pattern": "^JRN-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "useCaseId": {
+      "type": "string",
+      "pattern": "^UC-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "businessRuleId": {
+      "type": "string",
+      "pattern": "^BR-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "domainTermId": {
+      "type": "string",
+      "pattern": "^TERM-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "boundedContextId": {
+      "type": "string",
+      "pattern": "^BC-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "functionalRequirementId": {
+      "type": "string",
+      "pattern": "^FR-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "qualityRequirementId": {
+      "type": "string",
+      "pattern": "^QR-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "constraintId": {
+      "type": "string",
+      "pattern": "^CON-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "structuredBehaviourId": {
+      "type": "string",
+      "pattern": "^SB-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "productChangeId": {
+      "type": "string",
+      "pattern": "^CHG-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "requirementId": {
+      "description": "A functional requirement, quality requirement or constraint.",
+      "type": "string",
+      "pattern": "^(FR|QR|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "behaviourTargetId": {
+      "description": "A journey, use case or bounded context.",
+      "type": "string",
+      "pattern": "^(JRN|UC|BC)-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "illustrationTargetId": {
+      "description": "A use case, business rule or constraint.",
+      "type": "string",
+      "pattern": "^(UC|BR|CON)-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "productArtifactId": {
+      "description": "Any artifact of the current product model.",
+      "type": "string",
+      "pattern": "^(ACT|JRN|UC|BR|TERM|BC|FR|QR|CON|SB|LC)-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "productArtifactType": {
+      "enum": [
+        "actor",
+        "journey",
+        "use-case",
+        "business-rule",
+        "domain-term",
+        "bounded-context",
+        "functional-requirement",
+        "quality-requirement",
+        "constraint",
+        "structured-behaviour",
+        "domain-lifecycle"
+      ]
+    },
+    "gitRevision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{7,40}$"
+    },
+    "digest": {
+      "description": "SHA-256 over raw file bytes after CRLF and CR byte-sequence normalization to LF; bytes are never decoded or BOM-stripped.",
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "citationAnchor": {
+      "description": "Stable ID of an inline verification scenario within the target Requirement.",
+      "type": "string",
+      "pattern": "^[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "citationRecord": {
+      "description": "Citation to a whole Product Artifact, optionally scoped to a verification scenario anchor.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "digest"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/productArtifactId"
+        },
+        "digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "anchor": {
+          "$ref": "#/$defs/citationAnchor"
+        }
+      }
+    },
+    "inlineVerificationScenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scenario"
+      ],
+      "properties": {
+        "scenario": {
+          "type": "string",
+          "minLength": 1
+        },
+        "id": {
+          "description": "Optional stable id, unique within the artifact. When present, the inline scenario is citable via anchor (see the Citation Contract).",
+          "type": "string",
+          "pattern": "^[A-Z0-9]+(-[A-Z0-9]+)*$"
+        }
+      }
+    },
+    "structuredBehaviourReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scenario-ref"
+      ],
+      "properties": {
+        "scenario-ref": {
+          "$ref": "#/$defs/structuredBehaviourId"
+        }
+      }
+    },
+    "verificationItem": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/inlineVerificationScenario"
+        },
+        {
+          "$ref": "#/$defs/structuredBehaviourReference"
+        }
+      ]
+    },
+    "verificationItems": {
+      "description": "One or more inline verification scenarios or Structured Behaviour references.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/verificationItem"
+      }
+    },
+    "structuredBehaviourClause": {
+      "description": "A format-neutral product-level clause without a leading GIVEN, WHEN, THEN or AND keyword in any letter case.",
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "pattern": "^([Gg][Ii][Vv][Ee][Nn]|[Ww][Hh][Ee][Nn]|[Tt][Hh][Ee][Nn]|[Aa][Nn][Dd])\\b"
+      }
+    },
+    "provenance": {
+      "description": "Evidence behind recovered knowledge. Set on recovered (brownfield) artifacts only.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "confidence"
+      ],
+      "properties": {
+        "source": {
+          "description": "Where the knowledge came from: a file path, a URL, a ticket reference, or 'interview: <person>'.",
+          "type": "string",
+          "minLength": 1
+        },
+        "confidence": {
+          "description": "high: read directly from a specification scenario or a test. medium: inferred from structured prose. low: inferred from indirect evidence such as a variable name.",
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "recovered-from": {
+          "description": "How the knowledge was recovered from the evidence.",
+          "enum": [
+            "observation",
+            "inference",
+            "interview",
+            "documentation"
+          ]
+        }
+      }
+    },
+    "domainLifecycleId": {
+      "type": "string",
+      "pattern": "^LC-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "localLifecycleId": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "businessRuleScopeId": {
+      "type": "string",
+      "pattern": "^(JRN|BC)-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    },
+    "lifecycleScopeId": {
+      "type": "string",
+      "pattern": "^(JRN|UC|BC|LC)-[A-Z0-9]+(-[A-Z0-9]+)*$"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import {
   buildGeneratedOutputs,
   blockingDiagnostics,
-  dedupeDiagnostics,
+  mergeDiagnosticReports,
   sortDiagnostics,
   stableJson,
   validateBaseline,
@@ -34,12 +34,12 @@ export async function runValidate(io: CliIo, options: ValidateOptions): Promise<
   // Deduped: each overlay re-derives every untouched baseline fact, and the same fact must
   // count once, not once per live change.
   const diagnostics = sortDiagnostics(
-    dedupeDiagnostics([
-      ...baseline.diagnostics,
-      ...(await liveChangeDiagnostics(repo, baseline)),
-      ...(options.consumers !== undefined
+    mergeDiagnosticReports([
+      baseline.diagnostics,
+      await liveChangeDiagnostics(repo, baseline),
+      options.consumers !== undefined
         ? await consumerCitationDiagnostics(repo, baseline.artifacts, options.consumers)
-        : []),
+        : [],
     ]),
   );
   const blocking = blockingDiagnostics(diagnostics, repo.config.validation['warnings-as-errors']);

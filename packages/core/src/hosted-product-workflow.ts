@@ -2,7 +2,8 @@ import { join } from 'node:path';
 import { appliedArtifacts, executeApply, planApply, preflightApply } from './apply.js';
 import { discoverChanges, loadChange } from './changes.js';
 import { computeAffectedCitations, scanCitations } from './citations.js';
-import { blockingDiagnostics, dedupeDiagnostics, sortDiagnostics } from './diagnostics.js';
+import { scanLiveCitations } from './live-citations.js';
+import { blockingDiagnostics, mergeDiagnosticReports, sortDiagnostics } from './diagnostics.js';
 import { validateChange } from './overlay.js';
 import { validateBaseline } from './repository.js';
 import { validateModel } from './validate.js';
@@ -53,7 +54,7 @@ export function validateHostedProductChange(
 ): HostedProductValidation {
   const overlay = validateChange(change, baseline, liveChanges);
   const diagnostics = sortDiagnostics(
-    dedupeDiagnostics([...repo.configDiagnostics, ...baselineDiagnostics, ...overlay.diagnostics]),
+    mergeDiagnosticReports([repo.configDiagnostics, baselineDiagnostics, overlay.diagnostics]),
   );
   return {
     diagnostics,
@@ -128,7 +129,12 @@ async function affectedCitationsOf(
   const changedIds = [...plan.diff.added, ...plan.diff.modified, ...plan.diff.removed].map(
     (entry) => entry.id,
   );
-  const scan = await scanCitations(repo.root, repo.root);
+  const scan =
+    repo.config.version === 'v1alpha2'
+      ? await scanLiveCitations(repo, baseline, {
+          excludeDocumentsUnder: [...excludedDirs, change.file.replace(/\/change\.md$/, '')],
+        })
+      : await scanCitations(repo.root, repo.root);
   const reGroundable = scan.records.filter(
     (record) => !excludedDirs.some((dir) => record.source.startsWith(`${dir}/`)),
   );
@@ -165,6 +171,8 @@ export async function applyHostedProductChange(options: {
    * and the host archive.
    */
   excludeDocumentsUnder?: readonly string[];
+  /** Required for a v0.3 real apply: publish the prospective report before any writes. */
+  reportBeforeWrite?: (affected: AffectedCitation[], plan: ApplyPlan) => void | Promise<void>;
 }): Promise<HostedProductApplyResult> {
   const { repo, change, liveChanges, dryRun = false, excludeDocumentsUnder = [] } = options;
   const assessed = await assessHostedProductChange(repo, change, liveChanges);
@@ -179,7 +187,9 @@ export async function applyHostedProductChange(options: {
     }),
     change,
   );
-  if (plan.diagnostics.some((diagnostic) => diagnostic.severity === 'error')) {
+  if (
+    blockingDiagnostics(plan.diagnostics, repo.config.validation['warnings-as-errors']).length > 0
+  ) {
     return { outcome: 'refused', plan, change };
   }
   const affectedCitations = await affectedCitationsOf(
@@ -198,6 +208,12 @@ export async function applyHostedProductChange(options: {
       affectedCitations,
       resultingModel: projectedModel(assessed),
     };
+  }
+  if (repo.config.version === 'v1alpha2') {
+    if (!options.reportBeforeWrite)
+      throw new Error('v0.3 hosted apply requires a reportBeforeWrite callback');
+    await preflightApply(repo.root, plan);
+    await options.reportBeforeWrite(affectedCitations, plan);
   }
   await executeApply(repo.root, plan);
   return {

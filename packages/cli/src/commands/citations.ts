@@ -6,6 +6,8 @@ import {
   dedupeDiagnostics,
   sortDiagnostics,
   stableJson,
+  scanLiveCitations,
+  type ProductRepository,
   verifyCitations,
   validateBaseline,
   type ConsumerScopeState,
@@ -158,8 +160,9 @@ export async function runCitationsVerify(
     artifacts,
     repo.config.validation['warnings-as-errors'],
     options,
-    repo.config.prodshape.citations['consumer-roots'],
+    repo.config.version === 'v1alpha2' ? ['.'] : repo.config.prodshape.citations['consumer-roots'],
     repositoryDiagnostics,
+    repo,
   );
 }
 
@@ -181,17 +184,23 @@ async function runRecursiveVerify(
   options: CitationsVerifyOptions,
   consumerRoots: string[],
   repositoryDiagnostics: Diagnostic[],
+  repo?: ProductRepository,
 ): Promise<number> {
   const targets = target !== undefined ? [target] : consumerRoots;
 
   const citations = [];
   const carrierDiagnostics: Diagnostic[] = [];
-  for (const targetDir of targets) {
-    const rootDir = isAbsolute(targetDir) ? targetDir : resolvePath(repoRoot, targetDir);
-    const scan = await scanCitationTarget(targetDir, rootDir, repoRoot, target === undefined);
+  if (repo?.config.version === 'v1alpha2' && target === undefined) {
+    const scan = await scanLiveCitations(repo, artifacts, { currentEvidence: io.currentEvidence });
     citations.push(...scan.records);
     carrierDiagnostics.push(...scan.diagnostics);
-  }
+  } else
+    for (const targetDir of targets) {
+      const rootDir = isAbsolute(targetDir) ? targetDir : resolvePath(repoRoot, targetDir);
+      const scan = await scanCitationTarget(targetDir, rootDir, repoRoot, target === undefined);
+      citations.push(...scan.records);
+      carrierDiagnostics.push(...scan.diagnostics);
+    }
   const verifications = verifyCitations(citations, artifacts);
 
   const allDiagnostics = [

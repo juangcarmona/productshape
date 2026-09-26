@@ -11,7 +11,7 @@
  *
  * Run with: pnpm schemas:sync
  */
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -68,3 +68,25 @@ for (const file of schemaFiles) {
 console.log(
   `Synced ${copied} schema(s) from ${source.repo}@${source.ref.slice(0, 8)} into schemas/ and packages/core/schemas/`,
 );
+
+const v2Source = JSON.parse(
+  await readFile(join(repoRoot, 'schemas/v1alpha2/.source.json'), 'utf8'),
+) as SchemaSource;
+const v2Files = [
+  ...schemaFiles,
+  'config.schema.json',
+  'citation-sidecar.schema.json',
+  'domain-lifecycle.schema.json',
+  'verification-evidence.schema.json',
+];
+for (const target of targets) await mkdir(join(target, 'v1alpha2'), { recursive: true });
+for (const file of v2Files) {
+  const response = await fetch(
+    `https://raw.githubusercontent.com/${v2Source.repo}/${v2Source.ref}/${v2Source.path}/${file}`,
+  );
+  if (!response.ok) throw new Error(`Cannot sync v1alpha2/${file}: ${response.status}`);
+  const content = await response.text();
+  JSON.parse(content);
+  for (const target of targets) await writeFile(join(target, 'v1alpha2', file), content, 'utf8');
+}
+console.log(`Synced ${v2Files.length} v1alpha2 schemas from ${v2Source.ref}`);
