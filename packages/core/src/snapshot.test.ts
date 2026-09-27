@@ -103,6 +103,43 @@ describe('buildSnapshotHtml — generation contract', () => {
   it('respects a reduced-motion preference', () => {
     expect(build()).toContain('@media (prefers-reduced-motion: reduce)');
   });
+
+  /* A malformed block does not fail loudly: the browser folds it into the next rule's selector
+     and drops both, which is how the topology frame and its focus ring once vanished unnoticed. */
+  it('has a stylesheet in which every block is a well-formed rule', () => {
+    const html = build();
+    const css = html.slice(html.indexOf('<style>') + 7, html.indexOf('</style>'));
+    const problems: string[] = [];
+    let depth = 0;
+    let prelude = '';
+    for (const ch of css) {
+      if (ch === '{') {
+        const selector = prelude.trim();
+        if (!selector || selector.includes(';') || selector.endsWith(',')) problems.push(selector);
+        depth += 1;
+        prelude = '';
+      } else if (ch === '}') {
+        if (depth === 0) problems.push(`unbalanced close after: ${prelude.trim()}`);
+        depth = Math.max(0, depth - 1);
+        prelude = '';
+      } else if (ch === ';') {
+        prelude = '';
+      } else {
+        prelude += ch;
+      }
+    }
+    expect(depth).toBe(0);
+    expect(problems).toEqual([]);
+    const sheet = new JSDOM(html).window.document.styleSheets[0]!;
+    const selectors = [...sheet.cssRules].map((r) => (r as CSSStyleRule).selectorText);
+    for (const wanted of [
+      '#graph-host svg',
+      '#graph-host line.spoke',
+      '#graph-host circle.satellite:focus-visible, #graph-host circle.member:focus-visible',
+    ]) {
+      expect(selectors).toContain(wanted);
+    }
+  });
 });
 
 describe('buildSnapshotHtml — the opening document is bounded', () => {
@@ -480,6 +517,22 @@ describe('the embedded application', () => {
     load('#/artifacts/FR-A');
     expect(visible('artifacts')).toBe(true);
     expect(doc.querySelector('#detail h3.artifact')?.textContent).toBe('FR-A');
+  });
+
+  it('names the current view in the document title, so tabs and history stay distinguishable', () => {
+    expect(doc.title).toBe('Product Snapshot');
+    navigate('#/artifacts/UC-A');
+    expect(doc.title).toBe('UC-A UC-A · Product Snapshot');
+    navigate('#/artifacts');
+    expect(doc.title).toBe('Artifacts · Product Snapshot');
+    navigate('#/artifacts/UC-NOPE');
+    expect(doc.title).toBe('UC-NOPE not found · Product Snapshot');
+  });
+
+  it('states the topology gestures on screen rather than leaving them to be discovered', () => {
+    load('#/artifacts/UC-A');
+    expect(doc.querySelector('.gcontrols .ghint')?.textContent).toContain('drag pans');
+    expect(doc.querySelectorAll('.gcontrols button')[2]?.getAttribute('title')).toContain('key 0');
   });
 
   it('resolves a legacy bare-identifier fragment and normalizes it in place', () => {

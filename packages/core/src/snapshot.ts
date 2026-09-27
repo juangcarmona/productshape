@@ -142,6 +142,9 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 header.site { flex: none; }
 main { flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 1rem; }
 main > section { height: 100%; min-height: 0; }
+/* The grid takes whatever the heading and back link leave, so no pane is clipped at the bottom. */
+#view-artifacts:not([hidden]) { display: flex; flex-direction: column; }
+#view-artifacts .md { flex: 1 1 auto; height: auto; }
 #view-overview { overflow-y: auto; }
 section[hidden] { display: none; }
 h2.view { margin: 0 0 0.7rem; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
@@ -196,7 +199,7 @@ ul.idlist a { font-family: var(--mono); font-size: 0.8rem; border: 1px solid var
   font: inherit; font-size: 0.85rem; padding: 0.25rem 0.35rem;
   border: 1px solid var(--line-strong); border-radius: 2px; background: var(--bg); color: var(--text); width: 100%;
 }
-.master .listwrap { overflow-y: auto; min-height: 6rem; }
+.master .listwrap { overflow-y: auto; min-height: 6rem; position: relative; }
 .master h4 {
   margin: 0; padding: 0.3rem 0.5rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em;
   color: var(--muted); background: var(--panel); border-bottom: 1px solid var(--line); position: sticky; top: 0;
@@ -221,7 +224,8 @@ ul.idlist a { font-family: var(--mono); font-size: 0.8rem; border: 1px solid var
 .topo { border-left: 1px solid var(--line-strong); min-width: 0; min-height: 0; overflow-y: auto; padding: 0.5rem; background: var(--bg); display: flex; flex-direction: column; }
 .topo #graph-host { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
 .topo #graph-host svg { flex: 1 1 auto; min-height: 0; height: 100%; max-height: none; }
-.topo #graph-host .denselist { flex: none; }
+.topo #graph-host .denselist { flex: none; margin-top: 0.5rem; }
+.gcontrols .ghint { margin: 0 auto 0 0; align-self: center; font-size: 0.75rem; color: var(--muted); }
 .topo #graph-host p.note { flex: none; }
 .detail .placeholder { color: var(--muted); }
 .detail > header { border-bottom: 1px solid var(--line); padding-bottom: 0.5rem; margin-bottom: 0.7rem; }
@@ -269,15 +273,12 @@ details.relgroup ul.members { padding: 0.1rem 0.5rem 0.3rem; }
 }
 details.relgroup ul.members li:last-child { border-bottom: none; }
 
-  padding: 0.25rem 0.7rem; font-size: 0.82rem; color: var(--muted);
-  border: 1px solid var(--line); border-radius: 2px; background: var(--bg);
-}
 #graph-host svg { width: 100%; height: auto; max-height: 68vh; background: var(--bg); border: 1px solid var(--line); display: block; }
 #graph-host text { font-family: var(--sans); fill: var(--text); }
 #graph-host circle { stroke: #ffffff; stroke-width: 1.5; }
 #graph-host circle.anchor { stroke: var(--ink); stroke-width: 3; }
 #graph-host circle.satellite { cursor: pointer; stroke-width: 2; }
-#graph-host circle.satellite:focus-visible, #graph-host circle.member:focus-visible,
+#graph-host circle.satellite:focus-visible, #graph-host circle.member:focus-visible {
   outline: 2px solid var(--accent); outline-offset: 2px;
 }
 #graph-host line.spoke { stroke: #47536b; stroke-width: 2.5; vector-effect: non-scaling-stroke; }
@@ -321,7 +322,6 @@ div.ovsearch input { width: 100%; font: inherit; padding: 0.3rem 0.5rem; border:
   .md { grid-template-columns: minmax(0, 1fr); }
   .master { border-right: none; border-bottom: 1px solid var(--line-strong); }
   body[data-pane='detail'] .master, body[data-pane='master'] .detail { display: none; }
-  .backlink { display: block; }
 }
 .backlink { display: block; margin: 0 0 0.6rem; font-size: 0.85rem; }
 @media (prefers-reduced-motion: reduce) {
@@ -592,6 +592,18 @@ const script = String.raw`
       } else {
         links[i].removeAttribute('aria-current');
       }
+    }
+  };
+
+  /** Bring the current entry into the list's own viewport after the selection moves elsewhere. */
+  var revealCurrent = function () {
+    var wrap = doc.querySelector('.master .listwrap');
+    var current = doc.querySelector('#artifact-list a[aria-current]');
+    if (!wrap || !current) return;
+    var top = current.offsetTop;
+    var headingRoom = 28;
+    if (top - headingRoom < wrap.scrollTop || top + current.offsetHeight > wrap.scrollTop + wrap.clientHeight) {
+      wrap.scrollTop = Math.max(0, top - wrap.clientHeight / 3);
     }
   };
 
@@ -1264,10 +1276,14 @@ const script = String.raw`
     });
 
     var controls = el('div', 'gcontrols');
-    var button = function (label, onClick) {
+    /* The keyboard and pointer gestures are stated on screen: a control nobody can discover is
+       a control nobody has. */
+    controls.appendChild(el('span', 'ghint', 'Keys + − 0 · arrows pan · drag pans · scroll zooms'));
+    var button = function (label, onClick, hint) {
       var b = doc.createElement('button');
       b.type = 'button';
       b.textContent = label;
+      if (hint) b.title = hint;
       b.addEventListener('click', onClick);
       controls.appendChild(b);
     };
@@ -1280,7 +1296,7 @@ const script = String.raw`
     button('Fit', function () {
       view = { x: fit.x, y: fit.y, w: fit.w, h: fit.h };
       applyView();
-    }, 'key 0 · drag pans · scroll zooms · arrows pan');
+    }, 'Fit the whole neighbourhood (key 0)');
     host.appendChild(controls);
     host.appendChild(svg);
     /* Dense sets fall back to a legible structure: every entry stays selectable, nothing is
@@ -1547,6 +1563,16 @@ const script = String.raw`
     /* Focus lands somewhere meaningful after a view or selection change, never lost. */
     var changedView = state.view !== lastView;
     var changedId = state.id !== lastId;
+    var current = state.id ? byId[state.id] : null;
+    doc.title =
+      state.view === 'artifacts' && current
+        ? current.id + ' ' + (current.title || '') + ' · Product Snapshot'
+        : state.view === 'artifacts' && state.unknown
+          ? state.unknown + ' not found · Product Snapshot'
+          : state.view === 'artifacts'
+            ? 'Artifacts · Product Snapshot'
+            : 'Product Snapshot';
+    if (state.view === 'artifacts' && (changedView || changedId)) revealCurrent();
     if (changedView || changedId) {
       var focusTarget = null;
       if (state.view === 'artifacts' && (state.id || state.unknown)) {
@@ -1895,7 +1921,6 @@ export function buildSnapshotHtml(
     '</div>',
     '</section>',
 
-    // ---- Model graph: opened explicitly; built from the embedded data, never at open time.
     '<p id="needs-script" class="note">This page needs JavaScript to render artifact content, which',
     'it holds entirely within this file — no network access is involved.</p>',
     '</main>',
