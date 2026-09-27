@@ -129,7 +129,7 @@ export async function runIntegrationAdd(
 
   if (!rendererFor(provider)) {
     throw new CliError(
-      `Unknown provider '${provider}' (supported: claude, copilot, codex, openspec, speckit)`,
+      `Unknown provider '${provider}' (supported: claude, copilot, codex, opencode, openspec, speckit)`,
       exitCodes.invalidInvocation,
     );
   }
@@ -376,7 +376,7 @@ export async function runIntegrationRemove(
 
   if (!rendererFor(provider)) {
     throw new CliError(
-      `Unknown provider '${provider}' (supported: claude, copilot, codex, openspec, speckit)`,
+      `Unknown provider '${provider}' (supported: claude, copilot, codex, opencode, openspec, speckit)`,
       exitCodes.invalidInvocation,
     );
   }

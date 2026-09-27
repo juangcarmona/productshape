@@ -1,3 +1,5 @@
+export { aiProviderById, aiProviders, detectAiProviders } from './ai.js';
+export type { AiProvider, AiProviderId } from './ai.js';
 export { frameworkVersion, loadBundledAssets } from './assets.js';
 export type {
   CanonicalAsset,

@@ -21,6 +21,7 @@
     "typecheck": "pnpm -r run typecheck",
     "test": "vitest run",
     "build": "pnpm -r run build",
+    "verify": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm build && pnpm test",
     "release-contract:smoke": "node --import tsx scripts/release-contract-smoke.mts",
     "release-workflow:check": "node scripts/check-release-workflow.mjs",
     "version": "changeset version && pnpm exec prettier --write --no-error-on-unmatched-pattern .changeset/pre.json && pnpm build && node packages/cli/dist/bin.js integration update && node --import tsx scripts/bump-baseline-docs.mts",

@@ -9,6 +9,7 @@
       "@prodshape/integration-speckit": ["../integration-speckit/src/index.ts"],
       "@prodshape/integration-claude": ["../integration-claude/src/index.ts"],
       "@prodshape/integration-codex": ["../integration-codex/src/index.ts"],
+      "@prodshape/integration-opencode": ["../integration-opencode/src/index.ts"],
       "@prodshape/integration-copilot": ["../integration-copilot/src/index.ts"]
     }
   },

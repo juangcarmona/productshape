@@ -20,6 +20,9 @@ export default defineConfig({
       '@prodshape/integration-codex': fileURLToPath(
         new URL('../integration-codex/src/index.ts', import.meta.url),
       ),
+      '@prodshape/integration-opencode': fileURLToPath(
+        new URL('../integration-opencode/src/index.ts', import.meta.url),
+      ),
       '@prodshape/integration-copilot': fileURLToPath(
         new URL('../integration-copilot/src/index.ts', import.meta.url),
       ),
