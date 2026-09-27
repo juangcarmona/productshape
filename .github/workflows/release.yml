@@ -15,6 +15,7 @@ on:
         default: publish
         options:
           - publish # prepare a Version Packages PR for pending alpha/beta changesets
+          - publish-current-stable # publish stable versions already committed to main but absent from npm
           - publish-current-prerelease # publish versions already committed to main but absent from npm
           - pre-enter-alpha # start an alpha pre-release train
           - pre-enter-beta # start a beta pre-release train
@@ -32,7 +33,7 @@ jobs:
   # Resolve pre-release mode in a runner step because hashFiles is not available in a job-level if.
   release-mode:
     name: determine release mode
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     outputs:
       mode: ${{ steps.mode.outputs.mode }}
@@ -41,7 +42,9 @@ jobs:
       - id: mode
         shell: bash
         run: |
-          if [ -f .changeset/pre.json ]; then
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] && [ "${{ github.event.inputs.task }}" = "publish-current-stable" ]; then
+            echo "mode=stable" >> "$GITHUB_OUTPUT"
+          elif [ -f .changeset/pre.json ]; then
             echo "mode=prerelease" >> "$GITHUB_OUTPUT"
           else
             echo "mode=stable" >> "$GITHUB_OUTPUT"
@@ -90,7 +93,8 @@ jobs:
     name: publish stable
     needs: release-mode
     if: >-
-      github.event_name == 'push' && needs.release-mode.outputs.mode == 'stable' && (startsWith(github.event.head_commit.message, 'chore: Version Packages') || startsWith(github.event.head_commit.message, 'Version Packages'))
+      (github.event_name == 'push' && needs.release-mode.outputs.mode == 'stable' && (startsWith(github.event.head_commit.message, 'chore: Version Packages') || startsWith(github.event.head_commit.message, 'Version Packages')))
+      || (github.event_name == 'workflow_dispatch' && github.event.inputs.task == 'publish-current-stable' && needs.release-mode.outputs.mode == 'stable')
     runs-on: ubuntu-latest
     environment: npm-publish
     permissions:
@@ -344,7 +348,7 @@ jobs:
   # Manual path: prerelease publishing (alpha/beta), recovery, and pre-mode management.
   dispatch:
     name: manual (${{ github.event.inputs.task }})
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.task != 'publish-current-stable'
     runs-on: ubuntu-latest
     # Same protected environment as publish-stable. It carries the npm publish credentials — the
     # environment-scoped token and the OIDC environment claim the npm trusted publisher requires —
