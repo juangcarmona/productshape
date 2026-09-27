@@ -12,6 +12,7 @@ import {
 } from '@prodshape/distribution';
 import { claudeRenderer } from '@prodshape/integration-claude';
 import { copilotRenderer } from '@prodshape/integration-copilot';
+import { opencodeRenderer } from '@prodshape/integration-opencode';
 import { listFilesRecursive, repoRoot, toPosix } from '../helpers.js';
 
 let workDir: string;
@@ -20,7 +21,11 @@ const packageVersionPattern = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+
 
 /** `.claude/commands/ps/<name>.md` or `.github/prompts/ps-<name>.prompt.md`. */
 function isShorthandPath(path: string): boolean {
-  return path.includes('/commands/ps/') || path.includes('/prompts/ps-');
+  return (
+    path.includes('/commands/ps/') ||
+    path.includes('/prompts/ps-') ||
+    path.includes('/commands/ps-')
+  );
 }
 
 async function run(argv: string[], cwd: string) {
@@ -95,9 +100,18 @@ describe('provider renderers', () => {
     await expect(hookDoc?.content).toMatchFileSnapshot('__snapshots__/copilot-hook-doc.md');
   });
 
+  it('opencode output is stable', async () => {
+    const assets = { ...(await loadBundledAssets()), version: '0.0.0-test' };
+    const files = opencodeRenderer.render(assets);
+    const index = files.map((f) => f.path).join('\n');
+    await expect(index).toMatchFileSnapshot('__snapshots__/opencode-file-index.txt');
+    const command = files.find((f) => f.path === '.opencode/commands/product-change.md');
+    await expect(command?.content).toMatchFileSnapshot('__snapshots__/opencode-command-change.md');
+  });
+
   it('generates no ps aliases by default', async () => {
     const assets = { ...(await loadBundledAssets()), version: '0.0.0-test' };
-    for (const renderer of [claudeRenderer, copilotRenderer]) {
+    for (const renderer of [claudeRenderer, copilotRenderer, opencodeRenderer]) {
       const paths = renderer.render(assets).map((f) => f.path);
       expect.soft(paths.filter(isShorthandPath), renderer.provider).toEqual([]);
       // The canonical namespace is never conditional.
@@ -112,7 +126,7 @@ describe('provider renderers', () => {
 
   it('generates ps aliases with identical content when opted in', async () => {
     const assets = { ...(await loadBundledAssets()), version: '0.0.0-test' };
-    for (const renderer of [claudeRenderer, copilotRenderer]) {
+    for (const renderer of [claudeRenderer, copilotRenderer, opencodeRenderer]) {
       const files = renderer.render(assets, { shorthandCommands: true });
       const shorthand = files.filter((f) => isShorthandPath(f.path));
       // Structural typing accepts a renderer that ignores the option, so the compiler cannot
@@ -136,6 +150,10 @@ describe('provider renderers', () => {
     const copilot = copilotRenderer.render(assets, { shorthandCommands: true });
     await expect(copilot.map((f) => f.path).join('\n')).toMatchFileSnapshot(
       '__snapshots__/copilot-file-index-shorthand.txt',
+    );
+    const opencode = opencodeRenderer.render(assets, { shorthandCommands: true });
+    await expect(opencode.map((f) => f.path).join('\n')).toMatchFileSnapshot(
+      '__snapshots__/opencode-file-index-shorthand.txt',
     );
   });
 
@@ -389,11 +407,13 @@ describe('init SDD detection and --sdd', () => {
         err: () => {},
         prompt: async (question) => {
           questions.push(question);
-          return '2';
+          // The AI question is asked first and is a separate decision: only the SDD menu is
+          // answered here, so the selection under test is the framework one.
+          return question.includes('[1-4') ? '2' : '';
         },
       });
       expect(code).toBe(0);
-      expect(questions[0]).toContain('Choose [1-4');
+      expect(questions.some((q) => q.includes('Choose [1-4'))).toBe(true);
       const output = out.join('\n');
       expect(output).toContain('1) OpenSpec');
       expect(output).toContain('Kiro is set up from its own tooling');

@@ -23,6 +23,7 @@ export default defineConfig({
       '@prodshape/integration-speckit': internal('integration-speckit'),
       '@prodshape/integration-claude': internal('integration-claude'),
       '@prodshape/integration-codex': internal('integration-codex'),
+      '@prodshape/integration-opencode': internal('integration-opencode'),
       '@prodshape/integration-copilot': internal('integration-copilot'),
     };
   },

@@ -73,6 +73,20 @@ const checks = [
     /publish-stable:[\s\S]*?needs\.release-mode\.outputs\.mode == 'stable'/.test(workflow),
   ],
   [
+    'stable publishing recognizes squash-merged version commits',
+    /publish-stable:[\s\S]*?startsWith\(github\.event\.head_commit\.message, 'chore: Version Packages'\)[\s\S]*?startsWith\(github\.event\.head_commit\.message, 'Version Packages'\)/.test(
+      workflow,
+    ),
+  ],
+  [
+    'stable publication has a manual recovery path',
+    /publish-current-stable/.test(workflow) &&
+      /release-mode:[\s\S]*?github\.event_name == 'workflow_dispatch'/.test(workflow) &&
+      /publish-stable:[\s\S]*?github\.event\.inputs\.task == 'publish-current-stable'/.test(
+        workflow,
+      ),
+  ],
+  [
     'prerelease publishing requires a merged version commit',
     /publish-prerelease:[\s\S]*?needs\.release-mode\.outputs\.mode == 'prerelease'/.test(workflow),
   ],

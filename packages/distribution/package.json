@@ -32,6 +32,7 @@
     "@prodshape/core": "workspace:*",
     "@prodshape/integration-claude": "workspace:*",
     "@prodshape/integration-codex": "workspace:*",
+    "@prodshape/integration-opencode": "workspace:*",
     "@prodshape/integration-copilot": "workspace:*"
   },
   "devDependencies": {
