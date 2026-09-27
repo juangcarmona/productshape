@@ -172,7 +172,7 @@ describe('buildSnapshotHtml — generation contract', () => {
     const selectors = [...sheet.cssRules].map((r) => (r as CSSStyleRule).selectorText);
     for (const wanted of [
       ':focus-visible',
-      '.canvas path.edge',
+      '.canvas line.edge',
       'button.tg',
       '.members-pop',
       "#artifact-list a[aria-current='true']",
@@ -1353,65 +1353,59 @@ describe('graph projections', () => {
       else expect(b.y).toBeGreaterThan(a.y + a.h);
     }
     // Every group is joined to the anchor by a directed line of its own.
-    const lines = [...doc.querySelectorAll('#graph-host .canvas > svg path.edge')];
+    const lines = [...doc.querySelectorAll('#graph-host .canvas > svg line.edge')];
     expect(lines.length).toBe(7);
     for (const line of lines) expect(line.getAttribute('marker-end')).toBe('url(#topo-arrow)');
   });
 
-  it('routes every line from its own anchor port to its own group, never behind another group', () => {
+  it('draws straight lines from one anchor port each, with every arrow following the relationship', () => {
     for (const [hash, artifacts, width] of [
       ['#/artifacts/BC-X', fiveGroups, 420],
       ['#/artifacts/BC-X', fiveGroups, 900],
-      ['#/artifacts/UC-H00', busy, 420],
+      ['#/artifacts/UC-H00', busy, 900],
       ['#/artifacts/ACT-H', busy, 260],
     ] as const) {
       open(hash, [...artifacts], width);
       const a = box(anchor());
       const groups = chips().map((c) => ({ key: c.getAttribute('data-key'), ...box(c) }));
-      const paths = [...doc.querySelectorAll('#graph-host .canvas > svg path.edge')];
-      expect(paths.length).toBe(groups.length);
-      for (const side of ['out', 'in']) {
-        const own = paths.filter((p) => p.classList.contains(side));
-        const ports = own.map((p) => Number(p.getAttribute('data-port')));
-        // One port each, all on the anchor's edge.
-        expect(new Set(ports).size, `${hash} ${side}`).toBe(own.length);
-        for (const port of ports) {
-          expect(port).toBeGreaterThanOrEqual(a.x);
-          expect(port).toBeLessThanOrEqual(a.x + a.w);
+      const lines = [...doc.querySelectorAll('#graph-host .canvas > svg line.edge')].map((l) => ({
+        out: l.classList.contains('out'),
+        key: l.getAttribute('data-key'),
+        port: Number(l.getAttribute('data-port')),
+        x1: Number(l.getAttribute('x1')),
+        y1: Number(l.getAttribute('y1')),
+        x2: Number(l.getAttribute('x2')),
+        y2: Number(l.getAttribute('y2')),
+        arrow: l.getAttribute('marker-end'),
+      }));
+      expect(lines.length).toBe(groups.length);
+      for (const side of [true, false]) {
+        const own = lines.filter((l) => l.out === side).sort((p, q) => p.port - q.port);
+        // One port each, spread along the anchor's edge.
+        expect(new Set(own.map((l) => l.port)).size, `${hash} at ${width}`).toBe(own.length);
+        for (const l of own) {
+          expect(l.port).toBeGreaterThanOrEqual(a.x);
+          expect(l.port).toBeLessThanOrEqual(a.x + a.w);
         }
+        // Ports run in the order of the groups they reach, so no two lines cross.
+        const far = own.map((l) => (l.out ? l.x2 : l.x1));
+        expect(far, `${hash} at ${width}`).toEqual([...far].sort((p, q) => p - q));
       }
-      for (const path of paths) {
-        const pts = [...(path.getAttribute('d') ?? '').matchAll(/(-?\d+) (-?\d+)/g)].map((m) => [
-          Number(m[1]),
-          Number(m[2]),
-        ]);
-        const target = groups.find((g) => g.key === path.getAttribute('data-key'))!;
-        const outward = path.classList.contains('out');
-        const groupEnd = outward ? pts[pts.length - 1]! : pts[0]!;
-        const anchorEnd = outward ? pts[0]! : pts[pts.length - 1]!;
-        // Orthogonal: every segment is horizontal or vertical.
-        for (let i = 1; i < pts.length; i += 1) {
-          expect(
-            pts[i]![0] === pts[i - 1]![0] || pts[i]![1] === pts[i - 1]![1],
-            `${hash} bend`,
-          ).toBe(true);
-        }
-        // It starts on the anchor's edge and ends on the facing edge of its own group.
-        expect(anchorEnd[1]).toBe(outward ? a.y : a.y + a.h);
-        expect(groupEnd[0]).toBeGreaterThanOrEqual(target.x);
-        expect(groupEnd[0]).toBeLessThanOrEqual(target.x + target.w);
-        // No segment passes through the inside of a group, its own included.
-        for (let i = 1; i < pts.length; i += 1) {
-          const [x1, y1] = pts[i - 1]!;
-          const [x2, y2] = pts[i]!;
-          for (const g of groups) {
-            const inside =
-              Math.max(x1, x2) > g.x + 1 &&
-              Math.min(x1, x2) < g.x + g.w - 1 &&
-              Math.max(y1, y2) > g.y + 1 &&
-              Math.min(y1, y2) < g.y + g.h - 1;
-            expect(inside, `${hash} at ${width}: segment enters ${g.key}`).toBe(false);
-          }
+      for (const l of lines) {
+        const g = groups.find((x) => x.key === l.key)!;
+        expect(l.arrow).toBe('url(#topo-arrow)');
+        if (l.out) {
+          // Declared: from the anchor's top edge into the group's bottom edge.
+          expect([l.x1, l.y1]).toEqual([l.port, a.y - 1]);
+          expect(l.y2).toBe(g.y + g.h + 1);
+          expect(l.x2).toBeGreaterThanOrEqual(g.x);
+          expect(l.x2).toBeLessThanOrEqual(g.x + g.w);
+        } else {
+          // Referenced by: from the group's top edge into the anchor's bottom edge.
+          expect([l.x2, l.y2]).toEqual([l.port, a.y + a.h + 1]);
+          expect(l.y1).toBe(g.y - 1);
+          expect(l.x1).toBeGreaterThanOrEqual(g.x);
+          expect(l.x1).toBeLessThanOrEqual(g.x + g.w);
         }
       }
     }

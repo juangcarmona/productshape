@@ -497,16 +497,16 @@ details.relgroup.hl, .relsolo.hl { border-color: var(--accent); box-shadow: 0 0 
 .stage { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; position: relative; }
 .canvas { position: relative; }
 .canvas > svg { position: absolute; left: 0; top: 0; overflow: visible; }
-.canvas path.edge { fill: none; stroke: var(--edge-soft); stroke-width: 1.5; stroke-linejoin: round; }
-.canvas path.edge.out { stroke: var(--edge); }
-.canvas path.edge.hl { stroke: var(--accent); stroke-width: 2.4; }
+.canvas line.edge { stroke: var(--edge-soft); stroke-width: 1.5; }
+.canvas line.edge.out { stroke: var(--edge); }
+.canvas line.edge.hl { stroke: var(--accent); stroke-width: 2.4; }
 .canvas marker path { fill: var(--edge); }
 .anode {
-  position: absolute; width: 14.5rem; text-align: center; background: var(--raise);
+  position: absolute; overflow: hidden; text-align: center; background: var(--raise);
   border: 2px solid var(--ink); border-radius: 5px; padding: 0.4rem 0.6rem; z-index: 2;
 }
 .anode .aid { font: 0.7rem var(--mono); color: var(--muted); }
-.anode .t { display: block; color: var(--ink); font-weight: 650; line-height: 1.25; margin-top: 0.2rem; font-size: 0.82rem; }
+.anode .t { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; color: var(--ink); font-weight: 650; line-height: 1.25; margin-top: 0.2rem; font-size: 0.82rem; }
 button.tg {
   position: absolute; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
   border: 1px solid var(--line-strong); background: var(--raise); border-radius: 4px;
@@ -1486,7 +1486,7 @@ const script = String.raw`
   var ROW_H = 58;
   var LANE = 52;
   var ANCHOR_W = 232;
-  var ANCHOR_H = 60;
+  var ANCHOR_H = 76;
   var PAD = 14;
   var FALLBACK_W = 560;
   var LIST_W = 290;
@@ -1517,18 +1517,10 @@ const script = String.raw`
       }
       return boxes;
     };
-    /* The gutters between the columns of a full row, and beside it: the only vertical corridors
-       through the rows nearer the anchor, so a line to a deeper row never runs behind a group. */
-    var fullSpan = per * CHIP_W + (per - 1) * COL_GAP;
-    var x0 = cx - fullSpan / 2;
-    var gutters = [Math.round(x0 - COL_GAP / 2 - 2)];
-    for (var gi = 1; gi < per; gi += 1) gutters.push(Math.round(x0 + gi * (CHIP_W + COL_GAP) - COL_GAP / 2));
-    gutters.push(Math.round(x0 + fullSpan + COL_GAP / 2 + 2));
     var height = anchorBottom + (rowsIn > 0 ? LANE + (rowsIn - 1) * ROW_H + CHIP_H : 0) + PAD;
     return {
       width: width,
       height: height,
-      gutters: gutters,
       anchor: { x: Math.round(cx - ANCHOR_W / 2), y: anchorTop, w: ANCHOR_W, h: ANCHOR_H },
       out: place(nOut, 'out'),
       inc: place(nIn, 'in'),
@@ -1644,98 +1636,60 @@ const script = String.raw`
     svg.appendChild(defs);
     var A = layout.anchor;
     /*
-     * Orthogonal routing. Each line leaves the anchor from its own port, ports ordered like the
-     * groups they reach, turns once in the lane between the anchor and the first row, and enters its
-     * group from the side facing the anchor. Lines bound for deeper rows take a gutter between
-     * columns and turn into their group from the corridor between rows, so no line runs behind a
-     * group it does not reach. Lane depths nest — the line travelling furthest sideways turns nearest
-     * the anchor — so lines leaving to the same side never cross.
+     * Straight lines, one anchor port each: ports are spread along the anchor's edge in the order of
+     * the groups they reach, so lines fan out instead of converging on one point and never cross.
+     * The group end attaches at the point of the group nearest its port. Every arrow follows the
+     * relationship: into the group it declares, and into the anchor from each group referencing it.
      */
     var clamp = function (v, lo, hi) {
       return Math.max(lo, Math.min(hi, v));
     };
-    var route = function (from, count) {
+    var connect = function (from, count) {
       var order = [];
       for (var p = 0; p < count; p += 1) order.push(from + p);
       order.sort(function (x, y) {
         return boxes[x].x - boxes[y].x || boxes[x].row - boxes[y].row || x - y;
       });
-      var margin = 18;
+      var margin = 22;
       var span = A.w - 2 * margin;
-      var legs = [];
       for (var q = 0; q < order.length; q += 1) {
         var index = order[q];
         var b = boxes[index];
-        var port = Math.round(order.length === 1 ? A.x + A.w / 2 : A.x + margin + (span * (q + 0.5)) / order.length);
-        var turn = port;
-        var target = clamp(port, b.x + 16, b.x + b.w - 16);
-        if (b.row > 0) {
-          var centre = b.x + b.w / 2;
-          turn = layout.gutters[0];
-          for (var gg = 1; gg < layout.gutters.length; gg += 1) {
-            if (Math.abs(layout.gutters[gg] - centre) < Math.abs(turn - centre)) turn = layout.gutters[gg];
-          }
-          target = clamp(turn, b.x + 16, b.x + b.w - 16);
-        } else {
-          turn = target;
-        }
-        legs.push({ index: index, port: port, turn: turn, target: target });
-      }
-      var left = legs.filter(function (l) {
-        return l.turn < l.port;
-      });
-      var right = legs.filter(function (l) {
-        return l.turn > l.port;
-      });
-      right.reverse();
-      var depthOf = {};
-      var steps = Math.max(left.length, right.length, 1);
-      var step = Math.min(6, (LANE - 18) / steps);
-      for (var li = 0; li < left.length; li += 1) depthOf[left[li].index] = li;
-      for (var ri = 0; ri < right.length; ri += 1) depthOf[right[ri].index] = ri;
-      for (var k = 0; k < legs.length; k += 1) {
-        var leg = legs[k];
-        var box = boxes[leg.index];
-        var outward = all[leg.index].direction === 'out';
-        var sign = outward ? -1 : 1;
-        var edgeY = outward ? A.y : A.y + A.h;
-        var laneY = edgeY + sign * (9 + (depthOf[leg.index] || 0) * step);
-        var nearY = outward ? box.y + box.h + 1 : box.y - 1;
-        var pts = [[leg.port, edgeY], [leg.port, laneY], [leg.turn, laneY]];
-        if (box.row > 0) {
-          var corridorY = outward ? nearY + (ROW_H - CHIP_H) / 2 : nearY - (ROW_H - CHIP_H) / 2;
-          pts.push([leg.turn, corridorY], [leg.target, corridorY]);
-        }
-        pts.push([leg.target, nearY]);
-        /* The arrow points along the relationship: at the group when declared, at the anchor when
-           the group references it. */
-        if (!outward) pts.reverse();
-        var d = '';
-        for (var pi = 0; pi < pts.length; pi += 1) {
-          d += (pi === 0 ? 'M ' : ' L ') + Math.round(pts[pi][0]) + ' ' + Math.round(pts[pi][1]);
-        }
+        var outward = all[index].direction === 'out';
+        var port = Math.round(
+          order.length === 1 ? A.x + A.w / 2 : A.x + margin + (span * (q + 0.5)) / order.length,
+        );
+        var attach = Math.round(clamp(port, b.x + 18, b.x + b.w - 18));
+        var anchorY = outward ? A.y - 1 : A.y + A.h + 1;
+        var groupY = outward ? b.y + b.h + 1 : b.y - 1;
         svg.appendChild(
-          svgEl('path', {
+          svgEl('line', {
             class: 'edge ' + (outward ? 'out' : 'in'),
-            'data-key': all[leg.index].key,
-            'data-port': leg.port,
-            d: d,
+            'data-key': all[index].key,
+            'data-port': port,
+            x1: outward ? port : attach,
+            y1: outward ? anchorY : groupY,
+            x2: outward ? attach : port,
+            y2: outward ? groupY : anchorY,
             'marker-end': 'url(#topo-arrow)',
           }),
         );
       }
     };
-    route(0, out.length);
-    route(out.length, inc.length);
+    connect(0, out.length);
+    connect(out.length, inc.length);
     canvas.appendChild(svg);
 
     var node = el('div', 'anode');
     node.style.left = A.x + 'px';
     node.style.top = A.y + 'px';
+    node.style.width = A.w + 'px';
+    node.style.height = A.h + 'px';
     node.appendChild(tokenFor(anchor.kind));
     node.appendChild(doc.createTextNode(' '));
     node.appendChild(el('span', 'aid', anchor.id));
     node.appendChild(el('span', 't', anchor.title || anchor.id));
+    node.title = (anchor.title || anchor.id) + ' — ' + anchor.id;
     canvas.appendChild(node);
 
     for (var t = 0; t < all.length; t += 1) {
