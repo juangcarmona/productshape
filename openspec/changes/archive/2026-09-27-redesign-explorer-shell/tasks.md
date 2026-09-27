@@ -55,5 +55,5 @@
 - [x] 7.1 Run `pnpm typecheck`, `pnpm lint`, `pnpm format:check` and `pnpm test`, and confirm the snapshot suite is green. Regenerate the self-model snapshot and review it in a browser at 1440×900 in light and dark, panel open and collapsed, confirming nothing is clipped and there is no horizontal scroll.
 - [x] 7.2 Extend `scripts/screenshot-snapshot.mts` with dark, rail and search-dialog shots, and refresh `docs/assets/snapshot/`.
 - [x] 7.3 Add a changeset for `@prodshape/core` and `@prodshape/cli`.
-- [ ] 7.4 Refresh the citations this change affects: archive the change so `openspec/specs/snapshot-generation/spec.md` carries the new digests, then confirm `prodshape citations verify --provider openspec` reports no stale citation and `openspec validate --specs --strict` passes.
+- [x] 7.4 Refresh the citations this change affects: archive the change so `openspec/specs/snapshot-generation/spec.md` carries the new digests, then confirm `prodshape citations verify --provider openspec` reports no stale citation and `openspec validate --specs --strict` passes.
 <!-- pdac:cite id="CON-NO-WEB-UI" digest="sha256:467b7a87238629673c45dac7b72e85e4cb17a969cbcdbf6f4bf5d1711209ddbf" -->
