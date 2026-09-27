@@ -21,10 +21,12 @@ The validated mockup, built from this repository's own model, fixes the visual d
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Deliver every requirement in the delta spec without a framework, a bundler step, or any change to the generation contract.
 - Keep existing addresses working: `k`, `s`, `c`, `f`, `q` and `x`, plus the legacy and withdrawn routes.
 
 **Non-Goals:**
+
 - Phone-width redesign. The existing narrow-viewport behaviour, list and detail as separate states, is kept.
 - Changing the data model that the CLI compiles.
 

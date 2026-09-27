@@ -172,7 +172,7 @@ describe('buildSnapshotHtml — generation contract', () => {
     const selectors = [...sheet.cssRules].map((r) => (r as CSSStyleRule).selectorText);
     for (const wanted of [
       ':focus-visible',
-      '.canvas line.edge',
+      '.canvas path.edge',
       'button.tg',
       '.members-pop',
       "#artifact-list a[aria-current='true']",
@@ -1353,9 +1353,68 @@ describe('graph projections', () => {
       else expect(b.y).toBeGreaterThan(a.y + a.h);
     }
     // Every group is joined to the anchor by a directed line of its own.
-    const lines = [...doc.querySelectorAll('#graph-host .canvas > svg line.edge')];
+    const lines = [...doc.querySelectorAll('#graph-host .canvas > svg path.edge')];
     expect(lines.length).toBe(7);
     for (const line of lines) expect(line.getAttribute('marker-end')).toBe('url(#topo-arrow)');
+  });
+
+  it('routes every line from its own anchor port to its own group, never behind another group', () => {
+    for (const [hash, artifacts, width] of [
+      ['#/artifacts/BC-X', fiveGroups, 420],
+      ['#/artifacts/BC-X', fiveGroups, 900],
+      ['#/artifacts/UC-H00', busy, 420],
+      ['#/artifacts/ACT-H', busy, 260],
+    ] as const) {
+      open(hash, [...artifacts], width);
+      const a = box(anchor());
+      const groups = chips().map((c) => ({ key: c.getAttribute('data-key'), ...box(c) }));
+      const paths = [...doc.querySelectorAll('#graph-host .canvas > svg path.edge')];
+      expect(paths.length).toBe(groups.length);
+      for (const side of ['out', 'in']) {
+        const own = paths.filter((p) => p.classList.contains(side));
+        const ports = own.map((p) => Number(p.getAttribute('data-port')));
+        // One port each, all on the anchor's edge.
+        expect(new Set(ports).size, `${hash} ${side}`).toBe(own.length);
+        for (const port of ports) {
+          expect(port).toBeGreaterThanOrEqual(a.x);
+          expect(port).toBeLessThanOrEqual(a.x + a.w);
+        }
+      }
+      for (const path of paths) {
+        const pts = [...(path.getAttribute('d') ?? '').matchAll(/(-?\d+) (-?\d+)/g)].map((m) => [
+          Number(m[1]),
+          Number(m[2]),
+        ]);
+        const target = groups.find((g) => g.key === path.getAttribute('data-key'))!;
+        const outward = path.classList.contains('out');
+        const groupEnd = outward ? pts[pts.length - 1]! : pts[0]!;
+        const anchorEnd = outward ? pts[0]! : pts[pts.length - 1]!;
+        // Orthogonal: every segment is horizontal or vertical.
+        for (let i = 1; i < pts.length; i += 1) {
+          expect(
+            pts[i]![0] === pts[i - 1]![0] || pts[i]![1] === pts[i - 1]![1],
+            `${hash} bend`,
+          ).toBe(true);
+        }
+        // It starts on the anchor's edge and ends on the facing edge of its own group.
+        expect(anchorEnd[1]).toBe(outward ? a.y : a.y + a.h);
+        expect(groupEnd[0]).toBeGreaterThanOrEqual(target.x);
+        expect(groupEnd[0]).toBeLessThanOrEqual(target.x + target.w);
+        // No segment passes through the inside of a group, its own included.
+        for (let i = 1; i < pts.length; i += 1) {
+          const [x1, y1] = pts[i - 1]!;
+          const [x2, y2] = pts[i]!;
+          for (const g of groups) {
+            const inside =
+              Math.max(x1, x2) > g.x + 1 &&
+              Math.min(x1, x2) < g.x + g.w - 1 &&
+              Math.max(y1, y2) > g.y + 1 &&
+              Math.min(y1, y2) < g.y + g.h - 1;
+            expect(inside, `${hash} at ${width}: segment enters ${g.key}`).toBe(false);
+          }
+        }
+      }
+    }
   });
 
   it('never overlaps two groups or leaves the pane, at narrow and wide panes', () => {
