@@ -90,7 +90,7 @@ jobs:
     name: publish stable
     needs: release-mode
     if: >-
-      github.event_name == 'push' && needs.release-mode.outputs.mode == 'stable' && startsWith(github.event.head_commit.message, 'chore: Version Packages')
+      github.event_name == 'push' && needs.release-mode.outputs.mode == 'stable' && (startsWith(github.event.head_commit.message, 'chore: Version Packages') || startsWith(github.event.head_commit.message, 'Version Packages'))
     runs-on: ubuntu-latest
     environment: npm-publish
     permissions:
