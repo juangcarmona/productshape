@@ -12,6 +12,8 @@ verification:
   - scenario: Each result identifies the artifact by ID, title and kind, and shows a safe snippet where a body match is what produced the hit
   - scenario: When results are limited, the page states how many matches exist and never drops higher-ranked matches to show lower-ranked ones
   - scenario: Results are navigable and selectable by keyboard, and the query can be cleared without losing the current artifact
+  - scenario: Search is invoked from every surface through one visible control and a stated keyboard shortcut, and opens over the current surface without changing the selection
+  - scenario: The canonical narrowing the Catalog offers is available where the query is typed, and narrows the results it ranks
   - scenario: A query matching nothing produces an explicit no-results state naming the query
   - scenario: Identical queries against identical model content produce identical result order
 ---
@@ -32,11 +34,15 @@ A query equal to an artifact's identifier MUST place that artifact first. Each r
 
 If the page limits how many results it displays, it MUST state how many matches exist in total, and MUST NOT display a lower-ranked match in place of a higher-ranked one. Truncation MUST never be silent. The total MUST be derived from the embedded model for that snapshot rather than copied into documentation or source comments.
 
+Search MUST be an action the reader can invoke from every surface — the Overview, the Catalog, the Reader and the projections — through one visible control that is always present and through a keyboard shortcut the page states. Invoking it MUST open the search over the current surface, focused and ready for a query, without changing the selected artifact; dismissing it MUST return the reader to where they were. Where the query is typed, the reader MUST also be able to apply the canonical narrowing FR-SNAPSHOT-008 defines, and the results MUST be ranked within that narrowing.
+
 Search MUST be fully operable from the keyboard: reaching the field, moving through results, selecting a result, and clearing the query. Selecting a result MUST make its artifact the single selected artifact as defined by FR-SNAPSHOT-006. Clearing the query MUST return the reader to browsing without discarding the artifact they had selected. A query matching no artifact MUST produce an explicit no-results state that names the query rather than an empty list.
 
 For identical model content, identical queries MUST produce identical result ordering.
 
 ## Rationale
+
+Making search an action rather than a region is what lets it be everywhere at once without occupying any surface: a fixed search form costs its space on every screen, whether or not the reader is searching, while an action costs nothing until it is used and is then the whole of the reader's attention.
 
 Search is how a reader who already knows what they are looking for avoids the rest of the model entirely, which makes it the most important single control on a page built around progressive disclosure. The unranked implementation walked the index in document order and stopped at a fixed display limit, so broad queries could omit deliberate identifier or title matches while earlier body-only matches consumed the visible results. A reader searching for a concept they heard in a meeting could therefore be shown the wrong artifacts and no indication that better matches existed.
 
@@ -54,6 +60,8 @@ Deterministic result ordering follows the same reasoning that makes the file byt
 - The reader types a phrase that appears only inside one artifact's body. That artifact is found, and the result shows a snippet containing the phrase.
 - An artifact body containing `<script>` and quote characters produces a snippet in which they are displayed as text; nothing executes and no element is created from the snippet.
 - The reader reaches the search field, moves down the results and selects one entirely by keyboard. The selected artifact becomes the page's single selection.
+- From the Reader, the Overview and the Catalog in turn, the reader invokes search with the visible control and with the stated shortcut: it opens over the current surface each time, focused, and dismissing it leaves the selection and the surface unchanged.
+- The reader narrows a query to one kind where they typed it: only artifacts of that kind are ranked, in the same order the unnarrowed ranking gives them.
 - The reader clears the query. Browsing resumes and the artifact they had selected is still selected.
 - The reader types a string matching nothing. The page states that nothing matches and repeats the query it searched for.
 - The same query is run against two snapshots generated from identical model content on different platforms. The result order is identical.

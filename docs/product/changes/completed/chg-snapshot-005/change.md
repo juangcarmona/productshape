@@ -2,7 +2,7 @@
 id: CHG-SNAPSHOT-005
 type: product-change
 title: Redesign the Product Explorer shell for reading, finding and both appearances
-status: proposed
+status: applied
 base-revision: '752cac6'
 operations:
   add: []
