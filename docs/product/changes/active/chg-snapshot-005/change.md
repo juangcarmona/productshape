@@ -58,6 +58,8 @@ The direction was validated with the product owner through an interactive mockup
 - the revised palette;
 - icons shown.
 
+The product owner also decided to keep "the artifacts holding the most relationships" as an Overview entry point, as an ordering by a stated, shown count with no importance wording.
+
 ## Affected Product Areas
 
 The Product Snapshot's Product Explorer:
@@ -74,7 +76,7 @@ The Focused Topology (`FR-SNAPSHOT-009`) and the two-projection limit (`FR-SNAPS
 
 ## Open Questions
 
-- Should the Overview offer "the artifacts holding the most relationships" as an entry point at all? The proposal allows it only as an ordering by a stated, shown count, with no importance wording. The alternative is to leave it out and keep the Overview's derived entry points to journeys and contexts.
+None.
 
 ## Product Acceptance
 
