@@ -93,8 +93,7 @@ jobs:
     name: publish stable
     needs: release-mode
     if: >-
-      (github.event_name == 'push' && needs.release-mode.outputs.mode == 'stable' && (startsWith(github.event.head_commit.message, 'chore: Version Packages') || startsWith(github.event.head_commit.message, 'Version Packages')))
-      || (github.event_name == 'workflow_dispatch' && github.event.inputs.task == 'publish-current-stable' && needs.release-mode.outputs.mode == 'stable')
+      (github.event_name == 'push' && needs.release-mode.outputs.mode == 'stable' && (startsWith(github.event.head_commit.message, 'chore: Version Packages') || startsWith(github.event.head_commit.message, 'Version Packages'))) || (github.event_name == 'workflow_dispatch' && github.event.inputs.task == 'publish-current-stable' && needs.release-mode.outputs.mode == 'stable')
     runs-on: ubuntu-latest
     environment: npm-publish
     permissions:
