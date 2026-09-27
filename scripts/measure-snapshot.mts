@@ -386,18 +386,18 @@ async function measure(label: string, modelRoot: string): Promise<Measurement> {
     }
   }
 
-  /* Catalog filtering: narrow to the widest kind, then clear — the two hardest list rebuilds. */
+  /* Catalog filtering: narrow to the widest kind, then clear — the two hardest list rebuilds. The
+     narrowing is address state, so it is driven through the address as a chip or a link would. */
   const filterTimings: number[] = [];
-  const kindField = dom.window.document.getElementById('f-kind') as HTMLSelectElement | null;
-  if (kindField) {
-    const widest = [...new Set(artifacts.map((a) => a.type))]
-      .map((t) => ({ t, n: artifacts.filter((a) => a.type === t).length }))
-      .sort((a, b) => b.n - a.n)[0]?.t;
+  const widest = [...new Set(artifacts.map((a) => a.type))]
+    .map((t) => ({ t, n: artifacts.filter((a) => a.type === t).length }))
+    .sort((a, b) => b.n - a.n)[0]?.t;
+  if (widest) {
     for (let r = 0; r < 10 + 3; r += 1) {
-      for (const value of [widest ?? '', '']) {
-        kindField.value = value;
+      for (const hash of [`#/artifacts?k=${widest}`, '#/artifacts']) {
+        dom.window.location.hash = hash;
         const started = performance.now();
-        kindField.dispatchEvent(new dom.window.Event('change'));
+        dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
         const elapsed = performance.now() - started;
         if (r >= 3) filterTimings.push(elapsed);
       }
@@ -410,15 +410,20 @@ async function measure(label: string, modelRoot: string): Promise<Measurement> {
     dom.window.location.hash = `#/graph/focus/${busiest[0]}`;
     dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
     const focusDoc = dom.window.document;
-    const sats = [...focusDoc.querySelectorAll('#graph-host circle[data-group]')];
-    const target = sats[0];
-    if (target) {
+    /* The projection is rebuilt on every toggle, so the group is found afresh each round. */
+    const largest = (): Element | undefined =>
+      [...focusDoc.querySelectorAll('#graph-host button.tg')].sort(
+        (a, b) =>
+          Number(b.querySelector('.gcount')?.textContent) -
+          Number(a.querySelector('.gcount')?.textContent),
+      )[0];
+    if (largest()) {
       for (let r = 0; r < 10 + 3; r += 1) {
+        const target = largest();
         const started = performance.now();
-        target.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+        target?.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
         const elapsed = performance.now() - started;
         if (r >= 3) expandTimings.push(elapsed);
-        dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
       }
     }
   }

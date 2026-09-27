@@ -5,13 +5,13 @@
       "name": "01-overview-desktop",
       "route": "#/",
       "viewport": "1440x900",
-      "caption": "Opening view: orientation only — no artifact body, no artifact-level graph."
+      "caption": "Opening view: identity, totals, composition, derived entry points and the kind-by-kind grid — no artifact body, no artifact-level graph."
     },
     {
       "name": "02-artifact-detail-desktop",
       "route": "#/artifacts/UC-SNAPSHOT-EXPLORE-001",
       "viewport": "1440x900",
-      "caption": "Master-detail: one active artifact, with grouped relationships below its body."
+      "caption": "One active artifact: grouped list with the selection’s kind open, linked metadata, and its neighbourhood beside the Reader."
     },
     {
       "name": "03-relationship-groups-collapsed",
@@ -33,7 +33,7 @@
     },
     {
       "name": "06-artifact-list-narrow",
-      "route": "#/artifacts",
+      "route": "#/artifacts?k=use-case",
       "viewport": "430x900",
       "caption": "Narrow viewport: the list is its own state, not a compressed desktop layout."
     },
@@ -50,34 +50,10 @@
       "caption": "An identifier this snapshot does not contain is named, with a way onward."
     },
     {
-      "name": "17-focus-typical",
-      "route": "#/graph/focus/UC-SNAPSHOT-EXPLORE-001",
-      "viewport": "1440x900",
-      "caption": "Focused neighbourhood of a typical artifact: outgoing groups above the anchor, incoming below, small groups already open."
-    },
-    {
-      "name": "18-focus-hardest",
-      "route": "#/graph/focus/BC-PRODUCT-DEFINITION",
-      "viewport": "1440x900",
-      "caption": "The hardest artifact in the model: relationships become counted satellites, with large groups closed."
-    },
-    {
-      "name": "19-focus-expanded",
-      "route": "#/graph/focus/BC-PRODUCT-DEFINITION",
-      "viewport": "1440x900",
-      "caption": "One satellite opened: its members fan out beside it and every other satellite stays exactly where it was."
-    },
-    {
-      "name": "20-focus-isolated",
-      "route": "#/graph/focus/CON-NO-WEB-UI",
-      "viewport": "1440x900",
-      "caption": "An artifact with no relationships says so rather than drawing an empty diagram."
-    },
-    {
       "name": "10-focus-visible",
-      "route": "#/artifacts",
+      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE-001",
       "viewport": "1440x900",
-      "caption": "Keyboard focus is visible: the focus ring on the first list entry."
+      "caption": "Keyboard focus is visible: the focus ring on the selected list entry."
     },
     {
       "name": "11-no-colour",
@@ -87,33 +63,87 @@
     },
     {
       "name": "12-search-ranked",
-      "route": "#/artifacts",
-      "viewport": "1440x2400",
-      "caption": "Ranked search for \"product\": the derived total and display limit are visible, with identifier and title matches above body-only ones."
+      "route": "#/artifacts?q=product",
+      "viewport": "1440x900",
+      "caption": "Ranked search for \"product\" in the search dialog: the derived total and display limit are visible, identifier and title matches above body-only ones."
     },
     {
       "name": "13-search-snippet",
-      "route": "#/artifacts",
+      "route": "#/artifacts?q=byte-identical",
       "viewport": "1440x900",
       "caption": "A body match shows a snippet of the matching content, inserted as text."
     },
     {
       "name": "14-search-keyboard-active",
-      "route": "#/artifacts",
+      "route": "#/artifacts?q=snapshot",
       "viewport": "1440x900",
       "caption": "Arrow keys move an active result, reported with aria-activedescendant; Enter follows it."
     },
     {
       "name": "15-search-no-results",
-      "route": "#/artifacts",
+      "route": "#/artifacts?q=nothing%20matches%20this",
       "viewport": "1440x900",
       "caption": "A query matching nothing says so, and repeats the query it searched for."
     },
     {
       "name": "16-search-narrow",
-      "route": "#/artifacts",
+      "route": "#/artifacts?q=handoff",
       "viewport": "430x900",
-      "caption": "Search results on a narrow viewport."
+      "caption": "The search dialog on a narrow viewport."
+    },
+    {
+      "name": "17-focus-typical",
+      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE-001",
+      "viewport": "1440x900",
+      "caption": "Focused neighbourhood of a typical artifact: declared groups in rows above the anchor, referencing groups below."
+    },
+    {
+      "name": "18-focus-hardest",
+      "route": "#/artifacts/BC-PRODUCT-DEFINITION",
+      "viewport": "1440x900",
+      "caption": "The hardest artifact in the model: one counted group per relationship type and kind, never one node per relationship."
+    },
+    {
+      "name": "19-focus-expanded",
+      "route": "#/artifacts/BC-PRODUCT-DEFINITION?x=4",
+      "viewport": "1440x900",
+      "caption": "One group opened: its members listed beside it, its Reader counterpart opened and in view."
+    },
+    {
+      "name": "20-focus-isolated",
+      "route": "#/artifacts/CON-NO-WEB-UI",
+      "viewport": "1440x900",
+      "caption": "An artifact with no relationships says so rather than drawing an empty diagram."
+    },
+    {
+      "name": "21-overview-dark",
+      "route": "#/?a=dark",
+      "viewport": "1440x900",
+      "caption": "The dark appearance, chosen in the address: every colour from its own token set."
+    },
+    {
+      "name": "22-artifact-dark",
+      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE-001?a=dark",
+      "viewport": "1440x900",
+      "caption": "The Reader and neighbourhood in the dark appearance."
+    },
+    {
+      "name": "23-master-rail",
+      "route": "#/artifacts/FR-SNAPSHOT-002?m=rail",
+      "viewport": "1440x900",
+      "caption": "The master area collapsed to its kind rail: the selected kind stays marked while the Reader takes the room."
+    },
+    {
+      "name": "24-search-narrowed",
+      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE-001?k=functional-requirement&q=search",
+      "viewport": "1440x900",
+      "caption": "Search narrowed to one kind where the query is typed; the same narrowing is named beside the list."
+    },
+    {
+      "name": "25-shortcuts",
+      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE-001",
+      "viewport": "1440x900",
+      "caption": "Every shortcut is stated on the page, and each has a visible control."
     }
   ]
 }
