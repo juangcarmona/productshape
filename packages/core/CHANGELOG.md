@@ -1,5 +1,15 @@
 # @prodshape/core
 
+## 0.24.0
+
+### Minor Changes
+
+- d5b6777: Redesign the Product Snapshot shell (CHG-SNAPSHOT-005): light and dark appearances with a light / dark / system control held in the address; search as a dialog opened from every view (`/`, `Ctrl+K`) with kind, status and context narrowing, replacing the fixed filter form; active filters shown as removable chips; kind groups that open on the selection and keep it in view; a master area that collapses to a kind rail (`Ctrl+B`); a kind icon beside every kind token; known identifiers linked in metadata and body; previous/next and copy ID/link in the Reader; a Focused Topology laid out in non-overlapping rows whose groups list their members and highlight their Reader counterpart; a resizable Reader/topology split; and an Overview with a kind-by-kind grid and labelled entry points. Addresses from earlier snapshots keep resolving.
+
+### Patch Changes
+
+- d5b6777: Fix the Product Snapshot shell: the artifact panes are no longer clipped at the bottom, the topology frame and the keyboard focus ring on graph nodes render again (two malformed style blocks had been dropping them), the selected artifact is scrolled into view in the list, the topology states its gestures on screen, and the document title names the current view.
+
 ## 0.23.0
 
 ### Minor Changes
