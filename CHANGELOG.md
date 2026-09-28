@@ -10,6 +10,21 @@ The supported published CLI baseline is `@prodshape/cli@0.22.0`. Every stable pu
 
 ## [0.22.0]
 
+The redesigned Product Snapshot and the OpenCode provider.
+
+### Added
+
+- The OpenCode provider: `prodshape init --ai opencode` and `prodshape integration add opencode` render the canonical skills to `.opencode/skills/<name>/SKILL.md` and the commands to flat `.opencode/commands/product-<name>.md`, with `ps-<name>.md` aliases under `--shorthand` (PR #263).
+- `init` detects AI providers from their marker directories (`.claude`, `.github/prompts`, `.agents`, `.opencode`), reports them, and offers them in an interactive run; an explicit `--ai` still wins and `--dry-run` decides nothing (PR #263).
+
+### Changed
+
+- The Product Snapshot Explorer is redesigned through Product Change `CHG-SNAPSHOT-005`: light and dark appearances with a light / dark / system control held in the address; search as a dialog on every view (`/`, `Ctrl+K`) with kind, status and context narrowing; removable filter chips; kind groups that open on the selection and a master area that collapses to a kind rail (`Ctrl+B`); kind icons beside every kind token; linked identifiers, previous/next and copy ID/link in the Reader; a Focused Topology in non-overlapping rows with straight lines from one anchor port each and a member list per open group; and an Overview with a kind-by-kind grid and labelled entry points. Addresses from earlier snapshots keep resolving (PR #269).
+
+### Fixed
+
+- Product Snapshot: the artifact panes are no longer clipped at the bottom, the topology frame and the keyboard focus ring on graph nodes render again, the selected artifact stays in view in the list, and the document title names the current view (PR #269).
+
 ## [0.21.0]
 
 ### Changed
