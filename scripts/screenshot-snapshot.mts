@@ -19,6 +19,9 @@ const run = promisify(execFile);
 const repoRoot = fileURLToPath(new URL('..', import.meta.url));
 
 const CANDIDATE_BROWSERS = [
+  'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
+  'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
+  'C:/Program Files/Google/Chrome/Application/chrome.exe',
   '/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
   '/mnt/c/Program Files/Microsoft/Edge/Application/msedge.exe',
   '/mnt/c/Program Files/Google/Chrome/Application/chrome.exe',
@@ -50,13 +53,15 @@ const shots: Shot[] = [
     name: '01-overview-desktop',
     route: '#/',
     ...DESKTOP,
-    caption: 'Opening view: orientation only — no artifact body, no artifact-level graph.',
+    caption:
+      'Opening view: identity, totals, composition, derived entry points and the kind-by-kind grid — no artifact body, no artifact-level graph.',
   },
   {
     name: '02-artifact-detail-desktop',
     route: '#/artifacts/UC-SNAPSHOT-EXPLORE-001',
     ...DESKTOP,
-    caption: 'Master-detail: one active artifact, with grouped relationships below its body.',
+    caption:
+      'One active artifact: grouped list with the selection’s kind open, linked metadata, and its neighbourhood beside the Reader.',
   },
   {
     name: '03-relationship-groups-collapsed',
@@ -80,7 +85,7 @@ const shots: Shot[] = [
   },
   {
     name: '06-artifact-list-narrow',
-    route: '#/artifacts',
+    route: '#/artifacts?k=use-case',
     ...NARROW,
     caption: 'Narrow viewport: the list is its own state, not a compressed desktop layout.',
   },
@@ -97,39 +102,11 @@ const shots: Shot[] = [
     caption: 'An identifier this snapshot does not contain is named, with a way onward.',
   },
   {
-    name: '17-focus-typical',
-    route: '#/graph/focus/UC-SNAPSHOT-EXPLORE-001',
-    ...DESKTOP,
-    caption:
-      'Focused neighbourhood of a typical artifact: outgoing groups above the anchor, incoming below, small groups already open.',
-  },
-  {
-    name: '18-focus-hardest',
-    route: '#/graph/focus/BC-PRODUCT-DEFINITION',
-    ...DESKTOP,
-    caption:
-      'The hardest artifact in the model: relationships become counted satellites, with large groups closed.',
-  },
-  {
-    name: '19-focus-expanded',
-    route: '#/graph/focus/BC-PRODUCT-DEFINITION',
-    ...DESKTOP,
-    caption:
-      'One satellite opened: its members fan out beside it and every other satellite stays exactly where it was.',
-    prepare: `var s=document.querySelectorAll('#graph-host circle[data-group]');for(var i=0;i<s.length;i++){if(s[i].getAttribute('aria-expanded')==='false'){s[i].dispatchEvent(new MouseEvent('click',{bubbles:true}));break}}`,
-  },
-  {
-    name: '20-focus-isolated',
-    route: '#/graph/focus/CON-NO-WEB-UI',
-    ...DESKTOP,
-    caption: 'An artifact with no relationships says so rather than drawing an empty diagram.',
-  },
-  {
     name: '10-focus-visible',
-    route: '#/artifacts',
+    route: '#/artifacts/UC-SNAPSHOT-EXPLORE-001',
     ...DESKTOP,
-    caption: 'Keyboard focus is visible: the focus ring on the first list entry.',
-    prepare: `document.querySelector('#artifact-list a').focus()`,
+    caption: 'Keyboard focus is visible: the focus ring on the selected list entry.',
+    prepare: `document.querySelector('#artifact-list a[aria-current]').focus()`,
   },
   {
     name: '11-no-colour',
@@ -141,40 +118,96 @@ const shots: Shot[] = [
   },
   {
     name: '12-search-ranked',
-    route: '#/artifacts',
-    ...TALL,
+    route: '#/artifacts?q=product',
+    ...DESKTOP,
     caption:
-      'Ranked search for "product": the derived total and display limit are visible, with identifier and title matches above body-only ones.',
-    prepare: `var q=document.getElementById('q-body');q.value='product';q.dispatchEvent(new Event('input'))`,
+      'Ranked search for "product" in the search dialog: the derived total and display limit are visible, identifier and title matches above body-only ones.',
   },
   {
     name: '13-search-snippet',
-    route: '#/artifacts',
+    route: '#/artifacts?q=byte-identical',
     ...DESKTOP,
     caption: 'A body match shows a snippet of the matching content, inserted as text.',
-    prepare: `var q=document.getElementById('q-body');q.value='byte-identical';q.dispatchEvent(new Event('input'))`,
   },
   {
     name: '14-search-keyboard-active',
-    route: '#/artifacts',
+    route: '#/artifacts?q=snapshot',
     ...DESKTOP,
     caption:
       'Arrow keys move an active result, reported with aria-activedescendant; Enter follows it.',
-    prepare: `var q=document.getElementById('q-body');q.value='snapshot';q.dispatchEvent(new Event('input'));q.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));q.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}))`,
+    prepare: `var q=document.getElementById('q-body');q.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));q.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}))`,
   },
   {
     name: '15-search-no-results',
-    route: '#/artifacts',
+    route: '#/artifacts?q=nothing%20matches%20this',
     ...DESKTOP,
     caption: 'A query matching nothing says so, and repeats the query it searched for.',
-    prepare: `var q=document.getElementById('q-body');q.value='nothing matches this';q.dispatchEvent(new Event('input'))`,
   },
   {
     name: '16-search-narrow',
-    route: '#/artifacts',
+    route: '#/artifacts?q=handoff',
     ...NARROW,
-    caption: 'Search results on a narrow viewport.',
-    prepare: `var q=document.getElementById('q-body');q.value='handoff';q.dispatchEvent(new Event('input'))`,
+    caption: 'The search dialog on a narrow viewport.',
+  },
+  {
+    name: '17-focus-typical',
+    route: '#/artifacts/UC-SNAPSHOT-EXPLORE-001',
+    ...DESKTOP,
+    caption:
+      'Focused neighbourhood of a typical artifact: declared groups in rows above the anchor, referencing groups below.',
+  },
+  {
+    name: '18-focus-hardest',
+    route: '#/artifacts/BC-PRODUCT-DEFINITION',
+    ...DESKTOP,
+    caption:
+      'The hardest artifact in the model: one counted group per relationship type and kind, never one node per relationship.',
+  },
+  {
+    name: '19-focus-expanded',
+    route: '#/artifacts/BC-PRODUCT-DEFINITION?x=4',
+    ...DESKTOP,
+    caption:
+      'One group opened: its members listed beside it, its Reader counterpart opened and in view.',
+  },
+  {
+    name: '20-focus-isolated',
+    route: '#/artifacts/CON-NO-WEB-UI',
+    ...DESKTOP,
+    caption: 'An artifact with no relationships says so rather than drawing an empty diagram.',
+  },
+  {
+    name: '21-overview-dark',
+    route: '#/?a=dark',
+    ...DESKTOP,
+    caption: 'The dark appearance, chosen in the address: every colour from its own token set.',
+  },
+  {
+    name: '22-artifact-dark',
+    route: '#/artifacts/UC-SNAPSHOT-EXPLORE-001?a=dark',
+    ...DESKTOP,
+    caption: 'The Reader and neighbourhood in the dark appearance.',
+  },
+  {
+    name: '23-master-rail',
+    route: '#/artifacts/FR-SNAPSHOT-002?m=rail',
+    ...DESKTOP,
+    caption:
+      'The master area collapsed to its kind rail: the selected kind stays marked while the Reader takes the room.',
+  },
+  {
+    name: '24-search-narrowed',
+    route: '#/artifacts/UC-SNAPSHOT-EXPLORE-001?k=functional-requirement&q=search',
+    ...DESKTOP,
+    caption:
+      'Search narrowed to one kind where the query is typed; the same narrowing is named beside the list.',
+  },
+  {
+    name: '25-shortcuts',
+    route: '#/artifacts/UC-SNAPSHOT-EXPLORE-001',
+    ...DESKTOP,
+    caption: 'Every shortcut is stated on the page, and each has a visible control.',
+    prepare: `document.getElementById('keys-open').click()`,
   },
 ];
 
@@ -250,6 +283,9 @@ for (const shot of shots) {
     '--hide-scrollbars',
     '--force-device-scale-factor=1',
     '--virtual-time-budget=4000',
+    // Pinned to the light preference so a shot never depends on the capturing machine's setting;
+    // the dark shots choose their appearance in the address instead.
+    '--blink-settings=preferredColorScheme=1',
     `--window-size=${shot.width},${shot.height}`,
     `--screenshot=${await toBrowserPath(target)}`,
   ];

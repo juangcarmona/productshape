@@ -1,46 +1,6 @@
 <!-- pdac-scope: cited -->
 
-## Purpose
-
-Specify the generation of the Product Snapshot: a static, self-contained, read-only HTML page projecting the whole product model for people without the repository, produced by `prodshape graph --format html` — self-containment, determinism, revision stamping, honest diagnostics, and readable by-kind rendering with status badges.
-
-## Requirements
-
-### Requirement: HTML is an output format of the graph command
-
-The system SHALL generate a Product Snapshot when the graph command is invoked with the HTML format (`prodshape graph --format html`). Generation SHALL produce exactly one self-contained HTML file under the generated-output area and SHALL report the output path. Generation SHALL never modify any authored file.
-
-{pdac:cite id="FR-SNAPSHOT-001" digest="sha256:4b516c17b1b0895996d48135fa1729bd2cc20913f98a8d820d5a5c82a0310a5d"}
-
-{pdac:cite id="UC-SNAPSHOT-001" digest="sha256:c0ccfa6c37694a43bfad609bc70cada84a512aa0d77db1611051f55bfc97bf58"}
-
-#### Scenario: Engineer generates a snapshot
-
-- **WHEN** an engineer runs `prodshape graph --format html` in a repository with a valid product model
-- **THEN** exactly one HTML file is written under the generated-output area and its path is reported
-
-#### Scenario: Generation is read-only towards the model
-
-- **WHEN** a snapshot is generated
-- **THEN** no file under the product model directory is created, modified or deleted
-
-### Requirement: The snapshot is one self-contained file
-
-The generated page SHALL function completely when opened from local disk with no server and no network access: no external scripts, styles, fonts, images or data are referenced. All CSS and any data the page needs SHALL be embedded in the single file.
-
-{pdac:cite id="FR-SNAPSHOT-001" digest="sha256:4b516c17b1b0895996d48135fa1729bd2cc20913f98a8d820d5a5c82a0310a5d"}
-
-{pdac:cite id="CON-NO-WEB-UI" digest="sha256:467b7a87238629673c45dac7b72e85e4cb17a969cbcdbf6f4bf5d1711209ddbf"}
-
-#### Scenario: Offline open from local disk
-
-- **WHEN** the generated file is opened in a browser from `file://` with networking disabled
-- **THEN** every capability of the page works and no network request is attempted
-
-#### Scenario: No external references in the output
-
-- **WHEN** the generated HTML is inspected
-- **THEN** it contains no `http(s)://` resource references required for rendering
+## MODIFIED Requirements
 
 ### Requirement: Every artifact is rendered, organized by kind, with a status badge
 
@@ -69,72 +29,6 @@ Completeness is a property of the file, not of the display: all artifacts are em
 
 - **WHEN** the page is opened at a viewport width too narrow for a side-by-side arrangement
 - **THEN** the list and the artifact detail are usable as separate navigable states with no horizontal page scrolling
-
-### Requirement: The source revision is stamped on the page
-
-The page SHALL display the source revision of the model it was generated from, placed where a reader finds it without searching.
-
-#### Scenario: Reader checks currency
-
-- **WHEN** a reader opens the snapshot
-- **THEN** the model's source revision is visible on the page without scrolling into artifact content
-
-### Requirement: Generation is deterministic
-
-Identical model content SHALL yield a byte-identical HTML file across runs and platforms. Output SHALL NOT embed timestamps, random values, or environment-dependent content; artifact ordering SHALL be stable; line endings SHALL be normalized.
-
-{pdac:cite id="QR-DETERMINISM-001" digest="sha256:222606693286667f7974e3dd8b88e6248ca29ce75cb54c9285cc7aaef2c08da3"}
-
-#### Scenario: Double generation is byte-identical
-
-- **WHEN** the snapshot is generated twice from the same commit
-- **THEN** the two files are byte-identical
-
-#### Scenario: Cross-platform stability
-
-- **WHEN** the snapshot is generated from the same content on different platforms
-- **THEN** the files are byte-identical
-
-### Requirement: Generation reports honest diagnostics
-
-When artifacts cannot be parsed, generation SHALL report diagnostics naming each affected file and SHALL NOT emit a snapshot that silently omits part of the model.
-
-#### Scenario: Unparseable artifact blocks silent omission
-
-- **WHEN** one artifact file is unparseable and generation is attempted
-- **THEN** a diagnostic names the file and no snapshot lacking the artifact is emitted silently
-
-### Requirement: The page is read-only
-
-The page SHALL offer no capability to create, edit, annotate or approve anything: no forms, no editable fields, no controls that mutate state beyond client-side presentation. The page SHALL NOT persist anything outside the address of the current view: no browser storage, no cookies, no session, no durable store of any kind. Accepting a filter selection or a selected artifact is presentation state, not input that becomes product knowledge.
-
-{pdac:cite id="CON-NO-WEB-UI" digest="sha256:467b7a87238629673c45dac7b72e85e4cb17a969cbcdbf6f4bf5d1711209ddbf"}
-
-#### Scenario: No mutating controls
-
-- **WHEN** the generated page is inspected and exercised
-- **THEN** nothing on it accepts input that creates, edits or approves product knowledge
-
-#### Scenario: Nothing is persisted
-
-- **WHEN** a reader explores the page and browser storage and cookies are then inspected
-- **THEN** the snapshot has written nothing, and reloading restores only what the address encodes
-
-### Requirement: Relationships are navigable in both directions
-
-On an artifact's rendered view, every reference to another artifact SHALL be a link that navigates to the referenced artifact — both the relationships the artifact's frontmatter declares (outgoing) and the derived reverse views computed from the rest of the model (incoming, "referenced by"). The reader SHALL NOT need to know which side authored the edge.
-
-{pdac:cite id="BR-RELATIONSHIPS-001" digest="sha256:a6f9d40c2c1ac926149fe171660e5715b66b4e82ce8129f128eab0e6c1c7de8c"}
-
-#### Scenario: Outgoing reference is a link
-
-- **WHEN** a reader views a use case that declares a governing business rule
-- **THEN** the rule's mention is a link that navigates to the rule's rendered view
-
-#### Scenario: Derived incoming reference is a link
-
-- **WHEN** a reader views a use case from which a functional requirement derives
-- **THEN** the requirement appears in a "referenced by" view as a link, although no authored file states that edge on the use case
 
 ### Requirement: Graph visualization with node-selection highlighting
 
@@ -247,20 +141,6 @@ Search SHALL be fully operable from the keyboard: invoking it, moving through re
 - **WHEN** the same query is run against two snapshots generated from identical model content
 - **THEN** the results appear in identical order
 
-### Requirement: Navigation additions preserve the generation contract
-
-The embedded script and data serving navigation, visualization and search SHALL be part of the single self-contained file, SHALL reference no external resources, SHALL offer no capability to create, edit, annotate or approve anything, and SHALL preserve deterministic generation: identical model content still yields a byte-identical file.
-
-#### Scenario: Still one deterministic self-contained file
-
-- **WHEN** the snapshot is generated twice from identical model content
-- **THEN** the two files are byte-identical, and the page functions fully from local disk with networking disabled
-
-#### Scenario: Still read-only
-
-- **WHEN** the page's interactive features are exercised
-- **THEN** nothing creates, edits or approves product knowledge; interactivity is limited to presentation
-
 ### Requirement: The snapshot opens in an orientation view
 
 The page SHALL open in an orientation view whose purpose is to convey the shape of the product, and which SHALL render no artifact's authored content and no artifact-level graph. It SHALL expose the product's identity and the source revision, the total number of artifacts and of relationships, the number of artifacts of each kind present with an entry point into each kind, a plain-language statement that the page is a generated read-only projection that is never authoritative, and a kind-level aggregate of the relationships by relationship type.
@@ -303,27 +183,6 @@ Everything displayed SHALL be derived from the compiled model. A derived orderin
 - **WHEN** a snapshot is generated from a model containing only some artifact kinds
 - **THEN** the orientation view describes those kinds and does not mention or zero-fill the others
 
-### Requirement: Kind-level relationship aggregate
-
-The page SHALL provide a kind-level aggregate projection: the model's artifacts and relationships grouped by artifact kind and relationship type, with exact counts, communicating composition and traceability without rendering individual artifacts. It SHALL display nothing absent from the compiled graph, SHALL imply no importance, health, ownership or ordering, and SHALL be arranged identically for identical model content.
-
-{pdac:cite id="FR-SNAPSHOT-005" digest="sha256:6f4280d6db76da8e0188db3dbb63e55d8df4ea045950cea506a50beae1d9259b"}
-
-#### Scenario: Composition and traceability without artifacts
-
-- **WHEN** a reader opens the kind-level aggregate
-- **THEN** which kinds relate to which, by relationship type, and how many relationships each combination holds are readable, with no individual artifact rendered
-
-#### Scenario: Aggregate counts are faithful
-
-- **WHEN** the aggregate is compared with the compiled graph
-- **THEN** every combination and count corresponds to relationships the graph records, and none is invented
-
-#### Scenario: Deterministic aggregate
-
-- **WHEN** two snapshots are generated from identical model content on different platforms
-- **THEN** the aggregate's arrangement is identical
-
 ### Requirement: One selected artifact addressed by the URL fragment
 
 The page SHALL hold exactly one selected artifact at a time, shared by every part of the page, and exactly one navigation mechanism SHALL own state transitions. No part of the page may change the selected artifact or the active view without that mechanism, and the address SHALL always reflect the state the page is in. The addressable state SHALL represent at least the active view, the selected artifact's identifier, and the presentation choices the reader made — the chosen appearance and whether the master area is collapsed — using the URL fragment so it behaves identically from `file://` and from ordinary static hosting, with no server-side routing and no request at navigation time.
@@ -364,41 +223,6 @@ Opening the page at an address naming an artifact SHALL open on that artifact. B
 - **WHEN** the page is opened at an address naming an identifier the snapshot does not contain
 - **THEN** the page names that identifier, states that this snapshot does not contain it, and offers orientation or the artifact list as a way on
 
-### Requirement: Legacy artifact fragments resolve permanently
-
-A bare artifact identifier such as `#FR-SNAPSHOT-002` SHALL resolve to that artifact — the fragment form earlier snapshots produced. This inbound compatibility is permanent: it SHALL NOT be treated as transitional and SHALL NOT be withdrawn once shared links are assumed to have aged out. Newly generated navigation within the page MAY use the current fragment route.
-
-On resolving a legacy fragment, the page SHALL normalize the address to the current route for the same artifact and SHALL do so in place, replacing the current history entry rather than adding one. Pressing Back immediately after arriving on a legacy fragment SHALL leave the snapshot, exactly as it would after arriving on a current-route address.
-
-#### Scenario: Legacy fragment resolves and normalizes in place
-
-- **WHEN** a fragment of the form `#FR-SNAPSHOT-002` produced by an earlier snapshot is opened
-- **THEN** it resolves to that artifact and the address becomes the current route without a second history entry appearing
-
-#### Scenario: Back after a legacy arrival leaves the page
-
-- **WHEN** Back is pressed immediately after arriving on a legacy fragment
-- **THEN** the reader leaves the snapshot and is not returned to the un-normalized address
-
-#### Scenario: Unknown legacy identifier behaves like any unknown
-
-- **WHEN** a legacy fragment names an identifier the snapshot does not contain
-- **THEN** the same explicit unresolved-identifier state is produced as for a current-route address
-
-### Requirement: Authored content never becomes executable
-
-Authored content SHALL NOT be able to become executable or structural, on either path by which it reaches the reader: content emitted as generated markup and content embedded as data the page renders at open time SHALL both be escaped or otherwise neutralized, so authored HTML, script or attribute sequences are displayed as the text the author wrote.
-
-#### Scenario: Hostile body content is displayed as text
-
-- **WHEN** an artifact body containing a script element, an unclosed tag and an attribute-injection fragment is selected and rendered
-- **THEN** all of it is displayed verbatim as text, nothing executes and no element is created from it, both on first render and after navigating away and back
-
-#### Scenario: Metadata values are escaped too
-
-- **WHEN** an artifact's frontmatter values contain markup or quote characters
-- **THEN** they are displayed as text in the metadata view
-
 ### Requirement: The delivered surfaces are keyboard-operable and accessible
 
 Every capability of the delivered surfaces SHALL be reachable and operable by keyboard alone — the orientation view, the search dialog, the artifact list and its groups, the collapsible master area, the artifact detail, the Focused Topology and the view navigation — with no trapped focus and no pointer-only control. The focused element SHALL always be visibly identifiable, including the groups and members of the Focused Topology, and focus SHALL land on a meaningful element after every view and selection change. Every keyboard shortcut SHALL be stated on the page, and every action a shortcut performs SHALL also be reachable through a visible, focusable control. The search dialog SHALL take focus when it opens, SHALL be dismissible from the keyboard, and SHALL return focus when it closes.
@@ -426,34 +250,6 @@ The page SHALL expose semantic landmarks for its regions and a heading hierarchy
 
 - **WHEN** every text-and-background pair the delivered stylesheet can produce is measured in each appearance, the page is rendered with colour removed, and it is opened with a reduced-motion preference set
 - **THEN** all text meets WCAG 2.1 AA, no meaning depends on colour alone, no needed information is hover-only, and no non-essential animation runs
-
-### Requirement: The opening document is bounded and interaction is measured
-
-The document rendered when the snapshot opens SHALL NOT grow in proportion to the number of artifacts in the model: its size SHALL be bounded by the artifact kinds present and the kind-level aggregate over them. Artifact content and relationship structure SHALL be carried in the file as data the page renders on demand. Generated file size SHALL grow no worse than linearly with authored content, and generation time no worse than linearly with artifact count.
-
-Artifact-selection latency SHALL be measured on an identified reference environment — named hardware, operating system and browser version — across representative models, and the figures SHALL be recorded. A concrete artifact-selection budget SHALL be established from those recorded figures. No numeric interaction budget SHALL be asserted without a measurement supporting it. Artifacts that are hardest at scale — the longest-titled and longest-bodied — SHALL remain readable at every measured scale.
-
-{pdac:cite id="QR-SCALABILITY-001" digest="sha256:ce964e20dec3fb9facb301afb75ef2026c908a05ea56b11f3de1981522a7dfe1"}
-
-#### Scenario: Opening document does not scale with the model
-
-- **WHEN** the opening document is measured for a small and a materially larger model
-- **THEN** it contains no artifact body and no artifact-level graph, and its size does not grow in proportion to artifact count
-
-#### Scenario: Size and generation time stay linear
-
-- **WHEN** generated size per authored byte and generation time per artifact are recorded across representative models
-- **THEN** neither ratio increases with model size
-
-#### Scenario: Selection latency is measured, not asserted
-
-- **WHEN** artifact-selection latency is recorded across representative models on the identified reference environment
-- **THEN** the figures are reported in full including the slowest cases, and the selection budget is derived from them rather than assumed in advance
-
-#### Scenario: Long content stays readable
-
-- **WHEN** the longest-titled and longest-bodied artifacts are selected at every measured scale
-- **THEN** text wraps within its container and the page does not scroll horizontally
 
 ### Requirement: Relationships are grouped by type and kind with exact counts
 
@@ -496,20 +292,6 @@ A relationship group large enough to overwhelm the view SHALL start collapsed, s
 
 - **WHEN** the reader reaches a collapsed group by keyboard and activates it
 - **THEN** it expands, and its expanded state is reported to assistive technology
-
-### Requirement: A complete non-visual relationship list is always available
-
-Every incoming and outgoing relationship of the selected artifact SHALL be readable as text, with its relationship type and its direction, without requiring any visualization. This list SHALL be complete: no relationship the compiled graph records for the artifact may be reachable only through a drawing.
-
-#### Scenario: Relationships are understandable with no graph
-
-- **WHEN** a reader who cannot or does not use a visualization selects an artifact
-- **THEN** every relationship in both directions is readable as text, with type and direction, and each related artifact is selectable
-
-#### Scenario: Absence is reported rather than left blank
-
-- **WHEN** the selected artifact has no relationships in a direction
-- **THEN** that direction states that there are none
 
 ### Requirement: Catalog discovery state is addressable and preserved
 
@@ -583,6 +365,8 @@ Every identifier of an artifact the model contains, where it appears in the sele
 
 - **WHEN** the reader activates next and then previous on an artifact of a filtered list
 - **THEN** they move to the adjacent artifacts of that list and back, and the detail states the position within the kind
+
+## ADDED Requirements
 
 ### Requirement: The interface is a calm, compact, text-first instrument in two appearances
 
@@ -703,3 +487,23 @@ The reader SHALL be able to collapse the master area to a rail of the artifact k
 
 - **WHEN** the reader collapses the master area with its control, then with the shortcut restores it, and collapses it again and activates a kind on the rail
 - **THEN** the rail marks the selected artifact's kind, the Reader and the projection widen, and activating a kind restores the master area with that kind's group open and in view
+
+## REMOVED Requirements
+
+### Requirement: The interface is a light, compact, text-first instrument
+
+**Reason**: QR-PRESENTATION-001, as amended by CHG-SNAPSHOT-005, replaces the single light appearance with light and dark appearances and one appearance control, and adds kind icons and overlay elevation.
+
+**Migration**: Superseded by "The interface is a calm, compact, text-first instrument in two appearances", which keeps every other presentation obligation.
+
+### Requirement: The focused neighbourhood orbits relationship groups around the selected artifact
+
+**Reason**: The orbit with fanned members, pan and zoom is replaced by layered rows that cannot overlap, a member list per opened group, a correspondence with the Reader's groups and a resizable split. FR-SNAPSHOT-009 leaves the layout free, and the rows satisfy it more legibly at every pane width.
+
+**Migration**: Superseded by "The focused neighbourhood lays relationship groups out in rows around the selected artifact". The disclosure address parameter keeps its meaning, naming the open group, and addresses from earlier snapshots still resolve.
+
+### Requirement: The active graph mode is part of the addressable state
+
+**Reason**: The Product Explorer has one projection pane beside the Reader, anchored on the selection, so there is no projection mode to address. The Focused Topology's disclosure and the selection are already addressed by "One selected artifact addressed by the URL fragment" and "Graph visualization with node-selection highlighting".
+
+**Migration**: None needed. Addresses from earlier snapshots that named a projection route (`#/graph`, `#/graph/layers`, `#/graph/focus/<ID>`) still resolve in place to the artifacts view.
