@@ -1,5 +1,31 @@
 # @prodshape/distribution
 
+## 0.17.0
+
+### Minor Changes
+
+- 8ef0aad: Add the OpenCode provider. `prodshape init --ai opencode` and `prodshape integration add opencode` render the canonical skills and commands where OpenCode looks for them: `.opencode/skills/<name>/SKILL.md` with `references/` inside, and flat `.opencode/commands/product-<name>.md`, since OpenCode has no subdirectory namespacing. `--shorthand` adds `ps-<name>.md` aliases.
+
+  Commands carry a synthesized `description` in their frontmatter, taken from the first prose line of the canonical asset, because the OpenCode TUI lists commands by that field and the canonical assets carry no frontmatter of their own.
+
+  OpenCode also reads `.agents/skills` and `.claude/skills`, so installing `opencode` alongside `codex` or `claude` renders the same skills twice; the providers differ on commands, which OpenCode reads only from `.opencode/commands`.
+
+  Authorized by the roadmap exception recorded on #98 before the work began.
+
+- 8ef0aad: `init` detects AI providers and offers them. UC-INIT-001 step 4 requires the AI provider choice to be made through options or, in an interactive terminal, prompts informed by the detection; initialization implemented that for SDD frameworks only and never asked about AI providers.
+
+  `detectAiProviders` inspects the repository for a marker directory per provider (`.claude`, `.github/prompts`, `.agents`, `.opencode`), executing no provider tooling, and `init` reports what it found before the SDD block. An explicit `--ai` flag still wins; an interactive run is asked and informed by the detection; `--dry-run` prompts nothing and decides nothing.
+
+  The `.agents` entry is named for the Agent Skills open standard rather than for one of its clients, because that path is read by OpenAI Codex, OpenCode, Gemini CLI, VS Code, Cursor and others. The `codex` provider id is unchanged.
+
+### Patch Changes
+
+- Updated dependencies [8ef0aad]
+- Updated dependencies [d5b6777]
+- Updated dependencies [d5b6777]
+  - @prodshape/integration-opencode@0.2.0
+  - @prodshape/core@0.24.0
+
 ## 0.16.3
 
 ### Patch Changes
