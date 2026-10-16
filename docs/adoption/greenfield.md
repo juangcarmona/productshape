@@ -1,10 +1,10 @@
-# Adopting in a greenfield product
+# Start a new product with ProductShape
 
-This guide covers adopting Product Definition as Code for a new product: a fresh repository, or a repository that has code scaffolding but no accumulated product behaviour to recover. You will initialize the layout, author the initial product baseline with the Define operation, validate it, and then run your first Product Change.
+Use this guide for a new product or a repository with only code scaffolding and no product behaviour to recover. You will set up ProductShape, define and accept the first product baseline, then make a change through the same review process you will use later.
 
 > These commands target the supported published baseline, [`@prodshape/cli@0.22.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.22.0). `prodshape` is canonical; `product-definition` is an identical v0.x compatibility alias, removed before v1. Every step marked "by hand" also works without the CLI: the layout, schemas and templates are plain files. See [Limitations](../limitations.md).
 
-## 1. Initialize the repository
+## 1. Set up the repository
 
 ```bash
 prodshape init
@@ -40,9 +40,9 @@ prodshape init --full --dry-run
 
 If you requested AI integrations, `init` also generates managed files under `.claude/` or `.github/` (skills, `/product:*` commands, hooks). Those are generated from canonical assets and must never be edited by hand — see [Installing into an existing repository](existing-repository.md) for the authority rules.
 
-Everything above can also be created by hand: the layout is plain directories and the configuration shape is in [Installing into an existing repository](existing-repository.md#configuration).
+Everything above can also be created by hand: the layout is plain directories and the configuration shape is in [Add ProductShape to an existing repository](existing-repository.md#configure-productshape).
 
-## 2. Author the initial baseline with Define
+## 2. Describe the first product baseline
 
 The Define operation produces the first version of your product model: actors, journeys, use cases, business rules, domain terms, bounded contexts, functional requirements, quality requirements and constraints. The artifact contracts are specified in [Artifacts](https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md); the human-facing walkthrough is [Define](../methodology/define.md).
 
@@ -67,7 +67,7 @@ A workable authoring order, because relationships point upstream:
 
 Author only canonical relationships (for example `Domain Term.defined-in`); reverse views such as `owns-terms` are derived by the graph compiler and are rejected by the schemas if authored. See [Relationships](https://github.com/product-definition-as-code/spec/blob/main/spec/relationships.md).
 
-## 3. Establish the first definition through CHG-INITIAL
+## 3. Get the first definition accepted
 
 The first Product Definition follows the same lifecycle as every later change; no direct-authoring path exists. Author the artifacts you drafted above as the proposed future state of a change with the reserved identifier `CHG-INITIAL`, listing every one of them under `operations.add`:
 
@@ -79,7 +79,7 @@ docs/product/changes/active/chg-initial/
 
 Validate it as an overlay, obtain human product approval, and apply it explicitly on a working branch. Apply writes the proposed model and archives the change under `changes/completed/chg-initial/`, which is where the record of how this definition came to exist stays. A pull-request merge accepts the resulting initial baseline. A product MUST NOT have more than one `CHG-INITIAL`, and every semantic evolution after it is another Product Change. The rule is normative: see [Product Changes](https://github.com/product-definition-as-code/spec/blob/main/spec/product-changes.md).
 
-## 4. Validate the baseline
+## 4. Check and explore the model
 
 ```bash
 prodshape validate
@@ -96,7 +96,7 @@ prodshape inspect UC-EXAMPLE-001   # one artifact with its derived relationships
 prodshape impact BR-EXAMPLE-001    # structural impact of a change to this rule
 ```
 
-## 5. Run your first Product Change
+## 5. Make your first product change
 
 From now on, evolution is explicit. To change the product:
 
