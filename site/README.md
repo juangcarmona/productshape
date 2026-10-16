@@ -12,3 +12,13 @@ node scripts/build-public-site.mjs --out _site --base-path /productshape/
 Use `--base-path / --site-origin https://example.com` when serving the built output at a domain root, such as Cloudflare Pages or a custom domain. The GitHub Pages project site uses `/productshape/` and the default GitHub Pages origin.
 
 The website is informational and static. The product model explorer is copied from `.product/generated/snapshot.html`; it is not edited in the site source. The first implementation is the reuse pilot. Extract shared components only after the ProductShape, Raccord, and DomusMind needs have been compared.
+
+## Product identity and guidance
+
+ProductShape is the branded reference implementation. Product Definition as Code (PDaC) names the methodology and normative specification. This distinction is defined by [`CON-BRAND-001`](../docs/product/model/requirements/constraints/con-brand-001.md) and is reflected in the header and footer. The ProductShape lockup and icon come from the repository's [`assets/branding.png`](../assets/branding.png) and [`assets/product_shape_icon.png`](../assets/product_shape_icon.png); the PDaC mark comes from the specification site's `src/assets/pdac.png`.
+
+Public onboarding follows the canonical [product model index](../docs/product/model/index.md), [adoption journey](../docs/product/model/journeys/jrn-adopt-001.md), and [initialization use case](../docs/product/model/use-cases/uc-init-001.md). The site links to the authored model and generated snapshot so product claims and instructions can be checked against canonical sources.
+
+## Engineering reader
+
+Each arc42 section is a static HTML page with a sticky, collapsible section index, a current-section indicator, previous/next links, a source link, and a link to the Architecture Decision Records. On narrow screens the index becomes a collapsible panel above the article. The layout borrows the reading pattern used by the DomusMind engineering snapshot while keeping ProductShape's own content, colors, and routes.

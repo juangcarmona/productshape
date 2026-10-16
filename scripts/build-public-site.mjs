@@ -101,7 +101,10 @@ await cp(join(outDir, 'en/index.html'), join(outDir, 'index.html'));
 
 for (const section of sections) {
   const page = renderArchitecturePage(section);
-  await emitPage('en', 'engineering', `engineering/${section.slug}`, page);
+  await emitPage('en', 'engineering', `engineering/${section.slug}`, page, {
+    title: `${section.number} · ${section.title} · ProductShape`,
+    description: section.description,
+  });
 }
 
 await writeFile(join(outDir, 'sitemap.xml'), renderSitemap());
@@ -156,7 +159,7 @@ function renderSitemap() {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((url) => `<url><loc>${escapeHtml(url)}</loc></url>`).join('')}</urlset>\n`;
 }
 
-async function emitPage(locale, pageKind, route, body) {
+async function emitPage(locale, pageKind, route, body, overrides = {}) {
   const words = siteText[locale];
   const pageTitles = {
     home:
@@ -187,8 +190,8 @@ async function emitPage(locale, pageKind, route, body) {
   const built = shell({
     locale,
     pageKind,
-    title: pageTitles[pageKind],
-    description: descriptions[pageKind],
+    title: overrides.title || pageTitles[pageKind],
+    description: overrides.description || descriptions[pageKind],
     body,
     routePath,
   });
@@ -223,9 +226,9 @@ function shell({ locale, pageKind = '', title, description, body, routePath = ''
     const suffix = routePath.startsWith('engineering/') ? 'engineering/' : routePath;
     return `${basePath}${target}/${suffix}`;
   };
-  const header = `<a class="skip-link" href="#main">${locale === 'es' ? 'Saltar al contenido' : 'Skip to content'}</a><header class="site-header"><div class="header-inner"><a class="brand" href="${rootHref}" aria-label="ProductShape home"><span class="brand-mark" aria-hidden="true">P</span><span>productshape</span></a><nav class="main-nav" aria-label="${locale === 'es' ? 'Navegación principal' : 'Primary navigation'}">${navItems.map(([key, label]) => `<a href="${route(key)}"${pageKind === key ? ' aria-current="page"' : ''}>${escapeHtml(label)}</a>`).join('')}<a href="${repoUrl}" rel="external">${escapeHtml(nav.github)}</a><span class="language-switch" aria-label="${locale === 'es' ? 'Idioma' : 'Language'}"><a href="${languageRoute('en')}" lang="en"${locale === 'en' ? ' aria-current="true"' : ''}>EN</a><a href="${languageRoute('es')}" lang="es"${locale === 'es' ? ' aria-current="true"' : ''}>ES</a></span></nav></div></header>`;
-  const footer = `<footer class="site-footer"><div class="footer-inner"><p>${escapeHtml(siteText[locale].footer.line)}<br><span>${siteText[locale].footer.license}</span></p><div class="footer-links"><a href="https://github.com/product-definition-as-code/spec">${escapeHtml(siteText[locale].footer.spec)}</a><a href="${repoUrl}">${escapeHtml(siteText[locale].footer.repo)}</a></div></div></footer>`;
-  return `<!doctype html>\n<html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="${escapeAttribute(description)}"><meta property="og:title" content="${escapeAttribute(title)}"><meta property="og:description" content="${escapeAttribute(description)}"><meta property="og:type" content="website"><title>${escapeHtml(title)}</title><link rel="icon" href="${basePath}assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="${asset}"><link rel="canonical" href="${siteOrigin}${basePath}${localizedPath}"></head><body>${header}<main id="main">${body}</main>${footer}</body></html>\n`;
+  const header = `<a class="skip-link" href="#main">${locale === 'es' ? 'Saltar al contenido' : 'Skip to content'}</a><header class="site-header"><div class="header-inner"><a class="brand" href="${rootHref}" aria-label="ProductShape home"><img class="brand-icon" src="${basePath}assets/productshape-icon.png" width="38" height="38" alt=""><span>ProductShape</span></a><nav class="main-nav" aria-label="${locale === 'es' ? 'Navegación principal' : 'Primary navigation'}">${navItems.map(([key, label]) => `<a href="${route(key)}"${pageKind === key ? ' aria-current="page"' : ''}>${escapeHtml(label)}</a>`).join('')}<a href="${repoUrl}" rel="external">${escapeHtml(nav.github)}</a><span class="language-switch" aria-label="${locale === 'es' ? 'Idioma' : 'Language'}"><a href="${languageRoute('en')}" lang="en"${locale === 'en' ? ' aria-current="true"' : ''}>EN</a><a href="${languageRoute('es')}" lang="es"${locale === 'es' ? ' aria-current="true"' : ''}>ES</a></span></nav></div></header>`;
+  const footer = `<footer class="site-footer"><div class="footer-inner"><div class="footer-identities"><a class="footer-productshape" href="${rootHref}"><img src="${basePath}assets/productshape-branding.png" width="190" height="95" alt="ProductShape — Product Definition as Code"></a><a class="footer-methodology" href="https://github.com/product-definition-as-code/spec"><img src="${basePath}assets/pdac-logo.png" width="54" height="54" alt="PDaC logo"><span><strong>Product Definition as Code</strong><small>${escapeHtml(siteText[locale].footer.methodology)}</small></span></a></div><div class="footer-meta"><p>${escapeHtml(siteText[locale].footer.line)}<br><span>${siteText[locale].footer.license}</span></p><div class="footer-links"><a href="https://github.com/product-definition-as-code/spec">${escapeHtml(siteText[locale].footer.spec)}</a><a href="${repoUrl}">${escapeHtml(siteText[locale].footer.repo)}</a></div></div></div></footer>`;
+  return `<!doctype html>\n<html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="${escapeAttribute(description)}"><meta property="og:title" content="${escapeAttribute(title)}"><meta property="og:description" content="${escapeAttribute(description)}"><meta property="og:type" content="website"><title>${escapeHtml(title)}</title><link rel="icon" href="${basePath}assets/productshape-icon.png" type="image/png"><link rel="stylesheet" href="${asset}"><link rel="canonical" href="${siteOrigin}${basePath}${localizedPath}"></head><body>${header}<main id="main">${body}</main>${footer}</body></html>\n`;
 }
 
 function renderHome(words, locale) {
@@ -257,13 +260,19 @@ function flowGraphic(locale) {
 }
 
 function renderProduct(words) {
+  const locale = words.languageName === 'Español' ? 'es' : 'en';
   const sections = words.product.sections
     .map(
       (section, index) =>
         `<article class="feature"><span class="feature-index">0${index + 1}</span><h3>${escapeHtml(section.title)}</h3><p>${escapeHtml(section.text)}</p></article>`,
     )
     .join('');
-  return `<section class="page-hero"><div class="narrow"><p class="eyebrow">${escapeHtml(words.product.eyebrow)}</p><h1>${escapeHtml(words.product.title)}</h1><p class="lead">${escapeHtml(words.product.intro)}</p></div></section><section class="section"><div class="wrap"><div class="feature-grid">${sections}</div></div></section><section class="section"><div class="narrow"><p class="eyebrow">${words.nav.workflow}</p><h2>${escapeHtml(words.product.boundaryTitle)}</h2><p class="lead">${escapeHtml(words.product.boundaryText)}</p></div></section><section class="section"><div class="narrow"><p><a class="button" href="${basePath}${words.languageName === 'Español' ? 'es' : 'en'}/get-started/">${escapeHtml(words.nav.start)} →</a></p></div></section>`;
+  const modelUrl = `${basePath}${locale}/model/`;
+  const modelSource = `${repoUrl}/blob/main/docs/product/model/index.md`;
+  const brandSource = `${repoUrl}/blob/main/docs/product/model/requirements/constraints/con-brand-001.md`;
+  const journeySource = `${repoUrl}/blob/main/docs/product/model/journeys/jrn-adopt-001.md`;
+  const initSource = `${repoUrl}/blob/main/docs/product/model/use-cases/uc-init-001.md`;
+  return `<section class="page-hero"><div class="narrow"><p class="eyebrow">${escapeHtml(words.product.eyebrow)}</p><h1>${escapeHtml(words.product.title)}</h1><p class="lead">${escapeHtml(words.product.intro)}</p></div></section><section class="section"><div class="wrap"><div class="feature-grid">${sections}</div></div></section><section class="section"><div class="narrow"><p class="eyebrow">${words.nav.workflow}</p><h2>${escapeHtml(words.product.boundaryTitle)}</h2><p class="lead">${escapeHtml(words.product.boundaryText)}</p><div class="link-list product-source-links"><a href="${modelUrl}">${escapeHtml(words.product.liveModel)} →</a><a href="${modelSource}">${escapeHtml(words.product.modelSource)} →</a><a href="${brandSource}">${escapeHtml(words.product.brandSource)} →</a><a href="${journeySource}">${escapeHtml(words.product.adoptionSource)} →</a><a href="${initSource}">${escapeHtml(words.product.initSource)} →</a></div></div></section><section class="section"><div class="narrow"><p><a class="button" href="${basePath}${locale}/get-started/">${escapeHtml(words.nav.start)} →</a></p></div></section>`;
 }
 
 function renderWorkflow(words) {
@@ -328,14 +337,21 @@ function renderEngineeringIndex(words, locale) {
 }
 
 function renderArchitecturePage(section) {
+  const sectionIndex = sections.indexOf(section);
+  const previous = sections[sectionIndex - 1];
+  const next = sections[sectionIndex + 1];
   const nav = sections
     .map(
       (item) =>
-        `<a href="${basePath}en/engineering/${item.slug}/"${item.slug === section.slug ? ' aria-current="page"' : ''}><span class="nav-no">${item.number}</span><span>${escapeHtml(item.title)}</span></a>`,
+        `<li><a href="${basePath}en/engineering/${item.slug}/"${item.slug === section.slug ? ' aria-current="page"' : ''}><span class="nav-no">${item.number}</span><span>${escapeHtml(item.title)}</span></a></li>`,
     )
     .join('');
   const sourceUrl = `${repoUrl}/blob/main/docs/architecture/${section.name}`;
-  return `<section class="page-hero"><div class="wrap"><p class="breadcrumbs"><a href="${basePath}en/engineering/">Engineering</a> / ${section.number}</p><p class="eyebrow">arc42 · ${section.number} / 12</p><h1>${escapeHtml(section.title)}</h1><p class="lead">${escapeHtml(section.description)}</p></div></section><div class="wrap engineering-layout"><nav class="engineering-nav" aria-label="arc42 sections">${nav}</nav><article class="engineering-content">${section.html}<p class="source-stamp">${escapeHtml(revision)}</p><p class="link-list"><a href="${sourceUrl}">Markdown source on GitHub →</a><a href="${basePath}en/engineering/">All architecture views →</a></p></article></div>`;
+  const adjacentLink = (item, direction) =>
+    item
+      ? `<a class="nav-adjacent nav-${direction}" href="${basePath}en/engineering/${item.slug}/"><span>${direction === 'previous' ? '← Previous' : 'Next →'}</span><strong>${item.number} · ${escapeHtml(item.title)}</strong></a>`
+      : `<span class="nav-adjacent nav-${direction} disabled" aria-hidden="true"></span>`;
+  return `<section class="engineering-page-hero"><div class="wrap"><p class="breadcrumbs"><a href="${basePath}en/engineering/">Engineering</a> / arc42 ${section.number}</p><p class="eyebrow">arc42 · section ${section.number} of 12</p><h1>${escapeHtml(section.title)}</h1><p class="lead">${escapeHtml(section.description)}</p></div></section><div class="wrap engineering-layout"><nav class="engineering-nav" aria-label="arc42 sections"><details open><summary>Architecture sections <span>12 views</span></summary><a class="engineering-overview" href="${basePath}en/engineering/">Overview and section index</a><ol>${nav}</ol><a class="engineering-decisions" href="${repoUrl}/tree/main/docs/architecture/decisions">Architecture decisions ↗</a><div class="nav-adjacent-list">${adjacentLink(previous, 'previous')}${adjacentLink(next, 'next')}</div></details></nav><article class="engineering-content"><div class="engineering-content-inner">${section.html}<div class="engineering-endmatter"><p class="source-stamp">${escapeHtml(revision)}</p><p class="link-list"><a href="${sourceUrl}">Markdown source on GitHub →</a><a href="${basePath}en/engineering/">All architecture views →</a></p><div class="article-pagination">${adjacentLink(previous, 'previous')}${adjacentLink(next, 'next')}</div></div></div></article></div>`;
 }
 
 function renderModel(words) {

@@ -73,7 +73,12 @@
       }
     ],
     "boundaryTitle": "Lo que ProductShape deja en manos de las personas",
-    "boundaryText": "La validación es estructural; no juzga si el contenido del producto es verdadero. La IA puede ayudar a recuperar o redactar conocimiento, pero las personas revisan el significado y aprueban cada cambio. La verdad del producto permanece en archivos bajo control de versiones."
+    "boundaryText": "La validación es estructural; no juzga si el contenido del producto es verdadero. La IA puede ayudar a recuperar o redactar conocimiento, pero las personas revisan el significado y aprueban cada cambio. La verdad del producto permanece en archivos bajo control de versiones.",
+    "liveModel": "Explorar el modelo del producto",
+    "modelSource": "Consultar el modelo canónico del producto",
+    "brandSource": "Leer las reglas de marca de ProductShape y PDaC",
+    "adoptionSource": "Leer el recorrido de adopción gobernado",
+    "initSource": "Leer las instrucciones canónicas de inicialización de la CLI"
   },
   "workflow": {
     "eyebrow": "El flujo de trabajo",
@@ -141,6 +146,7 @@
   },
   "footer": {
     "line": "ProductShape es la implementación de referencia de Product Definition as Code.",
+    "methodology": "Metodología y especificación normativa",
     "spec": "Especificación normativa",
     "repo": "Repositorio del código",
     "license": "Apache-2.0"

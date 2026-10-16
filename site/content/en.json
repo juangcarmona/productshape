@@ -73,7 +73,12 @@
       }
     ],
     "boundaryTitle": "What ProductShape leaves to people",
-    "boundaryText": "Validation is structural. It does not judge product truth. AI can help recover or draft knowledge, but people review the meaning and approve every accepted change. Product truth remains in files under version control."
+    "boundaryText": "Validation is structural. It does not judge product truth. AI can help recover or draft knowledge, but people review the meaning and approve every accepted change. Product truth remains in files under version control.",
+    "liveModel": "Explore the live self-model",
+    "modelSource": "Browse the canonical product model",
+    "brandSource": "Read ProductShape and PDaC naming rules",
+    "adoptionSource": "Read the governed adoption journey",
+    "initSource": "Read the canonical CLI initialization instructions"
   },
   "workflow": {
     "eyebrow": "The workflow",
@@ -141,6 +146,7 @@
   },
   "footer": {
     "line": "ProductShape is the reference implementation of Product Definition as Code.",
+    "methodology": "Methodology and normative specification",
     "spec": "Normative specification",
     "repo": "Source repository",
     "license": "Apache-2.0"

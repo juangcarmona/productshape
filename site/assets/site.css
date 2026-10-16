@@ -67,8 +67,12 @@ code {
   top: 1rem;
 }
 .site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   border-bottom: 1px solid var(--line);
-  background: var(--paper);
+  background: color-mix(in srgb, var(--paper) 94%, transparent);
+  backdrop-filter: blur(14px);
 }
 .header-inner,
 .footer-inner {
@@ -93,15 +97,12 @@ code {
   font-size: 1.15rem;
   white-space: nowrap;
 }
-.brand-mark {
-  width: 27px;
-  height: 27px;
-  border: 2px solid var(--accent);
-  border-radius: 50%;
-  display: inline-grid;
-  place-items: center;
-  color: var(--accent);
-  font: 700 0.75rem/1 var(--mono);
+.brand-icon {
+  display: block;
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  flex: none;
 }
 .main-nav {
   display: flex;
@@ -426,39 +427,173 @@ h3 {
   gap: 0.8rem 1.4rem;
   margin: 1.5rem 0;
 }
+.product-source-links {
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
 .engineering-layout {
   display: grid;
-  grid-template-columns: minmax(210px, 0.35fr) minmax(0, 1fr);
-  gap: 3rem;
-  padding: 3rem 0 6rem;
+  grid-template-columns: minmax(230px, 285px) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: start;
+  padding: 1rem 0 6rem;
 }
 .engineering-nav {
-  border-top: 2px solid var(--ink);
+  position: sticky;
+  top: 98px;
+  max-height: calc(100vh - 118px);
+  overflow: auto;
   align-self: start;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--accent-strong);
+  background: var(--surface);
+  box-shadow: 0 10px 28px rgb(24 39 34 / 5%);
+  scrollbar-color: var(--line) transparent;
+  scrollbar-width: thin;
 }
-.engineering-nav a {
+.engineering-nav details {
+  padding: 0.9rem 1rem 1rem;
+}
+.engineering-nav summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  align-items: baseline;
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 750;
+  cursor: pointer;
+  list-style: none;
+}
+.engineering-nav summary::-webkit-details-marker {
+  display: none;
+}
+.engineering-nav summary::after {
+  content: '−';
+  color: var(--accent-strong);
+  font: 0.9rem/1 var(--mono);
+}
+.engineering-nav details:not([open]) summary::after {
+  content: '+';
+}
+.engineering-nav summary span {
+  margin-left: auto;
+  color: var(--muted);
+  font: 0.68rem/1 var(--mono);
+  font-weight: 400;
+}
+.engineering-nav ol {
+  margin: 0.75rem -0.45rem 0;
+  padding: 0;
+  list-style: none;
+}
+.engineering-overview {
+  display: block;
+  margin: 0.7rem 0 0;
+  padding: 0.55rem 0.45rem;
+  border-left: 3px solid transparent;
+  background: var(--paper);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.engineering-overview:hover {
+  border-left-color: var(--accent-strong);
+  background: var(--accent-soft);
+  text-decoration: none;
+}
+.engineering-nav li {
+  border-top: 1px solid var(--line);
+}
+.engineering-nav li a {
   display: grid;
-  grid-template-columns: 2.2rem 1fr;
-  gap: 0.5rem;
-  padding: 0.7rem 0;
-  border-bottom: 1px solid var(--line);
+  grid-template-columns: 1.8rem 1fr;
+  gap: 0.55rem;
+  padding: 0.52rem 0.45rem;
+  border-left: 3px solid transparent;
   text-decoration: none;
   color: var(--ink);
-  font-size: 0.9rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
 }
 .engineering-nav .nav-no {
-  font: 0.75rem/1.8 var(--mono);
+  font: 0.7rem/1.7 var(--mono);
   color: var(--accent-strong);
 }
-.engineering-nav a:hover {
+.engineering-nav li a:hover {
   color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+.engineering-nav li a[aria-current='page'] {
+  border-left-color: var(--accent-strong);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-weight: 700;
+}
+.engineering-decisions {
+  display: block;
+  margin: 0.65rem 0.35rem 0;
+  padding: 0.65rem 0.1rem 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.nav-adjacent-list,
+.article-pagination {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.nav-adjacent-list {
+  margin-top: 0.75rem;
+}
+.nav-adjacent {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.22rem;
+  padding: 0.58rem 0.65rem;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  text-decoration: none;
+}
+.nav-adjacent span {
+  color: var(--muted);
+  font: 0.63rem/1.3 var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.nav-adjacent strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 0.7rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+}
+.nav-adjacent:hover {
+  border-color: var(--accent-strong);
+  background: var(--accent-soft);
+  text-decoration: none;
+}
+.nav-adjacent.disabled {
+  border-color: transparent;
+  background: transparent;
 }
 .engineering-content {
   min-width: 0;
 }
-.engineering-content h1 {
-  font-size: clamp(2.3rem, 4vw, 4rem);
-  max-width: 18ch;
+.engineering-page-hero {
+  padding: 2.2rem 0 1.4rem;
+}
+.engineering-page-hero h1 {
+  margin: 0.65rem 0 0.7rem;
+  max-width: 22ch;
+  font-size: clamp(2.5rem, 5vw, 4.8rem);
+}
+.engineering-page-hero .lead {
+  margin: 0;
+  max-width: 78ch;
 }
 .engineering-content h2 {
   font-size: 1.7rem;
@@ -470,6 +605,31 @@ h3 {
 .engineering-content p,
 .engineering-content li {
   max-width: 78ch;
+}
+.engineering-content-inner {
+  max-width: 82ch;
+  margin: 0 auto;
+  padding: clamp(1.4rem, 3.4vw, 2.6rem);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: 0 14px 38px rgb(24 39 34 / 4%);
+}
+.engineering-content-inner > h2:first-child {
+  margin-top: 0;
+}
+.engineering-endmatter {
+  margin-top: 3.5rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--line);
+}
+.engineering-endmatter .link-list {
+  margin-bottom: 1.4rem;
+}
+.engineering-endmatter .article-pagination .nav-adjacent {
+  padding: 0.8rem 0.9rem;
+}
+.engineering-endmatter .article-pagination .nav-adjacent strong {
+  font-size: 0.82rem;
 }
 .engineering-content table {
   border-collapse: collapse;
@@ -571,12 +731,57 @@ h3 {
   padding: 2rem 0;
 }
 .footer-inner {
-  display: flex;
-  justify-content: space-between;
-  gap: 2rem;
-  align-items: start;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(220px, 0.9fr);
+  gap: 2rem 4rem;
+  align-items: center;
   color: var(--muted);
   font-size: 0.85rem;
+}
+.footer-identities {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.3rem, 4vw, 3.2rem);
+}
+.footer-productshape {
+  display: block;
+  width: min(190px, 42%);
+  flex: none;
+  mix-blend-mode: multiply;
+}
+.footer-productshape img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.footer-methodology {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--ink);
+  text-decoration: none;
+}
+.footer-methodology img {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  border: 1px solid rgb(21 61 112 / 18%);
+}
+.footer-methodology span {
+  display: grid;
+  gap: 0.2rem;
+}
+.footer-methodology strong {
+  max-width: 15ch;
+  font: 600 0.82rem/1.25 var(--sans);
+}
+.footer-methodology small {
+  color: var(--muted);
+  font-size: 0.67rem;
+  line-height: 1.35;
+}
+.footer-meta {
+  justify-self: end;
 }
 .footer-inner p {
   margin: 0;
@@ -588,6 +793,9 @@ h3 {
 }
 .footer-links a {
   color: var(--ink);
+}
+.footer-meta .footer-links {
+  margin-top: 0.8rem;
 }
 .breadcrumbs {
   color: var(--muted);
@@ -679,18 +887,30 @@ h3 {
   }
   .engineering-layout {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 1rem;
+    padding-top: 0.5rem;
   }
   .engineering-nav {
-    columns: 2;
-    column-gap: 1rem;
+    position: static;
+    max-height: none;
+    overflow: visible;
   }
-  .engineering-nav a {
-    break-inside: avoid;
-    grid-template-columns: 1.7rem 1fr;
+  .engineering-nav details {
+    padding: 0.75rem 0.85rem;
+  }
+  .engineering-content-inner {
+    padding: 1.2rem;
   }
   .footer-inner {
-    display: block;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .footer-identities {
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .footer-meta {
+    justify-self: start;
   }
   .footer-links {
     margin-top: 1rem;
