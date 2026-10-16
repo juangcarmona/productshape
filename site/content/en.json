@@ -140,7 +140,7 @@
     "eyebrow": "ProductShape, described with ProductShape",
     "title": "Explore the live self-model.",
     "intro": "This is a generated, read-only projection of the accepted product model in this repository. Its revision is shown inside the explorer.",
-    "open": "Open the explorer on its own",
+    "open": "Open the model snapshot in a new tab",
     "source": "Browse the authored model files",
     "notice": "The model is authored in English. The explorer is generated from those canonical files and does not add or store product knowledge."
   },
