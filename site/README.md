@@ -26,3 +26,7 @@ ProductShape's logo establishes a technical blueprint identity: white drawing su
 ## Engineering reader
 
 Each arc42 section is a static HTML page with a sticky, collapsible section index, a current-section indicator, previous/next links, a source link, and a link to the Architecture Decision Records. On narrow screens the index becomes a collapsible panel above the article. The layout borrows the reading pattern used by the DomusMind engineering snapshot while keeping ProductShape's own content, colors, and routes.
+
+## Adoption guides
+
+The site renders the three general adoption guides directly from `docs/adoption/greenfield.md`, `brownfield.md`, and `existing-repository.md`. These Markdown files stay canonical; the site build turns them into readable, navigable HTML pages in English and Spanish routes. The guide text is currently maintained in English, and Spanish pages say so. OpenSpec and Spec Kit integration guides remain linked as supporting repository documents.
