@@ -1,0 +1,149 @@
+{
+  "languageName": "Español",
+  "nav": {
+    "home": "Resumen",
+    "product": "Producto",
+    "workflow": "Cómo funciona",
+    "start": "Empezar",
+    "engineering": "Ingeniería",
+    "model": "Explorar el modelo",
+    "github": "GitHub"
+  },
+  "home": {
+    "eyebrow": "Product Definition as Code · implementación de referencia",
+    "title": "Mantén las decisiones de producto cerca del trabajo que las cambia.",
+    "intro": "ProductShape ayuda a los equipos a definir el conocimiento del producto en Markdown versionado, vincular el trabajo de entrega con la definición aceptada y detectar cuándo cambia.",
+    "primaryAction": "Empezar en tu repositorio",
+    "secondaryAction": "Explorar el modelo público",
+    "proofLabel": "En uso en proyectos reales",
+    "proof": "Raccord · DomusMind · y otros",
+    "flowTitle": "Una definición. Vínculos claros con la entrega.",
+    "flowIntro": "Un flujo pequeño y visible mantiene a las personas al mando en cada decisión.",
+    "flow": [
+      {
+        "number": "01",
+        "title": "Definir",
+        "text": "Describe el conocimiento del producto en archivos Markdown del repositorio."
+      },
+      {
+        "number": "02",
+        "title": "Validar",
+        "text": "Comprueba esquemas, identificadores y relaciones con reglas deterministas."
+      },
+      {
+        "number": "03",
+        "title": "Citar",
+        "text": "Vincula los documentos de entrega con los artefactos aceptados que utilizan."
+      },
+      {
+        "number": "04",
+        "title": "Cambiar",
+        "text": "Propón una actualización, revísala y detecta las citas obsoletas cuando cambie."
+      }
+    ],
+    "principleTitle": "Las herramientas comprueban la estructura. Las personas deciden el significado.",
+    "principleText": "ProductShape puede detectar referencias rotas y definiciones modificadas. No puede decidir si una idea es cierta, si un cambio es adecuado o si la implementación ha terminado.",
+    "explorerTitle": "Explora el modelo de ProductShape, no una demostración comercial.",
+    "explorerText": "Este repositorio se define con el mismo modelo de producto que propone a los equipos. Explora artefactos y relaciones reales en una instantánea generada y de solo lectura.",
+    "architectureTitle": "Diseñado para seguir siendo comprensible.",
+    "architectureText": "Consulta las doce vistas arc42 de la implementación, desde los límites entre paquetes hasta la publicación y la evidencia de calidad.",
+    "closingTitle": "Empieza con una decisión de producto.",
+    "closingText": "No hace falta modelar todo para empezar. Elige el conocimiento del que depende tu próximo cambio."
+  },
+  "product": {
+    "eyebrow": "El producto",
+    "title": "Una definición de producto que puedes revisar como código.",
+    "intro": "ProductShape es una implementación de referencia por línea de comandos para Product Definition as Code. Mantén el conocimiento aceptado en tu repositorio y conecta el trabajo que lo implementa mediante citas estables.",
+    "sections": [
+      {
+        "title": "Una fuente compartida para las decisiones de producto",
+        "text": "Modela actores, recorridos, casos de uso, reglas, términos y requisitos como artefactos Markdown. Los identificadores estables mantienen las referencias aunque cambien las rutas."
+      },
+      {
+        "title": "Cada cambio tiene un recorrido visible",
+        "text": "Los Product Changes proponen una definición futura. Valídala, revísala con las personas responsables, aplícala en una rama y acepta la nueva versión mediante una integración revisada."
+      },
+      {
+        "title": "La deriva queda a la vista",
+        "text": "Las citas vinculan documentos consumidores con el contenido de los artefactos. Si un artefacto cambia, la verificación informa de referencias vigentes, obsoletas, manipuladas o sin resolver."
+      },
+      {
+        "title": "Convive con tu método de entrega",
+        "text": "Product Definition as Code no depende de un proceso SDD concreto. ProductShape ofrece integraciones para OpenSpec y Spec Kit sin acoplar el modelo central."
+      }
+    ],
+    "boundaryTitle": "Lo que ProductShape deja en manos de las personas",
+    "boundaryText": "La validación es estructural; no juzga si el contenido del producto es verdadero. La IA puede ayudar a recuperar o redactar conocimiento, pero las personas revisan el significado y aprueban cada cambio. La verdad del producto permanece en archivos bajo control de versiones."
+  },
+  "workflow": {
+    "eyebrow": "El flujo de trabajo",
+    "title": "Del conocimiento del producto a la entrega, paso a paso.",
+    "intro": "ProductShape da estructura estable al conocimiento del producto y lo vincula con los documentos que lo implementan. Tu repositorio y tu proceso de revisión siguen al mando.",
+    "steps": [
+      {
+        "title": "Empieza donde estás",
+        "text": "Inicializa un producto nuevo o añade ProductShape a un repositorio existente. En sistemas existentes, recupera conocimiento candidato a partir de evidencias; la herramienta estructura el trabajo, no analiza el código para inventar un modelo."
+      },
+      {
+        "title": "Propón una definición",
+        "text": "Describe un actor, regla, recorrido, requisito o término en el estado propuesto de un Product Change. La definición inicial sigue el mismo proceso gobernado que las actualizaciones posteriores."
+      },
+      {
+        "title": "Comprueba la estructura",
+        "text": "Valida esquemas, identificadores, relaciones y reglas del ciclo de vida. La validez estructural es una señal útil, no prueba que la definición sea semánticamente completa."
+      },
+      {
+        "title": "Revisa y acepta",
+        "text": "Las personas deciden si el cambio es correcto. La aplicación materializa la propuesta en una rama; la integración revisada acepta la nueva versión."
+      },
+      {
+        "title": "Cita y verifica",
+        "text": "Los documentos consumidores citan artefactos aceptados mediante su identificador y huella de contenido. La verificación hace visibles para su revisión las referencias modificadas o rotas."
+      }
+    ],
+    "noteTitle": "Conecta los cambios de producto e implementación sin confundirlos.",
+    "noteText": "Un Product Change registra la intención del producto. La implementación puede publicarse en la misma solicitud de cambios o en otra posterior. La integración no afirma que el cambio se haya implementado, probado o publicado."
+  },
+  "start": {
+    "eyebrow": "Empezar",
+    "title": "Un primer paso pequeño y gobernado.",
+    "intro": "El recorrido útil más corto contiene un artefacto aceptado, una cita desde un documento consumidor y una dependencia obsoleta visible tras un cambio. Los comandos usan la versión publicada compatible actual, leída de los metadatos del paquete al generar el sitio.",
+    "installTitle": "1 · Instala en tu repositorio",
+    "initCode": "npm install --save-dev --save-exact @prodshape/cli@{{version}}\nnpx --no-install prodshape init\nnpx --no-install prodshape validate\nnpx --no-install prodshape change create CHG-INITIAL",
+    "initText": "La CLI comienza con un núcleo pequeño. Las plantillas y los esquemas están disponibles cuando los necesites; amplía la estructura solo si ayuda a tu equipo.",
+    "authorTitle": "2 · Propón la definición inicial",
+    "authorText": "Añade los primeros artefactos al cambio CHG-INITIAL activo, decláralos en sus operaciones y valida la propuesta. Revísala con las personas que conocen el producto.",
+    "acceptTitle": "3 · Aplica y acepta mediante revisión",
+    "acceptText": "Cuando una persona haya aprobado el cambio, aplícalo en una rama y abre una solicitud de cambios. La integración acepta la definición; aplicarla no equivale a aceptarla.",
+    "citeTitle": "4 · Cita la definición en el trabajo de entrega",
+    "citeCode": "prodshape inspect ACT-USER\nprodshape cite --id ACT-USER --digest <digest>\nprodshape citations verify",
+    "citeText": "Guarda la cita junto al texto consumidor que respalda. Si cambias el artefacto aceptado en otro Product Change, la verificación informará de que la cita está obsoleta.",
+    "greenfield": "Guía para productos nuevos",
+    "brownfield": "Guía de recuperación en sistemas existentes",
+    "walkthrough": "Recorrido gobernado completo",
+    "releaseNote": "Las funciones que solo existen en la rama main del repositorio pueden ser más recientes que este paquete publicado."
+  },
+  "engineering": {
+    "eyebrow": "Ingeniería",
+    "title": "La arquitectura detrás de la CLI.",
+    "intro": "Doce vistas arc42 explican la estructura de implementación, sus decisiones y las evidencias que mantienen la documentación vinculada al código.",
+    "sections": "Vistas de arquitectura",
+    "decisions": "Decisiones de arquitectura",
+    "githubSource": "Leer el código fuente Markdown"
+  },
+  "model": {
+    "eyebrow": "ProductShape, descrito con ProductShape",
+    "title": "Explora el modelo vivo del proyecto.",
+    "intro": "Esta proyección generada y de solo lectura representa el modelo de producto aceptado en este repositorio. La revisión de origen aparece dentro del explorador.",
+    "open": "Abrir el explorador por separado",
+    "source": "Consultar los archivos del modelo",
+    "notice": "El modelo está escrito en inglés. El explorador se genera a partir de esos archivos canónicos y no añade ni guarda conocimiento del producto."
+  },
+  "footer": {
+    "line": "ProductShape es la implementación de referencia de Product Definition as Code.",
+    "spec": "Especificación normativa",
+    "repo": "Repositorio del código",
+    "license": "Apache-2.0"
+  },
+  "arc42EnglishOnly": "La fuente arc42 se mantiene actualmente en inglés. Este índice traducido enlaza a la documentación técnica canónica."
+}

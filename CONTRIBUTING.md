@@ -9,7 +9,7 @@ This project is in an early bootstrap phase (v0.1). The methodology, specificati
 - **The specification is normative.** Changes to artifact semantics, identifiers, relationships or lifecycle states must update `docs/specification/` and, when they change the current product, go through a Product Change under `docs/product/changes/`.
 - **Markdown and authored YAML under `docs/product` are canonical.** Generated files must never be edited by hand: `.product/generated/`, provider integration files carrying a managed header, and the generated field tables in `docs/specification/frontmatter-reference.md`. That last one is the easy mistake — it is a specification chapter, so it looks authored, but the tables between its `BEGIN GENERATED` / `END GENERATED` markers come from the JSON Schemas (ADR 0009). Change the schema, run `pnpm docs:frontmatter`, and commit the regenerated chapter; a conformance test fails the build if the two disagree. The prose around the markers _is_ hand-written.
 - **Deterministic core, AI reasoning separated.** Structural validation logic belongs in `packages/core`; semantic reasoning belongs in `skills/`. Do not blur that boundary.
-- **Small dependency set.** New runtime dependencies need a strong justification; see the approved list in `docs/architecture/overview.md`.
+- **Small dependency set.** New runtime dependencies need a strong justification; review the package manifests and [architecture constraints](docs/architecture/02-constraints.md).
 
 ## Development setup
 

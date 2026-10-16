@@ -32,7 +32,7 @@ These are scope decisions, not gaps. None of them is on the current path:
 - AI model routing, custom agents and personas
 - Opportunity solution trees, roadmaps, OKRs, release planning and portfolio management
 - DDD aggregate modelling (bounded contexts are product-language boundaries only)
-- Architecture documentation generation
+- Automated authoring of architecture documentation (the arc42 Markdown is authored; the public site renders it as derived HTML)
 - Runtime observability and product analytics
 - Marketplace, hosted service and telemetry
 - Universal plugin architecture (the adapter and provider seams exist, but only for the shipped integrations)

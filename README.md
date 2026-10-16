@@ -21,7 +21,8 @@ Product Definition as Code keeps the agreed product definition in versioned Mark
 
 <p align="center"><em>Three specs restate one rule; a change flags every recorded citation. Real output. The end card names the recorded CLI version. <a href="https://pdac.dev/">Watch on pdac.dev</a>.</em></p>
 
-<p align="center"><strong><a href="https://juangcarmona.github.io/productshape/">See a real product definition, live</a></strong>. This repository's own model is republished on every merge to <code>main</code>.</p>
+<p align="center"><strong><a href="https://juangcarmona.github.io/productshape/en/model/">See a real product definition, live</a></strong>. This repository's own model is republished on every merge to <code>main</code>.</p>
+<p align="center"><strong><a href="https://juangcarmona.github.io/productshape/en/">Explore the public ProductShape site</a></strong> — product guide, onboarding path, arc42 engineering views and the generated self-model.</p>
 
 The methodology belongs to the [specification repository](https://github.com/product-definition-as-code/spec): the normative contracts, the conformance tests and [the manifesto](https://github.com/product-definition-as-code/spec/blob/main/MANIFESTO.md), which states the founding position. ProductShape is the Product Definition as Code CLI: `prodshape` lets you author actors, journeys, use cases, business rules, domain terms, product requirements and structured behaviours in Markdown, then keeps that definition validated, evolvable and citable:
 

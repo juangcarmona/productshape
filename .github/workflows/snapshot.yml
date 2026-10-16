@@ -1,4 +1,4 @@
-name: Snapshot
+name: Public site
 
 on:
   push:
@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   publish:
-    name: publish the self-model snapshot
+    name: publish the public site and self-model
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -31,14 +31,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      # The snapshot browser rendered over this repository's own product model —
-      # the same output `prodshape graph --format html` gives any adopter.
-      - name: generate the snapshot
+      # The self-model explorer is a generated read-only route in the complete public site.
+      - name: generate the product explorer
         run: node packages/cli/dist/bin.js graph --format html
-      - name: stage the site
-        run: |
-          mkdir -p _site
-          cp .product/generated/snapshot.html _site/index.html
+      - name: assemble the public site
+        run: node scripts/build-public-site.mjs --out _site --base-path /productshape/
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:

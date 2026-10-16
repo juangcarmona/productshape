@@ -16,7 +16,7 @@ const targets = [
   'docs/product/README.md',
   'docs/methodology',
   'docs/adoption',
-  'docs/architecture/overview.md',
+  'docs/architecture',
   'templates',
   'commands',
   'skills',
@@ -30,6 +30,7 @@ const targets = [
 const excluded = [
   /^docs\/product\/changes\//,
   /^docs\/architecture\/decisions\//,
+  /^docs\/architecture\/experiments\//,
   /^docs\/migrations?\//,
   /(^|\/)CHANGELOG(?:\.[^/]*)?$/i,
 ];

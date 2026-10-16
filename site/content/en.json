@@ -1,0 +1,149 @@
+{
+  "languageName": "English",
+  "nav": {
+    "home": "Overview",
+    "product": "Product",
+    "workflow": "How it works",
+    "start": "Get started",
+    "engineering": "Engineering",
+    "model": "Explore the model",
+    "github": "GitHub"
+  },
+  "home": {
+    "eyebrow": "Product Definition as Code · reference implementation",
+    "title": "Keep product decisions close to the work that changes them.",
+    "intro": "ProductShape helps teams define product knowledge in versioned Markdown, connect delivery work to the accepted definition, and see when that definition changes.",
+    "primaryAction": "Start with your repository",
+    "secondaryAction": "Explore the live model",
+    "proofLabel": "Used in real projects",
+    "proof": "Raccord · DomusMind · and more",
+    "flowTitle": "One definition. Clear links to delivery.",
+    "flowIntro": "A small, inspectable workflow keeps people in control at every decision point.",
+    "flow": [
+      {
+        "number": "01",
+        "title": "Define",
+        "text": "Describe product knowledge in Markdown files in your repository."
+      },
+      {
+        "number": "02",
+        "title": "Validate",
+        "text": "Check schemas, identifiers and relationships with deterministic rules."
+      },
+      {
+        "number": "03",
+        "title": "Cite",
+        "text": "Connect delivery documents to the exact accepted artifacts they use."
+      },
+      {
+        "number": "04",
+        "title": "Change",
+        "text": "Propose an update, review it, and detect stale citations after it changes."
+      }
+    ],
+    "principleTitle": "Tools check structure. People decide meaning.",
+    "principleText": "ProductShape can find broken references and changed definitions. It cannot decide whether an idea is true, whether a change is right, or whether implementation is complete.",
+    "explorerTitle": "See the ProductShape model, not a sales demo.",
+    "explorerText": "This repository defines itself with the same product model it asks teams to create. Browse real artifacts and their relationships in a generated, read-only snapshot.",
+    "architectureTitle": "Built to stay understandable.",
+    "architectureText": "Explore the twelve arc42 views of the implementation, from package boundaries to publishing and quality evidence.",
+    "closingTitle": "Start with one product decision.",
+    "closingText": "You do not need a complete model to begin. Start from the knowledge your next change depends on."
+  },
+  "product": {
+    "eyebrow": "The product",
+    "title": "A product definition you can review like code.",
+    "intro": "ProductShape is a command-line reference implementation for Product Definition as Code. Keep accepted product knowledge in your repository, then connect the work that implements it through stable citations.",
+    "sections": [
+      {
+        "title": "A shared source for product decisions",
+        "text": "Model actors, journeys, use cases, rules, terms and requirements as Markdown artifacts. Stable identifiers keep references intact when files move."
+      },
+      {
+        "title": "A useful change has a visible path",
+        "text": "Product Changes propose a future definition. Validate the proposal, review it with people, apply it on a branch, and let a merge accept the new baseline."
+      },
+      {
+        "title": "Drift becomes inspectable",
+        "text": "Citations bind consumer documents to artifact content. When an artifact changes, verification reports current, stale, tampered or unresolved references."
+      },
+      {
+        "title": "Works with your delivery method",
+        "text": "Product Definition as Code is SDD-agnostic. ProductShape provides integrations for OpenSpec and Spec Kit while keeping the core product model independent."
+      }
+    ],
+    "boundaryTitle": "What ProductShape leaves to people",
+    "boundaryText": "Validation is structural. It does not judge product truth. AI can help recover or draft knowledge, but people review the meaning and approve every accepted change. Product truth remains in files under version control."
+  },
+  "workflow": {
+    "eyebrow": "The workflow",
+    "title": "From product knowledge to delivery, step by step.",
+    "intro": "ProductShape gives product knowledge stable structure and links it to the documents that implement it. Your existing repository and review process stay in control.",
+    "steps": [
+      {
+        "title": "Start where you are",
+        "text": "Initialize a new product or add ProductShape to an existing repository. For a brownfield system, recover candidate knowledge from evidence; the tool structures the work but does not scan code and invent a model."
+      },
+      {
+        "title": "Write a proposed definition",
+        "text": "Describe an actor, rule, journey, requirement or term in the change's proposed state. The initial baseline follows the same governed Product Change process as later updates."
+      },
+      {
+        "title": "Check structure",
+        "text": "Run validation to check schema, IDs, relationships and lifecycle rules. Structural validity is a useful signal, not proof that the definition is semantically complete."
+      },
+      {
+        "title": "Review and accept",
+        "text": "People decide whether a change is accurate. Apply materializes it on a working branch; a reviewed merge accepts the new baseline."
+      },
+      {
+        "title": "Cite and verify",
+        "text": "Consumer documents cite accepted artifacts by stable ID and content digest. Verification makes changed or broken references visible for review."
+      }
+    ],
+    "noteTitle": "Keep product and implementation changes connected, not conflated.",
+    "noteText": "A Product Change records product intent. The implementation may ship in the same or a later pull request. A merge does not claim the change was implemented, tested, or released."
+  },
+  "start": {
+    "eyebrow": "Get started",
+    "title": "A small, governed first step.",
+    "intro": "The quickest useful path is one accepted artifact, one consumer citation, and one visible stale dependency after a change. The commands below use the current supported CLI version, read from the package release metadata at build time.",
+    "installTitle": "1 · Install in your repository",
+    "initCode": "npm install --save-dev --save-exact @prodshape/cli@{{version}}\nnpx --no-install prodshape init\nnpx --no-install prodshape validate\nnpx --no-install prodshape change create CHG-INITIAL",
+    "initText": "The CLI starts with a small kernel. Templates and schemas are available on demand; expand the layout only when it helps your team.",
+    "authorTitle": "2 · Propose the initial definition",
+    "authorText": "Add your first artifacts under the active CHG-INITIAL change, list them in its operations, and validate the proposal. Review its meaning with the people who know the product.",
+    "acceptTitle": "3 · Apply and accept through review",
+    "acceptText": "After a human marks the change approved, apply it on a working branch and open a pull request. The merge accepts the baseline; applying is not acceptance.",
+    "citeTitle": "4 · Cite the definition in delivery work",
+    "citeCode": "prodshape inspect ACT-USER\nprodshape cite --id ACT-USER --digest <digest>\nprodshape citations verify",
+    "citeText": "Store the citation next to the consumer text it grounds. Change the accepted artifact in a later Product Change and verification will report the recorded citation as stale.",
+    "greenfield": "Greenfield adoption guide",
+    "brownfield": "Brownfield recovery guide",
+    "walkthrough": "Full governed walkthrough",
+    "releaseNote": "Commands and capabilities present only on the repository's main branch may be newer than this published package."
+  },
+  "engineering": {
+    "eyebrow": "Engineering",
+    "title": "The architecture behind the CLI.",
+    "intro": "Twelve arc42 views explain the implementation structure, the reasons behind it, and the evidence that keeps the documentation connected to the code.",
+    "sections": "Architecture views",
+    "decisions": "Architecture decisions",
+    "githubSource": "Read the Markdown source"
+  },
+  "model": {
+    "eyebrow": "ProductShape, described with ProductShape",
+    "title": "Explore the live self-model.",
+    "intro": "This is a generated, read-only projection of the accepted product model in this repository. Its revision is shown inside the explorer.",
+    "open": "Open the explorer on its own",
+    "source": "Browse the authored model files",
+    "notice": "The model is authored in English. The explorer is generated from those canonical files and does not add or store product knowledge."
+  },
+  "footer": {
+    "line": "ProductShape is the reference implementation of Product Definition as Code.",
+    "spec": "Normative specification",
+    "repo": "Source repository",
+    "license": "Apache-2.0"
+  },
+  "arc42EnglishOnly": "The arc42 source is currently maintained in English. This translated index points to the canonical engineering documentation."
+}

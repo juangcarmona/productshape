@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 420" role="img" aria-labelledby="title description">
+  <title id="title">ProductShape technical context</title>
+  <desc id="description">People and delivery systems exchange repository files with the ProductShape CLI. The repository is the source of truth, while the public reader receives a generated read-only snapshot.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 10 5 0 10z" fill="#153d70"/>
+    </marker>
+    <style>
+      .box { fill: #fffefa; stroke: #aab9c8; stroke-width: 1.5; }
+      .core { fill: #e5edf6; stroke: #153d70; stroke-width: 2; }
+      .line { fill: none; stroke: #153d70; stroke-width: 1.8; marker-end: url(#arrow); }
+      .muted-line { fill: none; stroke: #53635b; stroke-width: 1.5; stroke-dasharray: 5 5; marker-end: url(#arrow); }
+      .label { fill: #182722; font: 600 16px system-ui, sans-serif; }
+      .sub { fill: #53635b; font: 13px system-ui, sans-serif; }
+      .tag { fill: #153d70; font: 11px monospace; font-weight: 700; letter-spacing: .06em; }
+    </style>
+  </defs>
+  <rect class="box" x="28" y="54" width="206" height="92"/>
+  <text class="tag" x="46" y="78">PEOPLE</text>
+  <text class="label" x="46" y="105">Maintainer</text>
+  <text class="sub" x="46" y="127">authors · reviews · accepts</text>
+
+  <rect class="box" x="28" y="252" width="206" height="92"/>
+  <text class="tag" x="46" y="276">ASSISTANCE</text>
+  <text class="label" x="46" y="303">AI assistant</text>
+  <text class="sub" x="46" y="325">drafts from repository context</text>
+
+  <rect class="core" x="418" y="150" width="218" height="110"/>
+  <text class="tag" x="440" y="177">CANONICAL SOURCE</text>
+  <text class="label" x="440" y="207">Product repository</text>
+  <text class="sub" x="440" y="231">model · changes · citations</text>
+
+  <rect class="box" x="797" y="54" width="215" height="92"/>
+  <text class="tag" x="815" y="78">CONSUMERS</text>
+  <text class="label" x="815" y="105">Delivery documents</text>
+  <text class="sub" x="815" y="127">OpenSpec · Spec Kit · others</text>
+
+  <rect class="box" x="797" y="252" width="215" height="92"/>
+  <text class="tag" x="815" y="276">PUBLIC READER</text>
+  <text class="label" x="815" y="303">Generated explorer</text>
+  <text class="sub" x="815" y="325">static · read-only · revisioned</text>
+
+  <path class="line" d="M234 98 C306 98 333 173 418 183"/>
+  <text class="sub" x="282" y="111">file changes + review</text>
+  <path class="muted-line" d="M234 294 C314 294 345 237 418 225"/>
+  <text class="sub" x="279" y="282">drafts through files</text>
+  <path class="line" d="M636 180 C706 166 720 101 797 101"/>
+  <text class="sub" x="685" y="143">accepted text + citations</text>
+  <path class="muted-line" d="M636 232 C704 247 727 297 797 297"/>
+  <text class="sub" x="675" y="276">generated snapshot</text>
+
+  <rect x="419" y="365" width="216" height="35" fill="#f7f6f0" stroke="#cfd5cd"/>
+  <text class="sub" x="436" y="387">ProductShape CLI: validate · derive · verify</text>
+  <path class="line" d="M527 260v105"/>
+</svg>
