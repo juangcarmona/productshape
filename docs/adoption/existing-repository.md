@@ -2,7 +2,7 @@
 
 Use this guide to see what ProductShape adds to an existing repository, what it leaves untouched, and how to configure the files it owns. To build the product model, continue with [starting a new product](greenfield.md) or [recovering a model for an existing product](brownfield.md). If you use OpenSpec or Spec Kit, read the matching integration guide too.
 
-> These commands target the supported published baseline, [`@prodshape/cli@0.22.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.22.0). They use `prodshape`; the `product-definition` alias is equivalent through v0.x. The layout and configuration below are a fixed contract and can also be created by hand. See [Limitations](../limitations.md).
+> These commands target the supported published baseline, [`@prodshape/cli@0.22.1`](https://www.npmjs.com/package/@prodshape/cli/v/0.22.1). They use `prodshape`; the `product-definition` alias is equivalent through v0.x. The layout and configuration below are a fixed contract and can also be created by hand. See [Limitations](../limitations.md).
 
 ## What the installer will change
 

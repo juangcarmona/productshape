@@ -4,7 +4,7 @@ Use this guide when your product already has users, behaviour and a history, but
 
 One expectation matters up front: **ProductShape will not scan your code and invent a product model.** You and, if useful, an AI assistant inspect the evidence and propose what the product means. A person reviews every candidate before it becomes part of the accepted model. ProductShape keeps the work organized: it tracks which evidence you examined, what it supports, what remains uncertain, and what still needs review. Recovery is analysis work; the tools help you keep it bounded and resumable.
 
-> These commands target the supported published baseline, [`@prodshape/cli@0.22.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.22.0). They use `prodshape`; the `product-definition` alias is equivalent through v0.x. See [Limitations](../limitations.md).
+> These commands target the supported published baseline, [`@prodshape/cli@0.22.1`](https://www.npmjs.com/package/@prodshape/cli/v/0.22.1). They use `prodshape`; the `product-definition` alias is equivalent through v0.x. See [Limitations](../limitations.md).
 
 ## 1. Preview and install ProductShape
 
