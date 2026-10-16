@@ -98,4 +98,4 @@ This works on Windows and macOS, where a casing-only rename is otherwise a silen
 
 ## 5. Make later changes through Product Changes
 
-Once the applied `CHG-INITIAL` result is accepted by merge, every later product change, including corrections to recovered artifacts, follows the same path: validate the proposed change, get human approval, apply it explicitly, and accept the resulting baseline through merge. From then on, follow [Make your first product change](greenfield.md#make-your-first-product-change) and the [Change walkthrough](../methodology/change.md).
+Once the applied `CHG-INITIAL` result is accepted by merge, every later product change, including corrections to recovered artifacts, follows the same path: validate the proposed change, get human approval, apply it explicitly, and accept the resulting baseline through merge. From then on, follow [Make your first product change](greenfield.md#5-make-your-first-product-change) and the [Change walkthrough](../methodology/change.md).
