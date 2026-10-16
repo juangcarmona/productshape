@@ -140,7 +140,7 @@
     "eyebrow": "ProductShape, descrito con ProductShape",
     "title": "Explora el modelo vivo del proyecto.",
     "intro": "Esta proyección generada y de solo lectura representa el modelo de producto aceptado en este repositorio. La revisión de origen aparece dentro del explorador.",
-    "open": "Abrir el explorador por separado",
+    "open": "Abrir la instantánea en una pestaña nueva",
     "source": "Consultar los archivos del modelo",
     "notice": "El modelo está escrito en inglés. El explorador se genera a partir de esos archivos canónicos y no añade ni guarda conocimiento del producto."
   },
