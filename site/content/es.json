@@ -123,10 +123,36 @@
     "citeTitle": "4 · Cita la definición en el trabajo de entrega",
     "citeCode": "prodshape inspect ACT-USER\nprodshape cite --id ACT-USER --digest <digest>\nprodshape citations verify",
     "citeText": "Guarda la cita junto al texto consumidor que respalda. Si cambias el artefacto aceptado en otro Product Change, la verificación informará de que la cita está obsoleta.",
-    "greenfield": "Guía para productos nuevos",
-    "brownfield": "Guía de recuperación en sistemas existentes",
     "walkthrough": "Recorrido gobernado completo",
     "releaseNote": "Las funciones que solo existen en la rama main del repositorio pueden ser más recientes que este paquete publicado."
+  },
+  "guides": {
+    "eyebrow": "Guías de adopción",
+    "title": "Elige el recorrido que encaja con tu producto.",
+    "intro": "Empieza un producto nuevo, recupera lo que has aprendido de uno existente o añade ProductShape con cuidado a un repositorio que ya tiene sus herramientas y convenciones.",
+    "source": "Leer la guía fuente en el repositorio",
+    "openSpec": "Guía de integración con OpenSpec",
+    "specKit": "Guía de integración con Spec Kit",
+    "items": [
+      {
+        "slug": "greenfield",
+        "label": "PRODUCTO NUEVO",
+        "title": "Empieza un producto nuevo",
+        "description": "Crea la primera definición del producto y acéptala con el mismo proceso de revisión que usarás para los cambios posteriores."
+      },
+      {
+        "slug": "brownfield",
+        "label": "PRODUCTO EXISTENTE",
+        "title": "Recupera un modelo a partir de evidencias",
+        "description": "Propón y revisa un modelo para un producto en uso a partir de documentación, pruebas, conversaciones y otras evidencias."
+      },
+      {
+        "slug": "existing-repository",
+        "label": "REPOSITORIO EXISTENTE",
+        "title": "Añade ProductShape a un repositorio existente",
+        "description": "Descubre qué cambia durante la inicialización, qué sigue bajo tu control y cómo configurar ProductShape."
+      }
+    ]
   },
   "engineering": {
     "eyebrow": "Ingeniería",
