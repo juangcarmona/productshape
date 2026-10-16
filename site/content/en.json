@@ -123,10 +123,36 @@
     "citeTitle": "4 · Cite the definition in delivery work",
     "citeCode": "prodshape inspect ACT-USER\nprodshape cite --id ACT-USER --digest <digest>\nprodshape citations verify",
     "citeText": "Store the citation next to the consumer text it grounds. Change the accepted artifact in a later Product Change and verification will report the recorded citation as stale.",
-    "greenfield": "Greenfield adoption guide",
-    "brownfield": "Brownfield recovery guide",
     "walkthrough": "Full governed walkthrough",
     "releaseNote": "Commands and capabilities present only on the repository's main branch may be newer than this published package."
+  },
+  "guides": {
+    "eyebrow": "Adoption guides",
+    "title": "Choose the path that fits your product.",
+    "intro": "Start with a new product, recover what an existing one has taught you, or add ProductShape safely to a repository that already has its own tools and conventions.",
+    "source": "Read the source guide in the repository",
+    "openSpec": "OpenSpec integration guide",
+    "specKit": "Spec Kit integration guide",
+    "items": [
+      {
+        "slug": "greenfield",
+        "label": "NEW PRODUCT",
+        "title": "Start a new product",
+        "description": "Create the first product definition and accept it through the same review process used for later changes."
+      },
+      {
+        "slug": "brownfield",
+        "label": "EXISTING PRODUCT",
+        "title": "Recover a product model from evidence",
+        "description": "Use documentation, tests, conversations, and other evidence to propose and review a model for a product already in use."
+      },
+      {
+        "slug": "existing-repository",
+        "label": "EXISTING REPOSITORY",
+        "title": "Add ProductShape to an existing repository",
+        "description": "See what initialization changes, what stays under your control, and how to configure ProductShape."
+      }
+    ]
   },
   "engineering": {
     "eyebrow": "Engineering",
