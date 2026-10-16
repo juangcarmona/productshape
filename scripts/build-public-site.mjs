@@ -28,6 +28,11 @@ const siteText = Object.fromEntries(
   ),
 );
 const architectureDir = join(root, 'docs/architecture');
+const adoptionGuides = [
+  { slug: 'greenfield', file: 'greenfield.md' },
+  { slug: 'brownfield', file: 'brownfield.md' },
+  { slug: 'existing-repository', file: 'existing-repository.md' },
+];
 const architectureFiles = (await readdir(architectureDir))
   .filter((name) => /^\d{2}-.*\.md$/u.test(name))
   .sort();
@@ -96,6 +101,14 @@ for (const locale of ['en', 'es']) {
   await emitPage(locale, 'start', 'get-started', renderStart(words, packageJson.version));
   await emitPage(locale, 'engineering', 'engineering', renderEngineeringIndex(words, locale));
   await emitPage(locale, 'model', 'model', renderModel(words));
+  for (const guide of adoptionGuides) {
+    const markdown = await readFile(join(root, 'docs/adoption', guide.file), 'utf8');
+    const guideCopy = words.guides.items.find((item) => item.slug === guide.slug);
+    await emitPage(locale, 'start', `guides/${guide.slug}`, renderGuide(guide, markdown, words), {
+      title: `${guideCopy.title} · ProductShape`,
+      description: guideCopy.description,
+    });
+  }
 }
 await cp(join(outDir, 'en/index.html'), join(outDir, 'index.html'));
 
@@ -155,6 +168,11 @@ function renderSitemap() {
   }
   for (const section of sections) {
     urls.push(`${siteOrigin}${basePath}en/engineering/${section.slug}/`);
+  }
+  for (const locale of ['en', 'es']) {
+    for (const guide of adoptionGuides) {
+      urls.push(`${siteOrigin}${basePath}${locale}/guides/${guide.slug}/`);
+    }
   }
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((url) => `<url><loc>${escapeHtml(url)}</loc></url>`).join('')}</urlset>\n`;
 }
@@ -286,7 +304,23 @@ function renderStart(words, version) {
   const code = (value) =>
     `<pre class="code-block"><code>${escapeHtml(value.replaceAll('{{version}}', version))}</code></pre>`;
   const repoFile = (path, anchor = '') => `${repoUrl}/blob/main/${path}${anchor}`;
-  return `<section class="page-hero"><div class="narrow"><p class="eyebrow">${escapeHtml(words.start.eyebrow)}</p><h1>${escapeHtml(words.start.title)}</h1><p class="lead">${escapeHtml(words.start.intro)}</p></div></section><section class="section"><div class="narrow"><article class="content-section"><h2>${escapeHtml(words.start.installTitle)}</h2><p>${escapeHtml(words.start.initText)}</p>${code(words.start.initCode)}</article><article class="content-section"><h2>${escapeHtml(words.start.authorTitle)}</h2><p>${escapeHtml(words.start.authorText)}</p></article><article class="content-section"><h2>${escapeHtml(words.start.acceptTitle)}</h2><p>${escapeHtml(words.start.acceptText)}</p></article><article class="content-section"><h2>${escapeHtml(words.start.citeTitle)}</h2><p>${escapeHtml(words.start.citeText)}</p>${code(words.start.citeCode)}</article><div class="callout"><p>${escapeHtml(words.start.releaseNote)}</p></div><div class="link-list"><a href="${repoFile('docs/adoption/greenfield.md')}">${escapeHtml(words.start.greenfield)} →</a><a href="${repoFile('docs/adoption/brownfield.md')}">${escapeHtml(words.start.brownfield)} →</a><a href="${repoFile('packages/cli/README.md', '#the-governed-citation-first-walkthrough')}">${escapeHtml(words.start.walkthrough)} →</a></div></div></section>`;
+  const guides = words.guides.items
+    .map(
+      (guide) =>
+        `<li><a href="${basePath}${words.languageName === 'Español' ? 'es' : 'en'}/guides/${guide.slug}/"><span>${escapeHtml(guide.label)} →</span><strong>${escapeHtml(guide.title)}</strong><p>${escapeHtml(guide.description)}</p></a></li>`,
+    )
+    .join('');
+  return `<section class="page-hero"><div class="narrow"><p class="eyebrow">${escapeHtml(words.start.eyebrow)}</p><h1>${escapeHtml(words.start.title)}</h1><p class="lead">${escapeHtml(words.start.intro)}</p></div></section><section class="section"><div class="narrow"><article class="content-section"><h2>${escapeHtml(words.start.installTitle)}</h2><p>${escapeHtml(words.start.initText)}</p>${code(words.start.initCode)}</article><article class="content-section"><h2>${escapeHtml(words.start.authorTitle)}</h2><p>${escapeHtml(words.start.authorText)}</p></article><article class="content-section"><h2>${escapeHtml(words.start.acceptTitle)}</h2><p>${escapeHtml(words.start.acceptText)}</p></article><article class="content-section"><h2>${escapeHtml(words.start.citeTitle)}</h2><p>${escapeHtml(words.start.citeText)}</p>${code(words.start.citeCode)}</article><div class="callout"><p>${escapeHtml(words.start.releaseNote)}</p></div><section class="guide-selection"><p class="eyebrow">${escapeHtml(words.guides.eyebrow)}</p><h2>${escapeHtml(words.guides.title)}</h2><p>${escapeHtml(words.guides.intro)}</p><ol>${guides}</ol></section><div class="link-list"><a href="${repoFile('packages/cli/README.md', '#the-governed-citation-first-walkthrough')}">${escapeHtml(words.start.walkthrough)} →</a><a href="${repoFile('docs/adoption/existing-openspec-repository.md')}">${escapeHtml(words.guides.openSpec)} →</a><a href="${repoFile('docs/adoption/existing-speckit-repository.md')}">${escapeHtml(words.guides.specKit)} →</a></div></div></section>`;
+}
+
+function renderGuide(guide, markdown, words) {
+  const intro =
+    words.languageName === 'Español'
+      ? '<div class="callout guide-language-note"><p>El contenido de esta guía se mantiene en inglés. Puedes cambiar el idioma para volver a la página de inicio o consultar el texto fuente en el repositorio.</p></div>'
+      : '';
+  const content = markdown.replace(/^# .*?(?:\r?\n)+/u, '').trim();
+  const source = `${repoUrl}/blob/main/docs/adoption/${guide.file}`;
+  return `<section class="page-hero guide-hero"><div class="wrap"><p class="breadcrumbs"><a href="${basePath}${words.languageName === 'Español' ? 'es' : 'en'}/get-started/">${escapeHtml(words.start.eyebrow)}</a> / ${escapeHtml(words.guides.items.find((item) => item.slug === guide.slug).label)}</p><p class="eyebrow">${escapeHtml(words.guides.eyebrow)}</p><h1>${escapeHtml(words.guides.items.find((item) => item.slug === guide.slug).title)}</h1><p class="lead">${escapeHtml(words.guides.items.find((item) => item.slug === guide.slug).description)}</p></div></section><section class="section guide-section"><article class="guide-content">${intro}${markdownToHtml(content, `adoption:${words.languageName === 'Español' ? 'es' : 'en'}:${guide.slug}`)}<p class="guide-source"><a href="${source}" rel="external">${escapeHtml(words.guides.source)} →</a></p></article></section>`;
 }
 
 function renderEngineeringIndex(words, locale) {
@@ -521,6 +555,18 @@ function resolveDocImage(src) {
 function resolveDocLink(href, sourceName) {
   if (/^(?:https?:|mailto:|#)/u.test(href)) return href;
   const clean = href.split('#')[0];
+  if (sourceName.startsWith('adoption:')) {
+    const [, locale, guideSlug] = sourceName.split(':');
+    const linkedGuide = clean.match(/(?:^|\/)(greenfield|brownfield|existing-repository)\.md$/u);
+    if (linkedGuide) {
+      const fragment = href.includes('#') ? `#${href.slice(href.indexOf('#') + 1)}` : '';
+      return `${basePath}${locale}/guides/${linkedGuide[1]}/${fragment}`;
+    }
+    const guideFile = adoptionGuides.find((item) => item.slug === guideSlug).file;
+    const sourceUrl = new URL(clean, `${repoUrl}/blob/main/docs/adoption/${guideFile}`);
+    if (href.includes('#')) sourceUrl.hash = href.slice(href.indexOf('#') + 1);
+    return sourceUrl.toString();
+  }
   if (clean === 'README.md' || clean === './README.md') return `${basePath}en/engineering/`;
   const section = clean.match(/(?:^|\/)(\d{2}-[^/]+\.md)$/u);
   if (section) {
