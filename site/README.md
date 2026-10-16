@@ -19,6 +19,10 @@ ProductShape is the branded reference implementation. Product Definition as Code
 
 Public onboarding follows the canonical [product model index](../docs/product/model/index.md), [adoption journey](../docs/product/model/journeys/jrn-adopt-001.md), and [initialization use case](../docs/product/model/use-cases/uc-init-001.md). The site links to the authored model and generated snapshot so product claims and instructions can be checked against canonical sources.
 
+## Visual language
+
+ProductShape's logo establishes a technical blueprint identity: white drawing surfaces, blue ink, and fine drafting lines. The public site uses that direction with a white canvas, a faint blue grid, square controls, and a system sans-serif stack. Shared colors and spacing live in [`assets/site.css`](assets/site.css); no web font is downloaded. The presentation requirement [`QR-PRESENTATION-001`](../docs/product/model/requirements/quality/qr-presentation-001.md) governs the generated model explorer specifically. It describes the explorer's compact, text-first interface and is a useful reference, but it is not a complete design system for the public marketing site.
+
 ## Engineering reader
 
 Each arc42 section is a static HTML page with a sticky, collapsible section index, a current-section indicator, previous/next links, a source link, and a link to the Architecture Decision Records. On narrow screens the index becomes a collapsible panel above the article. The layout borrows the reading pattern used by the DomusMind engineering snapshot while keeping ProductShape's own content, colors, and routes.
