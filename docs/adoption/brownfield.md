@@ -1,12 +1,12 @@
-# Adopting in a brownfield product
+# Bring an existing product under ProductShape
 
-This guide covers adopting Product Definition as Code for an existing system: software that already has behaviour, users and accumulated decisions, but no canonical product model. The path is initialize, recover a model from evidence, validate it into a baseline, then operate through Product Changes like any other repository.
+Use this guide when your product already has users, behaviour and a history, but no agreed product model. You will install ProductShape, gather evidence for a first model, review that model with people who know the product, and accept it as a baseline. Later changes follow the regular Product Change process.
 
-Read this first: **no tool will scan your codebase and emit a product model.** Semantic extraction stays with you and the AI assistant executing the `recover-product` skill, and a human validates everything before it becomes canonical. What is deterministic is the session around that work: `prodshape recover` manages the evidence inventory, content hashes, bounded batches, coverage, leads, user questions, checkpoints and the final report, so a recovery that spans days and many assistant conversations never loses track of what was examined, what changed and what remains. Plan for recovery to be real analytical work; the tooling structures it, it does not eliminate it.
+One expectation matters up front: **ProductShape will not scan your code and invent a product model.** You and, if useful, an AI assistant inspect the evidence and propose what the product means. A person reviews every candidate before it becomes part of the accepted model. ProductShape keeps the work organized: it tracks which evidence you examined, what it supports, what remains uncertain, and what still needs review. Recovery is analysis work; the tools help you keep it bounded and resumable.
 
 > These commands target the supported published baseline, [`@prodshape/cli@0.22.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.22.0). They use `prodshape`; the `product-definition` alias is equivalent through v0.x. See [Limitations](../limitations.md).
 
-## 1. Initialize
+## 1. Preview and install ProductShape
 
 A brownfield repository usually already has a populated `docs/`, so check what `init` would do before it does it:
 
@@ -26,11 +26,11 @@ A brownfield repository that already runs OpenSpec can wire the integration in t
 
 `init` scaffolds one directory per artifact kind under `docs/product/model/`. The layout is a recommendation, not a rule — discovery walks the model directory recursively and keys on the frontmatter `type` — but taking it means not having to invent a taxonomy. Use `--flat` to opt out.
 
-## 2. Recover a candidate model
+## 2. Recover what the evidence supports
 
 The Recover operation reconstructs product knowledge from what the system already tells you. The workflow is described in [Recover](../methodology/recover.md); the essentials:
 
-**A recovery brief bounds the session.** Before anything is read, you and the assistant agree a brief: which roots and file patterns are evidence, what is excluded or forbidden, the documentation languages, the product scope, known actors and vocabulary (including obsolete names), which source wins when sources disagree, ordered evidence tiers (specification documents and product docs first, source code last; the tiers drive the batch order), the batch size, the areas where you want to confirm candidates personally, and any external material you explicitly authorise. The brief can also declare `git.branch`: the session then runs on that dedicated branch and the CLI records one checkpoint commit per step, so the whole experiment is auditable step by step and disposable by deleting the branch. Then:
+**Start with a recovery brief.** Before reviewing files, agree on the product area, evidence to include or exclude, languages, known terms and actors, and how to handle conflicting sources. Rank the evidence so the most direct product documents are reviewed before source code, set a manageable batch size, and note which findings need your personal confirmation. You can also set `git.branch` to run the recovery on a dedicated branch; ProductShape then records a checkpoint commit at each step. Start the session with:
 
 ```bash
 prodshape recover start --brief brief.yaml   # inventory the declared evidence, hash it, checkpoint
@@ -45,9 +45,9 @@ prodshape recover report                     # the final report, once complete
 
 The session lives under `.product/generated/recovery/<session-id>/` and survives interruption: a new conversation (or a different assistant) resumes from `recover status` with the same boundaries, because the brief travels inside the session state. Repository-wide recovery means that declared population plus what you explicitly authorise, never arbitrary filesystem or internet access.
 
-**Evidence sources.** Anything that records product behaviour or intent: source code and its tests, API contracts, UI flows, database constraints, existing documentation and wikis, issue trackers and old tickets, support conversations, and — often the highest-value source — interviews with the people who operate and maintain the system. Files you hand over, statements you relay and online resources you authorise join the inventory as first-class evidence (`prodshape recover evidence add`), hashed where content is available so later drift is detected like any other staleness.
+**What counts as evidence?** Use anything that records product behaviour or intent: existing documentation, API contracts, user flows, database constraints, source code and tests, tickets, support conversations, and interviews with the people who run or maintain the product. You can also add files, statements, or online resources that you explicitly authorize with `prodshape recover evidence add`. Where content is available, ProductShape records a hash so later changes can be detected.
 
-**Candidates carry provenance and confidence.** Each recovered artifact is a _candidate_: a schema-conformant draft that records where the knowledge came from (which files, tests, tickets or conversations) and how confident the recovery is in it. A business rule read directly from a validation test is not the same as one inferred from a variable name, and the candidate must say so — in frontmatter, so it can be queried:
+**Record the source and confidence for each candidate.** A recovered artifact is a draft, not a fact. Its provenance says which files, tests, tickets, or conversations support it and how strong that evidence is. A rule stated in a test is better supported than one inferred from a variable name; record that difference in frontmatter:
 
 ```yaml
 provenance:
@@ -64,11 +64,11 @@ prodshape schema business-rule
 
 Frontmatter is a closed contract: an unrecognised property is a `PRODUCT002` error, so inventing a field to hold something the schema does not model will fail validation. Put such things in the body.
 
-**A human validates before anything becomes active.** Candidates enter the model with status `draft`. A person who understands the product reviews each candidate — confirming, correcting or discarding it — before its status moves to `active`. Recovered knowledge is never auto-canonical: the tool and the skill propose, the human decides. This boundary is deliberate and permanent, not a v0.1 gap.
+**Review every candidate before accepting it.** Candidates start with status `draft`. Someone who understands the product confirms, corrects, or discards each one before it becomes `active`. ProductShape and the AI assistant can propose; only a person decides what the model says.
 
 The `recover-product` skill drives this loop: it reads evidence you point it at, drafts candidates with provenance and confidence recorded, and queues them for your review. It is installed by `init --ai`. Without it, the same workflow works by hand using the templates in `.product/templates/`.
 
-## 3. Establish the baseline
+## 3. Accept the first baseline
 
 Recovery is an input activity to `CHG-INITIAL`, not a separate lifecycle: the candidates become the proposed future state of the reserved initialisation change, which is validated, receives human product approval, is applied on a working branch and is accepted by merge exactly as in the greenfield path. Provenance and confidence live on the proposed artifacts, never on the change itself. While the session runs, `prodshape recover check` revalidates the whole overlay; after apply, validate the proposed resulting model before opening the pull request:
 
@@ -90,12 +90,12 @@ prodshape fix --filenames
 
 This works on Windows and macOS, where a casing-only rename is otherwise a silent no-op.
 
-## 4. Set honest expectations
+## 4. Keep uncertainty visible
 
 - **Recovery is incremental.** You do not need the whole system modelled before the baseline is useful. Start with the areas you are about to change; a partial but validated model beats a complete but unreviewed one.
 - **The model records what the product does, not what the code looks like.** Artifacts must not contain implementation design (see [Artifacts](https://github.com/product-definition-as-code/spec/blob/main/spec/artifacts.md)). If recovery is producing class inventories, it has drifted.
 - **Some knowledge is simply gone.** Where nobody can confirm a rule's rationale, record what is observable and note the uncertainty in the artifact body rather than inventing a justification.
 
-## 5. Operate through Product Changes
+## 5. Make later changes through Product Changes
 
-Once the applied `CHG-INITIAL` result is accepted by merge, every subsequent semantic evolution, including corrections to recovered artifacts, goes through a Product Change: overlay validation, human product approval, explicit apply, and acceptance of the resulting baseline by merge. From this point the workflow is identical to the greenfield path; follow [Adopting in a greenfield product](greenfield.md#5-run-your-first-product-change) and [Change](../methodology/change.md).
+Once the applied `CHG-INITIAL` result is accepted by merge, every later product change, including corrections to recovered artifacts, follows the same path: validate the proposed change, get human approval, apply it explicitly, and accept the resulting baseline through merge. From then on, follow [Make your first product change](greenfield.md#make-your-first-product-change) and the [Change walkthrough](../methodology/change.md).
