@@ -1,10 +1,10 @@
-# Installing into an existing repository
+# Add ProductShape to an existing repository
 
-This guide covers what Product Definition as Code physically adds to any existing repository, who owns each path, and how to configure it. For how to build the model itself, follow the [greenfield](greenfield.md) or [brownfield](brownfield.md) guide; if the repository already uses OpenSpec, also read [Adopting in an existing OpenSpec repository](existing-openspec-repository.md).
+Use this guide to see what ProductShape adds to an existing repository, what it leaves untouched, and how to configure the files it owns. To build the product model, continue with [starting a new product](greenfield.md) or [recovering a model for an existing product](brownfield.md). If you use OpenSpec or Spec Kit, read the matching integration guide too.
 
 > These commands target the supported published baseline, [`@prodshape/cli@0.22.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.22.0). They use `prodshape`; the `product-definition` alias is equivalent through v0.x. The layout and configuration below are a fixed contract and can also be created by hand. See [Limitations](../limitations.md).
 
-## What init touches
+## What the installer will change
 
 ```bash
 prodshape init [--ai claude|copilot|codex|opencode] [--flat] [--shorthand] [--dry-run]
@@ -44,7 +44,7 @@ It reports every path it would create, preserve, regenerate (a managed file it o
 
 `--flat` scaffolds the model directory without the per-kind subdirectories. The subdirectories are a recommendation: discovery walks the model directory recursively and keys on the frontmatter `type`, so no layout is enforced.
 
-## Authority rules
+## Who owns each path
 
 Every path has exactly one owner. The full authority model is in the [specification](https://github.com/product-definition-as-code/spec/blob/main/spec/index.md#canonical-authority); the installation-level view:
 
@@ -60,13 +60,13 @@ Every path has exactly one owner. The full authority model is in the [specificat
 
 Managed integration files are generated from canonical assets (skills, command definitions, hook descriptors) shipped with the toolkit. If a generated file is wrong, fix the canonical asset or open an issue — a hand edit will be flagged as drift and lost on the next `integration update`.
 
-## Migrating from the earlier init layout
+## If you used an older init layout
 
 Repositories initialized before the kernel default carry the full profile: per-kind model directories with `.gitkeep` markers, the four change directories, and the template library under `.product/templates/`. Nothing about that layout stops working, and nothing requires migration: the kernel changed only what a fresh `prodshape init` writes.
 
 Optional cleanup, entirely your choice: `.gitkeep` markers in per-kind directories you do not use can be deleted (discovery keys on frontmatter `type`, not on directory names), and `.product/templates/` can be deleted if you prefer `prodshape template <kind>` on demand; `prodshape init --full` restores both at any time. Keep `.product/config.yaml`, `.product/installation.lock.json` and `.product/integrations/` exactly as before.
 
-## Configuration
+## Configure ProductShape
 
 `.product/config.yaml` follows the PDaC configuration contract: a versioned kernel of `version`, `product-root`, `validation.warnings-as-errors` and `extensions`, with every ProductShape-specific setting under the `extensions.prodshape` namespace:
 
@@ -97,7 +97,7 @@ An invalid configuration (malformed YAML, a missing or unsupported `version`, an
 
 `extensions.prodshape.integrations.shorthand-commands` must be set in configuration rather than passed per command, because `integration update` re-renders from configuration; `init --shorthand` writes it for you. Turning it off removes the aliases the previous setting generated, provided they are unmodified — a hand-edited one is left in place and reported.
 
-## The installation lock
+## Keep the installation lock healthy
 
 `.product/installation.lock.json` records the SHA-256 digest of every managed integration file that `init` or `integration add` generated, per provider:
 
@@ -116,7 +116,7 @@ An invalid configuration (malformed YAML, a missing or unsupported `version`, an
 - Never edit it by hand. `integration update` rewrites it; `integration update --check` verifies it (`PRODUCT051` for a hand-edited file, `PRODUCT052` for a missing one) and is the right CI gate.
 - If it is deleted, validation and graph compilation still work — they do not read it — but the tool no longer knows which files it owns. Recover with `integration add <provider> --force`.
 
-## What to commit, and what to ignore
+## Choose what to commit
 
 Only two things under `.product/` are regenerable. Everything else in it is how each clone verifies the installation, so it belongs in version control:
 
@@ -133,7 +133,7 @@ Managed files under `.claude/` and `.github/` are committed too: the integration
 
 **Do not ignore `.product/` as a whole.** It is the tempting shortcut when the directory shows up untracked, and it takes the configuration and the lock out of history with it. Every other clone then has an installation `doctor` cannot verify and `integration update` refuses to reconcile.
 
-### The ignore rules
+### Add the generated-file ignore rules
 
 `init` prints the rules it recommends and, when you ask it to, writes them:
 
