@@ -384,6 +384,144 @@ h3 {
 .content-section p {
   max-width: 74ch;
 }
+.guide-selection {
+  padding: 2rem 0;
+  border-top: 1px solid var(--line);
+}
+.guide-selection > p:not(.eyebrow) {
+  color: var(--muted);
+}
+.guide-selection ol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: 1.4rem 0 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--line);
+}
+.guide-selection li + li {
+  border-left: 1px solid var(--line);
+}
+.guide-selection li a {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.1rem;
+  color: var(--ink);
+  text-decoration: none;
+}
+.guide-selection li a:hover {
+  background: var(--accent-soft);
+}
+.guide-selection li span {
+  color: var(--accent);
+  font: 700 0.68rem/1.4 var(--mono);
+  text-transform: uppercase;
+}
+.guide-selection li strong {
+  font-size: 1rem;
+  line-height: 1.35;
+}
+.guide-selection li p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.guide-hero {
+  padding-bottom: 2rem;
+}
+.guide-hero h1 {
+  max-width: 25ch;
+}
+.guide-section {
+  padding-top: 2rem;
+}
+.guide-content {
+  width: min(900px, calc(100% - 3rem));
+  margin: 0 auto;
+  padding: clamp(1.25rem, 4vw, 3rem);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--accent);
+  background: var(--surface);
+  line-height: 1.72;
+}
+.guide-content > h2 {
+  margin: 2.8rem 0 0.9rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  font-size: clamp(1.5rem, 2.8vw, 2rem);
+}
+.guide-content > h2:first-of-type {
+  margin-top: 0;
+  border-top: 0;
+  padding-top: 0;
+}
+.guide-content > h3 {
+  margin-top: 2rem;
+  color: var(--accent-strong);
+}
+.guide-content p,
+.guide-content li {
+  max-width: 82ch;
+}
+.guide-content li + li {
+  margin-top: 0.45rem;
+}
+.guide-content ul,
+.guide-content ol {
+  padding-left: 1.5rem;
+}
+.guide-content pre {
+  overflow-x: auto;
+  margin: 1.2rem 0 1.6rem;
+  padding: 1rem 1.15rem;
+  border-left: 3px solid var(--accent);
+  background: var(--code);
+  color: var(--code-ink);
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+.guide-content pre code {
+  font-size: inherit;
+}
+.guide-content table {
+  display: block;
+  width: 100%;
+  margin: 1.4rem 0 2rem;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.guide-content th,
+.guide-content td {
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.guide-content th {
+  background: var(--accent-soft);
+}
+.guide-content blockquote {
+  margin: 1.6rem 0;
+  padding: 0.85rem 1rem;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+}
+.guide-content blockquote p {
+  margin: 0;
+}
+.guide-source {
+  margin-top: 3rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--line);
+}
+.guide-language-note {
+  margin-top: 0;
+}
 .step-list {
   list-style: none;
   margin: 2rem 0 0;
@@ -885,6 +1023,13 @@ h3 {
   }
   .feature-grid {
     grid-template-columns: 1fr;
+  }
+  .guide-selection ol {
+    grid-template-columns: 1fr;
+  }
+  .guide-selection li + li {
+    border-top: 1px solid var(--line);
+    border-left: 0;
   }
   .feature {
     min-height: 0;
