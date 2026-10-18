@@ -46,7 +46,7 @@ Every kind keeps a stable color in both appearances and across projects. Pair it
 
 ## Engineering section colors
 
-Engineering sections use four semantic color families instead of twelve unrelated colors. The groups follow the arc42 distinction between requirements, architecture views, concepts and decisions, and risks/reference material. Each of the first three families uses an existing PDaC artifact-kind color as its anchor; risks and reference use the neutral text color. Each badge pairs a short section code with its own 16px SVG icon; the section number stays at the row's right edge. Color adds a secondary cue and never replaces the label.
+Engineering sections use four semantic color families instead of twelve unrelated colors. The groups follow the arc42 distinction between requirements, architecture views, concepts and decisions, and risks/reference material. Each of the first three families uses an existing PDaC artifact-kind color as its anchor; risks and reference use the neutral text color. Each badge pairs a short section code with its own 16px SVG icon. Section codes and titles identify the sections without visible ordinal numbers. Color adds a secondary cue and never replaces the label.
 
 | Family | Sections and codes | Palette anchor | Light | Dark |
 | --- | --- | --- | --- | --- |
