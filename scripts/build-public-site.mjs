@@ -62,7 +62,7 @@ const sections = await Promise.all(
       title: metadata.title,
       description: metadata.description,
       markdown,
-      html: markdownToHtml(markdown, name),
+      html: markdownToHtml(markdown.trimStart().replace(/^#\s+[^\r\n]+(?:\r?\n)+/u, ''), name, 0),
     };
   }),
 );
@@ -339,7 +339,7 @@ function renderArchitecturePage(section) {
   const nav = sections
     .map(
       (item) =>
-        `<li><a href="${basePath}en/engineering/${item.slug}/"${item.slug === section.slug ? ' aria-current="page"' : ''}><span class="nav-no">${item.number}</span><span>${escapeHtml(item.title)}</span></a></li>`,
+        `<li><a href="${basePath}en/engineering/${item.slug}/"${item.slug === section.slug ? ' aria-current="page"' : ''}><span class="engineering-chev" aria-hidden="true">›</span><span class="nav-no">${item.number}</span><span class="engineering-nav-title">${escapeHtml(item.title)}</span></a></li>`,
     )
     .join('');
   const sourceUrl = `${repoUrl}/blob/main/docs/architecture/${section.name}`;
@@ -347,7 +347,7 @@ function renderArchitecturePage(section) {
     item
       ? `<a class="nav-adjacent nav-${direction}" href="${basePath}en/engineering/${item.slug}/"><span>${direction === 'previous' ? '← Previous' : 'Next →'}</span><strong>${item.number} · ${escapeHtml(item.title)}</strong></a>`
       : `<span class="nav-adjacent nav-${direction} disabled" aria-hidden="true"></span>`;
-  return `<section class="engineering-page-hero"><div class="wrap"><p class="breadcrumbs"><a href="${basePath}en/engineering/${sections[0].slug}/">Engineering</a> / arc42 ${section.number}</p><p class="eyebrow">arc42 · section ${section.number} of 12</p><h1>${escapeHtml(section.title)}</h1><p class="lead">${escapeHtml(section.description)}</p></div></section><div class="wrap engineering-layout"><nav class="engineering-nav" aria-label="arc42 sections"><details open><summary>Architecture sections <span>12 views</span></summary><ol>${nav}</ol><a class="engineering-decisions" href="${repoUrl}/tree/main/docs/architecture/decisions">Architecture decisions ↗</a><div class="nav-adjacent-list">${adjacentLink(previous, 'previous')}${adjacentLink(next, 'next')}</div></details></nav><article class="engineering-content"><div class="engineering-content-inner">${section.html}<div class="engineering-endmatter"><p class="source-stamp">${escapeHtml(revision)}</p><p class="link-list"><a href="${sourceUrl}">Markdown source on GitHub →</a></p><div class="article-pagination">${adjacentLink(previous, 'previous')}${adjacentLink(next, 'next')}</div></div></div></article></div>`;
+  return `<div class="engineering-layout"><aside class="engineering-nav" aria-label="arc42 sections"><header class="engineering-nav-head"><h2>ARC42</h2><span>${sections.length}</span></header><div class="engineering-listwrap"><ol>${nav}</ol></div><a class="engineering-attribution" href="${basePath}en/" title="Build with ProductShape v${packageJson.version}"><span class="engineering-info" aria-hidden="true">i</span><span>Build with ProductShape v${packageJson.version}</span></a></aside><article class="engineering-content"><div class="engineering-content-inner">${section.html}<div class="engineering-endmatter"><p class="source-stamp">${escapeHtml(revision)}</p><p class="link-list"><a href="${sourceUrl}">Markdown source on GitHub →</a></p><div class="article-pagination">${adjacentLink(previous, 'previous')}${adjacentLink(next, 'next')}</div></div></div></article></div>`;
 }
 
 function renderModel(words) {
@@ -377,7 +377,7 @@ function splitFrontmatter(source, name) {
   return { metadata, markdown: match[2] };
 }
 
-function markdownToHtml(markdown, sourceName) {
+function markdownToHtml(markdown, sourceName, headingOffset = 1) {
   const lines = markdown.replace(/<!--[^]*?-->/gu, '').split(/\r?\n/u);
   const output = [];
   let paragraph = [];
@@ -452,7 +452,7 @@ function markdownToHtml(markdown, sourceName) {
       const text = line.slice(level).trim();
       const id = slug(text);
       output.push(
-        `<h${Math.min(level + 1, 6)} id="${id}">${inlineMarkdown(text, sourceName)}</h${Math.min(level + 1, 6)}>`,
+        `<h${Math.min(level + headingOffset, 6)} id="${id}">${inlineMarkdown(text, sourceName)}</h${Math.min(level + headingOffset, 6)}>`,
       );
       continue;
     }

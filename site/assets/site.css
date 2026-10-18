@@ -1292,3 +1292,161 @@ h3 {
     padding: 0 0.3rem;
   }
 }
+
+/* arc42 pages use the same fixed, compact navigation pane as the Product Snapshot. */
+.engineering-layout {
+  display: grid;
+  grid-template-columns: minmax(225px, 17rem) minmax(0, 1fr);
+  gap: 0;
+  align-items: stretch;
+  width: 100%;
+  min-height: calc(100vh - 2.9rem);
+  margin: 0;
+  padding: 0;
+}
+.engineering-nav {
+  position: sticky;
+  top: 2.9rem;
+  display: flex;
+  flex-direction: column;
+  align-self: start;
+  height: calc(100vh - 2.9rem);
+  max-height: none;
+  min-height: 0;
+  overflow: hidden;
+  border: 0;
+  border-right: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+.engineering-nav-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  height: 2.4rem;
+  padding: 0 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+.engineering-nav-head h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.engineering-nav-head span {
+  color: var(--muted);
+  font: 0.74rem var(--mono);
+}
+.engineering-listwrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: thin;
+}
+.engineering-nav ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.engineering-nav li {
+  border-bottom: 1px solid var(--line);
+}
+.engineering-nav li a {
+  display: grid;
+  grid-template-columns: 0.7rem 2.45rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.55rem;
+  padding: 0.35rem 0.6rem;
+  border: 0;
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.25;
+  text-decoration: none;
+}
+.engineering-chev {
+  color: var(--muted);
+  font: 1.2rem/1 var(--sans);
+}
+.engineering-nav .nav-no {
+  display: inline-grid;
+  place-items: center;
+  min-height: 1.2rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  color: var(--accent-strong);
+  font: 0.67rem var(--mono);
+}
+.engineering-nav-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.engineering-nav li a:hover {
+  background: color-mix(in srgb, var(--surface) 82%, var(--line-strong));
+  color: var(--ink);
+}
+.engineering-nav li a[aria-current='page'] {
+  border-left: 3px solid var(--accent-strong);
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-weight: 600;
+}
+.engineering-attribution {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.2rem;
+  padding: 0 0.7rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.68rem;
+  text-decoration: none;
+}
+.engineering-attribution:hover {
+  color: var(--accent-strong);
+  text-decoration: none;
+}
+.engineering-info {
+  display: inline-grid;
+  place-items: center;
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font: 600 0.62rem/1 sans-serif;
+}
+.engineering-content {
+  min-width: 0;
+  padding: 1.35rem clamp(1.2rem, 3vw, 2.5rem) 4rem;
+}
+.engineering-content-inner {
+  max-width: 82ch;
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.engineering-content-inner > h2:first-child {
+  margin-top: 0;
+}
+@media (max-width: 48rem) {
+  .engineering-layout {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+  .engineering-nav {
+    position: static;
+    height: auto;
+    max-height: 15rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  .engineering-content {
+    padding: 1.2rem 1rem 3rem;
+  }
+}
