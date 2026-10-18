@@ -318,9 +318,17 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .command('graph')
     .description('Compile the product graph and write generated outputs')
     .option('--format <format>', 'output format: summary, json, mermaid or html', 'summary')
-    .action(async (options: { format: 'summary' | 'json' | 'mermaid' | 'html' }) => {
-      capture.code = await runGraph(io, options);
-    });
+    .option('--product-name <name>', 'name shown in the generated Product Snapshot title')
+    .option('--product-url <url>', 'destination for the ProductShape attribution link')
+    .action(
+      async (options: {
+        format: 'summary' | 'json' | 'mermaid' | 'html';
+        productName?: string;
+        productUrl?: string;
+      }) => {
+        capture.code = await runGraph(io, options);
+      },
+    );
 
   program
     .command('cite')

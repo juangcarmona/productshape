@@ -228,7 +228,10 @@ header.site {
   flex: none; display: flex; align-items: center; gap: 0.9rem;
   height: 2.9rem; padding: 0 0.9rem; border-bottom: 1px solid var(--line-strong); background: var(--bg);
 }
-header.site h1 { margin: 0; font-size: 0.98rem; letter-spacing: -0.005em; white-space: nowrap; }
+header.site h1 {
+  max-width: min(30vw, 22rem); margin: 0; overflow: hidden; text-overflow: ellipsis;
+  font-size: 0.98rem; font-weight: 400; letter-spacing: -0.005em; white-space: nowrap;
+}
 .revshort {
   font-family: var(--mono); font-size: 0.74rem; color: var(--muted);
   border: 1px solid var(--line); border-radius: 3px; padding: 0.05rem 0.4rem; white-space: nowrap;
@@ -397,7 +400,7 @@ body[data-master='rail'] .chips, body[data-master='rail'] .listwrap { display: n
 #artifact-list a .aid { display: block; font: 0.7rem/1.4 var(--mono); color: var(--muted); }
 #artifact-list a[aria-current='true'] { background: var(--accent-soft); border-left-color: var(--accent); color: var(--ink); font-weight: 600; }
 #artifact-list .empty { padding: 0.8rem 0.75rem; color: var(--muted); font-size: 0.85rem; }
-.rail { display: none; flex-direction: column; align-items: center; gap: 0.1rem; padding: 0.35rem 0; overflow-y: auto; }
+.rail { display: none; flex: 1 1 auto; flex-direction: column; align-items: center; gap: 0.1rem; padding: 0.35rem 0; overflow-y: auto; }
 body[data-master='rail'] .rail { display: flex; }
 .rail button {
   position: relative; width: 2.6rem; border: 0; background: transparent; border-radius: 4px;
@@ -411,6 +414,18 @@ body[data-master='rail'] .rail { display: flex; }
 .rail button[aria-current='true']::before {
   content: ''; position: absolute; left: -0.4rem; top: 0.35rem; bottom: 0.35rem; width: 3px; background: var(--accent); border-radius: 0 2px 2px 0;
 }
+.master-credit {
+  flex: none; display: flex; align-items: center; gap: 0.4rem;
+  min-height: 2.2rem; padding: 0 0.7rem; border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 0.68rem;
+}
+.master-credit:hover { color: var(--accent); text-decoration: none; }
+.master-credit .info {
+  display: inline-grid; place-items: center; width: 0.9rem; height: 0.9rem;
+  border: 1px solid currentColor; border-radius: 50%; font: 600 0.62rem/1 sans-serif;
+}
+body[data-master='rail'] .master-credit { justify-content: center; padding: 0; }
+body[data-master='rail'] .master-credit .label { display: none; }
 
 .detail { min-width: 0; min-height: 0; overflow-y: auto; overflow-wrap: anywhere; padding: 0.8rem 1.6rem 3rem; position: relative; }
 .detail > * { max-width: 52rem; }
@@ -586,7 +601,7 @@ dl.keys dd { margin: 0; }
 @media (max-width: 62rem) {
   .md, body[data-master='rail'] .md { grid-template-columns: minmax(0, 1fr); }
   .master { border-right: none; }
-  .rail, #master-toggle, .revshort { display: none; }
+  .rail, #master-toggle, .revshort, .master-credit { display: none; }
   body[data-master='rail'] .masterhead { justify-content: flex-start; padding: 0 0.35rem 0 0.75rem; }
   body[data-master='rail'] .masterhead h3, body[data-master='rail'] .masterhead .counts { display: block; }
   body[data-master='rail'] .listwrap { display: block; }
@@ -601,7 +616,7 @@ dl.keys dd { margin: 0; }
 }
 @media (max-width: 34rem) {
   header.site h1 {
-    position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+    max-width: 6rem; margin: 0; overflow: hidden; font-size: 0.78rem; text-overflow: ellipsis;
   }
   #keys-open { display: none; }
 }
@@ -621,6 +636,7 @@ const script = String.raw`
   'use strict';
   var doc = document;
   var root = doc.documentElement;
+  var snapshotTitle = doc.title;
   var dataEl = doc.getElementById('snapshot-data');
   if (!dataEl) return;
   var DATA = JSON.parse(dataEl.textContent || '{}');
@@ -2287,12 +2303,12 @@ const script = String.raw`
     var current = state.id ? byId[state.id] : null;
     doc.title =
       state.view === 'artifacts' && current
-        ? current.id + ' ' + (current.title || '') + ' · Product Snapshot'
+        ? current.id + ' ' + (current.title || '') + ' · ' + snapshotTitle
         : state.view === 'artifacts' && state.unknown
-          ? state.unknown + ' not found · Product Snapshot'
+          ? state.unknown + ' not found · ' + snapshotTitle
           : state.view === 'artifacts'
-            ? 'Artifacts · Product Snapshot'
-            : 'Product Snapshot';
+            ? 'Artifacts · ' + snapshotTitle
+            : snapshotTitle;
     if (state.view === 'artifacts' && (changedView || changedId)) revealCurrent();
 
     /* Focus lands somewhere meaningful after a view or selection change, never lost. */
@@ -2688,11 +2704,26 @@ function kindGrid(rows: AggregateRow[], kinds: string[]): string {
   ].join('\n');
 }
 
+export interface SnapshotOptions {
+  /** Adds a project-specific possessive before “Product Snapshot”, e.g. “Lyceum’s Product Snapshot”. */
+  productName?: string;
+  /** Destination for the persistent ProductShape attribution link. */
+  productUrl?: string;
+}
+
 export function buildSnapshotHtml(
   graph: ProductGraph,
   artifacts: LoadedArtifact[],
   revision: string | undefined,
+  options: SnapshotOptions = {},
 ): string {
+  const productName = options.productName?.trim();
+  const snapshotTitle = productName ? `${productName}’s Product Snapshot` : 'Product Snapshot';
+  const productUrl = options.productUrl?.trim() || 'https://juangcarmona.github.io/productshape/';
+  const parsedProductUrl = new URL(productUrl);
+  if (parsedProductUrl.protocol !== 'https:' && parsedProductUrl.protocol !== 'http:') {
+    throw new Error('Product attribution URL must use http or https.');
+  }
   const groups = sortedByKind(artifacts);
   const revisionText = revision
     ? `revision <span class="rev">${escapeHtml(revision)}</span>`
@@ -2739,13 +2770,13 @@ export function buildSnapshotHtml(
     '<meta charset="utf-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1">',
     '<meta name="color-scheme" content="light dark">',
-    '<title>Product Snapshot</title>',
+    `<title>${escapeHtml(snapshotTitle)}</title>`,
     `<style>\n${style}\n</style>`,
     '</head>',
     '<body data-pane="master" data-master="open">',
     '<a class="skip" href="#main">Skip to content</a>',
     '<header class="site">',
-    '<h1>Product Snapshot</h1>',
+    `<h1 title="${escapeHtml(snapshotTitle)}">${escapeHtml(snapshotTitle)}</h1>`,
     revisionShort,
     '<nav class="views" aria-label="Snapshot views">',
     '<a href="#/" data-view="overview" aria-current="page">Overview</a>',
@@ -2829,6 +2860,7 @@ export function buildSnapshotHtml(
     '<div class="chips" id="list-chips" role="group" aria-label="Active filters" hidden></div>',
     '<div class="listwrap"><div id="artifact-list"></div></div>',
     '<nav class="rail" id="kind-rail" aria-label="Artifact kinds"></nav>',
+    `<a class="master-credit" href="${escapeHtml(parsedProductUrl.href)}" target="_blank" rel="noopener noreferrer" aria-label="About ProductShape, the tool that generated this snapshot"><span class="info" aria-hidden="true">i</span><span class="label">ProductShape</span></a>`,
     '</aside>',
     '<article class="detail" id="detail"></article>',
     '<div class="split" id="split" role="separator" tabindex="0" aria-orientation="vertical" aria-controls="graph-host" aria-label="Resize the neighbourhood" aria-valuemin="260"></div>',

@@ -35,6 +35,7 @@ prodshape init --ai claude                  # add an AI integration (implies --f
 prodshape template <kind>                   # print an authoring template to stdout
 prodshape validate                          # deterministic structural validation
 prodshape graph --format mermaid            # compile the product graph
+prodshape graph --format html --product-name Lyceum # name and generate a branded snapshot
 prodshape schema <kind>                     # the allowed frontmatter for a document kind
 prodshape inspect <ID>                      # metadata + relationships of one artifact
 prodshape impact <ID> --direction incoming  # structural impact analysis

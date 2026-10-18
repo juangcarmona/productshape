@@ -15,6 +15,8 @@ import { exitCodes, formatDiagnosticLine, resolveRepository, type CliIo } from '
 
 export interface GraphOptions {
   format?: 'summary' | 'json' | 'mermaid' | 'html';
+  productName?: string;
+  productUrl?: string;
 }
 
 export async function runGraph(io: CliIo, options: GraphOptions): Promise<number> {
@@ -38,7 +40,10 @@ export async function runGraph(io: CliIo, options: GraphOptions): Promise<number
       break;
     case 'html': {
       const revision = await gitHead(repo.root);
-      const html = buildSnapshotHtml(graph, artifacts, revision);
+      const html = buildSnapshotHtml(graph, artifacts, revision, {
+        productName: options.productName,
+        productUrl: options.productUrl,
+      });
       await writeFile(join(repo.generatedDir, 'snapshot.html'), html, 'utf8');
       io.out(`Snapshot written to ${repo.config.prodshape.generated.root}/snapshot.html`);
       break;

@@ -238,6 +238,7 @@ export type {
 } from './recovery-session.js';
 export { escapeHtml, renderMarkdown } from './markdown.js';
 export { buildSnapshotHtml } from './snapshot.js';
+export type { SnapshotOptions } from './snapshot.js';
 export { parseArtifactDocument } from './parse.js';
 export type { ParseResult } from './parse.js';
 export {
