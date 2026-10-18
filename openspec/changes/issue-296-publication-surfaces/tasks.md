@@ -28,7 +28,7 @@
 <!-- pdac:cite id="BR-CANONICAL-001" digest="sha256:7ed6dc7c588e0b79da8e6036548cf2fd2c6a1b02a9393f467f50cb0cb02475d6" -->
 
 - [x] 3.1 Revise the public pages to explain ProductShape, PDaC, the engineering lifecycle and the relationships between artifacts; verify English and Spanish pages preserve the ProductShape/product-method distinction and link only to available outputs.
-- [ ] 3.2 Add static Archify diagrams with source links, conceptual or derived labels, and meaning that does not depend on color alone; verify each published diagram resolves to its source and passes the site's accessibility checks.
+- [x] 3.2 Add static Archify diagrams with source links, conceptual or derived labels, and meaning that does not depend on color alone; verify each published diagram resolves to its source and passes the site's accessibility checks. Archify `browser-check --require-provenance` passed on both diagrams across its supported viewports and theme states.
 - [x] 3.3 Update public-site content guidance and diagram source/export instructions; verify a contributor can rebuild the static site without adding a browser diagram runtime or new CLI provider.
 
 ## 4. Configure and verify independent publication
