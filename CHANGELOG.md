@@ -10,6 +10,10 @@ The supported published CLI baseline is `@prodshape/cli@0.22.1`. Every stable pu
 
 ## [0.22.1]
 
+### Fixed
+
+- `prodshape integration add|update|remove openspec` now preserves hand-written formatting, comments, key order and untouched entries in `openspec/config.yaml` while updating PDaC-managed content (CLI patch `1b9e8e6`).
+
 ## [0.22.0]
 
 The redesigned Product Snapshot and the OpenCode provider.

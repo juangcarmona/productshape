@@ -102,12 +102,14 @@ describe('buildSnapshotHtml — generation contract', () => {
     expect(html).not.toContain('<link');
     expect(html).not.toContain('@import');
     expect(html).not.toContain('<form');
-    // No resource is ever referenced across the network.
-    expect(html).not.toMatch(/(?:href|src)="https?:/);
+    // External links are navigation only; no external resource is fetched when the page opens.
+    expect(html).not.toMatch(/(?:src|poster|data)="https?:/);
     expect(html).not.toMatch(/url\(\s*['"]?https?:/);
-    // The only absolute URL in the file is the SVG namespace identifier, which is never fetched.
+    // The absolute URLs are the SVG namespace and the optional ProductShape navigation link.
     const urls = [...html.matchAll(/https?:\/\/[^\s'"<)]+/g)].map((m) => m[0]);
-    expect([...new Set(urls)]).toEqual(['http://www.w3.org/2000/svg']);
+    expect([...new Set(urls)].sort()).toEqual(
+      ['http://www.w3.org/2000/svg', 'https://juangcarmona.github.io/productshape/'].sort(),
+    );
   });
 
   it('declares a light and a dark appearance, following the environment unless the address chooses', () => {
@@ -207,7 +209,7 @@ describe('buildSnapshotHtml — orientation view', () => {
   it('states identity, revision and totals without exposing the whole product model', () => {
     const html = build();
     const opening = openingDocument(html);
-    expect(opening).toContain('<h1>Product Snapshot</h1>');
+    expect(opening).toMatch(/<h1\b[^>]*>Product Snapshot<\/h1>/);
     expect(opening).toContain('5 artifacts');
     expect(opening).toContain('4 relationships');
     expect(opening).toContain('generated, read-only projection');
