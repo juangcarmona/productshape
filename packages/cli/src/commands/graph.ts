@@ -17,6 +17,7 @@ export interface GraphOptions {
   format?: 'summary' | 'json' | 'mermaid' | 'html';
   productName?: string;
   productUrl?: string;
+  productVersion?: string;
 }
 
 export async function runGraph(io: CliIo, options: GraphOptions): Promise<number> {
@@ -43,6 +44,7 @@ export async function runGraph(io: CliIo, options: GraphOptions): Promise<number
       const html = buildSnapshotHtml(graph, artifacts, revision, {
         productName: options.productName,
         productUrl: options.productUrl,
+        productVersion: options.productVersion,
       });
       await writeFile(join(repo.generatedDir, 'snapshot.html'), html, 'utf8');
       io.out(`Snapshot written to ${repo.config.prodshape.generated.root}/snapshot.html`);

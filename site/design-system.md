@@ -46,7 +46,7 @@ Every kind keeps a stable color in both appearances and across projects. Pair it
 
 ## Components and behavior
 
-- **Top bar:** a single compact row with the project identity, primary navigation and appearance controls. Buttons have a visible border and selected state.
+- **Top bar:** one compact row shared by the public site and Product Snapshot: product mark and name, a small version or revision badge, tab-style primary navigation, a flexible spacer, search, appearance controls and a keyboard-shortcut action. Keep the same height, dividers, button sizes and typography across both pages.
 - **Navigation list:** group rows are about 42px high, divided by 1px rules. A small disclosure icon, kind icon, kind token, label and count keep the hierarchy scannable. The selected group gets a visible selection rule and remains in view.
 - **Kind marker:** a 1px outline, 3px corner radius, 12px monospace token and 16px symbol. Keep the text token next to the symbol at every size.
 - **Controls:** square or 3–4px radius, with hover and selected states expressed through surface and border changes. Keyboard focus uses a 2px accent outline with offset.
@@ -57,7 +57,7 @@ Every kind keeps a stable color in both appearances and across projects. Pair it
 
 Projects can override surface and accent tokens while keeping the semantic roles. Keep kind tokens stable when shared product artifacts cross project boundaries. If a project adds a kind, assign one color per appearance and pair it with a recognizable icon and readable text token. Check text contrast and keyboard focus after changing colors. Do not customize the component geometry unless the target product has a different density or input context.
 
-Snapshot identity is configurable at generation time: `prodshape graph --format html --product-name Lyceum` produces “Lyceum’s Product Snapshot”. Without a project name, the title remains “Product Snapshot”. The attribution link can point to a project-specific ProductShape URL with `--product-url`; it defaults to the ProductShape public site.
+Snapshot identity is configurable at generation time: `prodshape graph --format html --product-name Lyceum` produces “Lyceum’s Product Snapshot”. Without a project name, the title remains “Product Snapshot”. The quiet attribution sits at the bottom of the artifact navigation and reads “Build with ProductShape” with the generating CLI version. Its link can point to a project-specific ProductShape URL with `--product-url`; it defaults to the ProductShape public site.
 
 ## Reference implementation
 

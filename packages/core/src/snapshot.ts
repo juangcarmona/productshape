@@ -2533,6 +2533,9 @@ const script = String.raw`
   if (noscript && noscript.parentNode) noscript.parentNode.removeChild(noscript);
 
   fromAddress();
+  var launch = new URLSearchParams(window.location.search);
+  if (launch.has('search')) openFind();
+  else if (launch.has('keys')) openKeys();
 })();
 `.trim();
 
@@ -2709,6 +2712,8 @@ export interface SnapshotOptions {
   productName?: string;
   /** Destination for the persistent ProductShape attribution link. */
   productUrl?: string;
+  /** ProductShape CLI version used to generate the snapshot. */
+  productVersion?: string;
 }
 
 export function buildSnapshotHtml(
@@ -2860,7 +2865,7 @@ export function buildSnapshotHtml(
     '<div class="chips" id="list-chips" role="group" aria-label="Active filters" hidden></div>',
     '<div class="listwrap"><div id="artifact-list"></div></div>',
     '<nav class="rail" id="kind-rail" aria-label="Artifact kinds"></nav>',
-    `<a class="master-credit" href="${escapeHtml(parsedProductUrl.href)}" target="_blank" rel="noopener noreferrer" aria-label="About ProductShape, the tool that generated this snapshot"><span class="info" aria-hidden="true">i</span><span class="label">ProductShape</span></a>`,
+    `<a class="master-credit" href="${escapeHtml(parsedProductUrl.href)}" target="_blank" rel="noopener noreferrer" aria-label="Build with ProductShape v${escapeHtml(options.productVersion ?? 'unknown')}" title="Build with ProductShape v${escapeHtml(options.productVersion ?? 'unknown')}"><span class="info" aria-hidden="true">i</span><span class="label">Build with ProductShape v${escapeHtml(options.productVersion ?? 'unknown')}</span></a>`,
     '</aside>',
     '<article class="detail" id="detail"></article>',
     '<div class="split" id="split" role="separator" tabindex="0" aria-orientation="vertical" aria-controls="graph-host" aria-label="Resize the neighbourhood" aria-valuemin="260"></div>',

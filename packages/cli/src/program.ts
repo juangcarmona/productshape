@@ -326,7 +326,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
         productName?: string;
         productUrl?: string;
       }) => {
-        capture.code = await runGraph(io, options);
+        capture.code = await runGraph(io, { ...options, productVersion: cliPackage.version });
       },
     );
 
