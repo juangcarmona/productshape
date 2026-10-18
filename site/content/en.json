@@ -154,14 +154,6 @@
       }
     ]
   },
-  "engineering": {
-    "eyebrow": "Engineering",
-    "title": "The architecture behind the CLI.",
-    "intro": "Twelve arc42 views explain the implementation structure, the reasons behind it, and the evidence that keeps the documentation connected to the code.",
-    "sections": "Architecture views",
-    "decisions": "Architecture decisions",
-    "githubSource": "Read the Markdown source"
-  },
   "model": {
     "eyebrow": "ProductShape, described with ProductShape",
     "title": "Explore the live self-model.",
@@ -176,6 +168,5 @@
     "spec": "Normative specification",
     "repo": "Source repository",
     "license": "Apache-2.0"
-  },
-  "arc42EnglishOnly": "The arc42 source is currently maintained in English. This translated index points to the canonical engineering documentation."
+  }
 }

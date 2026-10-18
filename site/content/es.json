@@ -154,14 +154,6 @@
       }
     ]
   },
-  "engineering": {
-    "eyebrow": "Ingeniería",
-    "title": "La arquitectura detrás de la CLI.",
-    "intro": "Doce vistas arc42 explican la estructura de implementación, sus decisiones y las evidencias que mantienen la documentación vinculada al código.",
-    "sections": "Vistas de arquitectura",
-    "decisions": "Decisiones de arquitectura",
-    "githubSource": "Leer el código fuente Markdown"
-  },
   "model": {
     "eyebrow": "ProductShape, descrito con ProductShape",
     "title": "Explora el modelo vivo del proyecto.",
@@ -176,6 +168,5 @@
     "spec": "Especificación normativa",
     "repo": "Repositorio del código",
     "license": "Apache-2.0"
-  },
-  "arc42EnglishOnly": "La fuente arc42 se mantiene actualmente en inglés. Este índice traducido enlaza a la documentación técnica canónica."
+  }
 }
