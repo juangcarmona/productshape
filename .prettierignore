@@ -4,6 +4,9 @@
 tests/conformance/cases/
 # Derived outputs are never formatted by hand.
 .product/generated/
+# Archify HTML and finalize receipts are generated from `.archify/` candidates; formatting them
+# would change the validated artifact bytes and invalidate the Archify receipts.
+/site/diagrams/
 pnpm-lock.yaml
 # Vendored v1alpha2 schemas retain the exact upstream bytes at their recorded revision.
 schemas/v1alpha2/*.schema.json
