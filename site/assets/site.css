@@ -1032,6 +1032,14 @@ h3 {
   flex: none;
   mix-blend-mode: multiply;
 }
+:root[data-appearance='dark'] .footer-productshape {
+  mix-blend-mode: normal;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-appearance]) .footer-productshape {
+    mix-blend-mode: normal;
+  }
+}
 .footer-productshape img {
   display: block;
   width: 100%;
