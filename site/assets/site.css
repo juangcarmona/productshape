@@ -176,10 +176,10 @@ main {
   margin: 0 auto;
 }
 .hero {
-  padding: clamp(4rem, 10vw, 8.5rem) 0 5rem;
+  padding: clamp(2rem, 4vw, 4rem) 0 2.5rem;
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
-  gap: clamp(2rem, 7vw, 6rem);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
   align-items: center;
 }
 .eyebrow {
@@ -195,10 +195,10 @@ h3 {
   line-height: 1.12;
 }
 h1 {
-  font: 720 clamp(2.6rem, 5.8vw, 4.8rem)/1.08 var(--sans);
-  letter-spacing: -0.045em;
-  margin: 1.25rem 0 1.4rem;
-  max-width: 12ch;
+  font: 600 clamp(2.1rem, 4vw, 3.4rem)/1.1 var(--sans);
+  letter-spacing: -0.04em;
+  margin: 0.85rem 0 1rem;
+  max-width: 22ch;
 }
 h2 {
   font: 680 clamp(1.9rem, 3.6vw, 3rem)/1.16 var(--sans);
@@ -281,7 +281,7 @@ h3 {
   text-transform: uppercase;
 }
 .section {
-  padding: clamp(4rem, 8vw, 7rem) 0;
+  padding: clamp(2.5rem, 4vw, 4rem) 0;
   border-bottom: 1px solid var(--line);
 }
 .section-heading {
@@ -289,7 +289,7 @@ h3 {
   grid-template-columns: minmax(0, 1fr) minmax(240px, 0.65fr);
   gap: 2rem;
   align-items: end;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.75rem;
 }
 .section-heading p {
   margin: 0;
@@ -393,15 +393,15 @@ h3 {
   white-space: nowrap;
 }
 .page-hero {
-  padding: clamp(3.5rem, 7vw, 6rem) 0 2.5rem;
+  padding: clamp(2rem, 3.5vw, 3.25rem) 0 1.75rem;
   border-bottom: 1px solid var(--line);
 }
 .page-hero h1 {
-  max-width: 16ch;
-  font-size: clamp(2.6rem, 5.5vw, 4.7rem);
+  max-width: 26ch;
+  font-size: clamp(2rem, 3.2vw, 2.75rem);
 }
 .content-section {
-  padding: 2.3rem 0;
+  padding: 1.5rem 0;
   border-bottom: 1px solid var(--line);
 }
 .content-section h2 {
