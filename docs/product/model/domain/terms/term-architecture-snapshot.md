@@ -2,7 +2,7 @@
 id: TERM-ARCHITECTURE-SNAPSHOT
 type: domain-term
 title: Architecture Snapshot
-status: draft
+status: active
 defined-in: BC-PUBLICATION
 synonyms: []
 uses-terms: []

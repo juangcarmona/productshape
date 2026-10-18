@@ -2,7 +2,7 @@
 id: ACT-ENGINEERING-READER
 type: actor
 title: ProductShape Engineering Reader
-status: draft
+status: active
 actor-kind: human
 ---
 

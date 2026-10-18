@@ -2,7 +2,7 @@
 id: UC-ENGINEERING-PORTAL-001
 type: use-case
 title: Explore ProductShape engineering outputs
-status: draft
+status: active
 primary-actor: ACT-ENGINEERING-READER
 supporting-actors: []
 bounded-context: BC-PUBLICATION

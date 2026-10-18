@@ -2,7 +2,7 @@
 id: BC-PUBLICATION
 type: bounded-context
 title: ProductShape Publication
-status: draft
+status: active
 ---
 
 ## Responsibility

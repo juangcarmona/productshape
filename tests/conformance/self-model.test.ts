@@ -11,6 +11,9 @@ const expectedIds: Record<string, string[]> = {
     'ACT-AI-ASSISTANT',
     // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
     'ACT-PRODUCT-EXPLORER',
+    // Added by CHG-ARC42-SNAPSHOT-001 (publication surfaces).
+    'ACT-ENGINEERING-READER',
+    'ACT-PUBLIC-READER',
   ],
   journey: [
     'JRN-ADOPT-001',
@@ -40,6 +43,9 @@ const expectedIds: Record<string, string[]> = {
     'UC-EXPLORE-001',
     // Added by CHG-RECOVERY-SESSIONS (deterministic brownfield recovery).
     'UC-RECOVER-001',
+    // Added by CHG-ARC42-SNAPSHOT-001 (publication surfaces).
+    'UC-ENGINEERING-PORTAL-001',
+    'UC-PUBLIC-SITE-001',
   ],
   'business-rule': [
     'BR-CANONICAL-001',
@@ -66,8 +72,15 @@ const expectedIds: Record<string, string[]> = {
     'TERM-FOCUSED-TOPOLOGY',
     // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
     'TERM-PRODUCT-SNAPSHOT',
+    // Added by CHG-ARC42-SNAPSHOT-001 (publication surfaces).
+    'TERM-ARCHITECTURE-SNAPSHOT',
   ],
-  'bounded-context': ['BC-PRODUCT-DEFINITION', 'BC-DELIVERY-INTEGRATION'],
+  'bounded-context': [
+    'BC-PRODUCT-DEFINITION',
+    'BC-DELIVERY-INTEGRATION',
+    // Added by CHG-ARC42-SNAPSHOT-001 (publication surfaces).
+    'BC-PUBLICATION',
+  ],
   'functional-requirement': [
     'FR-INIT-001',
     // Added by CHG-INIT-SDD-001 (SDD-aware initialization).
@@ -111,6 +124,9 @@ const expectedIds: Record<string, string[]> = {
     'FR-RECOVER-001',
     // Added by CHG-RELEASE-CONTRACT-001 (executable release contract).
     'FR-RELEASE-001',
+    // Added by CHG-ARC42-SNAPSHOT-001 (publication surfaces).
+    'FR-ENGINEERING-PORTAL-001',
+    'FR-PUBLIC-SITE-001',
   ],
   'quality-requirement': [
     'QR-PORTABILITY-001',

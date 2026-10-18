@@ -21,7 +21,7 @@ The site MUST explain ProductShape's purpose, process and artifacts, distinguish
 ### Requirement: Archify diagrams explain artifact relationships with their sources
 
 The site MUST include Archify diagrams of process and artifact relationships. Diagrams MUST label conceptual explanations and derived facts, link source-backed facts, and convey meaning without color alone.
-<!-- pdac:cite id="FR-PUBLIC-SITE-001" digest="sha256:e6dacb5123f6efa209e9cae09b6142e7f425c772dc3d57343cb392cb4a8e9ce6" -->
+<!-- pdac:cite id="FR-PUBLIC-SITE-001" digest="sha256:3cb2c22372dc4696fedaf5ef88ed42158f828accc65a4fa45f46812ee5a1f20a" -->
 
 #### Scenario: Source-backed diagram links to its source
 
@@ -41,7 +41,7 @@ The site MUST include Archify diagrams of process and artifact relationships. Di
 ### Requirement: Public site links only to available engineering outputs
 
 The site MUST link to Product, architecture or E2E outputs only when they are available in the engineering portal.
-<!-- pdac:cite id="FR-ENGINEERING-PORTAL-001" digest="sha256:776b90f97bc43930e3198ef0d4a2d2d548ee40c2cb75359e56a845f4d3ff5984" -->
+<!-- pdac:cite id="FR-ENGINEERING-PORTAL-001" digest="sha256:641a6d2ae3bbb10951584e3b2b648ba12b59c8aebab1f0e6787aed751f53b1c5" -->
 
 #### Scenario: Link appears when its output exists
 

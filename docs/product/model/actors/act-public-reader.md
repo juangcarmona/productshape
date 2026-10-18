@@ -2,7 +2,7 @@
 id: ACT-PUBLIC-READER
 type: actor
 title: ProductShape Public Reader
-status: draft
+status: active
 actor-kind: human
 ---
 

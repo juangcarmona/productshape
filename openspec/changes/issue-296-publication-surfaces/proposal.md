@@ -8,11 +8,11 @@ ProductShape's current GitHub Pages build combines its public product site with 
 
 The approved Product Change defines the public site and engineering portal, including their reader outcomes and the distinction between canonical sources and derived outputs.
 
-<!-- pdac:cite id="ACT-ENGINEERING-READER" digest="sha256:3ca65edddb557e75873b73b75b0b7f8afc65698fb6bc5b45d2662316ee455e67" -->
-<!-- pdac:cite id="ACT-PUBLIC-READER" digest="sha256:6324c7eb27ca7a22f1a2947e11b26d20b5eb385ed5d4c705fc4f30195e09f10c" -->
-<!-- pdac:cite id="BC-PUBLICATION" digest="sha256:00620db94f270da49c3524648069bb2feb9baca443be3d00499d707e8ed21b21" -->
-<!-- pdac:cite id="UC-ENGINEERING-PORTAL-001" digest="sha256:20e19b0a264d92c197cc619352bbd1104e2616a390ada65325fbb320ba13a4f1" -->
-<!-- pdac:cite id="UC-PUBLIC-SITE-001" digest="sha256:ed15f48fd98ebd974677c1f39b2386e5e509746a7bcb95f0ef63f651b0bae979" -->
+<!-- pdac:cite id="ACT-ENGINEERING-READER" digest="sha256:e04e7ae0b5f8ff07f36eb8c6afa05aaa2ebaaa6a4462a841b978e7e22bc8e7b0" -->
+<!-- pdac:cite id="ACT-PUBLIC-READER" digest="sha256:48c4a11a55f2244a81962eb46d42b80dfcd0f68bf346f09242a835cb1d40b21f" -->
+<!-- pdac:cite id="BC-PUBLICATION" digest="sha256:8a171d419a25901a88ed4e53e5b34b0a5590ffd71e4a7e8721fc4411cf4801f5" -->
+<!-- pdac:cite id="UC-ENGINEERING-PORTAL-001" digest="sha256:84771dc17d47b1c61bad40b17d915c6f318ee657de5640234ce9b22c97a26744" -->
+<!-- pdac:cite id="UC-PUBLIC-SITE-001" digest="sha256:b769e277997dc9a03d676b6d13370ef0d24ab8c673aa159c04d4e0815ed297f2" -->
 
 ## What Changes
 
@@ -37,9 +37,9 @@ None. Product Snapshot generation and the ProductShape brand contract remain unc
 
 This proposal implements the applied Product Change `CHG-ARC42-SNAPSHOT-001`. The impact expansion was run for all eight artifacts it adds. Their direct and transitive neighbors are confined to the two reader journeys and requirements within `BC-PUBLICATION`; no existing model artifacts are modified.
 
-<!-- pdac:cite id="FR-ENGINEERING-PORTAL-001" digest="sha256:776b90f97bc43930e3198ef0d4a2d2d548ee40c2cb75359e56a845f4d3ff5984" -->
-<!-- pdac:cite id="FR-PUBLIC-SITE-001" digest="sha256:e6dacb5123f6efa209e9cae09b6142e7f425c772dc3d57343cb392cb4a8e9ce6" -->
-<!-- pdac:cite id="TERM-ARCHITECTURE-SNAPSHOT" digest="sha256:9486c0a1757c644e227b4d369f0747b1e8f2d1b20df33c647770b3c66b551e60" -->
+<!-- pdac:cite id="FR-ENGINEERING-PORTAL-001" digest="sha256:641a6d2ae3bbb10951584e3b2b648ba12b59c8aebab1f0e6787aed751f53b1c5" -->
+<!-- pdac:cite id="FR-PUBLIC-SITE-001" digest="sha256:3cb2c22372dc4696fedaf5ef88ed42158f828accc65a4fa45f46812ee5a1f20a" -->
+<!-- pdac:cite id="TERM-ARCHITECTURE-SNAPSHOT" digest="sha256:c9f1eac6b0e1ce2cf346581418848ab28e977dbd2eeec64c96b28dbc12c68a4f" -->
 
 The Product Snapshot remains the generated view of the Product Definition model. Its generation contract and the existing source-of-truth rules remain in force; the engineering portal links to that output rather than replacing or extending its generator.
 

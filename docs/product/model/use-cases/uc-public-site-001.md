@@ -2,7 +2,7 @@
 id: UC-PUBLIC-SITE-001
 type: use-case
 title: Understand ProductShape through its public site
-status: draft
+status: active
 primary-actor: ACT-PUBLIC-READER
 supporting-actors: []
 bounded-context: BC-PUBLICATION

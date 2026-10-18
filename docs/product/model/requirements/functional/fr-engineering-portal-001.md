@@ -2,7 +2,7 @@
 id: FR-ENGINEERING-PORTAL-001
 type: functional-requirement
 title: Present ProductShape engineering outputs distinctly
-status: draft
+status: active
 derived-from:
   - UC-ENGINEERING-PORTAL-001
 verification:

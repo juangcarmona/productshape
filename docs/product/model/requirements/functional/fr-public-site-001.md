@@ -2,7 +2,7 @@
 id: FR-PUBLIC-SITE-001
 type: functional-requirement
 title: Explain ProductShape and its process on the public site
-status: draft
+status: active
 derived-from:
   - UC-PUBLIC-SITE-001
 verification:

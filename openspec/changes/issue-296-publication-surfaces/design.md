@@ -6,9 +6,9 @@
 
 See [proposal.md](proposal.md) for the motivation and publication boundaries. The current GitHub Pages workflow builds one output containing the public pages, Product Snapshot explorer and ProductShape arc42 pages. The site builder assumes a `/productshape/` base path and includes those engineering routes in its sitemap. Product requirements distinguish the public site from the engineering portal and require canonical sources to remain identifiable.
 
-<!-- pdac:cite id="FR-ENGINEERING-PORTAL-001" digest="sha256:776b90f97bc43930e3198ef0d4a2d2d548ee40c2cb75359e56a845f4d3ff5984" -->
-<!-- pdac:cite id="FR-PUBLIC-SITE-001" digest="sha256:e6dacb5123f6efa209e9cae09b6142e7f425c772dc3d57343cb392cb4a8e9ce6" -->
-<!-- pdac:cite id="BC-PUBLICATION" digest="sha256:00620db94f270da49c3524648069bb2feb9baca443be3d00499d707e8ed21b21" -->
+<!-- pdac:cite id="FR-ENGINEERING-PORTAL-001" digest="sha256:641a6d2ae3bbb10951584e3b2b648ba12b59c8aebab1f0e6787aed751f53b1c5" -->
+<!-- pdac:cite id="FR-PUBLIC-SITE-001" digest="sha256:3cb2c22372dc4696fedaf5ef88ed42158f828accc65a4fa45f46812ee5a1f20a" -->
+<!-- pdac:cite id="BC-PUBLICATION" digest="sha256:8a171d419a25901a88ed4e53e5b34b0a5590ffd71e4a7e8721fc4411cf4801f5" -->
 
 ## Goals / Non-Goals
 
