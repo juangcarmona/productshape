@@ -18,7 +18,7 @@ The approved Product Change defines the public site and engineering portal, incl
 
 - Separate the GitHub Pages engineering portal from the public ProductShape site while reusing the current site source and content.
 - Keep the Product Snapshot, ProductShape's Architecture Snapshot and E2E journey reports as distinct engineering outputs. Publish an output only when its source exists and identify its source revision or run where available.
-- Publish the public site at the already-purchased `productshape.dev`, following the publication process configured for Raccord's `raccord.dev` site.
+- Publish the public site at the already-purchased `productshape.dev`, following the configured Raccord process: independent pull-request build validation and owner-controlled Cloudflare Pages publication/domain activation.
 - Improve the public site with explanations of ProductShape's process and artifact relationships and source-linked Archify diagrams. Label conceptual explanations and mechanically derived information clearly.
 - Keep ArcShape a separate product. ProductShape may use it in its own architecture-documentation workflow; this proposal does not build, package or offer ArcShape, and does not create a product dependency in either direction.
 

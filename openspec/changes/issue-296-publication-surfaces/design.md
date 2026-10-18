@@ -26,13 +26,13 @@ Alternative considered: duplicate the existing site source into a second impleme
 
 ### Keep independent publishers and artifact contracts
 
-Retain GitHub Pages for the engineering portal. Change its workflow to assemble and publish only engineering artifacts. Build the public output independently and validate it in pull requests. Configure public-site previews and production publication using the process configured for Raccord; keep production activation and custom-domain changes under explicit owner control. Do not add Cloudflare credentials or deployment behavior to GitHub Actions. Before production setup, verify the actual Raccord Pages integration mode in its dashboard because repository operations notes do not confirm it.
+Retain GitHub Pages for the engineering portal. Change its workflow to assemble and publish only engineering artifacts. Build the public output independently in pull requests and retain a downloadable build artifact for review. Use the Raccord Cloudflare Pages project convention for manual preview and production publication; keep production activation and custom-domain changes under explicit owner control. Do not add Cloudflare credentials or deployment behavior to GitHub Actions. Raccord's operations notes say its current project is manually deployed and its PR workflow does not publish a web preview; confirm the actual Pages project mode before enabling any preview or production setup.
 
 Alternative considered: publish both outputs from one GitHub Pages deployment with path routing. Rejected because the public domain and engineering portal have distinct destinations and deployment controls.
 
 ### Treat architecture and E2E reports as optional, source-identified inputs
 
-The engineering build consumes Product Snapshot output as it does today. It adds ProductShape Architecture Snapshot input only after ProductShape's architecture pipeline produces a stable artifact, and E2E report input only when an existing journey pipeline supplies a report. A small manifest records artifact type, relative URL, source revision and, for E2E, run identity and result. Missing inputs omit their links; the build must not generate placeholder success states. Architecture documentation may be generated with ArcShape inside ProductShape's own repository, without making ArcShape a ProductShape dependency or part of the public offer.
+The engineering build consumes Product Snapshot output as it does today. Its manifest records the source revision for that snapshot and for the Architecture Snapshot assembled from ProductShape's own architecture documentation. E2E reports remain optional; when a journey pipeline supplies one, its manifest entry records a relative path, source revision, run identity and result. Missing reports produce no report card. Architecture documentation may be generated with ArcShape inside ProductShape's own repository, without making ArcShape a ProductShape dependency or part of the public offer.
 
 Alternative considered: have the portal invoke ArcShape or synthesize architecture/E2E pages during site assembly. Rejected because this couples publication to tools and outputs that may not yet be installed or available.
 
@@ -46,14 +46,14 @@ Alternative considered: render diagrams dynamically in the browser. Rejected bec
 
 - [Build profiles can accidentally leak routes or produce broken root-domain links] → Assert each profile's route manifest, sitemap host and base path in builder tests and inspect both built outputs.
 - [Engineering artifacts may arrive on different schedules] → Drive links from the artifact manifest and omit unavailable outputs; verify metadata against the originating commit and run.
-- [Raccord's actual Cloudflare project mode may differ from repository intent] → Confirm its configured publication mode before wiring the ProductShape project; preserve PR previews and owner-controlled production/domain activation.
+- [Raccord's current PR checks do not establish that a hosted preview exists] → Provide independent PR build validation and a downloadable artifact; confirm Pages project mode and preview policy before claiming a hosted preview.
 - [Static diagram exports can become stale relative to their sources] → Keep source links and generation/edit instructions beside each asset, and review updates with the public content.
 - [Splitting deployment can temporarily leave the old GitHub Pages URL with stale public pages] → Publish the engineering portal before switching public navigation, then verify both destinations and retain a rollback to the last successful artifacts.
 
 ## Migration Plan
 
 1. Build the two outputs locally and validate route inventories, links, sitemaps and source metadata without changing live publication.
-2. Enable the public site's Raccord-style PR preview path and review a preview. Confirm the Pages project integration mode and output settings before any production activation.
+2. Build and validate the public output on pull requests, retaining the artifact for review. Confirm the Cloudflare Pages project mode before enabling any hosted preview or production activation.
 3. Publish the engineering portal to GitHub Pages with the existing Product Snapshot and only available architecture/E2E artifacts.
 4. After explicit owner review, activate public production publication and bind the already-purchased `productshape.dev` through the configured hosting flow. Verify HTTPS, page content, links, locale switching, responsive layout and the separation of engineering outputs.
 5. If the new public deployment fails, restore the prior successful public deployment or revert the public-site change; leave domain/DNS configuration untouched unless a separately approved change requires it. Keep GitHub Pages engineering artifacts available throughout rollback.
