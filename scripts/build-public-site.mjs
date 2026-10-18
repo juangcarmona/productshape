@@ -43,9 +43,9 @@ const sectionTokens = {
   '07': 'DEP',
   '08': 'XCC',
   '09': 'ADR',
-  '10': 'QR',
-  '11': 'RTD',
-  '12': 'GLO',
+  10: 'QR',
+  11: 'RTD',
+  12: 'GLO',
 };
 const sectionIcons = {
   '01': '<circle cx="8" cy="8" r="4.8"/><circle cx="8" cy="8" r="1.4"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2"/>',
@@ -57,9 +57,9 @@ const sectionIcons = {
   '07': '<rect x="5" y="1.5" width="6" height="4.2" rx=".7"/><path d="M8 5.7v2.8M6.4 6.9 8 8.5l1.6-1.6"/><rect x="2" y="9" width="12" height="5.5" rx="1"/><path d="M4.2 11h7.6M4.2 12.7h7.6"/>',
   '08': '<circle cx="6" cy="8" r="4.2"/><circle cx="10" cy="8" r="4.2"/>',
   '09': '<path d="m8 1.8 5.2 3v6L8 13.8l-5.2-3v-6zM8 13.8v1.4M8 7.8h.1M8 7.8v-2"/><path d="M8 9.4v1.2"/>',
-  '10': '<path d="M2 11.8a6 6 0 1 1 12 0"/><path d="m8 11.8 3.1-3.5"/><circle cx="8" cy="11.8" r="1"/><path d="m4 7.4.8.6M8 5.8v1M12 7.4l-.8.6"/>',
-  '11': '<path d="M8 1.8 14.4 13H1.6z"/><path d="M8 5.3v3.4M8 11.1v.1"/>',
-  '12': '<path d="M3.2 1.8h6l3.6 3.6v8.8H3.2zM9.2 1.8v3.6h3.6"/><path d="M5.3 8h5.4M5.3 10.2h5.4M5.3 12.4h3.8"/>',
+  10: '<path d="M2 11.8a6 6 0 1 1 12 0"/><path d="m8 11.8 3.1-3.5"/><circle cx="8" cy="11.8" r="1"/><path d="m4 7.4.8.6M8 5.8v1M12 7.4l-.8.6"/>',
+  11: '<path d="M8 1.8 14.4 13H1.6z"/><path d="M8 5.3v3.4M8 11.1v.1"/>',
+  12: '<path d="M3.2 1.8h6l3.6 3.6v8.8H3.2zM9.2 1.8v3.6h3.6"/><path d="M5.3 8h5.4M5.3 10.2h5.4M5.3 12.4h3.8"/>',
 };
 const architectureFiles = (await readdir(architectureDir))
   .filter((name) => /^\d{2}-.*\.md$/u.test(name))

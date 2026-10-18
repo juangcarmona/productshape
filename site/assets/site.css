@@ -2088,7 +2088,9 @@ h3 {
   }
   .mobile-menu-toggle .menu-line {
     transform-origin: center;
-    transition: transform 150ms ease, opacity 150ms ease;
+    transition:
+      transform 150ms ease,
+      opacity 150ms ease;
   }
   .mobile-menu-toggle[aria-expanded='true'] .menu-line-top {
     transform: translateY(5px) rotate(45deg);
@@ -2199,7 +2201,8 @@ h3 {
   .engineering-subnav a[aria-current='page'] {
     font-weight: 650;
   }
-  .engineering-subnav a:is([data-section='01'], [data-section='02'], [data-section='03'], [data-section='10']) {
+  .engineering-subnav
+    a:is([data-section='01'], [data-section='02'], [data-section='03'], [data-section='10']) {
     --section-color: var(--section-requirements);
   }
   .engineering-subnav a:is([data-section='05'], [data-section='06'], [data-section='07']) {
