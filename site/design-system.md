@@ -44,11 +44,23 @@ Every kind keeps a stable color in both appearances and across projects. Pair it
 | Constraint | CON | `#b42318` | `#f7776c` |
 | Structured behaviour | SB | `#466c10` | `#a5d05a` |
 
+## Engineering section colors
+
+Engineering sections use four semantic color families instead of twelve unrelated colors. The groups follow the arc42 distinction between requirements, architecture views, concepts and decisions, and risks/reference material. Each of the first three families uses an existing PDaC artifact-kind color as its anchor; risks and reference use the neutral text color. Each badge pairs a short section code with its own 16px SVG icon; the section number stays at the row's right edge. Color adds a secondary cue and never replaces the label.
+
+| Family | Sections and codes | Palette anchor | Light | Dark |
+| --- | --- | --- | --- | --- |
+| Requirements and quality | 01 GOAL, 02 CON, 03 CTX, 10 QR | Functional requirement | `#b0287a` | `#f27ec2` |
+| Structures and views | 05 BBV, 06 RUN, 07 DEP | Bounded context | `#0b7285` | `#43c4da` |
+| Concepts, technologies and decisions | 04 STR, 08 XCC, 09 ADR | Business rule | `#b54708` | `#f79c50` |
+| Risks and reference | 11 RTD, 12 GLO | Quality requirement | `#56607a` | `#a9b2c5` |
+
 ## Components and behavior
 
 - **Top bar:** one compact row shared by the public site and Product Snapshot: product mark and name, a small version or revision badge, tab-style primary navigation, a flexible spacer, search, appearance controls and a keyboard-shortcut action. Keep the same height, dividers, button sizes and typography across both pages.
 - **Navigation list:** group rows are about 42px high, divided by 1px rules. A small disclosure icon, kind icon, kind token, label and count keep the hierarchy scannable. The selected group gets a visible selection rule and remains in view.
 - **Kind marker:** a 1px outline, 3px corner radius, 12px monospace token and 16px symbol. Keep the text token next to the symbol at every size.
+- **Engineering overview:** use the standard 1160px content width; center a clear page title above twelve linked section cards. Each card carries its section icon, short code, title and description, using its semantic color family; explain all four families in a small legend below the grid. Collapse the two-column grid to one column on narrow screens.
 - **Controls:** square or 3–4px radius, with hover and selected states expressed through surface and border changes. Keyboard focus uses a 2px accent outline with offset.
 - **Panels:** use the page and panel surfaces with 1px dividers. Use elevation only for transient dialogs and menus.
 - **Appearance:** system mode follows `prefers-color-scheme`; explicit light and dark selections override it. Keep kind and status meanings stable as the surfaces change.
