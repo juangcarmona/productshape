@@ -1,6 +1,6 @@
 import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
-import { dirname, join, relative, resolve } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -292,8 +292,10 @@ async function readEngineeringManifest() {
       throw new Error(`Invalid E2E report entry at manifest index ${index}.`);
     }
     const source = join(dirname(manifestPath), report.path);
-    const destination = join(outDir, 'reports', report.path);
-    if (!destination.startsWith(join(outDir, 'reports') + '/')) {
+    const reportsDir = resolve(outDir, 'reports');
+    const destination = resolve(reportsDir, report.path);
+    const pathFromReports = relative(reportsDir, destination);
+    if (!pathFromReports || pathFromReports === '..' || pathFromReports.startsWith(`..${sep}`)) {
       throw new Error(`E2E report path escapes the published reports directory: ${report.path}`);
     }
     await mkdir(dirname(destination), { recursive: true });
@@ -312,6 +314,7 @@ function isSafeRelativePath(value) {
     value.length > 0 &&
     !value.startsWith('/') &&
     !value.includes('\\') &&
+    !value.includes(':') &&
     value.split('/').every((part) => part && part !== '.' && part !== '..')
   );
 }
