@@ -1870,7 +1870,7 @@ h3 {
     display: inline-flex;
     align-items: center;
     flex: none;
-    padding: 0 0.55rem;
+    padding: 0.7rem;
     white-space: nowrap;
   }
   .main-nav a[rel='external'],
@@ -1957,9 +1957,6 @@ h3 {
   }
   .engineering-nav li a[aria-current='page'] {
     box-shadow: inset 0 -2px 0 var(--section-color, var(--accent-strong));
-  }
-  .engineering-nav .engineering-number {
-    margin-left: 0.1rem;
   }
   .engineering-attribution {
     min-height: 1.9rem;
