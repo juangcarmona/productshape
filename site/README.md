@@ -1,32 +1,39 @@
-# ProductShape public site
+# ProductShape publication sites
 
-The site is a buildless static source under `site/`. Localized page copy lives in `content/en.json` and `content/es.json`; shared presentation is in `assets/site.css`. `scripts/build-public-site.mjs` assembles localized pages, turns the twelve canonical arc42 Markdown sections into navigable pages, and includes the generated Product Snapshot.
-
-Build it after the CLI workspace build and snapshot generation:
+The existing static site source remains under `site/`. Localized copy lives in `content/en.json` and `content/es.json`; shared presentation lives in `assets/site.css`. One builder creates two independent outputs:
 
 ```bash
+# Public ProductShape site for productshape.dev
+node scripts/build-public-site.mjs --profile public --out dist/public-site --base-path / --site-origin https://productshape.dev
+
+# Engineering portal for GitHub Pages
 node packages/cli/dist/bin.js graph --format html
-node scripts/build-public-site.mjs --out _site --base-path /productshape/
+node scripts/build-public-site.mjs --profile engineering --out _site --base-path /productshape/ --site-origin https://juangcarmona.github.io
 ```
 
-Use `--base-path / --site-origin https://example.com` when serving the built output at a domain root, such as Cloudflare Pages or a custom domain. The GitHub Pages project site uses `/productshape/` and the default GitHub Pages origin.
+To preview either static output locally, serve the selected build directory:
 
-The website is informational and static. The product model explorer is copied from `.product/generated/snapshot.html`; it is not edited in the site source. The first implementation is the reuse pilot. Extract shared components only after the ProductShape, Raccord, and DomusMind needs have been compared.
+```bash
+python3 -m http.server 4173 --directory dist/public-site
+python3 -m http.server 4174 --directory _site
+```
 
-## Product identity and guidance
+The engineering preview requires its generated Product Snapshot and manifest first, as shown in the deployment workflow.
 
-ProductShape is the branded reference implementation. Product Definition as Code (PDaC) names the methodology and normative specification. This distinction is defined by [`CON-BRAND-001`](../docs/product/model/requirements/constraints/con-brand-001.md) and is reflected in the header and footer. The ProductShape lockup and icon come from the repository's [`assets/branding.png`](../assets/branding.png) and [`assets/product_shape_icon.png`](../assets/product_shape_icon.png); the PDaC mark comes from the specification site's `src/assets/pdac.png`.
+The public site contains the localized product pages, adoption guides and static Archify diagrams. It links to the Product Snapshot and engineering portal on GitHub Pages; it does not include the model explorer or architecture routes in its output or sitemap.
 
-Public onboarding follows the canonical [product model index](../docs/product/model/index.md), [adoption journey](../docs/product/model/journeys/jrn-adopt-001.md), and [initialization use case](../docs/product/model/use-cases/uc-init-001.md). The site links to the authored model and generated snapshot so product claims and instructions can be checked against canonical sources.
+The engineering portal contains the generated Product Snapshot and the current twelve-section ProductShape architecture documentation. It does not contain the public product pages. E2E reports are optional and are listed only when a pipeline supplies the manifest and report files described in [`docs/operations/public-site-deployment.md`](../docs/operations/public-site-deployment.md).
 
-## Visual language
+## Product identity and canonical sources
 
-ProductShape's logo establishes a technical blueprint identity: white drawing surfaces, blue ink, and fine drafting lines. The public site uses that direction with a white canvas, a faint blue grid, square controls, and a system sans-serif stack. Shared colors and spacing live in [`assets/site.css`](assets/site.css); no web font is downloaded. The presentation requirement [`QR-PRESENTATION-001`](../docs/product/model/requirements/quality/qr-presentation-001.md) governs the generated model explorer specifically. It describes the explorer's compact, text-first interface and is a useful reference, but it is not a complete design system for the public marketing site.
+ProductShape is the branded reference implementation. Product Definition as Code (PDaC) names the methodology and normative specification. The distinction is defined by [`CON-BRAND-001`](../docs/product/model/requirements/constraints/con-brand-001.md). Public onboarding follows the canonical [product model index](../docs/product/model/index.md), [adoption journey](../docs/product/model/journeys/jrn-adopt-001.md), and [initialization use case](../docs/product/model/use-cases/uc-init-001.md).
 
-## Engineering reader
+## Archify diagrams
 
-Each arc42 section is a static HTML page with a sticky, collapsible section index, a current-section indicator, previous/next links, a source link, and a link to the Architecture Decision Records. On narrow screens the index becomes a collapsible panel above the article. The layout borrows the reading pattern used by the DomusMind engineering snapshot while keeping ProductShape's own content, colors, and routes.
+Candidate JSON sources live in `.archify/`; delivered standalone HTML lives in `site/diagrams/`. The public page labels these diagrams as conceptual explanations and links to the canonical product and architecture sources. Regenerate an artifact with the official Archify CLI after updating its candidate and pinned repository revision; no Archify package or browser runtime is part of the site build. Review the diagram's source links, non-colour labels, mobile layout and captions before publishing.
 
-## Adoption guides
+## Visual language and adoption guides
 
-The site renders the three general adoption guides directly from `docs/adoption/greenfield.md`, `brownfield.md`, and `existing-repository.md`. These Markdown files stay canonical; the site build turns them into readable, navigable HTML pages in English and Spanish routes. The guide text is currently maintained in English, and Spanish pages say so. OpenSpec and Spec Kit integration guides remain linked as supporting repository documents.
+ProductShape's logo establishes a technical blueprint identity: white drawing surfaces, blue ink, fine drafting lines, and a system sans-serif stack. The model explorer's [`QR-PRESENTATION-001`](../docs/product/model/requirements/quality/qr-presentation-001.md) informs its own compact, text-first interface; it is not the whole site's design system.
+
+The three general adoption guides are rendered from `docs/adoption/greenfield.md`, `brownfield.md`, and `existing-repository.md`. Their Markdown remains canonical; the site turns them into readable HTML pages in English and Spanish routes. The guide text is maintained in English, and Spanish pages say so.

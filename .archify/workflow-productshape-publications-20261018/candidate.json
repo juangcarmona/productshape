@@ -1,0 +1,322 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "From product decisions to ProductShape publications",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/juangcarmona/productshape.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "245de1fd5d10faaeb2b30f401853fcb805eca00b"
+    },
+    "output": "site/diagrams/productshape-publication-workflow.html"
+  },
+  "lanes": [
+    { "id": "intent", "label": "Product intent and review" },
+    { "id": "sources", "label": "Canonical sources and runs" },
+    { "id": "derived", "label": "Generated outputs" },
+    { "id": "publication", "label": "Publication surfaces" }
+  ],
+  "phases": [
+    { "id": "change", "label": "Propose and accept a change", "fromCol": 0, "toCol": 3 },
+    {
+      "id": "publish",
+      "label": "Publish derived material",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": ["product-intent", "product-change", "validate", "human-review", "apply-merge"],
+  "nodes": [
+    {
+      "id": "product-intent",
+      "lane": "intent",
+      "col": 0,
+      "type": "external",
+      "label": "Product intent",
+      "sublabel": "human intent",
+      "sources": [
+        {
+          "path": "docs/product/model/use-cases/uc-public-site-001.md",
+          "line": 14,
+          "end_line": 30,
+          "label": "Public reader goals"
+        }
+      ]
+    },
+    {
+      "id": "product-change",
+      "lane": "intent",
+      "col": 1,
+      "type": "backend",
+      "label": "Product Change",
+      "sublabel": "proposed change",
+      "sources": [
+        {
+          "path": "docs/product/changes/completed/chg-arc42-snapshot-001/change.md",
+          "line": 25,
+          "end_line": 32,
+          "label": "Publication outcomes"
+        }
+      ]
+    },
+    {
+      "id": "validate",
+      "lane": "intent",
+      "col": 2,
+      "type": "backend",
+      "label": "Validate proposal",
+      "sublabel": "validate"
+    },
+    {
+      "id": "human-review",
+      "lane": "intent",
+      "col": 3,
+      "type": "security",
+      "label": "Human review",
+      "sublabel": "human review"
+    },
+    {
+      "id": "apply-merge",
+      "lane": "intent",
+      "col": 4,
+      "type": "external",
+      "label": "Apply and merge",
+      "sublabel": "accepted baseline",
+      "sources": [
+        {
+          "path": "docs/product/changes/completed/chg-arc42-snapshot-001/change.md",
+          "line": 48,
+          "end_line": 55,
+          "label": "Product acceptance"
+        }
+      ]
+    },
+    {
+      "id": "model-source",
+      "lane": "sources",
+      "col": 0,
+      "type": "database",
+      "label": "Product Definition",
+      "sublabel": "product model",
+      "sources": [
+        {
+          "path": "docs/product/model/requirements/functional/fr-snapshot-001.md",
+          "line": 17,
+          "end_line": 20,
+          "label": "Snapshot source contract"
+        }
+      ]
+    },
+    {
+      "id": "architecture-source",
+      "lane": "sources",
+      "col": 1,
+      "type": "database",
+      "label": "Architecture documents",
+      "sublabel": "architecture docs",
+      "sources": [
+        {
+          "path": "docs/product/model/domain/terms/term-architecture-snapshot.md",
+          "line": 11,
+          "end_line": 21,
+          "label": "Architecture Snapshot meaning"
+        }
+      ]
+    },
+    {
+      "id": "journey-run",
+      "lane": "sources",
+      "col": 2,
+      "type": "backend",
+      "label": "E2E journey run",
+      "sublabel": "optional run",
+      "sources": [
+        {
+          "path": "docs/product/model/requirements/functional/fr-engineering-portal-001.md",
+          "line": 14,
+          "end_line": 20,
+          "label": "Available reports and source identity"
+        }
+      ]
+    },
+    {
+      "id": "product-snapshot",
+      "lane": "derived",
+      "col": 0,
+      "type": "frontend",
+      "label": "Product Snapshot",
+      "sublabel": "model view",
+      "sources": [
+        {
+          "path": "docs/product/model/requirements/functional/fr-snapshot-001.md",
+          "line": 17,
+          "end_line": 23,
+          "label": "Snapshot requirements"
+        }
+      ]
+    },
+    {
+      "id": "architecture-snapshot",
+      "lane": "derived",
+      "col": 1,
+      "type": "frontend",
+      "label": "Architecture Snapshot",
+      "sublabel": "arc42 view",
+      "sources": [
+        {
+          "path": "docs/product/model/domain/terms/term-architecture-snapshot.md",
+          "line": 11,
+          "end_line": 21,
+          "label": "Architecture Snapshot definition"
+        }
+      ]
+    },
+    {
+      "id": "e2e-report",
+      "lane": "derived",
+      "col": 2,
+      "type": "frontend",
+      "label": "E2E report",
+      "sublabel": "journey evidence",
+      "sources": [
+        {
+          "path": "docs/product/model/requirements/functional/fr-engineering-portal-001.md",
+          "line": 14,
+          "end_line": 20,
+          "label": "Report availability rules"
+        }
+      ]
+    },
+    {
+      "id": "engineering-portal",
+      "lane": "publication",
+      "col": 4,
+      "type": "cloud",
+      "label": "Engineering portal",
+      "sublabel": "source-aware",
+      "sources": [
+        {
+          "path": "docs/product/model/requirements/functional/fr-engineering-portal-001.md",
+          "line": 14,
+          "end_line": 20,
+          "label": "Portal requirements"
+        }
+      ]
+    },
+    {
+      "id": "public-site",
+      "lane": "publication",
+      "col": 5,
+      "type": "cloud",
+      "label": "Public ProductShape site",
+      "sublabel": "public explanation",
+      "sources": [
+        {
+          "path": "docs/product/model/requirements/functional/fr-public-site-001.md",
+          "line": 14,
+          "end_line": 20,
+          "label": "Public site requirements"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "intent-change",
+      "from": "product-intent",
+      "to": "product-change",
+      "label": "record intent",
+      "role": "main"
+    },
+    {
+      "id": "change-validation",
+      "from": "product-change",
+      "to": "validate",
+      "label": "check",
+      "role": "main"
+    },
+    {
+      "id": "validation-review",
+      "from": "validate",
+      "to": "human-review",
+      "label": "reviewable proposal",
+      "role": "main"
+    },
+    {
+      "id": "review-apply",
+      "from": "human-review",
+      "to": "apply-merge",
+      "label": "approved change",
+      "variant": "security",
+      "role": "main"
+    },
+    {
+      "id": "merge-product",
+      "from": "apply-merge",
+      "to": "model-source",
+      "label": "accepted baseline",
+      "variant": "emphasis"
+    },
+    {
+      "id": "model-snapshot",
+      "from": "model-source",
+      "to": "product-snapshot",
+      "label": "generate",
+      "variant": "emphasis"
+    },
+    {
+      "id": "architecture-tool",
+      "from": "architecture-source",
+      "to": "architecture-snapshot",
+      "label": "render; ArcShape optional",
+      "variant": "dashed"
+    },
+    {
+      "id": "run-report",
+      "from": "journey-run",
+      "to": "e2e-report",
+      "label": "publish if present",
+      "variant": "dashed"
+    },
+    {
+      "id": "product-to-portal",
+      "from": "product-snapshot",
+      "to": "engineering-portal",
+      "label": "available output"
+    },
+    {
+      "id": "architecture-to-portal",
+      "from": "architecture-snapshot",
+      "to": "engineering-portal",
+      "label": "available output"
+    },
+    {
+      "id": "report-to-portal",
+      "from": "e2e-report",
+      "to": "engineering-portal",
+      "label": "available output"
+    },
+    {
+      "id": "portal-link",
+      "from": "engineering-portal",
+      "to": "public-site",
+      "label": "link when available",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "slate",
+      "title": "How to read this view",
+      "items": [
+        "Conceptual explanation; not a mechanically generated product graph.",
+        "Solid labels show intended paths; dashed paths are optional or availability-dependent.",
+        "Use the source links on each supported node to check canonical details."
+      ]
+    }
+  ]
+}

@@ -5,17 +5,42 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
+const profileArgument = args.indexOf('--profile');
 const outputArgument = args.indexOf('--out');
 const baseArgument = args.indexOf('--base-path');
 const originArgument = args.indexOf('--site-origin');
+const snapshotSourceArgument = args.indexOf('--snapshot-source');
+const engineeringManifestArgument = args.indexOf('--engineering-manifest');
+const profile =
+  profileArgument >= 0 ? args[profileArgument + 1] : process.env.SITE_PROFILE || 'public';
+if (!['public', 'engineering'].includes(profile)) {
+  throw new Error('--profile must be either public or engineering.');
+}
+const engineeringOrigin = 'https://juangcarmona.github.io';
+const engineeringBasePath = '/productshape/';
 const outDir = resolve(root, outputArgument >= 0 ? args[outputArgument + 1] : '_site');
 const basePath = normalizeBasePath(
-  baseArgument >= 0 ? args[baseArgument + 1] : process.env.SITE_BASE_PATH || '/productshape/',
+  baseArgument >= 0
+    ? args[baseArgument + 1]
+    : process.env.SITE_BASE_PATH || (profile === 'public' ? '/' : engineeringBasePath),
 );
 const siteOrigin = normalizeOrigin(
   originArgument >= 0
     ? args[originArgument + 1]
-    : process.env.SITE_ORIGIN || 'https://juangcarmona.github.io',
+    : process.env.SITE_ORIGIN ||
+        (profile === 'public' ? 'https://productshape.dev' : engineeringOrigin),
+);
+const snapshotSource = resolve(
+  root,
+  snapshotSourceArgument >= 0
+    ? args[snapshotSourceArgument + 1]
+    : '.product/generated/snapshot.html',
+);
+const engineeringManifestPath = resolve(
+  root,
+  engineeringManifestArgument >= 0
+    ? args[engineeringManifestArgument + 1]
+    : '.product/generated/engineering/manifest.json',
 );
 const repoUrl = 'https://github.com/juangcarmona/productshape';
 const packageJson = JSON.parse(await readFile(join(root, 'packages/cli/package.json'), 'utf8'));
@@ -110,76 +135,84 @@ const revision =
 await rm(outDir, { recursive: true, force: true });
 await mkdir(outDir, { recursive: true });
 await cp(join(root, 'site/assets'), join(outDir, 'assets'), { recursive: true });
-await cp(join(architectureDir, 'diagrams'), join(outDir, 'assets/architecture'), {
-  recursive: true,
-});
-await cp(
-  join(root, 'docs/assets/snapshot/01-overview-desktop.png'),
-  join(outDir, 'assets/product-explorer.png'),
-);
 await writeFile(
   join(outDir, 'assets/site.css'),
   await readFile(join(root, 'site/assets/site.css')),
 );
-await mkdir(join(outDir, 'model'), { recursive: true });
 
-for (const locale of ['en', 'es']) {
-  const words = siteText[locale];
-  await emitPage(locale, 'home', '', renderHome(words, locale));
-  await emitPage(locale, 'product', 'product', renderProduct(words));
-  await emitPage(locale, 'workflow', 'how-it-works', renderWorkflow(words));
-  await emitPage(locale, 'start', 'get-started', renderStart(words, packageJson.version));
-  await emitPage(locale, 'model', 'model', renderModel(words));
-  for (const guide of adoptionGuides) {
-    const markdown = await readFile(join(root, 'docs/adoption', guide.file), 'utf8');
-    const guideCopy = words.guides.items.find((item) => item.slug === guide.slug);
-    await emitPage(locale, 'start', `guides/${guide.slug}`, renderGuide(guide, markdown, words), {
-      title: `${guideCopy.title} · ProductShape`,
-      description: guideCopy.description,
-    });
+if (profile === 'public') {
+  await cp(join(root, 'site/diagrams'), join(outDir, 'assets/diagrams'), { recursive: true });
+  await cp(
+    join(root, 'docs/assets/snapshot/01-overview-desktop.png'),
+    join(outDir, 'assets/product-explorer.png'),
+  );
+  for (const locale of ['en', 'es']) {
+    const words = siteText[locale];
+    await emitPage(locale, 'home', '', renderHome(words, locale));
+    await emitPage(locale, 'product', 'product', renderProduct(words));
+    await emitPage(locale, 'workflow', 'how-it-works', renderWorkflow(words));
+    await emitPage(locale, 'start', 'get-started', renderStart(words, packageJson.version));
+    for (const guide of adoptionGuides) {
+      const markdown = await readFile(join(root, 'docs/adoption', guide.file), 'utf8');
+      const guideCopy = words.guides.items.find((item) => item.slug === guide.slug);
+      await emitPage(locale, 'start', `guides/${guide.slug}`, renderGuide(guide, markdown, words), {
+        title: `${guideCopy.title} · ProductShape`,
+        description: guideCopy.description,
+      });
+    }
   }
-  if (locale === 'en') {
-    await emitPage('en', 'engineering', 'engineering', renderEngineeringLanding(), {
-      title: 'Architecture Documentation · ProductShape',
-      description: 'Explore the twelve sections of ProductShape architecture documentation.',
-    });
-  }
-}
-await cp(join(outDir, 'en/index.html'), join(outDir, 'index.html'));
-
-for (const section of sections) {
-  const page = renderArchitecturePage(section);
-  await emitPage('en', 'engineering', `engineering/${section.slug}`, page, {
-    title: `${section.number} · ${section.title} · ProductShape`,
-    description: section.description,
+  await cp(join(outDir, 'en/index.html'), join(outDir, 'index.html'));
+  await writeFile(join(outDir, 'sitemap.xml'), renderSitemap());
+  await writeFile(
+    join(outDir, 'robots.txt'),
+    `User-agent: *\nAllow: /\nSitemap: ${siteOrigin}${basePath}sitemap.xml\n`,
+  );
+  await writeFile(
+    join(outDir, '404.html'),
+    shell({
+      locale: 'en',
+      title: 'Page not found · ProductShape',
+      description: 'The requested ProductShape page was not found.',
+      body: `<section class="page-hero"><div class="narrow"><p class="eyebrow">404</p><h1>That page is not here.</h1><p class="lead">Use the navigation to find the ProductShape product guide, process, or adoption resources.</p><p><a class="button" href="${basePath}en/">Go to the overview</a></p></div></section>`,
+    }),
+  );
+} else {
+  await cp(join(architectureDir, 'diagrams'), join(outDir, 'assets/architecture'), {
+    recursive: true,
   });
+  await mkdir(join(outDir, 'en/model'), { recursive: true });
+  await cp(snapshotSource, join(outDir, 'en/model/explorer.html'));
+  const manifest = await readEngineeringManifest();
+  const portal = renderEngineeringPortalLanding(manifest);
+  const portalPage = engineeringPortalPage(portal, 'ProductShape Engineering Portal');
+  await writeFile(join(outDir, 'index.html'), portalPage);
+  await mkdir(join(outDir, 'en'), { recursive: true });
+  await writeFile(join(outDir, 'en/index.html'), portalPage);
+  for (const section of sections) {
+    const page = renderArchitecturePage(section);
+    await emitPage('en', 'engineering', `engineering/${section.slug}`, page, {
+      title: `${section.number} · ${section.title} · ProductShape`,
+      description: section.description,
+    });
+  }
+  await mkdir(join(outDir, 'en/engineering'), { recursive: true });
+  await writeFile(
+    join(outDir, 'en/engineering/index.html'),
+    engineeringPortalPage(
+      renderEngineeringLanding(),
+      'Architecture Documentation · ProductShape',
+      'Explore the twelve sections of ProductShape architecture documentation.',
+    ),
+  );
+  await writeFile(join(outDir, 'sitemap.xml'), renderSitemap());
+  await writeFile(
+    join(outDir, 'robots.txt'),
+    `User-agent: *\nAllow: /\nSitemap: ${siteOrigin}${basePath}sitemap.xml\n`,
+  );
 }
-
-await writeFile(join(outDir, 'sitemap.xml'), renderSitemap());
-await writeFile(
-  join(outDir, 'robots.txt'),
-  `User-agent: *\nAllow: /\nSitemap: ${siteOrigin}${basePath}sitemap.xml\n`,
-);
-
-const snapshot = join(root, '.product/generated/snapshot.html');
-await cp(snapshot, join(outDir, 'model/explorer.html'));
-await writeFile(
-  join(outDir, 'snapshot.html'),
-  redirectPage(`${basePath}en/model/`, 'ProductShape model explorer'),
-);
-await writeFile(
-  join(outDir, '404.html'),
-  shell({
-    locale: 'en',
-    active: '',
-    title: 'Page not found · ProductShape',
-    description: 'The requested ProductShape page was not found.',
-    body: `<section class="page-hero"><div class="narrow"><p class="eyebrow">404</p><h1>That page is not here.</h1><p class="lead">Use the navigation to find the ProductShape product guide, engineering documentation, or live model.</p><p><a class="button" href="${basePath}en/">Go to the overview</a></p></div></section>`,
-  }),
-);
 
 console.log(
-  `Built ProductShape public site at ${relative(root, outDir)} (base ${basePath}, CLI ${packageJson.version}, revision ${revision}).`,
+  `Built ProductShape ${profile} site at ${relative(root, outDir)} (base ${basePath}, CLI ${packageJson.version}, revision ${revision}).`,
 );
 
 function normalizeBasePath(value) {
@@ -195,19 +228,132 @@ function normalizeOrigin(value) {
   return parsed.origin;
 }
 
+function publicEngineeringPortalHref() {
+  return `${engineeringOrigin}${engineeringBasePath}`;
+}
+
+function productSnapshotHref() {
+  return `${engineeringOrigin}${engineeringBasePath}en/model/explorer.html`;
+}
+
+function engineeringHref() {
+  return profile === 'public' ? publicEngineeringPortalHref() : `${basePath}en/`;
+}
+
+function modelHref() {
+  return profile === 'public' ? productSnapshotHref() : `${basePath}en/model/explorer.html`;
+}
+
+async function readEngineeringManifest() {
+  const manifestPath = engineeringManifestPath;
+  let manifest;
+  try {
+    manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return {
+        productSnapshot: { sourceRevision: revision },
+        architectureSnapshot: { sourceRevision: revision },
+        e2eReports: [],
+      };
+    }
+    throw new Error(
+      `Could not read engineering output manifest at ${manifestPath}: ${error.message}`,
+    );
+  }
+  if (
+    manifest.schemaVersion !== 2 ||
+    !manifest.productSnapshot ||
+    typeof manifest.productSnapshot.sourceRevision !== 'string' ||
+    !manifest.productSnapshot.sourceRevision.trim() ||
+    !manifest.architectureSnapshot ||
+    typeof manifest.architectureSnapshot.sourceRevision !== 'string' ||
+    !manifest.architectureSnapshot.sourceRevision.trim() ||
+    !Array.isArray(manifest.e2eReports)
+  ) {
+    throw new Error(
+      'Engineering output manifest must use schemaVersion 2 with source revisions for both snapshots and an e2eReports array.',
+    );
+  }
+  const reports = [];
+  for (const [index, report] of manifest.e2eReports.entries()) {
+    if (
+      !report ||
+      typeof report.title !== 'string' ||
+      !report.title.trim() ||
+      typeof report.path !== 'string' ||
+      !isSafeRelativePath(report.path) ||
+      typeof report.sourceRevision !== 'string' ||
+      !report.sourceRevision.trim() ||
+      typeof report.runId !== 'string' ||
+      !report.runId.trim() ||
+      !['passed', 'failed', 'cancelled', 'unknown'].includes(report.result)
+    ) {
+      throw new Error(`Invalid E2E report entry at manifest index ${index}.`);
+    }
+    const source = join(dirname(manifestPath), report.path);
+    const destination = join(outDir, 'reports', report.path);
+    if (!destination.startsWith(join(outDir, 'reports') + '/')) {
+      throw new Error(`E2E report path escapes the published reports directory: ${report.path}`);
+    }
+    await mkdir(dirname(destination), { recursive: true });
+    await cp(source, destination);
+    reports.push({ ...report, href: `${basePath}reports/${report.path}` });
+  }
+  return {
+    productSnapshot: manifest.productSnapshot,
+    architectureSnapshot: manifest.architectureSnapshot,
+    e2eReports: reports,
+  };
+}
+
+function isSafeRelativePath(value) {
+  return (
+    value.length > 0 &&
+    !value.startsWith('/') &&
+    !value.includes('\\') &&
+    value.split('/').every((part) => part && part !== '.' && part !== '..')
+  );
+}
+
+function engineeringPortalPage(
+  body,
+  title,
+  description = 'Generated ProductShape engineering outputs and their source revisions.',
+) {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="${escapeAttribute(description)}"><title>${escapeHtml(title)}</title><link rel="stylesheet" href="${basePath}assets/site.css"></head><body><a class="skip-link" href="#main">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="${basePath}" aria-label="ProductShape Engineering Portal home"><img class="brand-icon" src="${basePath}assets/productshape-icon.svg" width="32" height="32" alt=""><span class="brand-title">ProductShape Engineering</span></a><a class="button secondary" href="https://productshape.dev/">Public ProductShape site →</a></div></header><main id="main">${body}</main><footer class="site-footer"><div class="footer-inner"><p>Engineering outputs are derived from ProductShape source at <code>${escapeHtml(revision)}</code>.</p><a href="${repoUrl}">Repository →</a></div></footer></body></html>`;
+}
+
+function renderEngineeringPortalLanding(manifest) {
+  const reportCards = manifest.e2eReports
+    .map(
+      (report) =>
+        `<article class="portal-card"><p class="eyebrow">E2E journey report · ${escapeHtml(report.result)}</p><h2><a href="${escapeAttribute(report.href)}">${escapeHtml(report.title)}</a></h2><p>Source revision <code>${escapeHtml(report.sourceRevision)}</code> · run <code>${escapeHtml(report.runId)}</code></p></article>`,
+    )
+    .join('');
+  const noReports = manifest.e2eReports.length
+    ? ''
+    : '<p class="portal-empty">No E2E journey report has been published yet.</p>';
+  return `<section class="page-hero"><div class="wrap"><p class="eyebrow">Engineering publications</p><h1>ProductShape Engineering Portal</h1><p class="lead">Generated views and evidence from ProductShape’s own engineering process. These publications link back to their canonical sources.</p></div></section><section class="section"><div class="wrap portal-grid"><article class="portal-card"><p class="eyebrow">Product Snapshot · generated</p><h2><a href="${basePath}en/model/explorer.html">Explore the Product Snapshot</a></h2><p>Read-only projection of the accepted Product Definition model.</p><p>Source revision <code>${escapeHtml(manifest.productSnapshot.sourceRevision)}</code> · <a href="${repoUrl}/tree/main/docs/product/model">Canonical product model →</a></p></article><article class="portal-card"><p class="eyebrow">Architecture Snapshot · generated from canonical documentation</p><h2><a href="${basePath}en/engineering/">Read ProductShape architecture</a></h2><p>Explore the twelve arc42 sections used to document ProductShape’s own architecture.</p><p>Source revision <code>${escapeHtml(manifest.architectureSnapshot.sourceRevision)}</code> · <a href="${repoUrl}/tree/main/docs/architecture">Canonical architecture documentation →</a></p></article>${reportCards}${noReports}</div></section>`;
+}
+
 function renderSitemap() {
-  const routeNames = ['', 'product/', 'how-it-works/', 'get-started/', 'model/'];
   const urls = [];
-  for (const locale of ['en', 'es']) {
-    for (const route of routeNames) urls.push(`${siteOrigin}${basePath}${locale}/${route}`);
-  }
-  urls.push(`${siteOrigin}${basePath}en/engineering/`);
-  for (const section of sections) {
-    urls.push(`${siteOrigin}${basePath}en/engineering/${section.slug}/`);
-  }
-  for (const locale of ['en', 'es']) {
-    for (const guide of adoptionGuides) {
-      urls.push(`${siteOrigin}${basePath}${locale}/guides/${guide.slug}/`);
+  if (profile === 'public') {
+    const routeNames = ['', 'product/', 'how-it-works/', 'get-started/'];
+    for (const locale of ['en', 'es']) {
+      for (const route of routeNames) urls.push(`${siteOrigin}${basePath}${locale}/${route}`);
+      for (const guide of adoptionGuides) {
+        urls.push(`${siteOrigin}${basePath}${locale}/guides/${guide.slug}/`);
+      }
+    }
+  } else {
+    urls.push(`${siteOrigin}${basePath}`);
+    urls.push(`${siteOrigin}${basePath}en/`);
+    urls.push(`${siteOrigin}${basePath}en/model/explorer.html`);
+    urls.push(`${siteOrigin}${basePath}en/engineering/`);
+    for (const section of sections) {
+      urls.push(`${siteOrigin}${basePath}en/engineering/${section.slug}/`);
     }
   }
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((url) => `<url><loc>${escapeHtml(url)}</loc></url>`).join('')}</urlset>\n`;
@@ -258,11 +404,20 @@ function shell({ locale, pageKind = '', title, description, body, routePath = ''
   const route = (page) => {
     const paths = {
       home: `${basePath}${locale}/`,
-      product: `${basePath}${locale}/product/`,
-      workflow: `${basePath}${locale}/how-it-works/`,
-      start: `${basePath}${locale}/get-started/`,
-      engineering: `${basePath}en/engineering/`,
-      model: `${basePath}${locale}/model/`,
+      product:
+        profile === 'public'
+          ? `${basePath}${locale}/product/`
+          : 'https://productshape.dev/en/product/',
+      workflow:
+        profile === 'public'
+          ? `${basePath}${locale}/how-it-works/`
+          : 'https://productshape.dev/en/how-it-works/',
+      start:
+        profile === 'public'
+          ? `${basePath}${locale}/get-started/`
+          : 'https://productshape.dev/en/get-started/',
+      engineering: engineeringHref(),
+      model: modelHref(),
     };
     return paths[page];
   };
@@ -283,18 +438,18 @@ function shell({ locale, pageKind = '', title, description, body, routePath = ''
   const primaryLinks = navItems
     .map(([key, label]) => {
       const link = `<a href="${route(key)}"${pageKind === key ? ' aria-current="page"' : ''}>${escapeHtml(label)}</a>`;
-      return key === 'engineering'
+      return key === 'engineering' && profile !== 'public'
         ? `<div class="main-nav-group engineering-nav-group">${link}<details class="engineering-subnav"><summary>${locale === 'es' ? 'Secciones' : 'Sections'}<span>${sections.length}</span></summary><ol>${engineeringSections}</ol></details></div>`
         : link;
     })
     .join('');
   const languageRoute = (target) => {
     if (routePath.startsWith('engineering/')) {
-      return target === 'en' ? `${basePath}en/${routePath}` : `${basePath}es/`;
+      return target === 'en' ? `${basePath}en/${routePath}` : 'https://productshape.dev/es/';
     }
     return `${basePath}${target}/${routePath}`;
   };
-  const header = `<a class="skip-link" href="#main">${locale === 'es' ? 'Saltar al contenido' : 'Skip to content'}</a><header class="site-header"><div class="header-inner"><a class="brand" href="${rootHref}" aria-label="ProductShape home"><img class="brand-icon" src="${basePath}assets/productshape-icon.svg" data-theme-light="${basePath}assets/productshape-icon.svg" data-theme-dark="${basePath}assets/productshape-icon-dark.svg" width="32" height="32" alt=""><span class="brand-title">ProductShape</span></a><span class="header-version">v${packageJson.version}</span><nav class="main-nav" id="primary-navigation" aria-label="${locale === 'es' ? 'Navegación principal' : 'Primary navigation'}">${primaryLinks}<a href="${repoUrl}" rel="external">${escapeHtml(nav.github)}</a><span class="language-switch" aria-label="${locale === 'es' ? 'Idioma' : 'Language'}"><a href="${languageRoute('en')}" lang="en"${locale === 'en' ? ' aria-current="true"' : ''}>EN</a><a href="${languageRoute('es')}" lang="es"${locale === 'es' ? ' aria-current="true"' : ''}>ES</a></span></nav><span class="header-spacer"></span><a class="site-search" href="${basePath}model/explorer.html?search=1" aria-label="Search the product"><svg aria-hidden="true" viewBox="0 0 20 20"><circle cx="8.5" cy="8.5" r="5.5"></circle><path d="m13 13 4 4"></path></svg><span>Search the product</span><kbd>/</kbd></a><div class="appearance-controls" role="group" aria-label="${locale === 'es' ? 'Apariencia' : 'Appearance'}"><button type="button" data-appearance-choice="light" aria-label="${locale === 'es' ? 'Tema claro' : 'Light theme'}" title="${locale === 'es' ? 'Tema claro' : 'Light theme'}" aria-pressed="false">☼</button><button type="button" data-appearance-choice="dark" aria-label="${locale === 'es' ? 'Tema oscuro' : 'Dark theme'}" title="${locale === 'es' ? 'Tema oscuro' : 'Dark theme'}" aria-pressed="false">☾</button><button type="button" data-appearance-choice="auto" aria-label="${locale === 'es' ? 'Tema del sistema' : 'System theme'}" title="${locale === 'es' ? 'Tema del sistema' : 'Theme follows system'}" aria-pressed="true">▣</button></div><button class="mobile-menu-toggle" type="button" aria-controls="primary-navigation" aria-expanded="false" aria-label="${locale === 'es' ? 'Abrir menú' : 'Open menu'}"><svg aria-hidden="true" viewBox="0 0 20 20"><path class="menu-line menu-line-top" d="M3 5h14"/><path class="menu-line menu-line-middle" d="M3 10h14"/><path class="menu-line menu-line-bottom" d="M3 15h14"/></svg></button><a class="site-keys" href="${basePath}model/explorer.html?keys=1" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">⌨</a></div></header>`;
+  const header = `<a class="skip-link" href="#main">${locale === 'es' ? 'Saltar al contenido' : 'Skip to content'}</a><header class="site-header"><div class="header-inner"><a class="brand" href="${rootHref}" aria-label="ProductShape home"><img class="brand-icon" src="${basePath}assets/productshape-icon.svg" data-theme-light="${basePath}assets/productshape-icon.svg" data-theme-dark="${basePath}assets/productshape-icon-dark.svg" width="32" height="32" alt=""><span class="brand-title">ProductShape</span></a><span class="header-version">v${packageJson.version}</span><nav class="main-nav" id="primary-navigation" aria-label="${locale === 'es' ? 'Navegación principal' : 'Primary navigation'}">${primaryLinks}<a href="${repoUrl}" rel="external">${escapeHtml(nav.github)}</a><span class="language-switch" aria-label="${locale === 'es' ? 'Idioma' : 'Language'}"><a href="${languageRoute('en')}" lang="en"${locale === 'en' ? ' aria-current="true"' : ''}>EN</a><a href="${languageRoute('es')}" lang="es"${locale === 'es' ? ' aria-current="true"' : ''}>ES</a></span></nav><span class="header-spacer"></span><a class="site-search" href="${modelHref()}?search=1" aria-label="Search the product"><svg aria-hidden="true" viewBox="0 0 20 20"><circle cx="8.5" cy="8.5" r="5.5"></circle><path d="m13 13 4 4"></path></svg><span>Search the product</span><kbd>/</kbd></a><div class="appearance-controls" role="group" aria-label="${locale === 'es' ? 'Apariencia' : 'Appearance'}"><button type="button" data-appearance-choice="light" aria-label="${locale === 'es' ? 'Tema claro' : 'Light theme'}" title="${locale === 'es' ? 'Tema claro' : 'Light theme'}" aria-pressed="false">☼</button><button type="button" data-appearance-choice="dark" aria-label="${locale === 'es' ? 'Tema oscuro' : 'Dark theme'}" title="${locale === 'es' ? 'Tema oscuro' : 'Dark theme'}" aria-pressed="false">☾</button><button type="button" data-appearance-choice="auto" aria-label="${locale === 'es' ? 'Tema del sistema' : 'System theme'}" title="${locale === 'es' ? 'Tema del sistema' : 'Theme follows system'}" aria-pressed="true">▣</button></div><button class="mobile-menu-toggle" type="button" aria-controls="primary-navigation" aria-expanded="false" aria-label="${locale === 'es' ? 'Abrir menú' : 'Open menu'}"><svg aria-hidden="true" viewBox="0 0 20 20"><path class="menu-line menu-line-top" d="M3 5h14"/><path class="menu-line menu-line-middle" d="M3 10h14"/><path class="menu-line menu-line-bottom" d="M3 15h14"/></svg></button><a class="site-keys" href="${modelHref()}?keys=1" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">⌨</a></div></header>`;
   const footer = `<footer class="site-footer"><div class="footer-inner"><div class="footer-identities"><a class="footer-productshape" href="${rootHref}"><img src="${basePath}assets/productshape-branding.svg" data-theme-light="${basePath}assets/productshape-branding.svg" data-theme-dark="${basePath}assets/productshape-branding-dark.svg" width="190" height="95" alt="ProductShape — Product Definition as Code"></a><a class="footer-methodology" href="https://github.com/product-definition-as-code/spec"><img src="${basePath}assets/pdac-logo.png" width="54" height="54" alt="PDaC logo"><span><strong>Product Definition as Code</strong><small>${escapeHtml(siteText[locale].footer.methodology)}</small></span></a></div><div class="footer-meta"><p>${escapeHtml(siteText[locale].footer.line)}<br><span>${siteText[locale].footer.license}</span></p><div class="footer-links"><a href="https://github.com/product-definition-as-code/spec">${escapeHtml(siteText[locale].footer.spec)}</a><a href="${repoUrl}">${escapeHtml(siteText[locale].footer.repo)}</a></div></div></div></footer>`;
   const menuScript = `const mobileMenuButton=document.querySelector('.mobile-menu-toggle');const primaryNavigation=document.querySelector('#primary-navigation');const mobileMenuQuery=matchMedia('(max-width: 64rem)');function closeMobileMenu(returnFocus=false){mobileMenuButton.setAttribute('aria-expanded','false');mobileMenuButton.setAttribute('aria-label','${locale === 'es' ? 'Abrir menú' : 'Open menu'}');primaryNavigation.classList.remove('is-open');if(returnFocus)mobileMenuButton.focus();}mobileMenuButton.addEventListener('click',()=>{const isOpen=mobileMenuButton.getAttribute('aria-expanded')==='true';if(isOpen){closeMobileMenu();return;}mobileMenuButton.setAttribute('aria-expanded','true');mobileMenuButton.setAttribute('aria-label','${locale === 'es' ? 'Cerrar menú' : 'Close menu'}');primaryNavigation.classList.add('is-open');});primaryNavigation.addEventListener('click',event=>{if(event.target.closest('a'))closeMobileMenu();});document.addEventListener('click',event=>{if(mobileMenuButton.getAttribute('aria-expanded')==='true'&&!event.target.closest('.header-inner'))closeMobileMenu();});document.addEventListener('keydown',event=>{if(event.key==='Escape'&&mobileMenuButton.getAttribute('aria-expanded')==='true')closeMobileMenu(true);});mobileMenuQuery.addEventListener('change',event=>{if(!event.matches)closeMobileMenu();});`;
   return `<!doctype html>\n<html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="${escapeAttribute(description)}"><meta property="og:title" content="${escapeAttribute(title)}"><meta property="og:description" content="${escapeAttribute(description)}"><meta property="og:type" content="website"><title>${escapeHtml(title)}</title><link rel="icon" href="${basePath}assets/productshape-icon.svg" type="image/svg+xml"><link rel="stylesheet" href="${asset}"><link rel="canonical" href="${siteOrigin}${basePath}${localizedPath}"></head><body>${header}<main id="main">${body}</main>${footer}<script>${menuScript}const appearanceKey='productshape-appearance';const appearanceRoot=document.documentElement;const appearanceButtons=document.querySelectorAll('[data-appearance-choice]');const appearanceMedia=window.matchMedia('(prefers-color-scheme: dark)');function syncThemeAssets(choice){const dark=choice==='dark'||(choice==='auto'&&appearanceMedia.matches);document.querySelectorAll('[data-theme-light][data-theme-dark]').forEach(image=>{image.src=dark?image.dataset.themeDark:image.dataset.themeLight;});}function setAppearance(choice){if(choice==='auto')appearanceRoot.removeAttribute('data-appearance');else appearanceRoot.setAttribute('data-appearance',choice);localStorage.setItem(appearanceKey,choice);syncThemeAssets(choice);appearanceButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.appearanceChoice===choice)));}const savedAppearance=localStorage.getItem(appearanceKey)||'auto';setAppearance(savedAppearance);appearanceMedia.addEventListener('change',()=>{if((localStorage.getItem(appearanceKey)||'auto')==='auto')syncThemeAssets('auto');});appearanceButtons.forEach(button=>button.addEventListener('click',()=>setAppearance(button.dataset.appearanceChoice)));</script></body></html>\n`;
@@ -303,8 +458,8 @@ function shell({ locale, pageKind = '', title, description, body, routePath = ''
 function renderHome(words, locale) {
   const home = words.home;
   const start = `${basePath}${locale}/get-started/`;
-  const model = `${basePath}${locale}/model/`;
-  const engineering = `${basePath}en/engineering/`;
+  const model = modelHref();
+  const engineering = engineeringHref();
   return `<section class="hero wrap"><div><p class="eyebrow">${escapeHtml(home.eyebrow)}</p><h1>${escapeHtml(home.title)}</h1><p class="lead">${escapeHtml(home.intro)}</p><div class="actions"><a class="button" href="${start}">${escapeHtml(home.primaryAction)}</a><a class="button secondary" href="${model}">${escapeHtml(home.secondaryAction)}</a></div></div><figure class="hero-art"><img src="${basePath}assets/product-explorer.png" width="1440" height="900" alt="${locale === 'es' ? 'Vista real del explorador del modelo de producto de ProductShape' : 'Real view of the ProductShape product model explorer'}"><figcaption class="image-caption">${locale === 'es' ? 'Una instantánea real del modelo, regenerada desde este repositorio.' : 'A real model snapshot, regenerated from this repository.'}</figcaption></figure></section><div class="wrap"><div class="proof-line"><strong>${escapeHtml(home.proofLabel)}</strong><span>${escapeHtml(home.proof)}</span></div></div><section class="section"><div class="wrap"><div class="section-heading"><div><p class="eyebrow">${locale === 'es' ? 'Una estructura común' : 'A shared structure'}</p><h2>${escapeHtml(home.flowTitle)}</h2></div><p>${escapeHtml(home.flowIntro)}</p></div>${flowGraphic(locale)}<div class="flow-grid">${home.flow.map((step) => `<article class="flow-step"><span class="step-number">${step.number}</span><h3>${escapeHtml(step.title)}</h3><p>${escapeHtml(step.text)}</p></article>`).join('')}</div></div></section><section class="section"><div class="wrap split-section"><div><p class="eyebrow">${locale === 'es' ? 'El límite importante' : 'The important boundary'}</p><h2>${escapeHtml(home.principleTitle)}</h2></div><div class="statement"><p>${escapeHtml(home.principleText)}</p></div></div></section><section class="section"><div class="wrap"><div class="section-heading"><div><p class="eyebrow">${locale === 'es' ? 'Dogfooding público' : 'Public dogfooding'}</p><h2>${escapeHtml(home.explorerTitle)}</h2></div><p>${escapeHtml(home.explorerText)}</p></div><p><a class="button secondary" href="${model}">${escapeHtml(words.nav.model)} →</a></p></div></section><section class="section"><div class="wrap split-section"><div><p class="eyebrow">${locale === 'es' ? 'Implementación' : 'Implementation'}</p><h2>${escapeHtml(home.architectureTitle)}</h2></div><div><p class="lead">${escapeHtml(home.architectureText)}</p><a href="${engineering}">${escapeHtml(words.nav.engineering)} →</a></div></div></section><section class="section"><div class="wrap"><div class="cta-band"><div><p class="eyebrow">${locale === 'es' ? 'Siguiente paso' : 'Next step'}</p><h2>${escapeHtml(home.closingTitle)}</h2><p>${escapeHtml(home.closingText)}</p></div><a class="button" href="${start}">${escapeHtml(words.nav.start)} →</a></div></div></section>`;
 }
 
@@ -336,7 +491,7 @@ function renderProduct(words) {
         `<article class="feature"><span class="feature-index">0${index + 1}</span><h3>${escapeHtml(section.title)}</h3><p>${escapeHtml(section.text)}</p></article>`,
     )
     .join('');
-  const modelUrl = `${basePath}${locale}/model/`;
+  const modelUrl = modelHref();
   const modelSource = `${repoUrl}/blob/main/docs/product/model/index.md`;
   const brandSource = `${repoUrl}/blob/main/docs/product/model/requirements/constraints/con-brand-001.md`;
   const journeySource = `${repoUrl}/blob/main/docs/product/model/journeys/jrn-adopt-001.md`;
@@ -348,7 +503,12 @@ function renderWorkflow(words) {
   const steps = words.workflow.steps
     .map((step) => `<li><h2>${escapeHtml(step.title)}</h2><p>${escapeHtml(step.text)}</p></li>`)
     .join('');
-  return `<section class="page-hero"><div class="narrow"><p class="eyebrow">${escapeHtml(words.workflow.eyebrow)}</p><h1>${escapeHtml(words.workflow.title)}</h1><p class="lead">${escapeHtml(words.workflow.intro)}</p></div></section><section class="section"><div class="narrow">${flowGraphic(words.languageName === 'Español' ? 'es' : 'en')}<ol class="step-list">${steps}</ol><div class="callout"><strong>${escapeHtml(words.workflow.noteTitle)}</strong><p>${escapeHtml(words.workflow.noteText)}</p></div><a class="button" href="${basePath}${words.languageName === 'Español' ? 'es' : 'en'}/get-started/">${escapeHtml(words.nav.start)} →</a></div></section>`;
+  const locale = words.languageName === 'Español' ? 'es' : 'en';
+  const diagrams =
+    locale === 'es'
+      ? `<section class="section"><div class="narrow"><p class="eyebrow">Diagramas Archify</p><h2>Del conocimiento de producto a dos publicaciones</h2><p>Estos diagramas son explicaciones conceptuales. Los enlaces a fuentes muestran dónde comprobar procesos y artefactos canónicos; forma y color no codifican hechos por sí solos.</p><figure class="public-diagram"><iframe sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer" title="Flujo conceptual de ProductShape desde la definición de producto hasta sus publicaciones" loading="lazy" src="${basePath}assets/diagrams/productshape-publication-workflow.html"></iframe><figcaption>Flujo conceptual · <a href="${basePath}assets/diagrams/productshape-publication-workflow.html">Abrir diagrama interactivo</a></figcaption></figure><figure class="public-diagram"><iframe sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer" title="Límites conceptuales entre el site público y el portal de ingeniería de ProductShape" loading="lazy" src="${basePath}assets/diagrams/productshape-publication-boundaries.html"></iframe><figcaption>Límites conceptuales · <a href="${basePath}assets/diagrams/productshape-publication-boundaries.html">Abrir diagrama interactivo</a></figcaption></figure><p><a href="${repoUrl}/tree/main/docs/product/model">Fuentes canónicas del producto →</a> · <a href="${repoUrl}/tree/main/docs/architecture">Documentación canónica de arquitectura →</a></p></div></section>`
+      : `<section class="section"><div class="narrow"><p class="eyebrow">Archify diagrams</p><h2>From product knowledge to two publications</h2><p>These are conceptual explanations. Links to sources show where to check canonical processes and artifacts; shape and color do not encode facts by themselves.</p><figure class="public-diagram"><iframe sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer" title="Conceptual ProductShape flow from product definition to its publications" loading="lazy" src="${basePath}assets/diagrams/productshape-publication-workflow.html"></iframe><figcaption>Conceptual workflow · <a href="${basePath}assets/diagrams/productshape-publication-workflow.html">Open interactive diagram</a></figcaption></figure><figure class="public-diagram"><iframe sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer" title="Conceptual boundaries between the ProductShape public site and engineering portal" loading="lazy" src="${basePath}assets/diagrams/productshape-publication-boundaries.html"></iframe><figcaption>Conceptual boundaries · <a href="${basePath}assets/diagrams/productshape-publication-boundaries.html">Open interactive diagram</a></figcaption></figure><p><a href="${repoUrl}/tree/main/docs/product/model">Canonical product sources →</a> · <a href="${repoUrl}/tree/main/docs/architecture">Canonical architecture documentation →</a></p></div></section>`;
+  return `<section class="page-hero"><div class="narrow"><p class="eyebrow">${escapeHtml(words.workflow.eyebrow)}</p><h1>${escapeHtml(words.workflow.title)}</h1><p class="lead">${escapeHtml(words.workflow.intro)}</p></div></section><section class="section"><div class="narrow">${flowGraphic(locale)}<ol class="step-list">${steps}</ol><div class="callout"><strong>${escapeHtml(words.workflow.noteTitle)}</strong><p>${escapeHtml(words.workflow.noteText)}</p></div><a class="button" href="${basePath}${locale}/get-started/">${escapeHtml(words.nav.start)} →</a></div></section>${diagrams}`;
 }
 
 function renderStart(words, version) {
@@ -381,7 +541,7 @@ function renderEngineeringSidebar(activeSlug = '') {
         `<li><a href="${basePath}en/engineering/${item.slug}/" data-section="${item.number}"${item.slug === activeSlug ? ' aria-current="page"' : ''}><span class="engineering-chev" aria-hidden="true">›</span><span class="engineering-token"><svg class="ic" viewBox="0 0 16 16" aria-hidden="true">${sectionIcons[item.number]}</svg>${item.token}</span><span class="engineering-nav-title">${escapeHtml(item.title)}</span></a></li>`,
     )
     .join('');
-  return `<aside class="engineering-nav" aria-label="Engineering sections"><header class="engineering-nav-head"><h2>ENGINEERING</h2><span>${sections.length}</span></header><div class="engineering-listwrap"><ol>${nav}</ol></div><a class="engineering-attribution" href="${basePath}en/" title="Build with ProductShape v${packageJson.version}"><span class="engineering-info" aria-hidden="true">i</span><span>Build with ProductShape v${packageJson.version}</span></a></aside>`;
+  return `<aside class="engineering-nav" aria-label="Engineering sections"><header class="engineering-nav-head"><h2>ENGINEERING</h2><span>${sections.length}</span></header><div class="engineering-listwrap"><ol>${nav}</ol></div><a class="engineering-attribution" href="${basePath}" title="Engineering portal"><span class="engineering-info" aria-hidden="true">i</span><span>Engineering portal</span></a><a class="engineering-attribution" href="https://productshape.dev/" title="Public ProductShape site">Public ProductShape site →</a></aside>`;
 }
 
 function renderEngineeringLanding() {
@@ -404,15 +564,6 @@ function renderArchitecturePage(section) {
       ? `<a class="nav-adjacent nav-${direction}" href="${basePath}en/engineering/${item.slug}/"><span>${direction === 'previous' ? '← Previous' : 'Next →'}</span><strong>${item.number} · ${escapeHtml(item.title)}</strong></a>`
       : `<span class="nav-adjacent nav-${direction} disabled" aria-hidden="true"></span>`;
   return `<div class="engineering-layout">${renderEngineeringSidebar(section.slug)}<article class="engineering-content"><div class="engineering-content-inner"><h1 class="engineering-title">${escapeHtml(section.title)}</h1>${section.html}<div class="engineering-endmatter"><p class="source-stamp">${escapeHtml(revision)}</p><p class="link-list"><a href="${sourceUrl}">Markdown source on GitHub →</a></p><div class="article-pagination">${adjacentLink(previous, 'previous')}${adjacentLink(next, 'next')}</div></div></div></article></div>`;
-}
-
-function renderModel(words) {
-  const src = `${basePath}model/explorer.html`;
-  return `<section class="page-hero"><div class="wrap"><p class="eyebrow">${escapeHtml(words.model.eyebrow)}</p><h1>${escapeHtml(words.model.title)}</h1><p class="lead">${escapeHtml(words.model.intro)}</p><div class="model-launch"><p>${escapeHtml(words.model.notice)}</p><div class="link-list"><a class="button" href="${src}" target="_blank" rel="noopener">${escapeHtml(words.model.open)} ↗</a><a href="${repoUrl}/tree/main/docs/product/model">${escapeHtml(words.model.source)} →</a></div></div></div></section>`;
-}
-
-function redirectPage(destination, title, message = 'The model explorer moved to') {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=${destination}"><meta name="robots" content="noindex"><title>${escapeHtml(title)}</title></head><body><p>${escapeHtml(message)} <a href="${destination}">${escapeHtml(title)}</a>.</p></body></html>`;
 }
 
 function splitFrontmatter(source, name) {

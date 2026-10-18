@@ -1,0 +1,215 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "ProductShape products, method and publications",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/juangcarmona/productshape.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "245de1fd5d10faaeb2b30f401853fcb805eca00b"
+    },
+    "output": "site/diagrams/productshape-publication-boundaries.html"
+  },
+  "lanes": [
+    { "id": "products", "label": "Independent products and method" },
+    { "id": "repo", "label": "ProductShape repository" },
+    { "id": "outputs", "label": "Separate publication surfaces" }
+  ],
+  "phases": [
+    { "id": "boundaries", "label": "Product and method boundaries", "fromCol": 0, "toCol": 2 },
+    {
+      "id": "publications",
+      "label": "ProductShape publications",
+      "fromCol": 3,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": ["product-model", "engineering-portal"],
+  "nodes": [
+    {
+      "id": "productshape",
+      "lane": "products",
+      "col": 0,
+      "type": "backend",
+      "label": "ProductShape",
+      "sublabel": "product implementation",
+      "sources": [
+        {
+          "path": "docs/product/model/domain/terms/term-architecture-snapshot.md",
+          "line": 11,
+          "end_line": 21,
+          "label": "ProductShape architecture snapshot"
+        }
+      ]
+    },
+    {
+      "id": "pdac",
+      "lane": "products",
+      "col": 1,
+      "type": "external",
+      "label": "PDaC",
+      "sublabel": "normative method",
+      "sources": [
+        {
+          "path": "docs/product/model/domain/terms/term-methodology.md",
+          "line": 10,
+          "end_line": 16,
+          "label": "PDaC methodology"
+        }
+      ]
+    },
+    {
+      "id": "arcshape",
+      "lane": "products",
+      "col": 2,
+      "type": "external",
+      "label": "ArcShape",
+      "sublabel": "separate product",
+      "sources": [
+        {
+          "path": "docs/product/model/domain/terms/term-architecture-snapshot.md",
+          "line": 11,
+          "end_line": 21,
+          "label": "ArcShape boundary"
+        }
+      ]
+    },
+    {
+      "id": "product-model",
+      "lane": "repo",
+      "col": 0,
+      "type": "database",
+      "label": "Product Definition",
+      "sublabel": "canonical product intent",
+      "sources": [
+        {
+          "path": "docs/product/model/requirements/functional/fr-snapshot-001.md",
+          "line": 17,
+          "end_line": 23,
+          "label": "Snapshot requirements"
+        }
+      ]
+    },
+    {
+      "id": "architecture-docs",
+      "lane": "repo",
+      "col": 1,
+      "type": "database",
+      "label": "Architecture docs",
+      "sublabel": "this repo only",
+      "sources": [
+        {
+          "path": "docs/product/model/domain/terms/term-architecture-snapshot.md",
+          "line": 11,
+          "end_line": 21,
+          "label": "Architecture Snapshot definition"
+        }
+      ]
+    },
+    {
+      "id": "public-content",
+      "lane": "repo",
+      "col": 2,
+      "type": "frontend",
+      "label": "Public site content",
+      "sublabel": "explanatory pages",
+      "sources": [
+        {
+          "path": "docs/product/model/requirements/functional/fr-public-site-001.md",
+          "line": 14,
+          "end_line": 20,
+          "label": "Public site requirements"
+        }
+      ]
+    },
+    {
+      "id": "engineering-portal",
+      "lane": "outputs",
+      "col": 3,
+      "type": "cloud",
+      "label": "Engineering portal",
+      "sublabel": "GitHub Pages",
+      "sources": [
+        {
+          "path": "docs/product/model/requirements/functional/fr-engineering-portal-001.md",
+          "line": 14,
+          "end_line": 20,
+          "label": "Portal requirements"
+        }
+      ]
+    },
+    {
+      "id": "public-site",
+      "lane": "outputs",
+      "col": 4,
+      "type": "cloud",
+      "label": "Public site",
+      "sublabel": "productshape.dev",
+      "sources": [
+        {
+          "path": "docs/product/changes/completed/chg-arc42-snapshot-001/change.md",
+          "line": 25,
+          "end_line": 32,
+          "label": "Public publication outcome"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "implementation-method",
+      "from": "productshape",
+      "to": "pdac",
+      "label": "implements the method",
+      "role": "main"
+    },
+    {
+      "id": "separate-tool",
+      "from": "productshape",
+      "to": "arcshape",
+      "label": "optional local documentation tool",
+      "variant": "dashed"
+    },
+    {
+      "id": "product-projection",
+      "from": "product-model",
+      "to": "engineering-portal",
+      "label": "Product Snapshot",
+      "role": "main"
+    },
+    {
+      "id": "architecture-projection",
+      "from": "architecture-docs",
+      "to": "engineering-portal",
+      "label": "Architecture Snapshot"
+    },
+    {
+      "id": "explain-product",
+      "from": "public-content",
+      "to": "public-site",
+      "label": "public explanation"
+    },
+    {
+      "id": "independent-sites",
+      "from": "engineering-portal",
+      "to": "public-site",
+      "label": "independent builds",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "slate",
+      "title": "Boundary notes",
+      "items": [
+        "ProductShape and ArcShape are separate products with no product dependency on each other.",
+        "ProductShape may use ArcShape inside its own repository to document its architecture.",
+        "Product Snapshot and architecture documentation are engineering publications; the public site explains the product and process."
+      ]
+    }
+  ]
+}

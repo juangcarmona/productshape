@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "44c2d568-9967-47e3-b4d0-7dd786f4841a",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "/tmp/productshape-296-proposal/.archify/publication-boundaries-20261018/candidate.json",
+  "output": "/tmp/productshape-296-proposal/site/diagrams/productshape-publication-boundaries.html",
+  "specification": {
+    "sha256": "93eb96385f18d79591de834aca74104f60df49ad438431c52e657683e9421d05",
+    "bytes": 5671
+  },
+  "artifact": {
+    "sha256": "0aebb0345f9272377f1b54275ea797585a89fcc7fb43fa1029bdec3a48195c84",
+    "bytes": 824735
+  }
+}

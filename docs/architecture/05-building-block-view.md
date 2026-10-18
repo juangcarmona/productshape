@@ -26,7 +26,7 @@ The core owns deterministic model behavior. The CLI owns command parsing, orches
 | Provider integrations | Map canonical skills/commands to Claude, Copilot, Codex, and OpenCode paths | Renderer interfaces | `packages/integration-*` |
 | SDD integrations | Configure OpenSpec and Spec Kit workflows around the product-definition interface | Integration package APIs | `packages/integration-openspec/`, `packages/integration-speckit/` |
 | Schemas and templates | Authoring contracts and conformant examples | Files loaded by CLI or printed on demand | `schemas/`, `templates/` |
-| Public site builder | Generate localized static pages, render arc42 Markdown, and assemble the explorer | Node build script | `scripts/build-public-site.mjs`, `site/` |
+| Static site builder | Build separate public and engineering output profiles from shared localized content and static assets | Node build script | `scripts/build-public-site.mjs`, `site/` |
 
 ### Important Interfaces
 
@@ -38,6 +38,6 @@ Internal package edges are acyclic. Provider renderers are consumed through stru
 
 The CLI resolves the working repository, delegates model behavior to `core`, and delegates managed-file or provider configuration work to `distribution` and SDD integration packages. It formats results but does not make semantic product decisions.
 
-### Whitebox: Public site assembly
+### Whitebox: Publication assembly
 
-The site build reads tracked localized content and the twelve arc42 Markdown sections, compiles static pages, then copies the CLI-generated Product Snapshot into the model route. GitHub Pages serves the resulting files without a runtime service.
+The public profile builds the localized product pages, adoption guides and standalone diagrams for `productshape.dev`. The engineering profile copies the CLI-generated Product Snapshot and renders the twelve canonical arc42 Markdown sections for GitHub Pages. Neither output includes the other's primary content routes.

@@ -2259,3 +2259,37 @@ h3 {
     padding-inline: 0.75rem;
   }
 }
+/* Separate publication cards and embedded Archify pages. */
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: 1.25rem;
+}
+
+.portal-card {
+  border: 1px solid var(--line, #b7c9dc);
+  background: var(--surface, #fff);
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.portal-empty {
+  grid-column: 1 / -1;
+  border-inline-start: 3px solid var(--ink, #173b67);
+  padding: 0.75rem 1rem;
+}
+
+.public-diagram {
+  margin: 2rem 0;
+}
+
+.public-diagram iframe {
+  display: block;
+  width: 100%;
+  height: clamp(34rem, 75vw, 52rem);
+  border: 1px solid var(--line, #b7c9dc);
+  background: var(--surface, #fff);
+}
+
+.public-diagram figcaption {
+  margin-block: 0.75rem;
+}

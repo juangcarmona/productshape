@@ -1,14 +1,21 @@
-name: Public site
+name: Engineering portal
 
 on:
+  pull_request:
+    paths:
+      - '.github/workflows/snapshot.yml'
+      - 'docs/architecture/**'
+      - 'docs/product/model/**'
+      - 'packages/**'
+      - 'scripts/build-public-site.mjs'
+      - 'site/assets/**'
+      - 'site/content/**'
   push:
     branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 # One Pages deployment at a time; a newer merge supersedes an in-flight one.
 concurrency:
@@ -16,12 +23,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  publish:
-    name: publish the public site and self-model
+  build:
+    name: Build ProductShape engineering outputs
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: pnpm/action-setup@v6
@@ -31,14 +35,56 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      # The self-model explorer is a generated read-only route in the complete public site.
       - name: generate the product explorer
         run: node packages/cli/dist/bin.js graph --format html
-      - name: assemble the public site
-        run: node scripts/build-public-site.mjs --out _site --base-path /productshape/
+      - name: identify engineering snapshot sources
+        env:
+          SOURCE_REVISION: ${{ github.sha }}
+        run: |
+          mkdir -p .product/generated/engineering
+          node --input-type=module <<'NODE'
+          import { writeFile } from 'node:fs/promises';
+
+          const sourceRevision = process.env.SOURCE_REVISION;
+          if (!sourceRevision) throw new Error('SOURCE_REVISION is required.');
+          const manifest = {
+            schemaVersion: 2,
+            productSnapshot: { sourceRevision },
+            architectureSnapshot: { sourceRevision },
+            e2eReports: [],
+          };
+          await writeFile(
+            '.product/generated/engineering/manifest.json',
+            `${JSON.stringify(manifest, null, 2)}\n`,
+          );
+          NODE
+      - name: assemble the engineering portal
+        run: node scripts/build-public-site.mjs --profile engineering --out _site --base-path /productshape/ --site-origin https://juangcarmona.github.io
+      - name: Upload the engineering review artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: productshape-engineering-${{ github.sha }}
+          path: _site
+          if-no-files-found: error
+          retention-days: 7
       - uses: actions/configure-pages@v6
+        if: github.event_name != 'pull_request'
       - uses: actions/upload-pages-artifact@v5
+        if: github.event_name != 'pull_request'
         with:
           path: _site
+
+  publish:
+    name: Publish ProductShape engineering portal
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - id: deployment
         uses: actions/deploy-pages@v5

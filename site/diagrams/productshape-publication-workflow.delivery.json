@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "e6403479-5932-4ba6-a786-2e00cd525d8d",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "/tmp/productshape-296-proposal/.archify/workflow-productshape-publications-20261018/candidate.json",
+  "output": "/tmp/productshape-296-proposal/site/diagrams/productshape-publication-workflow.html",
+  "specification": {
+    "sha256": "6f90ec651b577cfbb196b0d9761dfe11e4108382e255dffeee5a4045ea46ef10",
+    "bytes": 8249
+  },
+  "artifact": {
+    "sha256": "c21f7bf177ad022a3bc35514cf0aaf9b873170963b776ede18fd85f94a17a527",
+    "bytes": 838495
+  }
+}
