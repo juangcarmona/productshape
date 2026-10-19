@@ -1393,5 +1393,490 @@
       ],
       "questioned": []
     }
+  },
+  "QR-ACCESSIBILITY-001": {
+    "inspect": {
+      "id": "QR-ACCESSIBILITY-001",
+      "type": "quality-requirement",
+      "title": "Make the generated snapshot fully operable without a pointer or colour vision",
+      "status": "active",
+      "path": "docs/product/model/requirements/quality/qr-accessibility-001.md",
+      "digest": "sha256:7694a090493fb8963717e168d1bba8d692e392d7b988a2850ab7357f53cb4f48",
+      "outgoing": [
+        {
+          "from": "QR-ACCESSIBILITY-001",
+          "kind": "applies-to",
+          "to": "UC-SNAPSHOT-EXPLORE-001"
+        }
+      ],
+      "incoming": []
+    },
+    "impact": {
+      "root": "QR-ACCESSIBILITY-001",
+      "direction": "both",
+      "depth": 0,
+      "direct": [
+        {
+          "id": "UC-SNAPSHOT-EXPLORE-001",
+          "type": "use-case",
+          "title": "Explore the product through a snapshot page",
+          "distance": 1,
+          "direction": "outgoing",
+          "via": {
+            "from": "QR-ACCESSIBILITY-001",
+            "kind": "applies-to",
+            "to": "UC-SNAPSHOT-EXPLORE-001"
+          }
+        }
+      ],
+      "transitive": [
+        {
+          "id": "ACT-PRODUCT-EXPLORER",
+          "type": "actor",
+          "title": "Product Explorer",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "primary-actor",
+            "to": "ACT-PRODUCT-EXPLORER"
+          }
+        },
+        {
+          "id": "BC-PRODUCT-DEFINITION",
+          "type": "bounded-context",
+          "title": "Product Definition",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "bounded-context",
+            "to": "BC-PRODUCT-DEFINITION"
+          }
+        },
+        {
+          "id": "BR-CANONICAL-001",
+          "type": "business-rule",
+          "title": "Authored product artifacts are canonical",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "governed-by",
+            "to": "BR-CANONICAL-001"
+          }
+        },
+        {
+          "id": "TERM-FOCUSED-TOPOLOGY",
+          "type": "domain-term",
+          "title": "Focused Topology",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "uses-terms",
+            "to": "TERM-FOCUSED-TOPOLOGY"
+          }
+        },
+        {
+          "id": "TERM-GRAPH-PROJECTION",
+          "type": "domain-term",
+          "title": "Graph Projection",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "uses-terms",
+            "to": "TERM-GRAPH-PROJECTION"
+          }
+        },
+        {
+          "id": "TERM-PRODUCT-ARTIFACT",
+          "type": "domain-term",
+          "title": "Product Artifact",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "uses-terms",
+            "to": "TERM-PRODUCT-ARTIFACT"
+          }
+        },
+        {
+          "id": "TERM-PRODUCT-EXPLORER",
+          "type": "domain-term",
+          "title": "Product Explorer",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "uses-terms",
+            "to": "TERM-PRODUCT-EXPLORER"
+          }
+        },
+        {
+          "id": "TERM-PRODUCT-GRAPH",
+          "type": "domain-term",
+          "title": "Product Graph",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "uses-terms",
+            "to": "TERM-PRODUCT-GRAPH"
+          }
+        },
+        {
+          "id": "TERM-PRODUCT-SNAPSHOT",
+          "type": "domain-term",
+          "title": "Product Snapshot",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "uses-terms",
+            "to": "TERM-PRODUCT-SNAPSHOT"
+          }
+        }
+      ],
+      "questioned": [
+        {
+          "id": "UC-SNAPSHOT-EXPLORE-001",
+          "type": "use-case",
+          "title": "Explore the product through a snapshot page",
+          "via": {
+            "from": "QR-ACCESSIBILITY-001",
+            "kind": "applies-to",
+            "to": "UC-SNAPSHOT-EXPLORE-001"
+          },
+          "polarity": "governance"
+        }
+      ]
+    }
+  },
+  "QR-PRESENTATION-001": {
+    "inspect": {
+      "id": "QR-PRESENTATION-001",
+      "type": "quality-requirement",
+      "title": "Present the snapshot as a calm, compact, text-first engineering instrument",
+      "status": "active",
+      "path": "docs/product/model/requirements/quality/qr-presentation-001.md",
+      "digest": "sha256:d16a3c4eb8a38f0282d47a962ec3822bcd882f1910131d504ed0d2ed75352e88",
+      "outgoing": [
+        {
+          "from": "QR-PRESENTATION-001",
+          "kind": "applies-to",
+          "to": "UC-SNAPSHOT-EXPLORE-001"
+        }
+      ],
+      "incoming": []
+    },
+    "impact": {
+      "root": "QR-PRESENTATION-001",
+      "direction": "both",
+      "depth": 0,
+      "direct": [
+        {
+          "id": "UC-SNAPSHOT-EXPLORE-001",
+          "type": "use-case",
+          "title": "Explore the product through a snapshot page",
+          "distance": 1,
+          "direction": "outgoing",
+          "via": {
+            "from": "QR-PRESENTATION-001",
+            "kind": "applies-to",
+            "to": "UC-SNAPSHOT-EXPLORE-001"
+          }
+        }
+      ],
+      "transitive": [
+        {
+          "id": "ACT-PRODUCT-EXPLORER",
+          "type": "actor",
+          "title": "Product Explorer",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "primary-actor",
+            "to": "ACT-PRODUCT-EXPLORER"
+          }
+        },
+        {
+          "id": "BC-PRODUCT-DEFINITION",
+          "type": "bounded-context",
+          "title": "Product Definition",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "bounded-context",
+            "to": "BC-PRODUCT-DEFINITION"
+          }
+        },
+        {
+          "id": "BR-CANONICAL-001",
+          "type": "business-rule",
+          "title": "Authored product artifacts are canonical",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "governed-by",
+            "to": "BR-CANONICAL-001"
+          }
+        },
+        {
+          "id": "TERM-FOCUSED-TOPOLOGY",
+          "type": "domain-term",
+          "title": "Focused Topology",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "uses-terms",
+            "to": "TERM-FOCUSED-TOPOLOGY"
+          }
+        },
+        {
+          "id": "TERM-GRAPH-PROJECTION",
+          "type": "domain-term",
+          "title": "Graph Projection",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "uses-terms",
+            "to": "TERM-GRAPH-PROJECTION"
+          }
+        },
+        {
+          "id": "TERM-PRODUCT-ARTIFACT",
+          "type": "domain-term",
+          "title": "Product Artifact",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "uses-terms",
+            "to": "TERM-PRODUCT-ARTIFACT"
+          }
+        },
+        {
+          "id": "TERM-PRODUCT-EXPLORER",
+          "type": "domain-term",
+          "title": "Product Explorer",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "uses-terms",
+            "to": "TERM-PRODUCT-EXPLORER"
+          }
+        },
+        {
+          "id": "TERM-PRODUCT-GRAPH",
+          "type": "domain-term",
+          "title": "Product Graph",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "uses-terms",
+            "to": "TERM-PRODUCT-GRAPH"
+          }
+        },
+        {
+          "id": "TERM-PRODUCT-SNAPSHOT",
+          "type": "domain-term",
+          "title": "Product Snapshot",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "uses-terms",
+            "to": "TERM-PRODUCT-SNAPSHOT"
+          }
+        }
+      ],
+      "questioned": [
+        {
+          "id": "UC-SNAPSHOT-EXPLORE-001",
+          "type": "use-case",
+          "title": "Explore the product through a snapshot page",
+          "via": {
+            "from": "QR-PRESENTATION-001",
+            "kind": "applies-to",
+            "to": "UC-SNAPSHOT-EXPLORE-001"
+          },
+          "polarity": "governance"
+        }
+      ]
+    }
+  },
+  "FR-SNAPSHOT-002": {
+    "inspect": {
+      "id": "FR-SNAPSHOT-002",
+      "type": "functional-requirement",
+      "title": "Read one artifact at a time in the snapshot",
+      "status": "active",
+      "path": "docs/product/model/requirements/functional/fr-snapshot-002.md",
+      "digest": "sha256:426d0203a9491acef6dd97281ad967d545070f6fe14208ba5f77f13da2f8fc5a",
+      "outgoing": [
+        {
+          "from": "FR-SNAPSHOT-002",
+          "kind": "derived-from",
+          "to": "BR-RELATIONSHIPS-001"
+        },
+        {
+          "from": "FR-SNAPSHOT-002",
+          "kind": "derived-from",
+          "to": "UC-SNAPSHOT-EXPLORE-001"
+        }
+      ],
+      "incoming": []
+    },
+    "impact": {
+      "root": "FR-SNAPSHOT-002",
+      "direction": "both",
+      "depth": 0,
+      "direct": [
+        {
+          "id": "BR-RELATIONSHIPS-001",
+          "type": "business-rule",
+          "title": "Reverse relationships are derived, never manually maintained",
+          "distance": 1,
+          "direction": "outgoing",
+          "via": {
+            "from": "FR-SNAPSHOT-002",
+            "kind": "derived-from",
+            "to": "BR-RELATIONSHIPS-001"
+          }
+        },
+        {
+          "id": "UC-SNAPSHOT-EXPLORE-001",
+          "type": "use-case",
+          "title": "Explore the product through a snapshot page",
+          "distance": 1,
+          "direction": "outgoing",
+          "via": {
+            "from": "FR-SNAPSHOT-002",
+            "kind": "derived-from",
+            "to": "UC-SNAPSHOT-EXPLORE-001"
+          }
+        }
+      ],
+      "transitive": [
+        {
+          "id": "ACT-PRODUCT-EXPLORER",
+          "type": "actor",
+          "title": "Product Explorer",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "primary-actor",
+            "to": "ACT-PRODUCT-EXPLORER"
+          }
+        },
+        {
+          "id": "BC-PRODUCT-DEFINITION",
+          "type": "bounded-context",
+          "title": "Product Definition",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "BR-RELATIONSHIPS-001",
+            "kind": "applies-to",
+            "to": "BC-PRODUCT-DEFINITION"
+          }
+        },
+        {
+          "id": "BR-CANONICAL-001",
+          "type": "business-rule",
+          "title": "Authored product artifacts are canonical",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "governed-by",
+            "to": "BR-CANONICAL-001"
+          }
+        },
+        {
+          "id": "TERM-FOCUSED-TOPOLOGY",
+          "type": "domain-term",
+          "title": "Focused Topology",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "uses-terms",
+            "to": "TERM-FOCUSED-TOPOLOGY"
+          }
+        },
+        {
+          "id": "TERM-GRAPH-PROJECTION",
+          "type": "domain-term",
+          "title": "Graph Projection",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "uses-terms",
+            "to": "TERM-GRAPH-PROJECTION"
+          }
+        },
+        {
+          "id": "TERM-PRODUCT-ARTIFACT",
+          "type": "domain-term",
+          "title": "Product Artifact",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "uses-terms",
+            "to": "TERM-PRODUCT-ARTIFACT"
+          }
+        },
+        {
+          "id": "TERM-PRODUCT-EXPLORER",
+          "type": "domain-term",
+          "title": "Product Explorer",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "uses-terms",
+            "to": "TERM-PRODUCT-EXPLORER"
+          }
+        },
+        {
+          "id": "TERM-PRODUCT-GRAPH",
+          "type": "domain-term",
+          "title": "Product Graph",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "uses-terms",
+            "to": "TERM-PRODUCT-GRAPH"
+          }
+        },
+        {
+          "id": "TERM-PRODUCT-SNAPSHOT",
+          "type": "domain-term",
+          "title": "Product Snapshot",
+          "distance": 2,
+          "direction": "outgoing",
+          "via": {
+            "from": "UC-SNAPSHOT-EXPLORE-001",
+            "kind": "uses-terms",
+            "to": "TERM-PRODUCT-SNAPSHOT"
+          }
+        }
+      ],
+      "questioned": []
+    }
   }
 }

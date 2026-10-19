@@ -38,13 +38,13 @@ ProductShape remains the implementation and Product Definition as Code the metho
 <!-- pdac:cite id="CON-MARKDOWN-001" digest="sha256:e1d4c39d7e5fc5f1a1573dbb6433986a26248289c9a97c11bb039db7af0f5c17" -->
 <!-- pdac:cite id="FR-SNAPSHOT-001" digest="sha256:4b516c17b1b0895996d48135fa1729bd2cc20913f98a8d820d5a5c82a0310a5d" -->
 
-Impact discovery compared the model's artifact families to this delivery change before planning. `docs/delivery/ff/300/2026-10-19T1228Z/product-impact.json` records fresh inspect and impact output for all nine dependencies above. Checked neighbors left unchanged: ACT-PUBLIC-READER and ACT-ENGINEERING-READER (reader roles); TERM-ARCHITECTURE-SNAPSHOT (existing generated meaning); UC-SNAPSHOT-001 and TERM-PRODUCT-SNAPSHOT (unchanged generation); product definition and delivery-integration command artifacts (no CLI behavior changes). QR-ACCESSIBILITY-001 / QR-PRESENTATION-001 are Snapshot requirements, used only as the existing visual reference, not extended to marketing by this proposal. CON-NO-WEB-UI remains unchanged; no authoring, approval or stored product state is introduced.
+Impact discovery compared the model's artifact families to this delivery change before planning. `docs/delivery/ff/300/2026-10-19T1228Z/product-impact.json` records fresh inspect and impact output for all nine dependencies above. Checked neighbors left unchanged: ACT-PUBLIC-READER and ACT-ENGINEERING-READER (reader roles); TERM-ARCHITECTURE-SNAPSHOT (existing generated meaning); UC-SNAPSHOT-001 and TERM-PRODUCT-SNAPSHOT (unchanged generation); product definition and delivery-integration command artifacts (no CLI behavior changes). QR-ACCESSIBILITY-001 / QR-PRESENTATION-001 are Snapshot requirements, used as the existing visual reference for marketing and as binding existing obligations for the narrow Snapshot correction below. CON-NO-WEB-UI remains unchanged; no authoring, approval or stored product state is introduced.
 
 Product definition drift: no new drift identified for this bounded completion. Existing #296 drift findings about diagram accessibility and E2E result detail remain visible in that proposal and are not silently resolved here.
 
 ## Impact
 
-`scripts/build-public-site.mjs`, `site/assets/site.css`, `site/design-system.md`, `site/README.md`, publication workflow path filters/checks, site builder tests and a focused generated-output validator. Architecture content, Snapshot generator and canonical product artifacts are unchanged. A source manifest is derived delivery metadata, never canonical content. No runtime/build dependency is required for site generation.
+`scripts/build-public-site.mjs`, `site/assets/site.css`, `site/design-system.md`, `site/README.md`, publication workflow path filters/checks, site builder tests and a focused generated-output validator. Architecture content and canonical product artifacts are unchanged. The narrow CSS-only Snapshot correction below preserves its generation API/state/standalone contract. A source manifest is derived delivery metadata, never canonical content. No runtime/build dependency is required for site generation.
 
 ## Ready and documentation evidence
 
@@ -53,3 +53,15 @@ The issue supplies all thirteen configured Ready dimensions; priority is optiona
 ## Definition of Done
 
 Every acceptance criterion needs evidence; all tasks must be completed or explicitly dropped; configured CI and runtime checks must pass; relevant security, design/ADR conformance, documentation, coverage and known limitations require maintainer judgement; model/spec consistency needs deterministic checks and Product Engineer judgement when applicable. Link passing CI plus browser/visual evidence in the PR. Maintainer approval remains required before merge. Neither account setup, domain activation nor production publication is part of Done for this delivery-preparation issue.
+
+## Plan amendment: narrow Snapshot presentation repair
+
+Root browser evidence found an existing defect in the unchanged generated Product Snapshot at 390 CSS pixels: document scrollWidth was 604, the relationship matrix propagated its min-content width through the overview grid, and the single-row header clipped the system appearance button. The family cannot be considered usable on narrow screens with an inaccessible appearance choice.
+
+Include the smallest CSS-only correction under the existing Snapshot responsive/presentation/accessibility obligations: constrain overview grid children so the existing matrix wrapper scrolls locally; lay out the narrow header in two rows so title, Overview/Artifacts navigation, search and all three appearance choices remain reachable at 320 and 390 pixels. Preserve every table cell/label and header control, URL-only state, generated data, API/CLI contract and byte-for-byte copying of the newly generated Snapshot. This is a scoped exception to the original no-generator-edit implementation boundary, not a new Snapshot feature. No script/routing, configurable title, attribution implementation or canonical artifact change is authorized.
+
+<!-- pdac:cite id="QR-ACCESSIBILITY-001" digest="sha256:7694a090493fb8963717e168d1bba8d692e392d7b988a2850ab7357f53cb4f48" -->
+<!-- pdac:cite id="QR-PRESENTATION-001" digest="sha256:d16a3c4eb8a38f0282d47a962ec3822bcd882f1910131d504ed0d2ed75352e88" -->
+<!-- pdac:cite id="FR-SNAPSHOT-002" digest="sha256:426d0203a9491acef6dd97281ad967d545070f6fe14208ba5f77f13da2f8fc5a" -->
+
+Impact now includes packages/core/src/snapshot.ts CSS, patch changesets for the core and CLI packages required by release drift, and browser regression checks/screenshots at 320/390px in both appearances. Extend the durable runtime harness to assert no document overflow, local matrix scroll/reachability, accessible header controls, search and appearance URL state with no storage/network dependency. Regenerate through the existing CLI, verify its Snapshot tests and copy equality. Independent review must approve this amendment before editing Snapshot source.

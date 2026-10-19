@@ -34,6 +34,16 @@
 <!-- pdac:cite id="BR-CANONICAL-001" digest="sha256:7ed6dc7c588e0b79da8e6036548cf2fd2c6a1b02a9393f467f50cb0cb02475d6" -->
 <!-- pdac:cite id="CON-MARKDOWN-001" digest="sha256:e1d4c39d7e5fc5f1a1573dbb6433986a26248289c9a97c11bb039db7af0f5c17" -->
 
+## 4. Narrow Snapshot CSS correction (requires amended plan approval)
+
+- [ ] 4.1 After independent amendment approval, constrain overview grid children and use a narrow two-row header in the existing Snapshot CSS only; verify every header action at 320/390px and local matrix scrolling without document overflow.
+- [ ] 4.2 Add required core/CLI patch changesets, regenerate the Snapshot using the existing invocation and verify byte-identical publisher copying; run existing Snapshot tests and final full CI-equivalent checks.
+- [ ] 4.3 Preserve a reproducible browser regression harness/evidence at both narrow widths and both appearances, checking search/navigation, all appearance choices, URL state and no storage/network dependence; include its observed results in independent final audit.
+
+<!-- pdac:cite id="QR-ACCESSIBILITY-001" digest="sha256:7694a090493fb8963717e168d1bba8d692e392d7b988a2850ab7357f53cb4f48" -->
+<!-- pdac:cite id="QR-PRESENTATION-001" digest="sha256:d16a3c4eb8a38f0282d47a962ec3822bcd882f1910131d504ed0d2ed75352e88" -->
+<!-- pdac:cite id="FR-SNAPSHOT-002" digest="sha256:426d0203a9491acef6dd97281ad967d545070f6fe14208ba5f77f13da2f8fc5a" -->
+
 ## Human-owned completion gates
 
 Maintainer acceptance-criteria, completeness, coverage, security where applicable, design/ADR conformance, documentation and limitations judgements; Product Engineer consistency judgement when applicable; maintainer approval before merge. Independent agent review cannot discharge these gates. Integration, spec archive and retrospective follow only after the human gate; production/domain activation is a separate future owner action.
