@@ -8,6 +8,7 @@ on:
       - 'docs/product/model/**'
       - 'packages/**'
       - 'scripts/build-public-site.mjs'
+      - 'scripts/validate-public-site.mjs'
       - 'site/assets/**'
       - 'site/content/**'
   push:
@@ -36,7 +37,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - name: generate the product explorer
-        run: node packages/cli/dist/bin.js graph --format html
+        run: node packages/cli/dist/bin.js graph --format html --product-url https://productshape.dev
       - name: identify engineering snapshot sources
         env:
           SOURCE_REVISION: ${{ github.sha }}
@@ -60,6 +61,8 @@ jobs:
           NODE
       - name: assemble the engineering portal
         run: node scripts/build-public-site.mjs --profile engineering --out _site --base-path /productshape/ --site-origin https://juangcarmona.github.io
+      - name: Validate the engineering directory
+        run: node scripts/validate-public-site.mjs --dir _site --profile engineering --base-path /productshape/ --site-origin https://juangcarmona.github.io
       - name: Upload the engineering review artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

@@ -60,6 +60,20 @@
         "skip_specs is reasonable for bounded delivery implementation of existing requirements",
         "Snapshot/canonical sources and human gates preserved"
       ]
+    },
+    {
+      "reviewerModel": "gpt-6-astra",
+      "reviewerExecution": "/root/site_reviewer",
+      "kind": "amended-plan",
+      "reviewedCommit": "a9adee67750b19dbdb3755f6b9b0cd3a0201cdf6",
+      "decision": "approve",
+      "findings": [],
+      "correctionCount": 0,
+      "evidence": [
+        "CSS-only correction implements existing responsive obligations",
+        "320/390px controls, matrix scroll, URL-only state, copy equality and changesets included",
+        "Human Done and merge/publication gates preserved"
+      ]
     }
   ],
   "corrections": [],

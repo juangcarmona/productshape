@@ -5,6 +5,7 @@ on:
     paths:
       - 'site/**'
       - 'scripts/build-public-site.mjs'
+      - 'scripts/validate-public-site.mjs'
       - 'docs/adoption/**'
       - 'docs/assets/snapshot/**'
       - 'docs/product/model/**'
@@ -15,6 +16,7 @@ on:
     paths:
       - 'site/**'
       - 'scripts/build-public-site.mjs'
+      - 'scripts/validate-public-site.mjs'
       - 'docs/adoption/**'
       - 'docs/assets/snapshot/**'
       - 'docs/product/model/**'
@@ -39,6 +41,8 @@ jobs:
           node-version: 24
       - name: Build the public site
         run: node scripts/build-public-site.mjs --profile public --out dist/public-site --base-path / --site-origin https://productshape.dev
+      - name: Validate the public upload directory
+        run: node scripts/validate-public-site.mjs --dir dist/public-site --profile public --base-path / --site-origin https://productshape.dev
       - name: Upload the review artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

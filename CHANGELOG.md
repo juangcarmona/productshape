@@ -8,6 +8,11 @@ The supported published CLI baseline is `@prodshape/cli@0.22.1`. Every stable pu
 
 ## [Unreleased]
 
+### Changed
+
+- Public pages and engineering architecture publications share compact ProductShape navigation and appearance controls while retaining distinct destinations and the standalone Product Snapshot.
+- Publication builds validate their local routes, assets and profile boundaries before retaining review artifacts, with source metadata and an explicit public 404. The manual Cloudflare handoff documents preview, rollback and owner-controlled domain activation.
+
 ## [0.22.1]
 
 ### Fixed

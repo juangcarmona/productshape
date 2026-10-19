@@ -7,9 +7,22 @@ The existing static site source remains under `site/`. Localized copy lives in `
 node scripts/build-public-site.mjs --profile public --out dist/public-site --base-path / --site-origin https://productshape.dev
 
 # Engineering portal for GitHub Pages
-node packages/cli/dist/bin.js graph --format html
+node packages/cli/dist/bin.js graph --format html --product-url https://productshape.dev
 node scripts/build-public-site.mjs --profile engineering --out _site --base-path /productshape/ --site-origin https://juangcarmona.github.io
 ```
+
+Validate the same directories that will be uploaded:
+
+```bash
+node scripts/validate-public-site.mjs --dir dist/public-site --profile public --base-path / --site-origin https://productshape.dev
+node scripts/validate-public-site.mjs --dir _site --profile engineering --base-path /productshape/ --site-origin https://juangcarmona.github.io
+```
+
+`publication.json` records the profile, base path, origin, CLI version, full source revision and dirty state. A local uncommitted build is explicitly marked dirty. The public builder needs no generated engineering output or architecture input. The engineering output copies the generated standalone Snapshot byte-for-byte; its attribution URL is selected at generation time with the existing option shown above.
+
+Public and engineering pages reuse the compact shell, theme assets and keyboard/mobile controls. Public navigation serves localized product/process/adoption content; engineering navigation distinguishes the portal, Product Snapshot, Architecture Snapshot and external public site. The standalone Snapshot owns its own interface and URL state.
+
+For exact CI artifact layout, future manual Cloudflare preview/upload, rollback and custom-domain steps, use the [publication runbook](../docs/operations/public-site-deployment.md). No public deployment runs in GitHub Actions.
 
 To preview either static output locally, serve the selected build directory:
 
@@ -18,7 +31,7 @@ python3 -m http.server 4173 --directory dist/public-site
 python3 -m http.server 4174 --directory _site
 ```
 
-The engineering preview requires its generated Product Snapshot and manifest first, as shown in the deployment workflow.
+The engineering preview requires its generated Product Snapshot first. The source manifest is optional locally; CI supplies it as shown in the deployment workflow. To preview its `/productshape/` base path, serve a parent directory containing a `productshape` folder, or rebuild locally with `--base-path /` and validate with the same base. Python serves ordinary files; use local Wrangler Pages development to check Cloudflare-specific 404 routing.
 
 The public site contains the localized product pages, adoption guides and static Archify diagrams. It links to the Product Snapshot and engineering portal on GitHub Pages; it does not include the model explorer or architecture routes in its output or sitemap.
 

@@ -35,7 +35,8 @@ function supportedSpecifyOnPath(): boolean {
   if (!hasSpecify) return false;
   try {
     const output = execFileSync('specify', ['--version'], { encoding: 'utf8' });
-    return /^1\.0\.(?:[4-9]|\d{2,})(?:$|[-.])/u.test(output.trim());
+    const version = output.trim().match(/(?:^|\s)(\d+\.\d+\.\d+(?:[-.][0-9A-Za-z.-]+)?)\s*$/)?.[1];
+    return version !== undefined && /^1\.0\.(?:[4-9]|\d{2,})(?:$|[-.])/u.test(version);
   } catch {
     return false;
   }
@@ -507,6 +508,10 @@ describe('required Spec Kit verification mode', () => {
   it('fails instead of skipping when CI requires Spec Kit 1.0.4+', async () => {
     if (!requireRealSpecify) return;
     expect(hasSpecify, 'PRODSHAPE_REQUIRE_SPECKIT=1 but specify is not on PATH').toBe(true);
+    expect(
+      hasSupportedSpecify,
+      'Required real Spec Kit cases must run, not skip on a failed version probe',
+    ).toBe(true);
     const version = await specifyVersion();
     expect(version).toMatch(/^1\.0\.(?:[4-9]|\d{2,})(?:$|[-.])/u);
   });

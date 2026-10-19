@@ -311,6 +311,7 @@ p.ident { margin: 0 0 1rem; color: var(--muted); font-size: 0.85rem; }
 }
 .bigfind:hover { border-color: var(--accent); }
 .bigfind .lbl { flex: 1; text-align: left; }
+.ovwrap > * { min-width: 0; overflow-wrap: anywhere; }
 ul.kinds { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0 1.4rem; }
 ul.kinds li { display: grid; grid-template-columns: auto minmax(0, 1fr) 4.5rem 2rem; align-items: center; gap: 0.5rem; padding: 0.3rem 0; border-bottom: 1px solid var(--line); }
 ul.kinds .bar { height: 5px; background: var(--line); border-radius: 1px; overflow: hidden; }
@@ -328,7 +329,8 @@ ul.kinds .count { font-family: var(--mono); font-variant-numeric: tabular-nums; 
 .entry ol.steps li .step { font: 0.72rem var(--mono); color: var(--muted); min-width: 1.2rem; }
 ul.idlist { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.3rem 0.5rem; }
 ul.idlist a { font-family: var(--mono); font-size: 0.8rem; border: 1px solid var(--line); border-radius: 3px; padding: 0.1rem 0.4rem; }
-.gridwrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; }
+.ovcol > table.grid { display: block; max-width: 100%; overflow-x: auto; overflow-wrap: normal; }
+.gridwrap { position: relative; overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; }
 table.kgrid { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
 table.kgrid caption { caption-side: bottom; text-align: left; color: var(--muted); font-size: 0.78rem; padding: 0.4rem 0.6rem; }
 table.kgrid th, table.kgrid td { border-bottom: 1px solid var(--line); padding: 0; text-align: center; }
@@ -615,9 +617,17 @@ dl.keys dd { margin: 0; }
   a.ref { max-width: 100%; flex-wrap: wrap; }
 }
 @media (max-width: 34rem) {
-  header.site h1 {
-    max-width: 6rem; margin: 0; overflow: hidden; font-size: 0.78rem; text-overflow: ellipsis;
+  header.site {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto auto;
+    height: auto; padding: 0.35rem 0.6rem 0; gap: 0.35rem 0.5rem;
   }
+  header.site h1 {
+    min-width: 0; max-width: none; margin: 0; overflow: hidden; font-size: 0.78rem; text-overflow: ellipsis;
+  }
+  header.site .spacer { display: none; }
+  header.site nav.views { grid-column: 1 / -1; grid-row: 2; min-height: 2.4rem; }
+  header.site .findbtn { grid-column: 2; grid-row: 1; }
+  header.site .seg { grid-column: 3; grid-row: 1; }
   #keys-open { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {

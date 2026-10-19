@@ -86,11 +86,12 @@ const sectionIcons = {
   11: '<path d="M8 1.8 14.4 13H1.6z"/><path d="M8 5.3v3.4M8 11.1v.1"/>',
   12: '<path d="M3.2 1.8h6l3.6 3.6v8.8H3.2zM9.2 1.8v3.6h3.6"/><path d="M5.3 8h5.4M5.3 10.2h5.4M5.3 12.4h3.8"/>',
 };
-const architectureFiles = (await readdir(architectureDir))
-  .filter((name) => /^\d{2}-.*\.md$/u.test(name))
-  .sort();
+const architectureFiles =
+  profile === 'engineering'
+    ? (await readdir(architectureDir)).filter((name) => /^\d{2}-.*\.md$/u.test(name)).sort()
+    : [];
 
-if (architectureFiles.length !== 12) {
+if (profile === 'engineering' && architectureFiles.length !== 12) {
   throw new Error(
     `Expected twelve arc42 sections under docs/architecture; found ${architectureFiles.length}.`,
   );
@@ -122,15 +123,16 @@ const sections = await Promise.all(
   }),
 );
 
-const git = spawnSync('git', ['rev-parse', '--short=12', 'HEAD'], {
+const git = spawnSync('git', ['rev-parse', 'HEAD'], {
   cwd: root,
   encoding: 'utf8',
 });
 const status = spawnSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' });
-const dirty = status.stdout.trim().length > 0;
+const dirty = status.status !== 0 || status.stdout.trim().length > 0;
+const sourceRevision = process.env.GITHUB_SHA || (git.status === 0 ? git.stdout.trim() : null);
 const revision =
   process.env.GITHUB_SHA?.slice(0, 12) ||
-  `${git.stdout.trim() || 'working tree'}${dirty ? ' · uncommitted changes' : ''}`;
+  `${git.stdout.trim().slice(0, 12) || 'working tree'}${dirty ? ' · uncommitted changes' : ''}`;
 
 await rm(outDir, { recursive: true, force: true });
 await mkdir(outDir, { recursive: true });
@@ -202,6 +204,7 @@ if (profile === 'public') {
       renderEngineeringLanding(),
       'Architecture Documentation · ProductShape',
       'Explore the twelve sections of ProductShape architecture documentation.',
+      'engineering/',
     ),
   );
   await writeFile(join(outDir, 'sitemap.xml'), renderSitemap());
@@ -210,6 +213,11 @@ if (profile === 'public') {
     `User-agent: *\nAllow: /\nSitemap: ${siteOrigin}${basePath}sitemap.xml\n`,
   );
 }
+
+await writeFile(
+  join(outDir, 'publication.json'),
+  `${JSON.stringify({ schemaVersion: 1, profile, basePath, siteOrigin, cliVersion: packageJson.version, sourceRevision, dirty }, null, 2)}\n`,
+);
 
 console.log(
   `Built ProductShape ${profile} site at ${relative(root, outDir)} (base ${basePath}, CLI ${packageJson.version}, revision ${revision}).`,
@@ -323,8 +331,16 @@ function engineeringPortalPage(
   body,
   title,
   description = 'Generated ProductShape engineering outputs and their source revisions.',
+  routePath = '',
 ) {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="${escapeAttribute(description)}"><title>${escapeHtml(title)}</title><link rel="stylesheet" href="${basePath}assets/site.css"></head><body><a class="skip-link" href="#main">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="${basePath}" aria-label="ProductShape Engineering Portal home"><img class="brand-icon" src="${basePath}assets/productshape-icon.svg" width="32" height="32" alt=""><span class="brand-title">ProductShape Engineering</span></a><a class="button secondary" href="https://productshape.dev/">Public ProductShape site →</a></div></header><main id="main">${body}</main><footer class="site-footer"><div class="footer-inner"><p>Engineering outputs are derived from ProductShape source at <code>${escapeHtml(revision)}</code>.</p><a href="${repoUrl}">Repository →</a></div></footer></body></html>`;
+  return shell({
+    locale: 'en',
+    pageKind: routePath ? 'architecture' : 'portal',
+    title,
+    description,
+    body,
+    routePath,
+  });
 }
 
 function renderEngineeringPortalLanding(manifest) {
@@ -420,18 +436,29 @@ function shell({ locale, pageKind = '', title, description, body, routePath = ''
           ? `${basePath}${locale}/get-started/`
           : 'https://productshape.dev/en/get-started/',
       engineering: engineeringHref(),
+      portal: `${basePath}en/`,
+      architecture: `${basePath}en/engineering/`,
+      public: 'https://productshape.dev/',
       model: modelHref(),
     };
     return paths[page];
   };
   const nav = siteText[locale].nav;
-  const navItems = [
-    ['product', nav.product],
-    ['workflow', nav.workflow],
-    ['start', nav.start],
-    ['engineering', nav.engineering],
-    ['model', nav.model],
-  ];
+  const navItems =
+    profile === 'engineering'
+      ? [
+          ['portal', 'Engineering'],
+          ['model', 'Product Snapshot'],
+          ['architecture', 'Architecture Snapshot'],
+          ['public', 'Public site ↗'],
+        ]
+      : [
+          ['product', nav.product],
+          ['workflow', nav.workflow],
+          ['start', nav.start],
+          ['engineering', nav.engineering],
+          ['model', nav.model],
+        ];
   const engineeringSections = sections
     .map(
       (section) =>
@@ -440,8 +467,8 @@ function shell({ locale, pageKind = '', title, description, body, routePath = ''
     .join('');
   const primaryLinks = navItems
     .map(([key, label]) => {
-      const link = `<a href="${route(key)}"${pageKind === key ? ' aria-current="page"' : ''}>${escapeHtml(label)}</a>`;
-      return key === 'engineering' && profile !== 'public'
+      const link = `<a href="${route(key)}"${pageKind === key || (key === 'architecture' && pageKind === 'engineering') ? ' aria-current="page"' : ''}>${escapeHtml(label)}</a>`;
+      return key === 'architecture' && profile === 'engineering'
         ? `<div class="main-nav-group engineering-nav-group">${link}<details class="engineering-subnav"><summary>${locale === 'es' ? 'Secciones' : 'Sections'}<span>${sections.length}</span></summary><ol>${engineeringSections}</ol></details></div>`
         : link;
     })
@@ -452,10 +479,14 @@ function shell({ locale, pageKind = '', title, description, body, routePath = ''
     }
     return `${basePath}${target}/${routePath}`;
   };
-  const header = `<a class="skip-link" href="#main">${locale === 'es' ? 'Saltar al contenido' : 'Skip to content'}</a><header class="site-header"><div class="header-inner"><a class="brand" href="${rootHref}" aria-label="ProductShape home"><img class="brand-icon" src="${basePath}assets/productshape-icon.svg" data-theme-light="${basePath}assets/productshape-icon.svg" data-theme-dark="${basePath}assets/productshape-icon-dark.svg" width="32" height="32" alt=""><span class="brand-title">ProductShape</span></a><span class="header-version">v${packageJson.version}</span><nav class="main-nav" id="primary-navigation" aria-label="${locale === 'es' ? 'Navegación principal' : 'Primary navigation'}">${primaryLinks}<a href="${repoUrl}" rel="external">${escapeHtml(nav.github)}</a><span class="language-switch" aria-label="${locale === 'es' ? 'Idioma' : 'Language'}"><a href="${languageRoute('en')}" lang="en"${locale === 'en' ? ' aria-current="true"' : ''}>EN</a><a href="${languageRoute('es')}" lang="es"${locale === 'es' ? ' aria-current="true"' : ''}>ES</a></span></nav><span class="header-spacer"></span><a class="site-search" href="${modelHref()}?search=1" aria-label="Search the product"><svg aria-hidden="true" viewBox="0 0 20 20"><circle cx="8.5" cy="8.5" r="5.5"></circle><path d="m13 13 4 4"></path></svg><span>Search the product</span><kbd>/</kbd></a><div class="appearance-controls" role="group" aria-label="${locale === 'es' ? 'Apariencia' : 'Appearance'}"><button type="button" data-appearance-choice="light" aria-label="${locale === 'es' ? 'Tema claro' : 'Light theme'}" title="${locale === 'es' ? 'Tema claro' : 'Light theme'}" aria-pressed="false">☼</button><button type="button" data-appearance-choice="dark" aria-label="${locale === 'es' ? 'Tema oscuro' : 'Dark theme'}" title="${locale === 'es' ? 'Tema oscuro' : 'Dark theme'}" aria-pressed="false">☾</button><button type="button" data-appearance-choice="auto" aria-label="${locale === 'es' ? 'Tema del sistema' : 'System theme'}" title="${locale === 'es' ? 'Tema del sistema' : 'Theme follows system'}" aria-pressed="true">▣</button></div><button class="mobile-menu-toggle" type="button" aria-controls="primary-navigation" aria-expanded="false" aria-label="${locale === 'es' ? 'Abrir menú' : 'Open menu'}"><svg aria-hidden="true" viewBox="0 0 20 20"><path class="menu-line menu-line-top" d="M3 5h14"/><path class="menu-line menu-line-middle" d="M3 10h14"/><path class="menu-line menu-line-bottom" d="M3 15h14"/></svg></button><a class="site-keys" href="${modelHref()}?keys=1" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">⌨</a></div></header>`;
+  const languageSwitch =
+    profile === 'public'
+      ? `<span class="language-switch" aria-label="${locale === 'es' ? 'Idioma' : 'Language'}"><a href="${languageRoute('en')}" lang="en"${locale === 'en' ? ' aria-current="true"' : ''}>EN</a><a href="${languageRoute('es')}" lang="es"${locale === 'es' ? ' aria-current="true"' : ''}>ES</a></span>`
+      : '';
+  const header = `<a class="skip-link" href="#main">${locale === 'es' ? 'Saltar al contenido' : 'Skip to content'}</a><header class="site-header"><div class="header-inner"><a class="brand" href="${rootHref}" aria-label="ProductShape home"><img class="brand-icon" src="${basePath}assets/productshape-icon.svg" data-theme-light="${basePath}assets/productshape-icon.svg" data-theme-dark="${basePath}assets/productshape-icon-dark.svg" width="32" height="32" alt=""><span class="brand-title">ProductShape</span></a><span class="header-version">v${packageJson.version}</span><nav class="main-nav" id="primary-navigation" aria-label="${locale === 'es' ? 'Navegación principal' : 'Primary navigation'}">${primaryLinks}<a href="${repoUrl}" rel="external">${escapeHtml(nav.github)}</a>${languageSwitch}</nav><span class="header-spacer"></span><a class="site-search" href="${modelHref()}?search=1" aria-label="Search the product"><svg aria-hidden="true" viewBox="0 0 20 20"><circle cx="8.5" cy="8.5" r="5.5"></circle><path d="m13 13 4 4"></path></svg><span>Search the product</span><kbd>/</kbd></a><div class="appearance-controls" role="group" aria-label="${locale === 'es' ? 'Apariencia' : 'Appearance'}"><button type="button" data-appearance-choice="light" aria-label="${locale === 'es' ? 'Tema claro' : 'Light theme'}" title="${locale === 'es' ? 'Tema claro' : 'Light theme'}" aria-pressed="false">☼</button><button type="button" data-appearance-choice="dark" aria-label="${locale === 'es' ? 'Tema oscuro' : 'Dark theme'}" title="${locale === 'es' ? 'Tema oscuro' : 'Dark theme'}" aria-pressed="false">☾</button><button type="button" data-appearance-choice="auto" aria-label="${locale === 'es' ? 'Tema del sistema' : 'System theme'}" title="${locale === 'es' ? 'Tema del sistema' : 'Theme follows system'}" aria-pressed="true">▣</button></div><button class="mobile-menu-toggle" type="button" aria-controls="primary-navigation" aria-expanded="false" aria-label="${locale === 'es' ? 'Abrir menú' : 'Open menu'}"><svg aria-hidden="true" viewBox="0 0 20 20"><path class="menu-line menu-line-top" d="M3 5h14"/><path class="menu-line menu-line-middle" d="M3 10h14"/><path class="menu-line menu-line-bottom" d="M3 15h14"/></svg></button><a class="site-keys" href="${modelHref()}?keys=1" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">⌨</a></div></header>`;
   const footer = `<footer class="site-footer"><div class="footer-inner"><div class="footer-identities"><a class="footer-productshape" href="${rootHref}"><img src="${basePath}assets/productshape-branding.svg" data-theme-light="${basePath}assets/productshape-branding.svg" data-theme-dark="${basePath}assets/productshape-branding-dark.svg" width="190" height="95" alt="ProductShape — Product Definition as Code"></a><a class="footer-methodology" href="https://github.com/product-definition-as-code/spec"><img src="${basePath}assets/pdac-logo.png" width="54" height="54" alt="PDaC logo"><span><strong>Product Definition as Code</strong><small>${escapeHtml(siteText[locale].footer.methodology)}</small></span></a></div><div class="footer-meta"><p>${escapeHtml(siteText[locale].footer.line)}<br><span>${siteText[locale].footer.license}</span></p><div class="footer-links"><a href="https://github.com/product-definition-as-code/spec">${escapeHtml(siteText[locale].footer.spec)}</a><a href="${repoUrl}">${escapeHtml(siteText[locale].footer.repo)}</a></div></div></div></footer>`;
-  const menuScript = `const mobileMenuButton=document.querySelector('.mobile-menu-toggle');const primaryNavigation=document.querySelector('#primary-navigation');const mobileMenuQuery=matchMedia('(max-width: 64rem)');function closeMobileMenu(returnFocus=false){mobileMenuButton.setAttribute('aria-expanded','false');mobileMenuButton.setAttribute('aria-label','${locale === 'es' ? 'Abrir menú' : 'Open menu'}');primaryNavigation.classList.remove('is-open');if(returnFocus)mobileMenuButton.focus();}mobileMenuButton.addEventListener('click',()=>{const isOpen=mobileMenuButton.getAttribute('aria-expanded')==='true';if(isOpen){closeMobileMenu();return;}mobileMenuButton.setAttribute('aria-expanded','true');mobileMenuButton.setAttribute('aria-label','${locale === 'es' ? 'Cerrar menú' : 'Close menu'}');primaryNavigation.classList.add('is-open');});primaryNavigation.addEventListener('click',event=>{if(event.target.closest('a'))closeMobileMenu();});document.addEventListener('click',event=>{if(mobileMenuButton.getAttribute('aria-expanded')==='true'&&!event.target.closest('.header-inner'))closeMobileMenu();});document.addEventListener('keydown',event=>{if(event.key==='Escape'&&mobileMenuButton.getAttribute('aria-expanded')==='true')closeMobileMenu(true);});mobileMenuQuery.addEventListener('change',event=>{if(!event.matches)closeMobileMenu();});`;
-  return `<!doctype html>\n<html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="${escapeAttribute(description)}"><meta property="og:title" content="${escapeAttribute(title)}"><meta property="og:description" content="${escapeAttribute(description)}"><meta property="og:type" content="website"><title>${escapeHtml(title)}</title><link rel="icon" href="${basePath}assets/productshape-icon.svg" type="image/svg+xml"><link rel="stylesheet" href="${asset}"><link rel="canonical" href="${siteOrigin}${basePath}${localizedPath}"></head><body>${header}<main id="main">${body}</main>${footer}<script>${menuScript}const appearanceKey='productshape-appearance';const appearanceRoot=document.documentElement;const appearanceButtons=document.querySelectorAll('[data-appearance-choice]');const appearanceMedia=window.matchMedia('(prefers-color-scheme: dark)');function syncThemeAssets(choice){const dark=choice==='dark'||(choice==='auto'&&appearanceMedia.matches);document.querySelectorAll('[data-theme-light][data-theme-dark]').forEach(image=>{image.src=dark?image.dataset.themeDark:image.dataset.themeLight;});}function setAppearance(choice){if(choice==='auto')appearanceRoot.removeAttribute('data-appearance');else appearanceRoot.setAttribute('data-appearance',choice);localStorage.setItem(appearanceKey,choice);syncThemeAssets(choice);appearanceButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.appearanceChoice===choice)));}const savedAppearance=localStorage.getItem(appearanceKey)||'auto';setAppearance(savedAppearance);appearanceMedia.addEventListener('change',()=>{if((localStorage.getItem(appearanceKey)||'auto')==='auto')syncThemeAssets('auto');});appearanceButtons.forEach(button=>button.addEventListener('click',()=>setAppearance(button.dataset.appearanceChoice)));</script></body></html>\n`;
+  const menuScript = `const mobileMenuButton=document.querySelector('.mobile-menu-toggle');const primaryNavigation=document.querySelector('#primary-navigation');const mobileMenuQuery=matchMedia('(max-width: 76rem)');function closeMobileMenu(returnFocus=false){mobileMenuButton.setAttribute('aria-expanded','false');mobileMenuButton.setAttribute('aria-label','${locale === 'es' ? 'Abrir menú' : 'Open menu'}');primaryNavigation.classList.remove('is-open');if(returnFocus)mobileMenuButton.focus();}mobileMenuButton.addEventListener('click',()=>{const isOpen=mobileMenuButton.getAttribute('aria-expanded')==='true';if(isOpen){closeMobileMenu();return;}mobileMenuButton.setAttribute('aria-expanded','true');mobileMenuButton.setAttribute('aria-label','${locale === 'es' ? 'Cerrar menú' : 'Close menu'}');primaryNavigation.classList.add('is-open');});primaryNavigation.addEventListener('click',event=>{if(event.target.closest('a'))closeMobileMenu();});document.addEventListener('click',event=>{if(mobileMenuButton.getAttribute('aria-expanded')==='true'&&!event.target.closest('.header-inner'))closeMobileMenu();});document.addEventListener('keydown',event=>{if(event.key==='Escape'&&mobileMenuButton.getAttribute('aria-expanded')==='true')closeMobileMenu(true);});mobileMenuQuery.addEventListener('change',event=>{if(!event.matches)closeMobileMenu();});`;
+  return `<!doctype html>\n<html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="description" content="${escapeAttribute(description)}"><meta property="og:title" content="${escapeAttribute(title)}"><meta property="og:description" content="${escapeAttribute(description)}"><meta property="og:type" content="website"><title>${escapeHtml(title)}</title><link rel="icon" href="${basePath}assets/productshape-icon.svg" type="image/svg+xml"><link rel="stylesheet" href="${asset}"><link rel="canonical" href="${siteOrigin}${basePath}${localizedPath}"></head><body>${header}<main id="main">${body}</main>${footer}<script>${menuScript}const appearanceKey='productshape-appearance';const appearanceRoot=document.documentElement;const appearanceButtons=document.querySelectorAll('[data-appearance-choice]');const appearanceMedia=window.matchMedia('(prefers-color-scheme: dark)');function syncThemeAssets(choice){const dark=choice==='dark'||(choice==='auto'&&appearanceMedia.matches);document.querySelectorAll('[data-theme-light][data-theme-dark]').forEach(image=>{image.src=dark?image.dataset.themeDark:image.dataset.themeLight;});}function setAppearance(choice){if(choice==='auto')appearanceRoot.removeAttribute('data-appearance');else appearanceRoot.setAttribute('data-appearance',choice);localStorage.setItem(appearanceKey,choice);syncThemeAssets(choice);appearanceButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.appearanceChoice===choice)));}document.addEventListener('keydown',event=>{if(event.defaultPrevented||event.ctrlKey||event.metaKey||event.altKey||event.target.closest('input,textarea,select,[contenteditable]'))return;const target=event.key==='/'?document.querySelector('.site-search'):event.key==='?'?document.querySelector('.site-keys'):null;if(target){event.preventDefault();window.location.assign(target.href);}});const savedAppearance=localStorage.getItem(appearanceKey)||'auto';setAppearance(savedAppearance);appearanceMedia.addEventListener('change',()=>{if((localStorage.getItem(appearanceKey)||'auto')==='auto')syncThemeAssets('auto');});appearanceButtons.forEach(button=>button.addEventListener('click',()=>setAppearance(button.dataset.appearanceChoice)));</script></body></html>\n`;
 }
 
 function renderHome(words, locale) {

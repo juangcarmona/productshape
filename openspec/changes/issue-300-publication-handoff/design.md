@@ -61,7 +61,7 @@ Official references (checked 2026-10-19): [Direct Upload](https://developers.clo
 
 - [Profile shell mixes destinations] → root/subpath inventory and local-link validation; explicit external surface links.
 - [Theme and mobile controls regress] → real Chromium interaction at desktop/narrow sizes, both appearances and system preference, including Escape and focus behavior.
-- [Standalone Snapshot contract accidentally changes] → exact byte comparison of copied Snapshot and no generator edits.
+- [Standalone Snapshot contract accidentally changes] → exact byte comparison of copied Snapshot and only the independently approved narrow CSS correction in the generator.
 - [Regex-based generated-markup validation misses arbitrary HTML] → limit it to known generated URL attributes and stylesheet URLs, use positive/negative fixture tests, and retain browser navigation checks. This is a site validator, not a general HTML parser.
 - [Unknown Cloudflare project mode/domain readiness] → conditional runbook and explicit owner verification before publication; no hosted-preview claim.
 - [Review artifact expires] → document seven-day CI retention and preserve the reviewed artifact/source identity before owner activation.

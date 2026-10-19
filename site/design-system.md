@@ -57,7 +57,7 @@ Engineering sections use four semantic color families instead of twelve unrelate
 
 ## Components and behavior
 
-- **Top bar:** one compact row shared by the public site and Product Snapshot on wide screens: product mark and name, a small version or revision badge, tab-style primary navigation, a flexible spacer, search, appearance controls and a keyboard-shortcut action. On compact screens, keep the brand and essential actions together, then give the primary navigation its own horizontally scrollable row. Never shrink or clip labels and controls to force the desktop row to fit.
+- **Top bar:** one compact row shared by the public site and Product Snapshot on wide screens: product mark and name, a small version or revision badge, tab-style primary navigation, a flexible spacer, search, appearance controls and a keyboard-shortcut action. On compact screens, keep the brand and essential actions together, then give the primary navigation its own horizontally scrollable row. Never shrink or clip navigation labels and controls to force the desktop row to fit. The brand title may truncate on very narrow screens while its link retains the complete accessible name.
 - **Navigation list:** group rows are about 42px high, divided by 1px rules. A small disclosure icon, kind icon, kind token, label and count keep the hierarchy scannable. The selected group gets a visible selection rule and remains in view.
 - **Kind marker:** a 1px outline, 3px corner radius, 12px monospace token and 16px symbol. Keep the text token next to the symbol at every size.
 - **Engineering overview:** use the standard 1160px content width; center a clear page title above twelve linked section cards. Each card carries its section icon, short code, title and description, using its semantic color family; explain all four families in a small legend below the grid. Collapse the two-column grid to one column on narrow screens. On mobile, turn the section sidebar into a horizontally scrollable row of complete, labeled section links.
@@ -70,10 +70,16 @@ Engineering sections use four semantic color families instead of twelve unrelate
 
 Projects can override surface and accent tokens while keeping the semantic roles. Keep kind tokens stable when shared product artifacts cross project boundaries. If a project adds a kind, assign one color per appearance and pair it with a recognizable icon and readable text token. Check text contrast and keyboard focus after changing colors. Do not customize the component geometry unless the target product has a different density or input context.
 
-Snapshot identity is configurable at generation time: `prodshape graph --format html --product-name Lyceum` produces “Lyceum’s Product Snapshot”. Without a project name, the title remains “Product Snapshot”. The quiet attribution sits at the bottom of the artifact navigation and reads “Build with ProductShape” with the generating CLI version. Its link can point to a project-specific ProductShape URL with `--product-url`; it defaults to the ProductShape public site.
+Snapshot identity is configurable at generation time: `prodshape graph --format html --product-name Lyceum` produces “Lyceum’s Product Snapshot”. Without a project name, the title remains “Product Snapshot”. The quiet attribution sits at the bottom of the artifact navigation and reads “Build with ProductShape” with the generating CLI version. Its link can point to a project-specific ProductShape URL with `--product-url`; the generator defaults to the GitHub Pages ProductShape URL, while this repository’s engineering publisher explicitly selects `https://productshape.dev`.
 
 ## Reference implementation
 
 - Explorer tokens, SVG symbols, list and shell: `packages/core/src/snapshot.ts`.
 - Public site aliases and component styles: `site/assets/site.css`.
 - ArcShape's standalone architecture reader: sibling repository `arcshape/tools/arc42-site/shell.mjs`.
+
+## Publication family
+
+Public marketing pages, engineering landing and architecture documents share the compact shell renderer and `site.css` tokens, theme assets, light/dark/system controls and accessible mobile menu. Their navigation reflects the reader's destination: marketing keeps localized product/process/adoption entries; engineering names the portal, Product Snapshot, Architecture Snapshot and public site. Architecture keeps its section sidebar and canonical source links. `/` opens product search and `?` opens Snapshot keyboard help by navigating to the generated Snapshot.
+
+The generated Product Snapshot remains a self-contained publication with its own header and URL-only appearance state. Sharing its visual language does not inject site storage or assets into it. The engineering publisher sets its existing `--product-url https://productshape.dev` generation option so attribution reaches the public site; the standalone generator's default is unchanged. See the operations runbook for source-aware output validation and manual publication.

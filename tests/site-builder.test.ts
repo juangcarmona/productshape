@@ -1,15 +1,17 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { JSDOM } from 'jsdom';
 import { describe, expect, it } from 'vitest';
 
 const repoRoot = process.cwd();
-const builder = join(repoRoot, 'scripts/build-public-site.mjs');
+const validator = join(repoRoot, 'scripts/validate-public-site.mjs');
 
-async function build(args: string[]) {
-  return spawnSync(process.execPath, [builder, ...args], {
-    cwd: repoRoot,
+async function build(args: string[], root = repoRoot, env = process.env) {
+  return spawnSync(process.execPath, [join(root, 'scripts/build-public-site.mjs'), ...args], {
+    cwd: root,
+    env,
     encoding: 'utf8',
   });
 }
@@ -119,8 +121,20 @@ describe('static site publication profiles', () => {
       expect(portal).toContain('passed');
       expect(portal).toContain('/productshape/reports/journey.html');
       expect(portal).toContain('Architecture Snapshot');
-      expect(architecturePage).toContain('href="https://productshape.dev/en/product/"');
-      expect(architecturePage).toContain('href="https://productshape.dev/es/"');
+      expect(architecturePage).toContain('href="https://productshape.dev/"');
+      for (const html of [portal, architecturePage]) {
+        const document = new JSDOM(html).window.document;
+        const navigation = document.querySelector('#primary-navigation');
+        expect(navigation?.textContent).toContain('Product Snapshot');
+        expect(navigation?.textContent).toContain('Architecture Snapshot');
+        expect(navigation?.textContent).toContain('Public site');
+        expect(navigation?.textContent).not.toContain('Get started');
+        expect(document.querySelectorAll('[data-appearance-choice]')).toHaveLength(3);
+        expect(document.querySelector('.mobile-menu-toggle')?.getAttribute('aria-controls')).toBe(
+          'primary-navigation',
+        );
+      }
+      expect(productSnapshot).toBe(await readFile(snapshot, 'utf8'));
       expect(journey).toContain('Journey fixture');
       expect(sitemap).toContain(
         'https://juangcarmona.github.io/productshape/en/model/explorer.html',
@@ -192,6 +206,171 @@ describe('static site publication profiles', () => {
       const portal = await readFile(join(output, 'index.html'), 'utf8');
       expect(portal).toContain('No E2E journey report has been published yet.');
       expect(portal).not.toContain('E2E journey report · passed');
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  it.each(['/', '/review/'])('validates both complete profiles at base %s', async (basePath) => {
+    const directory = await mkdtemp(join(tmpdir(), 'productshape-profile-validation-'));
+    try {
+      const snapshot = join(directory, 'snapshot.html');
+      await writeFile(snapshot, '<!doctype html><title>Standalone snapshot</title>');
+      for (const profile of ['public', 'engineering']) {
+        const output = join(directory, profile);
+        const origin =
+          profile === 'public' ? 'https://productshape.dev' : 'https://juangcarmona.github.io';
+        const args = [
+          '--profile',
+          profile,
+          '--out',
+          output,
+          '--base-path',
+          basePath,
+          '--site-origin',
+          origin,
+          '--snapshot-source',
+          snapshot,
+        ];
+        const result = await build(args, repoRoot, { ...process.env, GITHUB_SHA: 'a'.repeat(40) });
+        expect(result.status, result.stderr).toBe(0);
+        const validation = spawnSync(
+          process.execPath,
+          [
+            validator,
+            '--dir',
+            output,
+            '--profile',
+            profile,
+            '--base-path',
+            basePath,
+            '--site-origin',
+            origin,
+          ],
+          { encoding: 'utf8' },
+        );
+        expect(validation.status, validation.stderr).toBe(0);
+        expect(validation.stdout).toContain(`Validated ${profile}`);
+        const metadata = JSON.parse(await readFile(join(output, 'publication.json'), 'utf8'));
+        expect(metadata.sourceRevision).toBe('a'.repeat(40));
+        expect(typeof metadata.dirty).toBe('boolean');
+        if (profile === 'engineering') {
+          expect(await readFile(join(output, 'en/model/explorer.html'), 'utf8')).toBe(
+            await readFile(snapshot, 'utf8'),
+          );
+          const architecture = new JSDOM(
+            await readFile(join(output, 'en/engineering/index.html'), 'utf8'),
+          ).window.document;
+          expect(architecture.querySelectorAll('.engineering-card')).toHaveLength(12);
+          expect(architecture.querySelector('[aria-current="page"]')?.textContent).toContain(
+            'Architecture',
+          );
+        } else {
+          expect(await readFile(join(output, '404.html'), 'utf8')).toContain(
+            'That page is not here.',
+          );
+        }
+      }
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  it('builds public output without architecture or generated engineering inputs', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'productshape-public-independent-'));
+    try {
+      for (const path of [
+        'scripts/build-public-site.mjs',
+        'site',
+        'docs/adoption',
+        'docs/assets/snapshot/01-overview-desktop.png',
+        'packages/cli/package.json',
+      ]) {
+        await mkdir(join(directory, path, '..'), { recursive: true });
+        await cp(join(repoRoot, path), join(directory, path), { recursive: true });
+      }
+      const output = join(directory, 'output');
+      const result = await build(['--profile', 'public', '--out', output], directory, {
+        ...process.env,
+        GITHUB_SHA: '',
+      });
+      expect(result.status, result.stderr).toBe(0);
+      await expect(
+        readFile(join(directory, 'docs/architecture/01-introduction-and-goals.md')),
+      ).rejects.toThrow();
+      const metadata = JSON.parse(await readFile(join(output, 'publication.json'), 'utf8'));
+      expect(metadata.sourceRevision).toBeNull();
+      expect(metadata.dirty).toBe(true);
+      const validation = spawnSync(
+        process.execPath,
+        [
+          validator,
+          '--dir',
+          output,
+          '--profile',
+          'public',
+          '--base-path',
+          '/',
+          '--site-origin',
+          'https://productshape.dev',
+        ],
+        { encoding: 'utf8' },
+      );
+      expect(validation.status, validation.stderr).toBe(0);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects broken, leaked and mislabeled public artifacts before upload', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'productshape-invalid-public-'));
+    const output = join(directory, 'output');
+    try {
+      const result = await build(['--profile', 'public', '--out', output]);
+      expect(result.status, result.stderr).toBe(0);
+      const runValidation = () =>
+        spawnSync(
+          process.execPath,
+          [
+            validator,
+            '--dir',
+            output,
+            '--profile',
+            'public',
+            '--base-path',
+            '/',
+            '--site-origin',
+            'https://productshape.dev',
+          ],
+          { encoding: 'utf8' },
+        );
+      const cases = [
+        { path: '404.html', expected: 'Missing output: 404.html' },
+        { path: 'assets/site.css', expected: 'Missing output: assets/site.css' },
+        { path: 'assets/productshape-icon.svg', expected: 'missing local target' },
+      ];
+      for (const item of cases) {
+        const content = await readFile(join(output, item.path));
+        await rm(join(output, item.path));
+        const validation = runValidation();
+        expect(validation.status).not.toBe(0);
+        expect(validation.stderr).toContain(item.expected);
+        await writeFile(join(output, item.path), content);
+      }
+      const metadataPath = join(output, 'publication.json');
+      const metadata = await readFile(metadataPath, 'utf8');
+      await writeFile(
+        metadataPath,
+        metadata.replace('https://productshape.dev', 'https://wrong.example'),
+      );
+      expect(runValidation().stderr).toContain('Invalid publication metadata');
+      await writeFile(metadataPath, metadata);
+      await mkdir(join(output, 'en/engineering'), { recursive: true });
+      await writeFile(
+        join(output, 'en/engineering/index.html'),
+        '<title>Leaked architecture</title>',
+      );
+      expect(runValidation().stderr).toContain('Engineering route leaked');
     } finally {
       await rm(directory, { recursive: true, force: true });
     }
