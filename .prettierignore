@@ -18,6 +18,8 @@ packages/core/schemas/v1alpha2/*.schema.json
 openspec/config.yaml
 .product/integrations/
 .claude/
+# Agent Toolkit skills are package-managed source projections; formatting them changes lock hashes.
+.agents/
 .github/skills/
 .github/prompts/
 .github/hooks/

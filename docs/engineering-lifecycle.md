@@ -27,7 +27,7 @@ An item is ready when each applicable dimension is explicit enough to plan. Mark
 No additional Ready dimensions.
 
 | Dimension | This project requires |
-| --- | --- |
+| --------- | --------------------- |
 
 ## Definition of Done
 
@@ -52,7 +52,7 @@ No additional Ready dimensions.
 No additional Done dimensions.
 
 | Dimension | This project requires | Lane | Role |
-| --- | --- | --- | --- |
+| --------- | --------------------- | ---- | ---- |
 
 ### Deterministic checks
 
@@ -91,11 +91,11 @@ GitHub's `OPEN` or `CLOSED` state remains separate from lifecycle status. Every 
 
 ### Transitions no capability ever fires
 
-| Transition | Meaning | Who fires it |
-| --- | --- | --- |
-| close before a linked PR merges | Administrative closure or cancellation | human only |
-| reopen | Resume a closed issue | human only |
-| deprioritize, block, or reject | Backlog decision | human only |
+| Transition                      | Meaning                                | Who fires it |
+| ------------------------------- | -------------------------------------- | ------------ |
+| close before a linked PR merges | Administrative closure or cancellation | human only   |
+| reopen                          | Resume a closed issue                  | human only   |
+| deprioritize, block, or reject  | Backlog decision                       | human only   |
 
 ## Work item fields
 
@@ -146,32 +146,32 @@ Post-merge retrospectives use one file per issue at `docs/reviews/issue-<number>
 
 The `.agents/skills/` files are the project-owned role sources; `.claude/skills/` contains generated copies. These defaults were reset from Agentic SDLC 0.2.2 on 2026-10-19.
 
-| Role skill | Adapted from | Installed | Projected to |
-| --- | --- | --- | --- |
-| `read-work-item` | Agentic SDLC GitHub Issues template | 2026-10-19 | Codex, Claude Code |
-| `read-work-item-links` | Agentic SDLC GitHub Issues template | 2026-10-19 | Codex, Claude Code |
-| `create-work-item` | Agentic SDLC GitHub Issues template | 2026-10-19 | Codex, Claude Code |
-| `update-work-item` | Agentic SDLC GitHub Issues template | 2026-10-19 | Codex, Claude Code |
-| `transition-work-item` | Agentic SDLC GitHub Issues template | 2026-10-19 | Codex, Claude Code |
-| `comment-work-item` | Agentic SDLC GitHub Issues template | 2026-10-19 | Codex, Claude Code |
-| `create-branch` | Agentic SDLC branch template | 2026-10-19 | Codex, Claude Code |
-| `checkout-branch` | Agentic SDLC branch template | 2026-10-19 | Codex, Claude Code |
-| `open-pull-request` | Agentic SDLC GitHub template | 2026-10-19 | Codex, Claude Code |
-| `inspect-pull-request` | Agentic SDLC GitHub template | 2026-10-19 | Codex, Claude Code |
-| `update-pull-request` | Agentic SDLC GitHub template | 2026-10-19 | Codex, Claude Code |
-| `merge-pull-request` | Agentic SDLC GitHub template | 2026-10-19 | Codex, Claude Code |
-| `inspect-ci-result` | Agentic SDLC GitHub Actions template | 2026-10-19 | Codex, Claude Code |
+| Role skill             | Adapted from                         | Installed  | Projected to       |
+| ---------------------- | ------------------------------------ | ---------- | ------------------ |
+| `read-work-item`       | Agentic SDLC GitHub Issues template  | 2026-10-19 | Codex, Claude Code |
+| `read-work-item-links` | Agentic SDLC GitHub Issues template  | 2026-10-19 | Codex, Claude Code |
+| `create-work-item`     | Agentic SDLC GitHub Issues template  | 2026-10-19 | Codex, Claude Code |
+| `update-work-item`     | Agentic SDLC GitHub Issues template  | 2026-10-19 | Codex, Claude Code |
+| `transition-work-item` | Agentic SDLC GitHub Issues template  | 2026-10-19 | Codex, Claude Code |
+| `comment-work-item`    | Agentic SDLC GitHub Issues template  | 2026-10-19 | Codex, Claude Code |
+| `create-branch`        | Agentic SDLC branch template         | 2026-10-19 | Codex, Claude Code |
+| `checkout-branch`      | Agentic SDLC branch template         | 2026-10-19 | Codex, Claude Code |
+| `open-pull-request`    | Agentic SDLC GitHub template         | 2026-10-19 | Codex, Claude Code |
+| `inspect-pull-request` | Agentic SDLC GitHub template         | 2026-10-19 | Codex, Claude Code |
+| `update-pull-request`  | Agentic SDLC GitHub template         | 2026-10-19 | Codex, Claude Code |
+| `merge-pull-request`   | Agentic SDLC GitHub template         | 2026-10-19 | Codex, Claude Code |
+| `inspect-ci-result`    | Agentic SDLC GitHub Actions template | 2026-10-19 | Codex, Claude Code |
 
 ## Provided roles
 
 OpenSpec is installed and its skill names were resolved from `.claude/skills/` during adoption. These skills provide the plan-artifact contracts; do not install duplicate skills for them.
 
-| Contract | Provided by | Skill to invoke |
-| --- | --- | --- |
-| `propose-change` | OpenSpec | `openspec-propose` |
-| `apply-change` | OpenSpec | `openspec-apply-change` |
-| `sync-specs` | OpenSpec | `openspec-sync-specs` |
-| `archive-change` | OpenSpec | `openspec-archive-change` |
+| Contract         | Provided by | Skill to invoke           |
+| ---------------- | ----------- | ------------------------- |
+| `propose-change` | OpenSpec    | `openspec-propose`        |
+| `apply-change`   | OpenSpec    | `openspec-apply-change`   |
+| `sync-specs`     | OpenSpec    | `openspec-sync-specs`     |
+| `archive-change` | OpenSpec    | `openspec-archive-change` |
 
 ### Capability gaps
 
