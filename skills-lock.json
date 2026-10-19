@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "skills": {
+    "adopt": {
+      "source": "juangcarmona/agent-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/agentic-sdlc/skills/adopt/SKILL.md",
+      "computedHash": "0bc01cd0e23ac996fbab708d232a1ab80393eb51ad2c6a914aabeb72a61b0746"
+    },
+    "collect-usage": {
+      "source": "juangcarmona/agent-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/agentic-sdlc/skills/collect-usage/SKILL.md",
+      "computedHash": "e85f646d3df738551d68dbfd4dcae9cc23443bf374263ec273b8ca347b0b1456"
+    },
+    "ff": {
+      "source": "juangcarmona/agent-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/agentic-sdlc/skills/ff/SKILL.md",
+      "computedHash": "4fc481aa775f4e8e66abbb760c787652cf3f2a5254ea04a43fdbba21e1093c05"
+    },
+    "harden-process": {
+      "source": "juangcarmona/agent-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/agentic-sdlc/skills/harden-process/SKILL.md",
+      "computedHash": "a361853304cf8b3f158960c4e9720fe9bd03a23f4348c1dc5bfb8e753977ae22"
+    },
+    "implement": {
+      "source": "juangcarmona/agent-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/agentic-sdlc/skills/implement/SKILL.md",
+      "computedHash": "d9e5daf85e9de3a7cabfecab6c6d020fed5f502e9a29284432a66b206a7dce0a"
+    },
+    "integrate": {
+      "source": "juangcarmona/agent-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/agentic-sdlc/skills/integrate/SKILL.md",
+      "computedHash": "26013cfe855110b7aee334a707feca271c934f4dc6b40c69780301da34d0d770"
+    },
+    "plan": {
+      "source": "juangcarmona/agent-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/agentic-sdlc/skills/plan/SKILL.md",
+      "computedHash": "0ea23d3e7c3964ea8c6126af63d07a252d2fcd1bf57ae96515f660a136b4c3ae"
+    },
+    "propose": {
+      "source": "juangcarmona/agent-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/agentic-sdlc/skills/propose/SKILL.md",
+      "computedHash": "d2f9b4eebd1fe574cf2c0a52d363187772dfc1a448af5c015f976c4456e6d5bb"
+    },
+    "refine": {
+      "source": "juangcarmona/agent-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/agentic-sdlc/skills/refine/SKILL.md",
+      "computedHash": "6978e8ae400edaa9869af02c0f8fa890365aa59fbd18ac3f1623f2ac6769fe49"
+    },
+    "refine-to-ready": {
+      "source": "juangcarmona/agent-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/agentic-sdlc/skills/refine-to-ready/SKILL.md",
+      "computedHash": "3a49edc2eff84a2c7675fb879fe6091edbf7499f6abc48590ce5356a3d29e10f"
+    },
+    "review": {
+      "source": "juangcarmona/agent-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/agentic-sdlc/skills/review/SKILL.md",
+      "computedHash": "10a298c7f2c1d3f6af8dbf28614176d98bfc5ef1b4f39ec2af7638f4130f46ad"
+    },
+    "review-entry": {
+      "source": "juangcarmona/agent-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/agentic-sdlc/skills/review-entry/SKILL.md",
+      "computedHash": "4ebc16cb62c20128ba33d80189fa5f579d2efd22695f040bae993303f93c5290"
+    },
+    "status": {
+      "source": "juangcarmona/agent-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/agentic-sdlc/skills/status/SKILL.md",
+      "computedHash": "e9e87daa8713733e0548141469b541faea34cfb0e247e3739d89bee52f2708b6"
+    },
+    "verify-done": {
+      "source": "juangcarmona/agent-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/agentic-sdlc/skills/verify-done/SKILL.md",
+      "computedHash": "e0595ef6f5e46871698f4976d677d6dbae13b1ccde60a3ac4ef22abe00e93a35"
+    },
+    "verify-like-ci": {
+      "source": "juangcarmona/agent-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/agentic-sdlc/skills/verify-like-ci/SKILL.md",
+      "computedHash": "1e58d74d6bc8049a292f1eca849898dbdc86e0a2a42f4ffa71a5e392ecad2423"
+    },
+    "verify-runtime": {
+      "source": "juangcarmona/agent-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/agentic-sdlc/skills/verify-runtime/SKILL.md",
+      "computedHash": "b5dce1f724c650b2b8a548aaa4b7c5a071cd43eeccc020d002539a7377fcc48f"
+    }
+  }
+}
