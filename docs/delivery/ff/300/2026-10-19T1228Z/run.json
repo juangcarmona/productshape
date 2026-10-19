@@ -8,7 +8,7 @@
   "executorModel": "gpt-6.1-sol",
   "reviewerModel": "gpt-6-astra",
   "maxCorrectionRounds": 3,
-  "status": "integration-in-progress",
+  "status": "complete",
   "stages": [
     {
       "name": "refine",
@@ -66,7 +66,7 @@
       "startedAt": "2026-10-19T13:20:23Z",
       "inputCommit": "335ec4ec747a0af25da3481d1a5857f11a9b144f",
       "targetCommit": "632670261100b46751d6aa3eefd1b099986169d5",
-      "result": "in-progress; final archive-head audit and CI required before merge",
+      "result": "merged; final-head CI/audit passed; post-merge CI and hosted engineering verification passed",
       "specSync": {
         "result": "no delta specs",
         "skip_specs": true,
@@ -75,9 +75,32 @@
       "archivePath": "openspec/changes/archive/2026-10-19-issue-300-publication-handoff",
       "evidence": [
         "https://github.com/juangcarmona/productshape/pull/301#issuecomment-6268058397",
-        "integration.md"
+        "integration.md",
+        "https://github.com/juangcarmona/productshape/pull/301#issuecomment-6268408650",
+        "postmerge/ci.json",
+        "postmerge/hosted-engineering.json",
+        "postmerge/public-artifact.json"
       ],
-      "checks": "integration-checks/results.json"
+      "checks": "integration-checks/results.json",
+      "historicalResult": "in-progress; final archive-head audit and CI required before merge",
+      "outputCommit": "659784a644268ddbb9276b651727174df79e9381",
+      "endedAt": "2026-10-19T13:30:07Z",
+      "finalReviewedHead": "7641d3bd3273ec68fbfff77f42f1ee107e431d11"
+    },
+    {
+      "name": "review",
+      "inputCommit": "659784a644268ddbb9276b651727174df79e9381",
+      "recordedAt": "2026-10-19T13:38:58Z",
+      "result": "Post-merge retrospective created once on documentation follow-up branch; its PR remains subject to separate human review",
+      "evidence": ["docs/reviews/issue-300.md"],
+      "independentReflection": "gpt-6-astra /root/integration_auditor reflections reconciled; no unresolved disagreement or new process amendment",
+      "effort": {
+        "humanActiveTime": "not captured",
+        "agentActiveTime": "not captured",
+        "cost": "not captured",
+        "tokens": "not captured",
+        "source": "No project agent telemetry location or session-to-work-item mapping configured in repository documentation"
+      }
     }
   ],
   "reviews": [
@@ -145,6 +168,15 @@
       "decision": "pass",
       "findings": [],
       "evidence": ["https://github.com/juangcarmona/productshape/pull/301#issuecomment-6268207321"]
+    },
+    {
+      "reviewerModel": "gpt-6-astra",
+      "reviewerExecution": "/root/integration_auditor",
+      "kind": "fresh-final-integration-Done-audit",
+      "reviewedCommit": "7641d3bd3273ec68fbfff77f42f1ee107e431d11",
+      "decision": "approve",
+      "findings": [],
+      "evidence": ["https://github.com/juangcarmona/productshape/pull/301#issuecomment-6268408650"]
     }
   ],
   "corrections": [
@@ -159,7 +191,7 @@
       "outcome": "All16 applicable local checks passed (1039 tests,0 skipped); canonical/sitemap negative fixtures and expanded60-case layout passed; final clean runtime source/hashes/copy passed; fresh independent audit required at final evidence head."
     }
   ],
-  "stopReason": "Merge is authorized by the human maintainer; integration documentation/archive is in progress. Await fresh independent audit and CI on the final archive head before merge. Cloudflare activation remains explicitly deferred.",
+  "stopReason": null,
   "pullRequest": "https://github.com/juangcarmona/productshape/pull/301",
   "links": ["https://github.com/juangcarmona/productshape/issues/300"],
   "implementationSourceCommit": "0c6d2af436efcd01d655fcdb4af2d712d86257f7",
@@ -185,5 +217,20 @@
     "scope": "Approve PR #301 integration and close-out; Cloudflare activation expressly deferred",
     "forgeReviewVoteCreated": false,
     "evidence": "https://github.com/juangcarmona/productshape/pull/301#issuecomment-6268207321"
-  }
+  },
+  "historicalIntegrationStopReason": "Merge is authorized by the human maintainer; integration documentation/archive is in progress. Await fresh independent audit and CI on the final archive head before merge. Cloudflare activation remains explicitly deferred.",
+  "completedAt": "2026-10-19T13:38:58Z",
+  "mergedCommit": "659784a644268ddbb9276b651727174df79e9381",
+  "mergedAt": "2026-10-19T13:30:06Z",
+  "issueOutcome": {
+    "state": "CLOSED",
+    "lifecycleStatus": "status:done",
+    "closedAt": "2026-10-19T13:30:07Z"
+  },
+  "publicationOutcome": {
+    "engineering": "Existing GitHub Pages workflow deployed merged source; hosted metadata/routes verified",
+    "public": "Merged-source public artifact prepared and validated; Cloudflare upload and productshape.dev activation explicitly deferred to owner",
+    "npmRelease": "not claimed; release workflow is separate from validation"
+  },
+  "recordIntegration": "This post-merge record and retrospective are proposed in a separate documentation PR; no automatic merge of that PR is authorized."
 }

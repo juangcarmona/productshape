@@ -1,0 +1,46 @@
+{
+  "observedAt": "2026-10-19T13:32:53.932732+00:00",
+  "baseUrl": "https://juangcarmona.github.io/productshape/",
+  "metadata": {
+    "schemaVersion": 1,
+    "profile": "engineering",
+    "basePath": "/productshape/",
+    "siteOrigin": "https://juangcarmona.github.io",
+    "cliVersion": "0.22.1",
+    "sourceRevision": "659784a644268ddbb9276b651727174df79e9381",
+    "dirty": false
+  },
+  "routes": [
+    {
+      "route": "en/",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "route": "en/engineering/",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "route": "en/engineering/01-introduction-and-goals/",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "route": "en/model/explorer.html",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "route": "en/product/",
+      "status": 404,
+      "expected": 404
+    },
+    {
+      "route": "missing-page-300/",
+      "status": 404,
+      "expected": 404
+    }
+  ],
+  "deploymentRun": "https://github.com/juangcarmona/productshape/actions/runs/39260695104"
+}

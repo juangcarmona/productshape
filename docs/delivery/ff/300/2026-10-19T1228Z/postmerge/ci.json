@@ -1,0 +1,53 @@
+{
+  "sourceRevision": "659784a644268ddbb9276b651727174df79e9381",
+  "runs": [
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-19T13:30:09Z",
+      "headSha": "659784a644268ddbb9276b651727174df79e9381",
+      "name": "CI",
+      "updatedAt": "2026-10-19T13:37:12Z",
+      "url": "https://github.com/juangcarmona/productshape/actions/runs/39260695241"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-19T13:30:09Z",
+      "headSha": "659784a644268ddbb9276b651727174df79e9381",
+      "name": "PDaC conformance (pinned)",
+      "updatedAt": "2026-10-19T13:32:49Z",
+      "url": "https://github.com/juangcarmona/productshape/actions/runs/39260695022"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-19T13:30:09Z",
+      "headSha": "659784a644268ddbb9276b651727174df79e9381",
+      "name": "PDaC v0.3 candidate qualification",
+      "updatedAt": "2026-10-19T13:32:00Z",
+      "url": "https://github.com/juangcarmona/productshape/actions/runs/39260694945"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-19T13:30:09Z",
+      "headSha": "659784a644268ddbb9276b651727174df79e9381",
+      "name": "Internal contracts",
+      "updatedAt": "2026-10-19T13:31:18Z",
+      "url": "https://github.com/juangcarmona/productshape/actions/runs/39260695577"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-19T13:30:09Z",
+      "headSha": "659784a644268ddbb9276b651727174df79e9381",
+      "name": "Public site",
+      "updatedAt": "2026-10-19T13:30:22Z",
+      "url": "https://github.com/juangcarmona/productshape/actions/runs/39260695082"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-19T13:30:09Z",
+      "headSha": "659784a644268ddbb9276b651727174df79e9381",
+      "name": "Engineering portal",
+      "updatedAt": "2026-10-19T13:32:11Z",
+      "url": "https://github.com/juangcarmona/productshape/actions/runs/39260695104"
+    }
+  ]
+}

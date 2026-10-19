@@ -1,0 +1,17 @@
+{
+  "runUrl": "https://github.com/juangcarmona/productshape/actions/runs/39260695082",
+  "artifactId": 12189862034,
+  "sourceRevision": "659784a644268ddbb9276b651727174df79e9381",
+  "zip": "productshape-public-site-merged-301.zip",
+  "sha256": "58c16fe69f36ba470eed70263caa27b6715877b04108a9949b8639f91bb054d8",
+  "files": 40,
+  "metadata": {
+    "schemaVersion": 1,
+    "profile": "public",
+    "basePath": "/",
+    "siteOrigin": "https://productshape.dev",
+    "cliVersion": "0.22.1",
+    "sourceRevision": "659784a644268ddbb9276b651727174df79e9381",
+    "dirty": false
+  }
+}
