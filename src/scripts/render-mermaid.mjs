@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
-import { access, mkdir, readdir } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
 import { basename, extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -35,21 +36,41 @@ const sources = (await readdir(input, { withFileTypes: true }))
   .map((entry) => entry.name)
   .sort();
 
-for (const source of sources) {
-  const result = spawnSync(
-    executable,
-    [
-      '--input',
-      join(input, source),
-      '--output',
-      join(output, `${basename(source, extname(source))}.svg`),
-      '--outputFormat',
-      'svg',
-      '--quiet',
-    ],
-    { cwd: root, encoding: 'utf8', stdio: 'inherit' },
-  );
-  if (result.status !== 0) process.exit(result.status ?? 1);
+const puppeteerConfigDirectory = await mkdtemp(join(tmpdir(), 'productshape-mermaid-'));
+const puppeteerConfigFile = join(puppeteerConfigDirectory, 'puppeteer.json');
+await writeFile(
+  puppeteerConfigFile,
+  `${JSON.stringify({ args: ['--no-sandbox', '--disable-setuid-sandbox'] }, null, 2)}\n`,
+);
+
+try {
+  for (const source of sources) {
+    const result = spawnSync(
+      executable,
+      [
+        '--input',
+        join(input, source),
+        '--output',
+        join(output, `${basename(source, extname(source))}.svg`),
+        '--outputFormat',
+        'svg',
+        '--puppeteerConfigFile',
+        puppeteerConfigFile,
+        '--quiet',
+      ],
+      {
+        cwd: root,
+        encoding: 'utf8',
+        stdio: 'inherit',
+        shell: process.platform === 'win32',
+      },
+    );
+    if (result.status !== 0) {
+      throw new Error(`Mermaid CLI failed for ${source} with exit code ${result.status ?? 1}.`);
+    }
+  }
+} finally {
+  await rm(puppeteerConfigDirectory, { recursive: true, force: true });
 }
 
 console.log(`Rendered ${sources.length} Mermaid source file(s) to ${output}.`);

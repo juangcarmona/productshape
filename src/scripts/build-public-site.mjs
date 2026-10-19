@@ -95,6 +95,7 @@ try {
     cwd: root,
     encoding: 'utf8',
     stdio: 'inherit',
+    shell: process.platform === 'win32',
     env: {
       ...process.env,
       SITE_PROFILE: profile,
