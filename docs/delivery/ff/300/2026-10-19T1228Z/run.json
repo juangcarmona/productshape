@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "runId": "2026-10-19T1228Z",
+  "workItem": 300,
+  "branch": "codex/300-publication-handoff",
+  "startingCommit": "632670261100b46751d6aa3eefd1b099986169d5",
+  "startedAt": "2026-10-19T12:28:43Z",
+  "executorModel": "gpt-6.1-sol",
+  "reviewerModel": "gpt-6-astra",
+  "maxCorrectionRounds": 3,
+  "status": "running",
+  "stages": [
+    {
+      "name": "refine",
+      "startedAt": "2026-10-19T12:28:43Z",
+      "endedAt": "2026-10-19T12:30:00Z",
+      "inputCommit": "632670261100b46751d6aa3eefd1b099986169d5",
+      "result": "ready",
+      "evidence": ["https://github.com/juangcarmona/productshape/issues/300"]
+    },
+    {
+      "name": "propose",
+      "startedAt": "2026-10-19T12:35:00Z",
+      "inputCommit": "632670261100b46751d6aa3eefd1b099986169d5",
+      "result": "awaiting-independent-plan-review",
+      "evidence": [
+        "openspec/changes/issue-300-publication-handoff/proposal.md",
+        "openspec/changes/issue-300-publication-handoff/design.md",
+        "openspec/changes/issue-300-publication-handoff/tasks.md"
+      ],
+      "checks": [
+        {
+          "command": "openspec validate issue-300-publication-handoff --strict",
+          "result": "passed"
+        },
+        {
+          "command": "node packages/cli/dist/bin.js citations verify --provider openspec",
+          "result": "passed; 23 documents, 138 current citations"
+        }
+      ]
+    }
+  ],
+  "reviews": [],
+  "corrections": [],
+  "stopReason": null,
+  "pullRequest": null,
+  "links": ["https://github.com/juangcarmona/productshape/issues/300"]
+}

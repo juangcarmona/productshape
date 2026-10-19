@@ -1,0 +1,39 @@
+<!-- pdac-scope: cited -->
+
+## 1. Shared publication shell
+
+- [ ] 1.1 Route engineering landing, architecture overview and all twelve sections through one profile-aware compact shell; verify destination labels/active state and every shell link in both profile outputs.
+- [ ] 1.2 Reuse existing theme assets, appearance controls and accessible mobile behavior; verify light/dark/system, keyboard activation, Escape/focus return and narrow layout in Chromium.
+- [ ] 1.3 Preserve Product Snapshot copy contract and architecture content/source links; verify byte equality of Snapshot input/output and twelve rendered section/source destinations.
+
+<!-- pdac:cite id="CON-BRAND-001" digest="sha256:888e80751e04d389d5cee683c18fb47e1795a39dd8213454b16e09aa426be9cc" -->
+<!-- pdac:cite id="UC-PUBLIC-SITE-001" digest="sha256:b769e277997dc9a03d676b6d13370ef0d24ab8c673aa159c04d4e0815ed297f2" -->
+<!-- pdac:cite id="UC-ENGINEERING-PORTAL-001" digest="sha256:84771dc17d47b1c61bad40b17d915c6f318ee657de5640234ce9b22c97a26744" -->
+<!-- pdac:cite id="FR-SNAPSHOT-001" digest="sha256:4b516c17b1b0895996d48135fa1729bd2cc20913f98a8d820d5a5c82a0310a5d" -->
+
+## 2. Independent output and delivery validation
+
+- [ ] 2.1 Load architecture inputs only for engineering; verify a minimal temporary public checkout without architecture/generated artifacts builds successfully and engineering malformed-input tests still fail clearly.
+- [ ] 2.2 Emit deterministic publication metadata identifying profile/base/origin/CLI/full source revision and local dirty state; verify clean/workflow/local fixture behavior without claiming dirty output matches a clean commit.
+- [ ] 2.3 Add a dependency-free validator for generated route inventories, href/src/CSS asset targets, sitemap/base/origin, metadata, profile boundaries and top-level public 404; verify root/subpath positive fixtures and missing/leaked/invalid negative fixtures.
+- [ ] 2.4 Extend existing site-builder integration tests for both profiles/root/subpaths, copied Snapshot, preserved twelve sections, optional reports and input errors; verify focused Vitest checks pass.
+- [ ] 2.5 Run validation before uploading the exact public/engineering review directories and update workflow input filters; verify workflow checks and artifact layout including root index.html/404.html succeed, with no deployment job/credential addition.
+
+<!-- pdac:cite id="FR-PUBLIC-SITE-001" digest="sha256:3cb2c22372dc4696fedaf5ef88ed42158f828accc65a4fa45f46812ee5a1f20a" -->
+<!-- pdac:cite id="FR-ENGINEERING-PORTAL-001" digest="sha256:641a6d2ae3bbb10951584e3b2b648ba12b59c8aebab1f0e6787aed751f53b1c5" -->
+
+## 3. Owner handoff and evidence
+
+- [ ] 3.1 Update site README/design guidance and changelog for shell/output behavior and exact local artifact build/validate/download layout; verify every documented local command against produced output.
+- [ ] 3.2 Document conditional Direct Upload dashboard versus Wrangler folder paths, preview/production branch semantics, prior-artifact rollback, project-mode verification and productshape.dev activation with official references; verify no account fact or hosted availability is claimed and execute no upload/DNS command.
+- [ ] 3.3 Record an acceptance-criterion matrix and Chromium desktop/narrow light/dark evidence for public English/Spanish, portal, architecture and standalone Snapshot; verify browser errors/overflow, all twelve links and themes/navigation using the plan's procedure.
+- [ ] 3.4 Refresh all affected citations using inspect/cite where needed and verify every current OpenSpec document with the CLI available; require no stale/tampered/unresolved or unclassified result.
+- [ ] 3.5 Run all applicable deterministic checks derived from current CI workflows/engineering-lifecycle.md, push and record passing final-head CI plus exact local command evidence; verify no skipped required check is represented as passing.
+- [ ] 3.6 Request the isolated gpt-6-astra final audit over final plan/diff/evidence, preserve decision/commit/round in the FF record, and update the existing PR; verify human-owned Done judgements/maintainer approval remain explicit and stop before merge/publication.
+
+<!-- pdac:cite id="BR-CANONICAL-001" digest="sha256:7ed6dc7c588e0b79da8e6036548cf2fd2c6a1b02a9393f467f50cb0cb02475d6" -->
+<!-- pdac:cite id="CON-MARKDOWN-001" digest="sha256:e1d4c39d7e5fc5f1a1573dbb6433986a26248289c9a97c11bb039db7af0f5c17" -->
+
+## Human-owned completion gates
+
+Maintainer acceptance-criteria, completeness, coverage, security where applicable, design/ADR conformance, documentation and limitations judgements; Product Engineer consistency judgement when applicable; maintainer approval before merge. Independent agent review cannot discharge these gates. Integration, spec archive and retrospective follow only after the human gate; production/domain activation is a separate future owner action.
