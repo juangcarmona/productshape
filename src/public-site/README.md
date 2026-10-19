@@ -16,9 +16,15 @@ Validate the same directories that will be uploaded:
 ```bash
 node src/scripts/validate-public-site.mjs --dir dist/public-site --profile public --base-path / --site-origin https://productshape.dev
 node src/scripts/validate-public-site.mjs --dir _site --profile engineering --base-path /productshape/ --site-origin https://juangcarmona.github.io
+
+# Browser/runtime evidence (requires a Chromium-family browser)
+node src/scripts/check-public-site-browser.mjs --dir dist/public-site --profile public --base-path / --evidence-dir dist/public-site-browser
+node src/scripts/check-public-site-browser.mjs --dir _site --profile engineering --base-path /productshape/ --evidence-dir engineering-browser-evidence
 ```
 
 `publication.json` records the profile, base path, origin, CLI version, full source revision and dirty state. A local uncommitted build is explicitly marked dirty. The public builder needs no generated engineering output or architecture input. The engineering output copies the generated standalone Snapshot byte-for-byte; its attribution URL is selected at generation time with the existing option shown above.
+
+The browser check serves a built directory locally, verifies representative routes in both profiles, checks renderer markers and source surfaces, exercises dark/system appearance, narrow navigation and keyboard focus, and captures route screenshots plus a JSON manifest. CI uploads these files as review evidence; they do not represent a production deployment.
 
 Public and engineering pages reuse the compact shell, theme assets and keyboard/mobile controls. Public navigation serves localized product/process/adoption content; engineering navigation distinguishes the portal, Product Snapshot, Architecture Snapshot and external public site. The standalone Snapshot owns its own interface and URL state.
 
@@ -41,7 +47,7 @@ The engineering portal contains the generated Product Snapshot and the current t
 
 `src/pages/[...path].astro` is the static route shell. It enumerates the profile output produced by the deterministic compatibility compiler, allowing Astro to own the final build while keeping route HTML stable during the migration. `site.config.mjs` is the locale registry: adding a locale adds one content file and one configuration entry, not a page-template copy. A locale may name a fallback; the builder deep-merges missing localized values from that fallback (English is the current fallback).
 
-Authored Mermaid sources use the `Mermaid` component and can be rendered to static SVG with:
+Authored Mermaid views use fenced `mermaid` blocks in Markdown and the `Mermaid` component. They can be rendered to static SVG with:
 
 ```bash
 node src/scripts/render-mermaid.mjs --input src/public-site/diagrams --output dist/mermaid
@@ -49,7 +55,7 @@ node src/scripts/render-mermaid.mjs --input src/public-site/diagrams --output di
 
 Publication workflows set `MERMAID_RENDER=1` so the Astro build also places the generated SVGs under `assets/mermaid/`. Local builds leave rendering opt-in because Mermaid CLI needs a Chromium runtime; the source and HTML fallback remain available without that browser dependency.
 
-Archify artifacts use the `Archify` component and are checked-in static HTML. Both components expose the renderer and source link; diagrams are explanatory views and never canonical Product Model data. The published artifact must not require a production network service or client-side fetch.
+The renderer accepts `.md`/`.markdown` documents with fenced Mermaid blocks as well as legacy `.mmd` files. Archify artifacts use the `Archify` component and are checked-in static HTML. Both components expose the renderer and source link; diagrams are explanatory views and never canonical Product Model data. Both renderer routes are built for the public and engineering profiles, and the published artifact must not require a production network service or client-side fetch.
 
 ## Product identity and canonical sources
 

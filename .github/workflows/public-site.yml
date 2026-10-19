@@ -7,6 +7,7 @@ on:
       - 'src/scripts/build-public-site.mjs'
       - 'src/scripts/build-legacy-public-content.mjs'
       - 'src/scripts/validate-public-site.mjs'
+      - 'src/scripts/check-public-site-browser.mjs'
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'docs/adoption/**'
@@ -21,6 +22,7 @@ on:
       - 'src/scripts/build-public-site.mjs'
       - 'src/scripts/build-legacy-public-content.mjs'
       - 'src/scripts/validate-public-site.mjs'
+      - 'src/scripts/check-public-site-browser.mjs'
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'docs/adoption/**'
@@ -54,6 +56,15 @@ jobs:
         run: node src/scripts/build-public-site.mjs --profile public --out dist/public-site --base-path / --site-origin https://productshape.dev
       - name: Validate the public upload directory
         run: node src/scripts/validate-public-site.mjs --dir dist/public-site --profile public --base-path / --site-origin https://productshape.dev
+      - name: Run public browser regression checks
+        run: node src/scripts/check-public-site-browser.mjs --dir dist/public-site --profile public --base-path / --evidence-dir dist/public-site-browser
+      - name: Upload browser regression evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: productshape-public-site-browser-${{ github.sha }}
+          path: dist/public-site-browser
+          if-no-files-found: error
+          retention-days: 7
       - name: Upload the review artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

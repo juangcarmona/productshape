@@ -17,7 +17,7 @@ describe('source-oriented repository layout', () => {
   it('keeps the publication engine and diagram authoring boundaries explicit', () => {
     expect(existsSync(join(root, 'src/public-site/astro.config.mjs'))).toBe(true);
     expect(existsSync(join(root, 'src/public-site/src/pages/[...path].astro'))).toBe(true);
-    expect(existsSync(join(root, 'src/public-site/diagrams/productshape-publication.mmd'))).toBe(
+    expect(existsSync(join(root, 'src/public-site/diagrams/productshape-publication.md'))).toBe(
       true,
     );
     expect(existsSync(join(root, 'src/scripts/render-mermaid.mjs'))).toBe(true);

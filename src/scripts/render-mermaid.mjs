@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { access, mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { basename, extname, join, resolve } from 'node:path';
@@ -31,10 +31,10 @@ try {
 }
 
 await mkdir(output, { recursive: true });
-const sources = (await readdir(input, { withFileTypes: true }))
-  .filter((entry) => entry.isFile() && extname(entry.name) === '.mmd')
-  .map((entry) => entry.name)
-  .sort();
+const sourceDocuments = (await readdir(input, { withFileTypes: true }))
+  .filter((entry) => entry.isFile() && ['.md', '.markdown', '.mmd'].includes(extname(entry.name)))
+  .sort((left, right) => left.name.localeCompare(right.name));
+const sourceNames = [];
 
 const puppeteerConfigDirectory = await mkdtemp(join(tmpdir(), 'productshape-mermaid-'));
 const puppeteerConfigFile = join(puppeteerConfigDirectory, 'puppeteer.json');
@@ -44,14 +44,27 @@ await writeFile(
 );
 
 try {
-  for (const source of sources) {
+  for (const document of sourceDocuments) {
+    const extension = extname(document.name);
+    const authored = await readFile(join(input, document.name), 'utf8');
+    const source =
+      extension === '.mmd'
+        ? authored.trim()
+        : authored.match(/```mermaid\s*\r?\n([\s\S]*?)\r?\n```/u)?.[1]?.trim();
+    if (!source) continue;
+    const temporarySource = join(
+      puppeteerConfigDirectory,
+      `${basename(document.name, extension)}.mmd`,
+    );
+    await writeFile(temporarySource, `${source}\n`);
+    sourceNames.push(document.name);
     const result = spawnSync(
       executable,
       [
         '--input',
-        join(input, source),
+        temporarySource,
         '--output',
-        join(output, `${basename(source, extname(source))}.svg`),
+        join(output, `${basename(document.name, extension)}.svg`),
         '--outputFormat',
         'svg',
         '--puppeteerConfigFile',
@@ -66,11 +79,13 @@ try {
       },
     );
     if (result.status !== 0) {
-      throw new Error(`Mermaid CLI failed for ${source} with exit code ${result.status ?? 1}.`);
+      throw new Error(
+        `Mermaid CLI failed for ${document.name} with exit code ${result.status ?? 1}.`,
+      );
     }
   }
 } finally {
   await rm(puppeteerConfigDirectory, { recursive: true, force: true });
 }
 
-console.log(`Rendered ${sources.length} Mermaid source file(s) to ${output}.`);
+console.log(`Rendered ${sourceNames.length} Mermaid source file(s) to ${output}.`);

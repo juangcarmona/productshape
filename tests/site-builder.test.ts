@@ -152,7 +152,7 @@ describe('static site publication profiles', () => {
       expect(secondDiagram).toContain('ProductShape products, method and publications');
       expect(mermaidPage).toContain('data-renderer="mermaid"');
       expect(mermaidPage).toContain('class="language-mermaid"');
-      expect(mermaidPage).toContain('src/public-site/diagrams/productshape-publication.mmd');
+      expect(mermaidPage).toContain('src/public-site/diagrams/productshape-publication.md');
       expect(archifyPage).toContain('data-renderer="archify"');
       expect(archifyPage).toContain('245de1fd5d10faaeb2b30f401853fcb805eca00b');
       expect(sitemap).toContain('https://productshape.dev/en/');
@@ -206,12 +206,22 @@ describe('static site publication profiles', () => {
       ]);
       expect(result.status, result.stderr).toBe(0);
 
-      const [portal, productSnapshot, sitemap, journey, architecturePage] = await Promise.all([
+      const [
+        portal,
+        productSnapshot,
+        sitemap,
+        journey,
+        architecturePage,
+        mermaidPage,
+        archifyPage,
+      ] = await Promise.all([
         readFile(join(output, 'index.html'), 'utf8'),
         readFile(join(output, 'en/model/explorer.html'), 'utf8'),
         readFile(join(output, 'sitemap.xml'), 'utf8'),
         readFile(join(output, 'reports/journey.html'), 'utf8'),
         readFile(join(output, 'en/engineering/01-introduction-and-goals/index.html'), 'utf8'),
+        readFile(join(output, 'diagrams/mermaid/index.html'), 'utf8'),
+        readFile(join(output, 'diagrams/archify/index.html'), 'utf8'),
       ]);
       expect(productSnapshot).toContain('Snapshot fixture');
       expect(portal).toContain('abc1234');
@@ -222,6 +232,10 @@ describe('static site publication profiles', () => {
       expect(portal).toContain('/productshape/reports/journey.html');
       expect(portal).toContain('Architecture Snapshot');
       expect(architecturePage).toContain('href="https://productshape.dev/"');
+      expect(mermaidPage).toContain('data-renderer="mermaid"');
+      expect(mermaidPage).toContain('src/public-site/diagrams/productshape-publication.md');
+      expect(archifyPage).toContain('data-renderer="archify"');
+      expect(archifyPage).toContain('productshape-publication-boundaries.html');
       for (const html of [portal, architecturePage]) {
         const document = new JSDOM(html).window.document;
         const navigation = document.querySelector('#primary-navigation');

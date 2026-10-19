@@ -150,10 +150,11 @@ await writeFile(
   await readFile(join(root, 'src/public-site/assets/site.css')),
 );
 
+await cp(join(root, 'src/public-site/diagrams'), join(outDir, 'assets/diagrams'), {
+  recursive: true,
+});
+
 if (profile === 'public') {
-  await cp(join(root, 'src/public-site/diagrams'), join(outDir, 'assets/diagrams'), {
-    recursive: true,
-  });
   await cp(
     join(root, 'docs/assets/snapshot/01-overview-desktop.png'),
     join(outDir, 'assets/product-explorer.png'),

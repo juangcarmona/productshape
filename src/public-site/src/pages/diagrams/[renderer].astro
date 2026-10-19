@@ -1,12 +1,15 @@
 ---
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import Archify from '../../components/Archify.astro';
 import Mermaid from '../../components/Mermaid.astro';
 
-const source = `flowchart LR
-  Product[Product knowledge] --> Snapshot[Product Snapshot]
-  Product --> Portal[Engineering portal]
-  Product --> Site[Public site]
-`;
+const authoredMarkdown = await readFile(
+  join(process.cwd(), 'src/public-site/diagrams/productshape-publication.md'),
+  'utf8',
+);
+const source = authoredMarkdown.match(/```mermaid\s*\n([\s\S]*?)\n```/u)?.[1]?.trim();
+if (!source) throw new Error('The publication diagram must contain a fenced Mermaid block.');
 const renderer = Astro.params.renderer;
 const mermaidSvg =
   process.env.MERMAID_RENDER === '1'
@@ -14,10 +17,7 @@ const mermaidSvg =
     : undefined;
 
 export function getStaticPaths() {
-  const profile = process.env.SITE_PROFILE || 'public';
-  return profile === 'public'
-    ? [{ params: { renderer: 'mermaid' } }, { params: { renderer: 'archify' } }]
-    : [{ params: { renderer: 'mermaid' } }];
+  return [{ params: { renderer: 'mermaid' } }, { params: { renderer: 'archify' } }];
 }
 ---
 
@@ -56,7 +56,7 @@ export function getStaticPaths() {
             <Mermaid
               source={source}
               title="ProductShape publication relationships"
-              sourceHref="https://github.com/juangcarmona/productshape/blob/main/src/public-site/diagrams/productshape-publication.mmd"
+              sourceHref="https://github.com/juangcarmona/productshape/blob/main/src/public-site/diagrams/productshape-publication.md"
               sourceRevision="main"
               svgHref={mermaidSvg}
             />
