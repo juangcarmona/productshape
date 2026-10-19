@@ -31,7 +31,7 @@ No additional Ready dimensions.
 
 ## Definition of Done
 
-**In this project, "done" means**: the change is finished and proven, ready to integrate after the required maintainer review.
+**In this project, "done" means**: the change is finished and proven, ready to integrate after the required maintainer review or the documented owner/admin bypass below.
 
 | # | Dimension | This project requires | Lane | Role |
 | --- | --- | --- | --- | --- |
@@ -44,7 +44,7 @@ No additional Ready dimensions.
 | 7 | Documentation | Update user/developer documentation and changelog when observable behaviour or shipped interfaces change; maintainer checks completeness. | both | Repository Maintainer |
 | 8 | Product / spec consistency | CI model validation and OpenSpec citation checks pass; Product Engineer reviews changes to product behaviour. | both | Product Engineer |
 | 9 | Evidence | Link the passing CI run and required runtime or visual evidence in the pull request. | deterministic | none |
-| 10 | Human review | Repository Maintainer approval is required before merge. | judgement | Repository Maintainer |
+| 10 | Human review | Repository Maintainer approval is required before merge, unless the owner/admin bypass below is satisfied. | judgement | Repository Maintainer |
 | 11 | Known limitations | Record unresolved limitations on the issue or pull request; maintainer confirms they are explicit. | both | Repository Maintainer |
 
 ### Additional to this project
@@ -76,6 +76,17 @@ These checks are the CI bar. The ProductShape commands run in `.github/workflows
 | Managed integration consistency | `node src/packages/cli/dist/bin.js integration update --check` | Passing GitHub Actions check |
 
 The changeset reminder is warning-only and is not a blocking check. The workflow's `npm audit signatures || true` is non-blocking. No blocking dependency, secret, or SAST scan was found.
+
+### Owner/admin merge bypass
+
+When the repository's active ruleset explicitly permits the current repository owner or administrator to bypass pull-request approvals, a PR author may record direct owner/admin authorization instead of a forge approval. This exception is valid only when all of the following are true:
+
+1. The ruleset requires zero approving reviews and reports that the current actor may bypass it.
+2. An independent reviewer has assessed the change and found no correctness, test, or lifecycle blockers.
+3. Every deterministic check, required runtime/evidence check, and non-review Done dimension has passed.
+4. The PR records the authorization, the ruleset evidence, the independent review result, and any known limitations.
+
+This bypass does not waive failed checks, unresolved review threads, security concerns, product or architecture decisions, or production-publication authorization. It is a repository-policy exception for the forge approval signal only.
 
 ## Lifecycle stages and states
 
@@ -127,7 +138,7 @@ Post-merge retrospectives use one file per issue at `docs/reviews/issue-<number>
 | Maximum correction rounds | 3 per gate |
 | Substitutable judgement items | None by default; Product Engineer and Repository Maintainer judgement stays human-owned |
 | Durable evidence | `docs/delivery/ff/<work-item-id>/<run-id>/run.json` and `summary.md` |
-| Human-only or protected gates | Product-scope and accepted-decision changes, human-only Done judgements, required forge approvals, production publication, and repository red lines |
+| Human-only or protected gates | Product-scope and accepted-decision changes, human-only Done judgements, required forge approvals unless the owner/admin bypass applies, production publication, and repository red lines |
 
 `/ff` may prepare and update a PR, push its branch, and merge only when every configured gate passes and the forge permits it. The public-site publication job is a separate human-authorized deployment gate.
 

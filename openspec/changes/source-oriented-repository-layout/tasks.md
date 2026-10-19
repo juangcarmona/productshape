@@ -30,4 +30,4 @@
   - [x] 6.1 Add a structural layout/path guard that detects missing new paths and reintroduced old source directories.
   - [x] 6.2 Run the deterministic CI-equivalent suite and record its evidence.
   - [x] 6.3 Run runtime/public-site and visual verification where required and record limitations without claiming production publication.
-  - [ ] 6.4 Complete lifecycle, architecture, documentation, security, and human-review gates before integration.
+- [x] 6.4 Complete lifecycle, architecture, documentation, security, and human-review gates before integration; owner/admin bypass recorded under the lifecycle policy exception.
