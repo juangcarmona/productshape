@@ -39,6 +39,7 @@ for (const file of [
   requireFile(file);
 }
 const metadata = JSON.parse(await readFile(join(directory, 'publication.json'), 'utf8'));
+const locales = metadata.locales;
 if (
   metadata.schemaVersion !== 1 ||
   metadata.profile !== profile ||
@@ -46,6 +47,11 @@ if (
   metadata.siteOrigin !== siteOrigin ||
   typeof metadata.cliVersion !== 'string' ||
   typeof metadata.dirty !== 'boolean' ||
+  !Array.isArray(locales) ||
+  locales.length === 0 ||
+  locales.some(
+    (locale) => typeof locale !== 'string' || !/^[a-z]{2}(?:-[A-Z]{2})?$/u.test(locale),
+  ) ||
   !(
     (typeof metadata.sourceRevision === 'string' &&
       /^[a-f0-9]{40}$/u.test(metadata.sourceRevision)) ||
@@ -53,9 +59,18 @@ if (
   )
 )
   throw new Error('Invalid publication metadata or source revision.');
+if (profile === 'public' && !locales.includes('en'))
+  throw new Error('Public output must include en.');
+if (profile === 'engineering' && locales.length !== 1) {
+  throw new Error('Engineering output must expose exactly one locale.');
+}
+const localePattern = locales
+  .map((locale) => locale.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'))
+  .join('|');
+const localizedRoutePattern = new RegExp(`^(?:${localePattern})/(?:[^/]+/)*index\\.html$`, 'u');
 if (profile === 'public') {
   requireFile('404.html');
-  for (const locale of ['en', 'es']) {
+  for (const locale of locales) {
     for (const route of [
       '',
       'product/',
@@ -69,7 +84,10 @@ if (profile === 'public') {
     }
   }
   for (const file of files) {
-    if (/^(?:en|es)\/(?:model|engineering)(?:\/|$)/u.test(file) || file.startsWith('reports/')) {
+    if (
+      new RegExp(`^(?:${localePattern})/(?:model|engineering)(?:/|$)`, 'u').test(file) ||
+      file.startsWith('reports/')
+    ) {
       throw new Error(`Engineering route leaked into public output: ${file}`);
     }
   }
@@ -89,7 +107,7 @@ if (profile === 'public') {
 
 const sitemapPages = [...files].filter((file) =>
   profile === 'public'
-    ? /^(?:en|es)\/(?:[^/]+\/)*index\.html$/u.test(file)
+    ? localizedRoutePattern.test(file)
     : file === 'index.html' ||
       file === 'en/index.html' ||
       file === 'en/model/explorer.html' ||
@@ -103,7 +121,7 @@ const shellPages = [...files].filter(
     file === 'index.html' ||
     file === '404.html' ||
     (profile === 'public'
-      ? /^(?:en|es)\/(?:[^/]+\/)*index\.html$/u.test(file)
+      ? localizedRoutePattern.test(file)
       : file === 'en/index.html' || /^en\/engineering\/(?:[^/]+\/)?index\.html$/u.test(file)),
 );
 for (const file of shellPages) {

@@ -6,7 +6,7 @@ ProductShape keeps maintained implementation and publication source beneath `src
 | --- | --- | --- |
 | `docs/` | Product, architecture, operations, adoption and contributor documentation | Canonical human-authored documentation; published or referenced by build tooling |
 | `src/packages/` | Workspace packages, CLI, integrations, schemas and package-local assets | Maintained runtime and distributable source; package boundaries and names are stable |
-| `src/public-site/` | Astro site shell, localized content, shared styles, branding and delivered diagram artifacts | Maintained source and checked-in provenance for the public and engineering publication family |
+| `src/public-site/` | Astro site shell, locale configuration/content, shared styles, branding and delivered diagram artifacts | Maintained source and checked-in provenance for the public and engineering publication family |
 | `src/scripts/` | Repository, publication, release and conformance automation | Maintained supporting tooling invoked by package scripts and CI |
 | `tests/` | Unit, integration, conformance, release and publication checks | Maintained verification source; tests may use checked-in fixtures |
 | `.archify/` | Archify candidate inputs and workflow receipts | Maintained diagram inputs and generation provenance; outputs remain derived |

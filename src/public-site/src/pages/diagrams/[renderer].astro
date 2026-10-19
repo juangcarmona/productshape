@@ -1,0 +1,68 @@
+---
+import Archify from '../../components/Archify.astro';
+import Mermaid from '../../components/Mermaid.astro';
+
+const source = `flowchart LR
+  Product[Product knowledge] --> Snapshot[Product Snapshot]
+  Product --> Portal[Engineering portal]
+  Product --> Site[Public site]
+`;
+const renderer = Astro.params.renderer;
+const mermaidSvg =
+  process.env.MERMAID_RENDER === '1'
+    ? '../../assets/mermaid/productshape-publication.svg'
+    : undefined;
+
+export function getStaticPaths() {
+  const profile = process.env.SITE_PROFILE || 'public';
+  return profile === 'public'
+    ? [{ params: { renderer: 'mermaid' } }, { params: { renderer: 'archify' } }]
+    : [{ params: { renderer: 'mermaid' } }];
+}
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{renderer === 'archify' ? 'Archify diagram' : 'Mermaid diagram'} · ProductShape</title>
+    <link rel="stylesheet" href="../../assets/site.css" />
+  </head>
+  <body class="site-shell">
+    <main class="page-hero">
+      <div class="narrow">
+        {renderer === 'archify' ? (
+          <>
+            <p class="eyebrow">Archify · enhanced static HTML</p>
+            <h1>ProductShape publication boundaries</h1>
+            <p class="lead">
+              An explanatory Archify view with canonical source and pinned provenance.
+            </p>
+            <Archify
+              src="../../assets/diagrams/productshape-publication-boundaries.html"
+              title="ProductShape publication boundaries"
+              sourceHref="https://github.com/juangcarmona/productshape/tree/main/.archify/publication-boundaries-20261018"
+              sourceRevision="245de1fd5d10faaeb2b30f401853fcb805eca00b"
+            />
+          </>
+        ) : (
+          <>
+            <p class="eyebrow">Mermaid · authored view</p>
+            <h1>ProductShape publication relationships</h1>
+            <p class="lead">
+              This Mermaid source is an explanatory view, not canonical Product Model data.
+            </p>
+            <Mermaid
+              source={source}
+              title="ProductShape publication relationships"
+              sourceHref="https://github.com/juangcarmona/productshape/blob/main/src/public-site/diagrams/productshape-publication.mmd"
+              sourceRevision="main"
+              svgHref={mermaidSvg}
+            />
+          </>
+        )}
+      </div>
+    </main>
+  </body>
+</html>

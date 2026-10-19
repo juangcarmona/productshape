@@ -39,7 +39,7 @@ The engineering portal contains the generated Product Snapshot and the current t
 
 ## Astro, locales and diagrams
 
-`src/pages/[...path].astro` is the static route shell. It enumerates the profile output produced by the deterministic compatibility compiler, allowing Astro to own the final build while keeping route HTML stable during the migration. New locales add a content file and locale configuration; page templates are not duplicated. Missing localized copy follows the existing explicit English-copy fallback in the content model.
+`src/pages/[...path].astro` is the static route shell. It enumerates the profile output produced by the deterministic compatibility compiler, allowing Astro to own the final build while keeping route HTML stable during the migration. `site.config.mjs` is the locale registry: adding a locale adds one content file and one configuration entry, not a page-template copy. A locale may name a fallback; the builder deep-merges missing localized values from that fallback (English is the current fallback).
 
 Authored Mermaid sources use the `Mermaid` component and can be rendered to static SVG with:
 

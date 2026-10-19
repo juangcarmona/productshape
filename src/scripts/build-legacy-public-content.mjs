@@ -2,6 +2,7 @@ import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { defaultLocale, locales } from '../public-site/site.config.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const args = process.argv.slice(2);
@@ -44,14 +45,21 @@ const engineeringManifestPath = resolve(
 );
 const repoUrl = 'https://github.com/juangcarmona/productshape';
 const packageJson = JSON.parse(await readFile(join(root, 'src/packages/cli/package.json'), 'utf8'));
-const siteText = Object.fromEntries(
+const rawSiteText = Object.fromEntries(
   await Promise.all(
-    ['en', 'es'].map(async (locale) => [
+    Object.entries(locales).map(async ([locale, config]) => [
       locale,
-      JSON.parse(await readFile(join(root, `src/public-site/content/${locale}.json`), 'utf8')),
+      JSON.parse(await readFile(join(root, 'src/public-site/content', config.content), 'utf8')),
     ]),
   ),
 );
+const siteText = Object.fromEntries(
+  Object.entries(locales).map(([locale, config]) => [
+    locale,
+    mergeLocaleText(config.fallback ? rawSiteText[config.fallback] : {}, rawSiteText[locale]),
+  ]),
+);
+const localeNames = Object.keys(locales);
 const architectureDir = join(root, 'docs/architecture');
 const adoptionGuides = [
   { slug: 'greenfield', file: 'greenfield.md' },
@@ -150,19 +158,25 @@ if (profile === 'public') {
     join(root, 'docs/assets/snapshot/01-overview-desktop.png'),
     join(outDir, 'assets/product-explorer.png'),
   );
-  for (const locale of ['en', 'es']) {
+  for (const locale of localeNames) {
     const words = siteText[locale];
     await emitPage(locale, 'home', '', renderHome(words, locale));
-    await emitPage(locale, 'product', 'product', renderProduct(words));
-    await emitPage(locale, 'workflow', 'how-it-works', renderWorkflow(words));
-    await emitPage(locale, 'start', 'get-started', renderStart(words, packageJson.version));
+    await emitPage(locale, 'product', 'product', renderProduct(words, locale));
+    await emitPage(locale, 'workflow', 'how-it-works', renderWorkflow(words, locale));
+    await emitPage(locale, 'start', 'get-started', renderStart(words, packageJson.version, locale));
     for (const guide of adoptionGuides) {
       const markdown = await readFile(join(root, 'docs/adoption', guide.file), 'utf8');
       const guideCopy = words.guides.items.find((item) => item.slug === guide.slug);
-      await emitPage(locale, 'start', `guides/${guide.slug}`, renderGuide(guide, markdown, words), {
-        title: `${guideCopy.title} · ProductShape`,
-        description: guideCopy.description,
-      });
+      await emitPage(
+        locale,
+        'start',
+        `guides/${guide.slug}`,
+        renderGuide(guide, markdown, words, locale),
+        {
+          title: `${guideCopy.title} · ProductShape`,
+          description: guideCopy.description,
+        },
+      );
     }
   }
   await cp(join(outDir, 'en/index.html'), join(outDir, 'index.html'));
@@ -218,7 +232,7 @@ if (profile === 'public') {
 
 await writeFile(
   join(outDir, 'publication.json'),
-  `${JSON.stringify({ schemaVersion: 1, profile, basePath, siteOrigin, cliVersion: packageJson.version, sourceRevision, dirty }, null, 2)}\n`,
+  `${JSON.stringify({ schemaVersion: 1, profile, basePath, siteOrigin, cliVersion: packageJson.version, sourceRevision, dirty, locales: profile === 'public' ? localeNames : [defaultLocale] }, null, 2)}\n`,
 );
 
 console.log(
@@ -228,6 +242,19 @@ console.log(
 function normalizeBasePath(value) {
   if (!value || !value.startsWith('/')) throw new Error('--base-path must begin with /.');
   return value.endsWith('/') ? value : `${value}/`;
+}
+
+function mergeLocaleText(fallback, localized) {
+  if (Array.isArray(localized)) return localized;
+  if (!localized || typeof localized !== 'object') return localized ?? fallback;
+  const merged = { ...(fallback ?? {}) };
+  for (const [key, value] of Object.entries(localized)) {
+    merged[key] =
+      value && typeof value === 'object' && !Array.isArray(value)
+        ? mergeLocaleText(merged[key], value)
+        : value;
+  }
+  return merged;
 }
 
 function normalizeOrigin(value) {
@@ -362,7 +389,7 @@ function renderSitemap() {
   const urls = [];
   if (profile === 'public') {
     const routeNames = ['', 'product/', 'how-it-works/', 'get-started/'];
-    for (const locale of ['en', 'es']) {
+    for (const locale of localeNames) {
       for (const route of routeNames) urls.push(`${siteOrigin}${basePath}${locale}/${route}`);
       for (const guide of adoptionGuides) {
         urls.push(`${siteOrigin}${basePath}${locale}/guides/${guide.slug}/`);
@@ -482,8 +509,8 @@ function shell({ locale, pageKind = '', title, description, body, routePath = ''
     return `${basePath}${target}/${routePath}`;
   };
   const languageSwitch =
-    profile === 'public'
-      ? `<span class="language-switch" aria-label="${locale === 'es' ? 'Idioma' : 'Language'}"><a href="${languageRoute('en')}" lang="en"${locale === 'en' ? ' aria-current="true"' : ''}>EN</a><a href="${languageRoute('es')}" lang="es"${locale === 'es' ? ' aria-current="true"' : ''}>ES</a></span>`
+    profile === 'public' && localeNames.length > 1
+      ? `<span class="language-switch" aria-label="${locale === 'es' ? 'Idioma' : 'Language'}">${localeNames.map((target) => `<a href="${languageRoute(target)}" lang="${locales[target].language}"${locale === target ? ' aria-current="true"' : ''}>${escapeHtml(locales[target].label)}</a>`).join('')}</span>`
       : '';
   const header = `<a class="skip-link" href="#main">${locale === 'es' ? 'Saltar al contenido' : 'Skip to content'}</a><header class="site-header"><div class="header-inner"><a class="brand" href="${rootHref}" aria-label="ProductShape home"><img class="brand-icon" src="${basePath}assets/productshape-icon.svg" data-theme-light="${basePath}assets/productshape-icon.svg" data-theme-dark="${basePath}assets/productshape-icon-dark.svg" width="32" height="32" alt=""><span class="brand-title">ProductShape</span></a><span class="header-version">v${packageJson.version}</span><nav class="main-nav" id="primary-navigation" aria-label="${locale === 'es' ? 'Navegación principal' : 'Primary navigation'}">${primaryLinks}<a href="${repoUrl}" rel="external">${escapeHtml(nav.github)}</a>${languageSwitch}</nav><span class="header-spacer"></span><a class="site-search" href="${modelHref()}?search=1" aria-label="Search the product"><svg aria-hidden="true" viewBox="0 0 20 20"><circle cx="8.5" cy="8.5" r="5.5"></circle><path d="m13 13 4 4"></path></svg><span>Search the product</span><kbd>/</kbd></a><div class="appearance-controls" role="group" aria-label="${locale === 'es' ? 'Apariencia' : 'Appearance'}"><button type="button" data-appearance-choice="light" aria-label="${locale === 'es' ? 'Tema claro' : 'Light theme'}" title="${locale === 'es' ? 'Tema claro' : 'Light theme'}" aria-pressed="false">☼</button><button type="button" data-appearance-choice="dark" aria-label="${locale === 'es' ? 'Tema oscuro' : 'Dark theme'}" title="${locale === 'es' ? 'Tema oscuro' : 'Dark theme'}" aria-pressed="false">☾</button><button type="button" data-appearance-choice="auto" aria-label="${locale === 'es' ? 'Tema del sistema' : 'System theme'}" title="${locale === 'es' ? 'Tema del sistema' : 'Theme follows system'}" aria-pressed="true">▣</button></div><button class="mobile-menu-toggle" type="button" aria-controls="primary-navigation" aria-expanded="false" aria-label="${locale === 'es' ? 'Abrir menú' : 'Open menu'}"><svg aria-hidden="true" viewBox="0 0 20 20"><path class="menu-line menu-line-top" d="M3 5h14"/><path class="menu-line menu-line-middle" d="M3 10h14"/><path class="menu-line menu-line-bottom" d="M3 15h14"/></svg></button><a class="site-keys" href="${modelHref()}?keys=1" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">⌨</a></div></header>`;
   const footer = `<footer class="site-footer"><div class="footer-inner"><div class="footer-identities"><a class="footer-productshape" href="${rootHref}"><img src="${basePath}assets/productshape-branding.svg" data-theme-light="${basePath}assets/productshape-branding.svg" data-theme-dark="${basePath}assets/productshape-branding-dark.svg" width="190" height="95" alt="ProductShape — Product Definition as Code"></a><a class="footer-methodology" href="https://github.com/product-definition-as-code/spec"><img src="${basePath}assets/pdac-logo.png" width="54" height="54" alt="PDaC logo"><span><strong>Product Definition as Code</strong><small>${escapeHtml(siteText[locale].footer.methodology)}</small></span></a></div><div class="footer-meta"><p>${escapeHtml(siteText[locale].footer.line)}<br><span>${siteText[locale].footer.license}</span></p><div class="footer-links"><a href="https://github.com/product-definition-as-code/spec">${escapeHtml(siteText[locale].footer.spec)}</a><a href="${repoUrl}">${escapeHtml(siteText[locale].footer.repo)}</a></div></div></div></footer>`;
@@ -519,8 +546,7 @@ function flowGraphic(locale) {
   return `<svg class="workflow-graphic" viewBox="0 0 1080 188" role="img" aria-labelledby="flow-title flow-desc"><title id="flow-title">${title}</title><desc id="flow-desc">${locale === 'es' ? 'Un flujo circular conecta los archivos canónicos con los consumidores y la revisión humana.' : 'A loop connects canonical files to consumers and human review.'}</desc><defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#173b67"/></marker></defs><path d="M250 92 H320 M510 92 H580 M770 92 H840" fill="none" stroke="#173b67" stroke-width="2" marker-end="url(#arrow)"/><path d="M936 130 C900 177 170 177 140 130" fill="none" stroke="#385b82" stroke-width="1.5" stroke-dasharray="5 6" marker-end="url(#arrow)"/><g fill="#ffffff" stroke="#b7c9dc"><rect x="42" y="48" width="208" height="84"/><rect x="320" y="48" width="190" height="84"/><rect x="580" y="48" width="190" height="84"/><rect x="840" y="48" width="198" height="84"/></g><g fill="#173b67" font-family="monospace" font-size="12" font-weight="700"><text x="58" y="76">01</text><text x="336" y="76">02</text><text x="596" y="76">03</text><text x="856" y="76">04</text></g><g fill="#173b67" font-family="system-ui, sans-serif" font-size="15" font-weight="650"><text x="58" y="105">${escapeHtml(labels[0])}</text><text x="336" y="105">${escapeHtml(labels[1])}</text><text x="596" y="105">${escapeHtml(labels[2])}</text><text x="856" y="105">${escapeHtml(labels[3])}</text></g><text x="540" y="174" text-anchor="middle" fill="#385b82" font-family="system-ui, sans-serif" font-size="12">${locale === 'es' ? 'La revisión humana mantiene la definición aceptada bajo control.' : 'Human review keeps the accepted definition in control.'}</text></svg>`;
 }
 
-function renderProduct(words) {
-  const locale = words.languageName === 'Español' ? 'es' : 'en';
+function renderProduct(words, locale) {
   const sections = words.product.sections
     .map(
       (section, index) =>
@@ -535,11 +561,10 @@ function renderProduct(words) {
   return `<section class="page-hero"><div class="narrow"><p class="eyebrow">${escapeHtml(words.product.eyebrow)}</p><h1>${escapeHtml(words.product.title)}</h1><p class="lead">${escapeHtml(words.product.intro)}</p></div></section><section class="section"><div class="wrap"><div class="feature-grid">${sections}</div></div></section><section class="section"><div class="narrow"><p class="eyebrow">${words.nav.workflow}</p><h2>${escapeHtml(words.product.boundaryTitle)}</h2><p class="lead">${escapeHtml(words.product.boundaryText)}</p><div class="link-list product-source-links"><a href="${modelUrl}">${escapeHtml(words.product.liveModel)} →</a><a href="${modelSource}">${escapeHtml(words.product.modelSource)} →</a><a href="${brandSource}">${escapeHtml(words.product.brandSource)} →</a><a href="${journeySource}">${escapeHtml(words.product.adoptionSource)} →</a><a href="${initSource}">${escapeHtml(words.product.initSource)} →</a></div></div></section><section class="section"><div class="narrow"><p><a class="button" href="${basePath}${locale}/get-started/">${escapeHtml(words.nav.start)} →</a></p></div></section>`;
 }
 
-function renderWorkflow(words) {
+function renderWorkflow(words, locale) {
   const steps = words.workflow.steps
     .map((step) => `<li><h2>${escapeHtml(step.title)}</h2><p>${escapeHtml(step.text)}</p></li>`)
     .join('');
-  const locale = words.languageName === 'Español' ? 'es' : 'en';
   const diagrams =
     locale === 'es'
       ? `<section class="section"><div class="narrow"><p class="eyebrow">Diagramas Archify</p><h2>Del conocimiento de producto a dos publicaciones</h2><p>Estos diagramas son explicaciones conceptuales. Los enlaces a fuentes muestran dónde comprobar procesos y artefactos canónicos; forma y color no codifican hechos por sí solos.</p><figure class="public-diagram"><iframe sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer" title="Flujo conceptual de ProductShape desde la definición de producto hasta sus publicaciones" loading="lazy" src="${basePath}assets/diagrams/productshape-publication-workflow.html"></iframe><figcaption>Flujo conceptual · <a href="${basePath}assets/diagrams/productshape-publication-workflow.html">Abrir diagrama interactivo</a></figcaption></figure><figure class="public-diagram"><iframe sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer" title="Límites conceptuales entre el site público y el portal de ingeniería de ProductShape" loading="lazy" src="${basePath}assets/diagrams/productshape-publication-boundaries.html"></iframe><figcaption>Límites conceptuales · <a href="${basePath}assets/diagrams/productshape-publication-boundaries.html">Abrir diagrama interactivo</a></figcaption></figure><p><a href="${repoUrl}/tree/main/docs/product/model">Fuentes canónicas del producto →</a> · <a href="${repoUrl}/tree/main/docs/architecture">Documentación canónica de arquitectura →</a></p></div></section>`
@@ -547,27 +572,27 @@ function renderWorkflow(words) {
   return `<section class="page-hero"><div class="narrow"><p class="eyebrow">${escapeHtml(words.workflow.eyebrow)}</p><h1>${escapeHtml(words.workflow.title)}</h1><p class="lead">${escapeHtml(words.workflow.intro)}</p></div></section><section class="section"><div class="narrow">${flowGraphic(locale)}<ol class="step-list">${steps}</ol><div class="callout"><strong>${escapeHtml(words.workflow.noteTitle)}</strong><p>${escapeHtml(words.workflow.noteText)}</p></div><a class="button" href="${basePath}${locale}/get-started/">${escapeHtml(words.nav.start)} →</a></div></section>${diagrams}`;
 }
 
-function renderStart(words, version) {
+function renderStart(words, version, locale) {
   const code = (value) =>
     `<pre class="code-block"><code>${escapeHtml(value.replaceAll('{{version}}', version))}</code></pre>`;
   const repoFile = (path, anchor = '') => `${repoUrl}/blob/main/${path}${anchor}`;
   const guides = words.guides.items
     .map(
       (guide) =>
-        `<li><a href="${basePath}${words.languageName === 'Español' ? 'es' : 'en'}/guides/${guide.slug}/"><span>${escapeHtml(guide.label)} →</span><strong>${escapeHtml(guide.title)}</strong><p>${escapeHtml(guide.description)}</p></a></li>`,
+        `<li><a href="${basePath}${locale}/guides/${guide.slug}/"><span>${escapeHtml(guide.label)} →</span><strong>${escapeHtml(guide.title)}</strong><p>${escapeHtml(guide.description)}</p></a></li>`,
     )
     .join('');
   return `<section class="page-hero"><div class="narrow"><p class="eyebrow">${escapeHtml(words.start.eyebrow)}</p><h1>${escapeHtml(words.start.title)}</h1><p class="lead">${escapeHtml(words.start.intro)}</p></div></section><section class="section"><div class="narrow"><article class="content-section"><h2>${escapeHtml(words.start.installTitle)}</h2><p>${escapeHtml(words.start.initText)}</p>${code(words.start.initCode)}</article><article class="content-section"><h2>${escapeHtml(words.start.authorTitle)}</h2><p>${escapeHtml(words.start.authorText)}</p></article><article class="content-section"><h2>${escapeHtml(words.start.acceptTitle)}</h2><p>${escapeHtml(words.start.acceptText)}</p></article><article class="content-section"><h2>${escapeHtml(words.start.citeTitle)}</h2><p>${escapeHtml(words.start.citeText)}</p>${code(words.start.citeCode)}</article><div class="callout"><p>${escapeHtml(words.start.releaseNote)}</p></div><section class="guide-selection"><p class="eyebrow">${escapeHtml(words.guides.eyebrow)}</p><h2>${escapeHtml(words.guides.title)}</h2><p>${escapeHtml(words.guides.intro)}</p><ol>${guides}</ol></section><div class="link-list"><a href="${repoFile('src/packages/cli/README.md', '#the-governed-citation-first-walkthrough')}">${escapeHtml(words.start.walkthrough)} →</a><a href="${repoFile('docs/adoption/existing-openspec-repository.md')}">${escapeHtml(words.guides.openSpec)} →</a><a href="${repoFile('docs/adoption/existing-speckit-repository.md')}">${escapeHtml(words.guides.specKit)} →</a></div></div></section>`;
 }
 
-function renderGuide(guide, markdown, words) {
+function renderGuide(guide, markdown, words, locale) {
   const intro =
     words.languageName === 'Español'
       ? '<div class="callout guide-language-note"><p>El contenido de esta guía se mantiene en inglés. Puedes cambiar el idioma para volver a la página de inicio o consultar el texto fuente en el repositorio.</p></div>'
       : '';
   const content = markdown.replace(/^# .*?(?:\r?\n)+/u, '').trim();
   const source = `${repoUrl}/blob/main/docs/adoption/${guide.file}`;
-  return `<section class="page-hero guide-hero"><div class="wrap"><p class="breadcrumbs"><a href="${basePath}${words.languageName === 'Español' ? 'es' : 'en'}/get-started/">${escapeHtml(words.start.eyebrow)}</a> / ${escapeHtml(words.guides.items.find((item) => item.slug === guide.slug).label)}</p><p class="eyebrow">${escapeHtml(words.guides.eyebrow)}</p><h1>${escapeHtml(words.guides.items.find((item) => item.slug === guide.slug).title)}</h1><p class="lead">${escapeHtml(words.guides.items.find((item) => item.slug === guide.slug).description)}</p></div></section><section class="section guide-section"><article class="guide-content">${intro}${markdownToHtml(content, `adoption:${words.languageName === 'Español' ? 'es' : 'en'}:${guide.slug}`)}<p class="guide-source"><a href="${source}" rel="external">${escapeHtml(words.guides.source)} →</a></p></article></section>`;
+  return `<section class="page-hero guide-hero"><div class="wrap"><p class="breadcrumbs"><a href="${basePath}${locale}/get-started/">${escapeHtml(words.start.eyebrow)}</a> / ${escapeHtml(words.guides.items.find((item) => item.slug === guide.slug).label)}</p><p class="eyebrow">${escapeHtml(words.guides.eyebrow)}</p><h1>${escapeHtml(words.guides.items.find((item) => item.slug === guide.slug).title)}</h1><p class="lead">${escapeHtml(words.guides.items.find((item) => item.slug === guide.slug).description)}</p></div></section><section class="section guide-section"><article class="guide-content">${intro}${markdownToHtml(content, `adoption:${locale}:${guide.slug}`)}<p class="guide-source"><a href="${source}" rel="external">${escapeHtml(words.guides.source)} →</a></p></article></section>`;
 }
 
 function renderEngineeringSidebar(activeSlug = '') {

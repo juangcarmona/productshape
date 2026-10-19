@@ -66,6 +66,44 @@ describe('static site publication profiles', () => {
     }
   });
 
+  it('adds a locale through configuration and falls back to English copy', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'productshape-locale-extension-'));
+    try {
+      for (const path of [
+        'src/scripts/build-public-site.mjs',
+        'src/scripts/build-legacy-public-content.mjs',
+        'src/public-site',
+        'docs/adoption',
+        'docs/assets/snapshot/01-overview-desktop.png',
+        'src/packages/cli/package.json',
+      ]) {
+        await mkdir(join(directory, path, '..'), { recursive: true });
+        await cp(join(repoRoot, path), join(directory, path), { recursive: true });
+      }
+      await writeFile(
+        join(directory, 'src/public-site/site.config.mjs'),
+        `export const defaultLocale = 'en';\nexport const locales = {\n  en: { content: 'en.json', label: 'EN', language: 'en' },\n  es: { content: 'es.json', fallback: 'en', label: 'ES', language: 'es' },\n  fr: { content: 'fr.json', fallback: 'en', label: 'FR', language: 'fr' },\n};\n`,
+      );
+      await writeFile(
+        join(directory, 'src/public-site/content/fr.json'),
+        JSON.stringify({ languageName: 'Français', nav: { product: 'Produit' } }),
+      );
+      const output = join(directory, 'output');
+      const result = await build(['--profile', 'public', '--out', output], directory);
+      expect(result.status, result.stderr).toBe(0);
+      const frenchHome = await readFile(join(output, 'fr/index.html'), 'utf8');
+      const metadata = JSON.parse(await readFile(join(output, 'publication.json'), 'utf8'));
+      expect(metadata.locales).toEqual(['en', 'es', 'fr']);
+      expect(frenchHome).toContain('<html lang="fr">');
+      expect(frenchHome).toContain('Produit');
+      expect(frenchHome).toContain('Keep product decisions close to the work that changes them.');
+      expect(frenchHome).toContain('href="/fr/product/"');
+      expect(frenchHome).toContain('>FR</a>');
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
   it('builds the public root-domain site without engineering routes', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'productshape-public-site-'));
     const output = join(directory, 'public');
@@ -82,19 +120,27 @@ describe('static site publication profiles', () => {
       ]);
       expect(result.status, result.stderr).toBe(0);
 
-      const [index, spanish, workflow, sitemap, robots, firstDiagram, secondDiagram] =
-        await Promise.all([
-          readFile(join(output, 'index.html'), 'utf8'),
-          readFile(join(output, 'es/index.html'), 'utf8'),
-          readFile(join(output, 'en/how-it-works/index.html'), 'utf8'),
-          readFile(join(output, 'sitemap.xml'), 'utf8'),
-          readFile(join(output, 'robots.txt'), 'utf8'),
-          readFile(join(output, 'assets/diagrams/productshape-publication-workflow.html'), 'utf8'),
-          readFile(
-            join(output, 'assets/diagrams/productshape-publication-boundaries.html'),
-            'utf8',
-          ),
-        ]);
+      const [
+        index,
+        spanish,
+        workflow,
+        sitemap,
+        robots,
+        firstDiagram,
+        secondDiagram,
+        mermaidPage,
+        archifyPage,
+      ] = await Promise.all([
+        readFile(join(output, 'index.html'), 'utf8'),
+        readFile(join(output, 'es/index.html'), 'utf8'),
+        readFile(join(output, 'en/how-it-works/index.html'), 'utf8'),
+        readFile(join(output, 'sitemap.xml'), 'utf8'),
+        readFile(join(output, 'robots.txt'), 'utf8'),
+        readFile(join(output, 'assets/diagrams/productshape-publication-workflow.html'), 'utf8'),
+        readFile(join(output, 'assets/diagrams/productshape-publication-boundaries.html'), 'utf8'),
+        readFile(join(output, 'diagrams/mermaid/index.html'), 'utf8'),
+        readFile(join(output, 'diagrams/archify/index.html'), 'utf8'),
+      ]);
       expect(index).toContain('https://juangcarmona.github.io/productshape/en/model/explorer.html');
       expect(index).toContain('https://juangcarmona.github.io/productshape/en/');
       expect(spanish).toContain(
@@ -104,6 +150,11 @@ describe('static site publication profiles', () => {
       expect(workflow).toContain('productshape-publication-boundaries.html');
       expect(firstDiagram).toContain('From product decisions to ProductShape publications');
       expect(secondDiagram).toContain('ProductShape products, method and publications');
+      expect(mermaidPage).toContain('data-renderer="mermaid"');
+      expect(mermaidPage).toContain('class="language-mermaid"');
+      expect(mermaidPage).toContain('src/public-site/diagrams/productshape-publication.mmd');
+      expect(archifyPage).toContain('data-renderer="archify"');
+      expect(archifyPage).toContain('245de1fd5d10faaeb2b30f401853fcb805eca00b');
       expect(sitemap).toContain('https://productshape.dev/en/');
       expect(sitemap).not.toContain('/engineering/');
       expect(sitemap).not.toContain('/model/');

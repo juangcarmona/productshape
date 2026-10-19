@@ -121,12 +121,24 @@ async function tagExists(root, tag) {
   }
 }
 
-async function changedPaths(root, tag, dirs) {
-  const stdout = await git(root, ['diff', '--name-only', tag, 'HEAD', '--', ...dirs]);
-  return stdout
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
+async function changedPaths(root, tag, historicalDirs, currentDirs) {
+  const stdout = await git(root, [
+    'diff',
+    '--name-status',
+    '--find-renames=100%',
+    tag,
+    'HEAD',
+    '--',
+    ...historicalDirs,
+    ...currentDirs,
+  ]);
+  const changed = [];
+  for (const line of stdout.split(/\r?\n/).filter((value) => value.trim().length > 0)) {
+    const [status, first, second] = line.split('\t');
+    if (status === 'R100') continue;
+    changed.push(second || first);
+  }
+  return changed;
 }
 
 export async function assessRepository(root = REPOSITORY_ROOT) {
@@ -137,11 +149,11 @@ export async function assessRepository(root = REPOSITORY_ROOT) {
     const tag = `${pkg.name}@${pkg.version}`;
     const tagPresent = await tagExists(root, tag);
     const packageDir = join(root, 'src', 'packages', pkg.dir);
-    const dirs = shippedSourceDirs(pkg.manifest, (dir) =>
-      isDirectorySync(join(packageDir, dir)),
-    ).map((dir) => `src/packages/${pkg.dir}/${dir}`);
+    const dirs = shippedSourceDirs(pkg.manifest, (dir) => isDirectorySync(join(packageDir, dir)));
+    const historicalDirs = dirs.map((dir) => `packages/${pkg.dir}/${dir}`);
+    const currentDirs = dirs.map((dir) => `src/packages/${pkg.dir}/${dir}`);
     const changedFiles = tagPresent
-      ? (await changedPaths(root, tag, dirs)).filter(isShippedSourcePath)
+      ? (await changedPaths(root, tag, historicalDirs, currentDirs)).filter(isShippedSourcePath)
       : [];
     results.push({
       name: pkg.name,
