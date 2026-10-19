@@ -1,0 +1,122 @@
+[
+  {
+    "width": 320,
+    "scheme": "light",
+    "fileUrl": "file:///srv/repos/juangcarmona/productshape-issue-300/_site/en/model/explorer.html",
+    "offline": true,
+    "tabReachable": [
+      "a[data-view=\"overview\"]",
+      "a[data-view=\"artifacts\"]",
+      "#find-open",
+      "[data-appearance-set=\"light\"]",
+      "[data-appearance-set=\"dark\"]",
+      "[data-appearance-set=\"auto\"]"
+    ],
+    "views": ["artifacts", "overview"],
+    "search": "Snapshot",
+    "appearanceModes": ["light", "dark", "auto"],
+    "systemColors": {
+      "light": "rgb(255, 255, 255)",
+      "dark": "rgb(15, 18, 22)"
+    },
+    "urlStateReload": true,
+    "storage": {
+      "local": 0,
+      "session": 0
+    },
+    "cookies": [],
+    "httpRequests": [],
+    "pageErrors": [],
+    "passed": true
+  },
+  {
+    "width": 320,
+    "scheme": "dark",
+    "fileUrl": "file:///srv/repos/juangcarmona/productshape-issue-300/_site/en/model/explorer.html",
+    "offline": true,
+    "tabReachable": [
+      "a[data-view=\"overview\"]",
+      "a[data-view=\"artifacts\"]",
+      "#find-open",
+      "[data-appearance-set=\"light\"]",
+      "[data-appearance-set=\"dark\"]",
+      "[data-appearance-set=\"auto\"]"
+    ],
+    "views": ["artifacts", "overview"],
+    "search": "Snapshot",
+    "appearanceModes": ["light", "dark", "auto"],
+    "systemColors": {
+      "light": "rgb(255, 255, 255)",
+      "dark": "rgb(15, 18, 22)"
+    },
+    "urlStateReload": true,
+    "storage": {
+      "local": 0,
+      "session": 0
+    },
+    "cookies": [],
+    "httpRequests": [],
+    "pageErrors": [],
+    "passed": true
+  },
+  {
+    "width": 390,
+    "scheme": "light",
+    "fileUrl": "file:///srv/repos/juangcarmona/productshape-issue-300/_site/en/model/explorer.html",
+    "offline": true,
+    "tabReachable": [
+      "a[data-view=\"overview\"]",
+      "a[data-view=\"artifacts\"]",
+      "#find-open",
+      "[data-appearance-set=\"light\"]",
+      "[data-appearance-set=\"dark\"]",
+      "[data-appearance-set=\"auto\"]"
+    ],
+    "views": ["artifacts", "overview"],
+    "search": "Snapshot",
+    "appearanceModes": ["light", "dark", "auto"],
+    "systemColors": {
+      "light": "rgb(255, 255, 255)",
+      "dark": "rgb(15, 18, 22)"
+    },
+    "urlStateReload": true,
+    "storage": {
+      "local": 0,
+      "session": 0
+    },
+    "cookies": [],
+    "httpRequests": [],
+    "pageErrors": [],
+    "passed": true
+  },
+  {
+    "width": 390,
+    "scheme": "dark",
+    "fileUrl": "file:///srv/repos/juangcarmona/productshape-issue-300/_site/en/model/explorer.html",
+    "offline": true,
+    "tabReachable": [
+      "a[data-view=\"overview\"]",
+      "a[data-view=\"artifacts\"]",
+      "#find-open",
+      "[data-appearance-set=\"light\"]",
+      "[data-appearance-set=\"dark\"]",
+      "[data-appearance-set=\"auto\"]"
+    ],
+    "views": ["artifacts", "overview"],
+    "search": "Snapshot",
+    "appearanceModes": ["light", "dark", "auto"],
+    "systemColors": {
+      "light": "rgb(255, 255, 255)",
+      "dark": "rgb(15, 18, 22)"
+    },
+    "urlStateReload": true,
+    "storage": {
+      "local": 0,
+      "session": 0
+    },
+    "cookies": [],
+    "httpRequests": [],
+    "pageErrors": [],
+    "passed": true
+  }
+]

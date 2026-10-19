@@ -1,8 +1,8 @@
 # Runtime evidence replay
 
-Captured from clean implementation source `1e0891d652186c1509989da2dbd2668714de52a7`, before evidence files were added. `cloudflare-results.json` records dirty:false manifests, the full source SHA, served/disk SHA256 equality and complete output inventories. No hosted deployment or account state is asserted.
+Captured from clean implementation source `0c6d2af436efcd01d655fcdb4af2d712d86257f7`, before evidence files were added. `cloudflare-results.json` records dirty:false manifests, the full source SHA, served/disk SHA256 equality and complete output inventories. No hosted deployment or account state is asserted.
 
-Tools observed: Google Chrome for Testing156.0.8078.4, Playwright1.63.0, Wrangler4.151.2, Linux. `check.cjs` produced12 rendered cases (six surfaces × desktop light/narrow dark), source/navigation checks, all12 architecture paths, explicit/system appearance tests, mobile Enter/Escape/focus return and Snapshot URL-only state. Portal `/` and `?` shortcuts opened Snapshot search/help. `layout.cjs` produced60 cases across320/390/416/417/544/545/1024/1216/1217/1280/1440/1441px, checking document/overview width, control bounds and local matrix scrolling. Both overview tables retain native accessible table roles. `snapshot-interaction.cjs` adds four offline file-URL cases at320/390px in light/dark, exercising all existing header controls by keyboard, search/Escape focus return, every appearance mode/system response, URL restoration and empty browser storage/cookies/network requests. `cloudflare.cjs` checks10 HTTP routes, custom404, provenance and artifact hashes.
+Tools observed: Google Chrome for Testing156.0.8078.4, Playwright1.63.0, Wrangler4.151.2, Linux. `check.cjs` produced12 rendered cases plus two shortcut checks (six surfaces × desktop light/narrow dark), source/navigation checks, all12 architecture paths, explicit/system appearance tests, mobile Enter/Escape/focus return and Snapshot URL-only state. Portal `/` and `?` shortcuts opened Snapshot search/help. `layout.cjs` produced60 cases across320/390/416/417/544/545/1024/1216/1217/1280/1440/1441px, checking document/overview width, control bounds and local matrix scrolling. Both overview tables retain native accessible table roles. `snapshot-interaction.cjs` adds four offline file-URL cases at320/390px in light/dark, exercising all existing header controls by keyboard, search/Escape focus return, every appearance mode/system response, URL restoration and empty browser storage/cookies/network requests. `cloudflare.cjs` checks10 HTTP routes, custom404, provenance and artifact hashes.
 
 The root and executor inspected the captured screenshots: shared public/engineering shell, complete theme controls, compact portal cards, architecture reading/navigation and locally scrollable narrow Snapshot tables. Earlier clipping/overflow/readability findings were corrected before this capture. Images intentionally show local snapshots; source identity comes from the JSON receipt rather than a claim of production publication.
 
@@ -12,7 +12,7 @@ From the current repository, keep this evidence path and create an isolated repl
 
 ```bash
 EVIDENCE_SOURCE="$PWD/docs/delivery/ff/300/2026-10-19T1228Z/runtime"
-git worktree add --detach /tmp/productshape-300-replay 1e0891d652186c1509989da2dbd2668714de52a7
+git worktree add --detach /tmp/productshape-300-replay 0c6d2af436efcd01d655fcdb4af2d712d86257f7
 cd /tmp/productshape-300-replay
 pnpm install --frozen-lockfile
 pnpm build

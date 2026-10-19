@@ -2,227 +2,209 @@ $ vitest run
 
  RUN  v3.2.7 /srv/repos/juangcarmona/productshape-issue-300
 
- ✓ |core| src/recovery-session.test.ts (32 tests) 3359ms
- ✓ |cli| src/commands/recover.test.ts (13 tests) 4157ms
-   ✓ the session loop through the command layer > next, mark, question, check and report cooperate end to end  913ms
-   ✓ the session loop through the command layer > external evidence without authorisation is refused through the command layer too  322ms
-   ✓ mark id lists and bulk selection through the command layer > marks a glob selection in bulk and refuses mixing --source with it  392ms
-   ✓ mark id lists and bulk selection through the command layer > unmark retracts a wrong finding without hand-editing session state  415ms
-   ✓ git discipline through the command layer > creates the declared branch and checkpoints every mutating step  352ms
- ✓ |cli| src/program.test.ts (39 tests) 4555ms
-   ✓ prodshape validate > exits 0 on the minimal example  371ms
-   ✓ prodshape fix --filenames > renames a misnamed file and clears the PRODUCT101 warning  446ms
- ✓ |cli| src/commands/drift.test.ts (6 tests) 1772ms
-   ✓ drift (recursive scan) > lists recorded drift warnings with per-id resolution and exits 0  342ms
-   ✓ drift --provider openspec > enumerates current and archived changes, tagging archived material  755ms
- ✓ |repo| tests/site-builder.test.ts (8 tests) 6521ms
-   ✓ static site publication profiles > builds an independent engineering portal with identified optional reports  559ms
-   ✓ static site publication profiles > builds without an optional engineering manifest or E2E reports  335ms
-   ✓ static site publication profiles > validates both complete profiles at base /  1366ms
-   ✓ static site publication profiles > validates both complete profiles at base /review/  1328ms
-   ✓ static site publication profiles > builds public output without architecture or generated engineering inputs  704ms
-   ✓ static site publication profiles > rejects broken, leaked and mislabeled public artifacts before upload  1658ms
- ✓ |repo| tests/distribution/distribution.test.ts (36 tests) 5324ms
-   ✓ init SDD detection and --sdd > doctor points at the integration when a workspace exists without it  390ms
-   ✓ shorthand command aliases > init generates none by default and --shorthand persists the choice  729ms
-   ✓ shorthand command aliases > opting out removes the aliases it previously generated  549ms
-   ✓ shorthand command aliases > leaves a hand-edited alias in place rather than deleting it  495ms
-   ✓ init and managed-file lifecycle (end to end) > init creates the consumer structure with integrations and next steps  376ms
-   ✓ init and managed-file lifecycle (end to end) > integration update is reproducible and --check is clean after it  465ms
-   ✓ init and managed-file lifecycle (end to end) > manual edits are detected as PRODUCT051 and missing files as PRODUCT052  529ms
- ✓ |repo| tests/integration/speckit-product.test.ts (15 tests) 6913ms
-   ✓ Spec Kit PRODUCT adapter > scaffolds the native change document, with CHG-INITIAL on request  537ms
-   ✓ Spec Kit PRODUCT adapter > keeps multiple named changes in an adapter-owned area and validates from disk  482ms
-   ✓ Spec Kit PRODUCT adapter > refuses unauthorized apply without changing the model or hosted state  348ms
-   ✓ Spec Kit PRODUCT adapter > records one bounded recovery round and persists its recommendation  489ms
-   ✓ Spec Kit PRODUCT adapter > persists recovery provenance, questions, retractions, coverage and drift outcomes  816ms
-   ✓ Spec Kit PRODUCT adapter > refines one hosted change with working memory and persisted impact exclusions  514ms
-   ✓ Spec Kit PRODUCT adapter > refine refreshes impact from the edited change and keeps recorded exclusions  892ms
-   ✓ Spec Kit PRODUCT adapter > applies a valid authorized delta into the accepted model, then archives separately  420ms
-   ✓ Spec Kit PRODUCT adapter > an applied but unarchived hosted change is inert for concurrency  837ms
-   ✓ Spec Kit PRODUCT adapter > apply reports the citations the change affects, skipping its own container and the archive  439ms
-   ✓ Spec Kit PRODUCT adapter > concurrency spans the native changes/active container  302ms
- ✓ |repo| tests/distribution/gitignore.test.ts (20 tests) 482ms
- ✓ |repo| tests/integration/speckit-extension.test.ts (22 tests) 1565ms
-   ✓ pdac extension catalog > the release updater writes a consistent entry for the manifest version  489ms
-   ✓ pdac extension catalog > the release updater refuses a version the manifest does not declare  386ms
-   ✓ pdac extension catalog > the release updater writes a consistent pdac-product entry into a scratch catalog  524ms
- ✓ |repo| tests/distribution/package-bin.test.ts (4 tests) 7940ms
-   ✓ packed tarball binaries > --version reports the packed CLI package version  676ms
-   ✓ packed tarball binaries > the alias produces byte-identical output  1378ms
-   ✓ packed tarball binaries > a real command works end to end through the alias  1942ms
- ✓ |repo| tests/conformance/baseline-validation.test.ts (7 tests) 1040ms
- ✓ |repo| tests/conformance/cases/citation-current/citation.test.ts (10 tests) 1289ms
- ✓ |cli| src/commands/context.test.ts (5 tests) 1186ms
-   ✓ context > renders the requested artifact with a canonical comment payload and the related listing  357ms
-   ✓ context > emits citations that verify as current against the model they were generated from  417ms
- ✓ |repo| tests/cli/init-ai.test.ts (8 tests) 453ms
- ✓ |cli| src/commands/citations.test.ts (30 tests) 8406ms
-   ✓ citations verify --format json > retains recursive directory verification  314ms
+ ✓ |core| src/recovery-session.test.ts (32 tests) 3912ms
+ ✓ |cli| src/commands/recover.test.ts (13 tests) 3638ms
+   ✓ the session loop through the command layer > next, mark, question, check and report cooperate end to end  720ms
+   ✓ mark id lists and bulk selection through the command layer > marks a glob selection in bulk and refuses mixing --source with it  404ms
+   ✓ git discipline through the command layer > creates the declared branch and checkpoints every mutating step  323ms
+ ✓ |cli| src/program.test.ts (39 tests) 4234ms
+   ✓ prodshape validate > exits 0 on the minimal example  311ms
+   ✓ prodshape fix --filenames > renames a misnamed file and clears the PRODUCT101 warning  347ms
+ ✓ |repo| tests/distribution/distribution.test.ts (36 tests) 5550ms
+   ✓ init --dry-run > answers the populated-repository question: preserve and regenerate, never overwrite  512ms
+   ✓ init SDD detection and --sdd > doctor points at the integration when a workspace exists without it  367ms
+   ✓ shorthand command aliases > init generates none by default and --shorthand persists the choice  480ms
+   ✓ shorthand command aliases > opting out removes the aliases it previously generated  537ms
+   ✓ shorthand command aliases > leaves a hand-edited alias in place rather than deleting it  301ms
+   ✓ init and managed-file lifecycle (end to end) > integration update is reproducible and --check is clean after it  529ms
+   ✓ init and managed-file lifecycle (end to end) > manual edits are detected as PRODUCT051 and missing files as PRODUCT052  586ms
+ ✓ |repo| tests/integration/speckit-product.test.ts (15 tests) 6274ms
+   ✓ Spec Kit PRODUCT adapter > scaffolds the native change document, with CHG-INITIAL on request  475ms
+   ✓ Spec Kit PRODUCT adapter > keeps multiple named changes in an adapter-owned area and validates from disk  429ms
+   ✓ Spec Kit PRODUCT adapter > refuses unauthorized apply without changing the model or hosted state  350ms
+   ✓ Spec Kit PRODUCT adapter > records one bounded recovery round and persists its recommendation  533ms
+   ✓ Spec Kit PRODUCT adapter > persists recovery provenance, questions, retractions, coverage and drift outcomes  963ms
+   ✓ Spec Kit PRODUCT adapter > refines one hosted change with working memory and persisted impact exclusions  352ms
+   ✓ Spec Kit PRODUCT adapter > refine refreshes impact from the edited change and keeps recorded exclusions  735ms
+   ✓ Spec Kit PRODUCT adapter > applies a valid authorized delta into the accepted model, then archives separately  402ms
+   ✓ Spec Kit PRODUCT adapter > refuses with the host-neutral authorisation message  326ms
+   ✓ Spec Kit PRODUCT adapter > an applied but unarchived hosted change is inert for concurrency  567ms
+   ✓ Spec Kit PRODUCT adapter > apply reports the citations the change affects, skipping its own container and the archive  326ms
+ ✓ |cli| src/commands/drift.test.ts (6 tests) 1543ms
+   ✓ drift --provider openspec > enumerates current and archived changes, tagging archived material  601ms
+ ✓ |repo| tests/site-builder.test.ts (8 tests) 6985ms
+   ✓ static site publication profiles > builds an independent engineering portal with identified optional reports  457ms
+   ✓ static site publication profiles > validates both complete profiles at base /  1333ms
+   ✓ static site publication profiles > validates both complete profiles at base /review/  1194ms
+   ✓ static site publication profiles > builds public output without architecture or generated engineering inputs  607ms
+   ✓ static site publication profiles > rejects broken, leaked and mislabeled public artifacts before upload  2635ms
+ ✓ |repo| tests/integration/speckit-extension.test.ts (22 tests) 1457ms
+   ✓ pdac extension catalog > the release updater writes a consistent entry for the manifest version  466ms
+   ✓ pdac extension catalog > the release updater refuses a version the manifest does not declare  380ms
+   ✓ pdac extension catalog > the release updater writes a consistent pdac-product entry into a scratch catalog  488ms
+ ✓ |repo| tests/conformance/cases/citation-current/citation.test.ts (10 tests) 1176ms
+ ✓ |repo| tests/distribution/package-bin.test.ts (4 tests) 7776ms
+   ✓ packed tarball binaries > --version reports the packed CLI package version  577ms
+   ✓ packed tarball binaries > the alias produces byte-identical output  1344ms
+   ✓ packed tarball binaries > a real command works end to end through the alias  1538ms
+ ✓ |core| src/git.test.ts (8 tests) 643ms
+ ✓ |core| src/v030-contract.test.ts (11 tests) 707ms
+ ✓ |repo| tests/conformance/baseline-validation.test.ts (7 tests) 806ms
+ ✓ |cli| src/v030-apply.test.ts (1 test) 505ms
+   ✓ publishes the same prospective JSON before real writes and dry-run, excluding the applying container and archives  503ms
+ ✓ |cli| src/commands/context.test.ts (5 tests) 920ms
+   ✓ context > emits citations that verify as current against the model they were generated from  328ms
+ ✓ |cli| src/commands/citations.test.ts (30 tests) 7930ms
+   ✓ citations verify --format json > carries the diagnostics array so PRODUCT062 is reachable by a machine reader  394ms
    ✓ citations verify --provider openspec (scope model) > passes a population where every current document is bound or exempt, keeping exemptions visible  792ms
-   ✓ citations verify --provider openspec (scope model) > turns a bound document stale when the cited canonical text changes, blocking under warnings-as-errors  1349ms
-   ✓ citations verify --provider openspec (scope model) > fails an unrecognized declaration as unclassified and an invalid exemption with one PRODUCT066  334ms
-   ✓ citations verify --provider openspec (scope model) > cannot pass vacuously: enumerated documents with zero discovered citations fail  374ms
-   ✓ citations verify --provider openspec (scope model) > passes a workspace with no current documents, reporting zero totals  318ms
-   ✓ citations verify --provider openspec (scope model) > excludes archived changes by default; --include-archived reports their defects as warnings  731ms
-   ✓ citations verify --provider openspec (scope model) > produces deterministic JSON output across runs  666ms
- ✓ |core| src/git.test.ts (8 tests) 810ms
- ✓ |core| src/v030-contract.test.ts (11 tests) 880ms
-   ✓ versioned domain behaviour > keeps v1alpha1 BR scoping while v1alpha2 requires UC governed-by  450ms
- ✓ |cli| src/v030-apply.test.ts (1 test) 630ms
-   ✓ publishes the same prospective JSON before real writes and dry-run, excluding the applying container and archives  627ms
- ✓ |repo| tests/integration/openspec-product-workflow.test.ts (25 tests) 9952ms
-   ✓ openspec product workflow: accepted-model inspection > needs no .product/generated and no .product/cache: deleting them changes nothing  541ms
-   ✓ openspec product workflow: overlay validation > detects the normative failure classes with their exact codes  1372ms
-   ✓ openspec product workflow: overlay validation > two hosted changes with overlapping operations report against each other  399ms
-   ✓ openspec product workflow: apply > applies an approved valid delta, preserves unaffected files and stops before archiving  452ms
-   ✓ openspec product workflow: apply > an invalid untouched baseline artifact blocks apply before any write  591ms
-   ✓ openspec product workflow: apply > refuses outside the apply-authorised state (PRODUCT028) and leaves the tree byte-identical  376ms
-   ✓ openspec product workflow: apply > refuses on baseline drift (PRODUCT027) after a touched target  301ms
-   ✓ openspec product workflow: apply > revalidates at apply time: a delta corrupted after a clean validate is refused  312ms
-   ✓ openspec product workflow: apply > a second change evolves the same artifact again: found, ID preserved, never duplicated  743ms
-   ✓ openspec product workflow: apply > the schema pin is load-bearing: another schema never applies through the product rail  427ms
-   ✓ openspec product workflow: apply > missing or malformed change metadata fails closed with a clear error  639ms
-   ✓ openspec product workflow: apply > rejects metadata that OpenSpec 1.11 considers structurally invalid  513ms
-   ✓ openspec product workflow: apply > a wrong-schema container does not shadow concurrency between legitimate changes  476ms
-   ✓ openspec product workflow: apply > concurrency fails closed instead of ignoring a malformed product-shaped container  336ms
-   ✓ openspec product workflow: delivery handoff > post-apply context is derived from the updated accepted model on disk  492ms
- ✓ |core| src/frontmatter-reference.test.ts (12 tests) 275ms
- ✓ |repo| tests/conformance/frontmatter-reference.test.ts (4 tests) 452ms
- ✓ |core| src/schema-registry.test.ts (8 tests) 258ms
- ✓ |repo| tests/conformance/templates.test.ts (1 test) 273ms
- ✓ |repo| tests/conformance/self-model.test.ts (5 tests) 499ms
-   ✓ self-hosted product model > every artifact parses, schema-validates and carries its required sections  306ms
- ✓ |repo| tests/integration/openspec-merge.test.ts (27 tests) 363ms
- ✓ |repo| tests/graph/golden.test.ts (3 tests) 566ms
- ✓ |repo| tests/integration/openspec-process.test.ts (1 test) 199ms
- ✓ |repo| tests/conformance/speckit-consumer.test.ts (9 tests) 9935ms
-   ✓ Spec Kit consumer conformance (fixture workspace) > drives the full citation lifecycle over the documented layout  812ms
-   ✓ pdac Spec Kit extension (real specify CLI) > reports the required Spec Kit version  398ms
-   ✓ pdac Spec Kit extension (real specify CLI) > installs from the repository checkout and registers commands and hooks  1595ms
-   ✓ pdac Spec Kit extension (real specify CLI) > installs, updates and removes the independent pdac-product extension  3515ms
-   ✓ pdac Spec Kit extension (real specify CLI) > installs by name from a served catalog with sha256 verification  1886ms
-   ✓ required Spec Kit verification mode > fails instead of skipping when CI requires Spec Kit 1.0.4+  453ms
-   ✓ Spec Kit consumer conformance (real specify init) > drives the full citation lifecycle over a workspace created by the specify CLI  1069ms
- ✓ |repo| tests/conformance/fixtures.test.ts (12 tests) 193ms
- ✓ |core| src/citations.test.ts (31 tests) 157ms
- ✓ |repo| tests/conformance/examples.test.ts (3 tests) 231ms
- ✓ |core| src/apply.test.ts (10 tests) 63ms
- ✓ |repo| tests/release/release-drift.test.ts (6 tests) 222ms
+   ✓ citations verify --provider openspec (scope model) > turns a bound document stale when the cited canonical text changes, blocking under warnings-as-errors  1004ms
+   ✓ citations verify --provider openspec (scope model) > fails a document declared bound that carries no citations (PRODUCT065)  322ms
+   ✓ citations verify --provider openspec (scope model) > fails an unrecognized declaration as unclassified and an invalid exemption with one PRODUCT066  327ms
+   ✓ citations verify --provider openspec (scope model) > cannot pass vacuously: enumerated documents with zero discovered citations fail  352ms
+   ✓ citations verify --provider openspec (scope model) > passes a workspace with no current documents, reporting zero totals  366ms
+   ✓ citations verify --provider openspec (scope model) > excludes archived changes by default; --include-archived reports their defects as warnings  626ms
+   ✓ citations verify --provider openspec (scope model) > produces deterministic JSON output across runs  696ms
+ ✓ |repo| tests/graph/golden.test.ts (3 tests) 550ms
+ ✓ |repo| tests/conformance/self-model.test.ts (5 tests) 562ms
+   ✓ self-hosted product model > every artifact parses, schema-validates and carries its required sections  364ms
+ ✓ |core| src/frontmatter-reference.test.ts (12 tests) 269ms
+ ✓ |repo| tests/integration/openspec-product-workflow.test.ts (25 tests) 9486ms
+   ✓ openspec product workflow: accepted-model inspection > needs no .product/generated and no .product/cache: deleting them changes nothing  480ms
+   ✓ openspec product workflow: overlay validation > a valid hosted delta validates with zero diagnostics and the baseline stays byte-identical  371ms
+   ✓ openspec product workflow: overlay validation > detects the normative failure classes with their exact codes  1241ms
+   ✓ openspec product workflow: overlay validation > two hosted changes with overlapping operations report against each other  305ms
+   ✓ openspec product workflow: apply > an invalid untouched baseline artifact blocks apply before any write  369ms
+   ✓ openspec product workflow: apply > refuses on baseline drift (PRODUCT027) after a touched target  346ms
+   ✓ openspec product workflow: apply > revalidates at apply time: a delta corrupted after a clean validate is refused  429ms
+   ✓ openspec product workflow: apply > a dry run preflights the full plan and writes nothing  398ms
+   ✓ openspec product workflow: apply > a second change evolves the same artifact again: found, ID preserved, never duplicated  805ms
+   ✓ openspec product workflow: apply > the schema pin is load-bearing: another schema never applies through the product rail  426ms
+   ✓ openspec product workflow: apply > a change name cannot escape the OpenSpec changes directory  355ms
+   ✓ openspec product workflow: apply > missing or malformed change metadata fails closed with a clear error  733ms
+   ✓ openspec product workflow: apply > rejects metadata that OpenSpec 1.11 considers structurally invalid  483ms
+   ✓ openspec product workflow: apply > a wrong-schema container does not shadow concurrency between legitimate changes  432ms
+   ✓ openspec product workflow: delivery handoff > post-apply context is derived from the updated accepted model on disk  359ms
+ ✓ |repo| tests/distribution/gitignore.test.ts (20 tests) 425ms
+ ✓ |repo| tests/integration/openspec-merge.test.ts (27 tests) 323ms
+ ✓ |repo| tests/conformance/speckit-consumer.test.ts (9 tests) 8724ms
+   ✓ Spec Kit consumer conformance (fixture workspace) > drives the full citation lifecycle over the documented layout  779ms
+   ✓ pdac Spec Kit extension (real specify CLI) > reports the required Spec Kit version  413ms
+   ✓ pdac Spec Kit extension (real specify CLI) > installs from the repository checkout and registers commands and hooks  1404ms
+   ✓ pdac Spec Kit extension (real specify CLI) > installs, updates and removes the independent pdac-product extension  2778ms
+   ✓ pdac Spec Kit extension (real specify CLI) > installs by name from a served catalog with sha256 verification  1609ms
+   ✓ required Spec Kit verification mode > fails instead of skipping when CI requires Spec Kit 1.0.4+  496ms
+   ✓ Spec Kit consumer conformance (real specify init) > drives the full citation lifecycle over a workspace created by the specify CLI  1010ms
+ ✓ |repo| tests/conformance/frontmatter-reference.test.ts (4 tests) 409ms
+ ✓ |core| src/schema-registry.test.ts (8 tests) 231ms
+ ✓ |repo| tests/conformance/templates.test.ts (1 test) 192ms
+ ✓ |repo| tests/cli/init-ai.test.ts (8 tests) 926ms
+ ✓ |repo| tests/integration/openspec-process.test.ts (1 test) 225ms
+ ✓ |core| src/citations.test.ts (31 tests) 140ms
+ ✓ |repo| tests/conformance/examples.test.ts (3 tests) 207ms
+ ✓ |repo| tests/release/release-drift.test.ts (6 tests) 190ms
+ ✓ |repo| tests/conformance/fixtures.test.ts (12 tests) 233ms
+ ✓ |core| src/config.test.ts (41 tests) 79ms
+ ✓ |repo| tests/distribution/ai-assets.test.ts (20 tests) 49ms
  ✓ |repo| tests/conformance/diagnostic-codes.test.ts (7 tests) 166ms
- ✓ |repo| tests/conformance/source-hygiene.test.ts (2 tests) 105ms
- ✓ |repo| tests/integration/speckit-templates.test.ts (6 tests) 67ms
- ✓ |core| src/config.test.ts (41 tests) 92ms
- ✓ |repo| tests/conformance/config-roundtrip.test.ts (3 tests) 36ms
- ✓ |core| src/recovery.test.ts (13 tests) 74ms
- ✓ |core| src/validate.test.ts (32 tests) 45ms
- ✓ |repo| tests/integration/openspec-product-change-schema.test.ts (33 tests) 12534ms
-   ✓ openspec product schema assets > installs, checks and removes product-recovery without touching product-change ownership  1973ms
-   ✓ openspec product schema managed lifecycle (no OpenSpec CLI needed) > check reports managed-state defects as failures and availability as a verdict  3813ms
-   ✓ openspec product schema managed lifecycle (no OpenSpec CLI needed) > check rejects an installed asset missing its per-file ownership record  2012ms
-   ✓ openspec product schema managed lifecycle (no OpenSpec CLI needed) > check reports a recorded obsolete asset that update must reconcile  2051ms
-   ✓ openspec product schema managed lifecycle (no OpenSpec CLI needed) > check fails when the integration predates the product schema  1919ms
- ✓ |repo| tests/integration/speckit-install.test.ts (7 tests) 78ms
- ✓ |repo| tests/integration/speckit-population.test.ts (11 tests) 74ms
- ✓ |core| src/repo-path.test.ts (36 tests) 55ms
- ✓ |repo| tests/distribution/ai-assets.test.ts (20 tests) 96ms
- ✓ |repo| tests/conformance/link-resolution.test.ts (1 test) 31ms
- ✓ |core| src/graph.test.ts (3 tests) 24ms
- ✓ |repo| tests/distribution/ai-detection.test.ts (6 tests) 25ms
- ✓ |core| src/parse.test.ts (3 tests) 17ms
- ✓ |core| src/fix-filenames.test.ts (16 tests) 35ms
- ✓ |core| src/digest.test.ts (9 tests) 14ms
- ✓ |core| src/impact.test.ts (10 tests) 29ms
- ✓ |core| src/diagnostics.test.ts (11 tests) 16ms
- ✓ |core| src/body-sections.test.ts (5 tests) 14ms
+ ✓ |repo| tests/conformance/source-hygiene.test.ts (2 tests) 104ms
+ ✓ |core| src/recovery.test.ts (13 tests) 63ms
+ ✓ |core| src/apply.test.ts (10 tests) 83ms
+ ✓ |repo| tests/integration/openspec-product-change-schema.test.ts (33 tests) 11580ms
+   ✓ openspec product schema assets > installs, checks and removes product-recovery without touching product-change ownership  1818ms
+   ✓ openspec product schema managed lifecycle (no OpenSpec CLI needed) > check reports managed-state defects as failures and availability as a verdict  3512ms
+   ✓ openspec product schema managed lifecycle (no OpenSpec CLI needed) > check rejects an installed asset missing its per-file ownership record  1840ms
+   ✓ openspec product schema managed lifecycle (no OpenSpec CLI needed) > check reports a recorded obsolete asset that update must reconcile  1876ms
+   ✓ openspec product schema managed lifecycle (no OpenSpec CLI needed) > check fails when the integration predates the product schema  1848ms
+ ✓ |repo| tests/integration/speckit-install.test.ts (7 tests) 74ms
+ ✓ |core| src/repo-path.test.ts (36 tests) 41ms
+ ✓ |core| src/validate.test.ts (32 tests) 39ms
+ ✓ |repo| tests/conformance/link-resolution.test.ts (1 test) 65ms
+ ✓ |repo| tests/integration/speckit-templates.test.ts (6 tests) 93ms
+ ✓ |core| src/fix-filenames.test.ts (16 tests) 40ms
+ ✓ |repo| tests/integration/speckit-population.test.ts (11 tests) 158ms
+ ✓ |repo| tests/conformance/config-roundtrip.test.ts (3 tests) 29ms
+ ✓ |core| src/impact.test.ts (10 tests) 20ms
+ ✓ |core| src/graph.test.ts (3 tests) 19ms
+ ✓ |core| src/parse.test.ts (3 tests) 16ms
+ ✓ |repo| tests/distribution/sdd-detection.test.ts (4 tests) 38ms
+ ✓ |core| src/diagnostics.test.ts (11 tests) 23ms
+ ✓ |core| src/digest.test.ts (9 tests) 12ms
+ ✓ |core| src/body-sections.test.ts (5 tests) 9ms
+ ✓ |core| src/markdown.test.ts (11 tests) 10ms
+ ✓ |repo| tests/release/prerelease-publication.test.ts (7 tests) 11ms
+ ✓ |repo| tests/distribution/ai-detection.test.ts (6 tests) 27ms
+ ✓ |repo| tests/distribution/opencode-frontmatter.test.ts (6 tests) 18ms
  ✓ |core| src/drift.test.ts (5 tests) 11ms
- ✓ |repo| tests/release/prerelease-publication.test.ts (7 tests) 12ms
- ✓ |repo| tests/distribution/sdd-detection.test.ts (4 tests) 32ms
- ✓ |repo| tests/distribution/opencode-frontmatter.test.ts (6 tests) 11ms
- ✓ |core| src/markdown.test.ts (11 tests) 13ms
- ✓ |repo| tests/distribution/mutation-safety.test.ts (39 tests) 13234ms
-   ✓ a repository-controlled lock cannot escape the repository > leaves the external sentinel byte-identical when a hostile lock drives removal  574ms
-   ✓ integration add --dry-run performs zero writes > leaves the repository byte-identical for claude  364ms
-   ✓ integration add --dry-run performs zero writes > leaves the repository byte-identical for copilot  447ms
-   ✓ integration add --dry-run performs zero writes > leaves the repository byte-identical for codex  480ms
-   ✓ integration add --dry-run performs zero writes > reports the same set of files the real run then writes  742ms
-   ✓ integration add --dry-run performs zero writes > predicts a conflict refusal instead of reporting a success it cannot deliver  453ms
-   ✓ integration add --dry-run performs zero writes > leaves the repository byte-identical for openspec  2316ms
-   ✓ integration removal is drift-safe > reports what a removal would do without changing anything  354ms
-   ✓ integration removal is drift-safe > reports a file the lock owns that is already gone, and drops its entry  627ms
-   ✓ malformed or inaccessible state fails closed > does not silently replace a malformed configuration with defaults  401ms
-   ✓ malformed or inaccessible state fails closed > does not silently replace an unreadable configuration with defaults  469ms
-   ✓ generated.root stays inside the repository > refuses . before any command-specific work  409ms
-   ✓ integration operations are byte-idempotent > a second integration add changes no byte and rewrites no file  316ms
-   ✓ integration operations are byte-idempotent > a no-op integration update changes no byte and rewrites no file  330ms
-   ✓ integration operations are byte-idempotent > preserves installedAt across a re-add of the Spec Kit integration  608ms
-   ✓ integration operations are byte-idempotent > does not rewrite the installation lock on a no-op provider install  463ms
  ✓ |repo| tests/conformance/pdac-conformance-harness.test.ts (2 tests) 5ms
+ ✓ |repo| tests/distribution/mutation-safety.test.ts (39 tests) 12469ms
+   ✓ a repository-controlled lock cannot escape the repository > leaves the external sentinel byte-identical when a hostile lock drives removal  477ms
+   ✓ integration add --dry-run performs zero writes > leaves the repository byte-identical for claude  628ms
+   ✓ integration add --dry-run performs zero writes > leaves the repository byte-identical for copilot  439ms
+   ✓ integration add --dry-run performs zero writes > leaves the repository byte-identical for codex  373ms
+   ✓ integration add --dry-run performs zero writes > reports the same set of files the real run then writes  617ms
+   ✓ integration add --dry-run performs zero writes > predicts a conflict refusal instead of reporting a success it cannot deliver  676ms
+   ✓ integration add --dry-run performs zero writes > leaves the repository byte-identical for openspec  2184ms
+   ✓ integration removal is drift-safe > preserves a hand-edited managed file and keeps its lock entry  529ms
+   ✓ integration removal is drift-safe > reports a file the lock owns that is already gone, and drops its entry  335ms
+   ✓ generated.root stays inside the repository > refuses . before any command-specific work  391ms
+   ✓ generated.root stays inside the repository > keeps consumer roots read-only and therefore free of the containment contract  339ms
+   ✓ integration operations are byte-idempotent > a second integration add changes no byte and rewrites no file  868ms
+   ✓ integration operations are byte-idempotent > a no-op integration update changes no byte and rewrites no file  654ms
  ✓ |core| src/hosted-product-workflow.test.ts (1 test) 6ms
  ✓ |repo| tests/conformance/layout.test.ts (2 tests) 6ms
- ✓ |repo| tests/conformance/adoption-walkthrough.test.ts (1 test) 16199ms
-   ✓ governed citation-first walkthrough (packed binary) > reaches a verified current citation and then a stale one, through Product Changes only  11795ms
- ✓ |repo| tests/integration/openspec-product-packed.test.ts (1 test) 13388ms
-   ✓ packed-consumer bridge (needs openspec >= 1.7.0, npm and built dist) > the installed bridge resolves the packed package without the entry override  13386ms
- ✓ |cli| src/commands/change.test.ts (67 tests) 16211ms
-   ✓ change validate > accepts a change whose operations and proposed artifacts agree  462ms
-   ✓ change validate > reports a modification of an absent artifact as PRODUCT021  330ms
-   ✓ change validate > warns (PRODUCT108) on a checked task item under Open Questions  368ms
-   ✓ change validate > warns (PRODUCT108) on a content-free item under Open Questions  306ms
-   ✓ change validate > stays silent on an empty section: prose is not a question  353ms
-   ✓ change validate > ignores a list item inside a fenced code block: an example is not a question  323ms
-   ✓ change validate > stays silent while the change is not approved: the section is a working list  306ms
-   ✓ change validate > reports PRODUCT108 on every validation, not only at the transition  355ms
-   ✓ change validate > reports a pre-existing baseline fact once, not once per live change  342ms
-   ✓ change validate > carries live-change defects into the validate verdict without touching the baseline  329ms
-   ✓ change apply > refuses a change in status draft with PRODUCT028, exit 1 and the tree untouched  302ms
-   ✓ change apply > refuses a change in status proposed with PRODUCT028, exit 1 and the tree untouched  323ms
-   ✓ change apply > refuses a change in status superseded with PRODUCT028, exit 1 and the tree untouched  305ms
-   ✓ change apply > carries an impact kind on every diff entry, and no digest on a removal  509ms
-   ✓ change apply > refuses to apply when the baseline moved under the change (PRODUCT027: content digest differs)  397ms
-   ✓ change apply > orders PRODUCT027 before later-file overlay diagnostics on a dry-run refusal  374ms
- ✓ |repo| tests/integration/openspec-population.test.ts (27 tests) 18931ms
-   ✓ enumerateOpenSpecDocuments + classifyConsumerDocuments > discovers current changes and specs, excluding archived by default  2300ms
-   ✓ enumerateOpenSpecDocuments + classifyConsumerDocuments > classifies documents as bound, exempt, or unclassified  2269ms
-   ✓ enumerateOpenSpecDocuments + classifyConsumerDocuments > includes archived changes when includeArchived is true  2497ms
-   ✓ enumerateOpenSpecDocuments + classifyConsumerDocuments > limits to a single change when change is specified  2558ms
-   ✓ enumerateOpenSpecDocuments + classifyConsumerDocuments > returns includeArchived flag reflecting the option  4570ms
-   ✓ enumerateOpenSpecDocuments + classifyConsumerDocuments > reports the repository-relative openspec root  1581ms
-   ✓ enumerateOpenSpecDocuments + classifyConsumerDocuments > marks documents with the correct artifactKind  1617ms
-   ✓ enumerateOpenSpecDocuments + classifyConsumerDocuments > implements the reusable provider contract  1510ms
- ✓ |core| src/snapshot.test.ts (124 tests) 22479ms
-   ✓ buildSnapshotHtml — generation contract > has a stylesheet in which every block is a well-formed rule  380ms
-   ✓ the embedded application > states the topology gestures on screen rather than leaving them to be discovered  321ms
-   ✓ the embedded application > names an identifier it cannot resolve, in either route form  508ms
-   ✓ the embedded application > still narrows by a name-or-identifier filter carried by an older address  451ms
-   ✓ the embedded application > never executes authored content, on first render or after navigating away and back  356ms
-   ✓ relationship groups > group counts sum to exactly the compiled graph edges per direction  2486ms
+ ✓ |repo| tests/conformance/adoption-walkthrough.test.ts (1 test) 15063ms
+   ✓ governed citation-first walkthrough (packed binary) > reaches a verified current citation and then a stale one, through Product Changes only  10767ms
+ ✓ |repo| tests/integration/openspec-product-packed.test.ts (1 test) 12457ms
+   ✓ packed-consumer bridge (needs openspec >= 1.7.0, npm and built dist) > the installed bridge resolves the packed package without the entry override  12455ms
+ ✓ |cli| src/commands/change.test.ts (67 tests) 15088ms
+   ✓ change validate > accepts a change whose operations and proposed artifacts agree  473ms
+   ✓ change validate > reports PRODUCT108 on every validation, not only at the transition  346ms
+   ✓ change validate > reports a pre-existing baseline fact once, not once per live change  302ms
+   ✓ change apply > refuses a change in status proposed with PRODUCT028, exit 1 and the tree untouched  316ms
+   ✓ change apply > carries an impact kind on every diff entry, and no digest on a removal  525ms
+   ✓ change apply > writes the model, archives the change and commits nothing  348ms
+   ✓ change apply > refuses to apply when the baseline moved under the change (PRODUCT027: content digest differs)  303ms
+   ✓ change apply > orders PRODUCT027 before later-file overlay diagnostics on a dry-run refusal  322ms
+   ✓ change apply > does not treat an addition as drift: an addition has nothing to compare against  329ms
+   ✓ change apply > --dry-run runs the full preflight (issue #61): an occupied archive destination fails instead of reporting "Would apply"  309ms
+ ✓ |repo| tests/integration/openspec-population.test.ts (27 tests) 18727ms
+   ✓ enumerateOpenSpecDocuments + classifyConsumerDocuments > discovers current changes and specs, excluding archived by default  2296ms
+   ✓ enumerateOpenSpecDocuments + classifyConsumerDocuments > classifies documents as bound, exempt, or unclassified  2238ms
+   ✓ enumerateOpenSpecDocuments + classifyConsumerDocuments > includes archived changes when includeArchived is true  2275ms
+   ✓ enumerateOpenSpecDocuments + classifyConsumerDocuments > limits to a single change when change is specified  2364ms
+   ✓ enumerateOpenSpecDocuments + classifyConsumerDocuments > returns includeArchived flag reflecting the option  4652ms
+   ✓ enumerateOpenSpecDocuments + classifyConsumerDocuments > reports the repository-relative openspec root  1587ms
+   ✓ enumerateOpenSpecDocuments + classifyConsumerDocuments > marks documents with the correct artifactKind  1634ms
+   ✓ enumerateOpenSpecDocuments + classifyConsumerDocuments > implements the reusable provider contract  1642ms
+ ✓ |core| src/snapshot.test.ts (124 tests) 21178ms
+   ✓ buildSnapshotHtml — generation contract > has a stylesheet in which every block is a well-formed rule  337ms
+   ✓ the embedded application > names an identifier it cannot resolve, in either route form  454ms
+   ✓ the embedded application > still narrows by a name-or-identifier filter carried by an older address  305ms
+   ✓ the embedded application > never executes authored content, on first render or after navigating away and back  309ms
+   ✓ relationship groups > group counts sum to exactly the compiled graph edges per direction  2139ms
    ✓ ranked search > reports the total match count and never omits a higher-ranked match  320ms
-   ✓ ranked search > orders identically for identical model content  309ms
-   ✓ ranked search > finds body text wherever the renderer put it, and decodes escaped entities  749ms
-   ✓ graph projections > draws straight lines from one anchor port each, with every arrow following the relationship  412ms
-   ✓ graph projections > never overlaps two groups or leaves the pane, at narrow and wide panes  1339ms
-   ✓ graph projections > never draws a group or relationship absent from the compiled graph  315ms
-   ✓ the focused topology (SLI-EXPLORER-003) > carries disclosure in the address, replacing history, and restores it from a fresh window  334ms
- ✓ |repo| tests/integration/openspec-product-cli.test.ts (3 tests) 22788ms
-   ✓ openspec product workflow through the real OpenSpec CLI (needs openspec >= 1.7.0 and built dist) > the installed schema is visible to openspec and pins new changes to it  7830ms
-   ✓ openspec product workflow through the real OpenSpec CLI (needs openspec >= 1.7.0 and built dist) > status reports the two artifacts and instructions route apply through the bridge  9149ms
-   ✓ openspec product workflow through the real OpenSpec CLI (needs openspec >= 1.7.0 and built dist) > the bridge script drives the deterministic apply and archive moves only the container  5806ms
- ✓ |repo| tests/conformance/consumer-install.test.ts (32 tests) 55964ms
-   ✓ packed artifact installation > prodshape --help works  773ms
-   ✓ OpenSpec integration > integration add openspec creates config and metadata  2137ms
-   ✓ OpenSpec integration > integration add openspec is idempotent  2160ms
-   ✓ OpenSpec integration > integration check reports healthy  1395ms
-   ✓ SDD-aware init (one-command OpenSpec adoption) > init --sdd openspec wires an existing workspace in one run and recommends recovery  2898ms
-   ✓ SDD-aware init (one-command OpenSpec adoption) > init --sdd openspec bootstraps a workspace when none exists  4041ms
-   ✓ SDD-aware init (one-command OpenSpec adoption) > a prompted yes on a detected workspace installs the integration  2852ms
-   ✓ brownfield recovery session (packed binary) > runs a complete, resumable session where every step is a separate process  9761ms
-   ✓ brownfield recovery session (packed binary) > refuses to misuse CHG-INITIAL when a baseline already exists  1008ms
-   ✓ OpenSpec citation enforcement (packed binary) > drives add integration → current citation → drift → blocking verification  14236ms
-   ✓ doctor detects broken integrations > doctor fails when OpenSpec integration is recorded but config is absent  4008ms
+   ✓ ranked search > finds body text wherever the renderer put it, and decodes escaped entities  958ms
+   ✓ graph projections > draws straight lines from one anchor port each, with every arrow following the relationship  422ms
+   ✓ graph projections > never overlaps two groups or leaves the pane, at narrow and wide panes  1350ms
+ ✓ |repo| tests/integration/openspec-product-cli.test.ts (3 tests) 21813ms
+   ✓ openspec product workflow through the real OpenSpec CLI (needs openspec >= 1.7.0 and built dist) > the installed schema is visible to openspec and pins new changes to it  6896ms
+   ✓ openspec product workflow through the real OpenSpec CLI (needs openspec >= 1.7.0 and built dist) > status reports the two artifacts and instructions route apply through the bridge  9248ms
+   ✓ openspec product workflow through the real OpenSpec CLI (needs openspec >= 1.7.0 and built dist) > the bridge script drives the deterministic apply and archive moves only the container  5665ms
+ ✓ |repo| tests/conformance/consumer-install.test.ts (32 tests) 52969ms
+   ✓ packed artifact installation > prodshape --help works  636ms
+   ✓ OpenSpec integration > integration add openspec creates config and metadata  2085ms
+   ✓ OpenSpec integration > integration add openspec is idempotent  1920ms
+   ✓ OpenSpec integration > integration check reports healthy  1513ms
+   ✓ SDD-aware init (one-command OpenSpec adoption) > init --sdd openspec wires an existing workspace in one run and recommends recovery  2730ms
+   ✓ SDD-aware init (one-command OpenSpec adoption) > init --sdd openspec bootstraps a workspace when none exists  4040ms
+   ✓ SDD-aware init (one-command OpenSpec adoption) > a prompted yes on a detected workspace installs the integration  2772ms
+   ✓ brownfield recovery session (packed binary) > runs a complete, resumable session where every step is a separate process  8884ms
+   ✓ brownfield recovery session (packed binary) > refuses to misuse CHG-INITIAL when a baseline already exists  885ms
+   ✓ OpenSpec citation enforcement (packed binary) > drives add integration → current citation → drift → blocking verification  13579ms
+   ✓ doctor detects broken integrations > doctor fails when OpenSpec integration is recorded but config is absent  4239ms
 
  Test Files  70 passed (70)
       Tests  1039 passed (1039)
-   Start at  12:50:24
-   Duration  59.14s (transform 6.64s, setup 0ms, collect 61.67s, tests 273.84s, environment 37ms, prepare 10.97s)
+   Start at  13:01:33
+   Duration  56.12s (transform 7.21s, setup 0ms, collect 61.45s, tests 259.81s, environment 28ms, prepare 10.52s)
 

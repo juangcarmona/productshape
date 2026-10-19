@@ -311,6 +311,626 @@
   },
   {
     "name": "public-en",
+    "width": 416,
+    "viewport": 416,
+    "scroll": 416,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 275.03125,
+        "right": 304.625,
+        "parentRight": 364.8125,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 304.625,
+        "right": 334.21875,
+        "parentRight": 364.8125,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 334.21875,
+        "right": 363.8125,
+        "parentRight": 364.8125,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "public-es",
+    "width": 416,
+    "viewport": 416,
+    "scroll": 416,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Tema claro",
+        "left": 275.03125,
+        "right": 304.625,
+        "parentRight": 364.8125,
+        "reachable": true
+      },
+      {
+        "label": "Tema oscuro",
+        "left": 304.625,
+        "right": 334.21875,
+        "parentRight": 364.8125,
+        "reachable": true
+      },
+      {
+        "label": "Tema del sistema",
+        "left": 334.21875,
+        "right": 363.8125,
+        "parentRight": 364.8125,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "portal",
+    "width": 416,
+    "viewport": 416,
+    "scroll": 416,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 275.03125,
+        "right": 304.625,
+        "parentRight": 364.8125,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 304.625,
+        "right": 334.21875,
+        "parentRight": 364.8125,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 334.21875,
+        "right": 363.8125,
+        "parentRight": 364.8125,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "architecture",
+    "width": 416,
+    "viewport": 416,
+    "scroll": 416,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 275.03125,
+        "right": 304.625,
+        "parentRight": 364.8125,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 304.625,
+        "right": 334.21875,
+        "parentRight": 364.8125,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 334.21875,
+        "right": 363.8125,
+        "parentRight": 364.8125,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "snapshot",
+    "width": 416,
+    "viewport": 416,
+    "scroll": 416,
+    "overviewScroll": 416,
+    "controls": [
+      {
+        "label": "Light appearance",
+        "left": 312.28125,
+        "right": 342.65625,
+        "parentRight": 406.40625,
+        "reachable": true
+      },
+      {
+        "label": "Dark appearance",
+        "left": 342.65625,
+        "right": 374.03125,
+        "parentRight": 406.40625,
+        "reachable": true
+      },
+      {
+        "label": "Follow the system appearance",
+        "left": 374.03125,
+        "right": 405.40625,
+        "parentRight": 406.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "public-en",
+    "width": 417,
+    "viewport": 417,
+    "scroll": 417,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 269.625,
+        "right": 299.21875,
+        "parentRight": 359.40625,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 299.21875,
+        "right": 328.8125,
+        "parentRight": 359.40625,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 328.8125,
+        "right": 358.40625,
+        "parentRight": 359.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "public-es",
+    "width": 417,
+    "viewport": 417,
+    "scroll": 417,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Tema claro",
+        "left": 269.625,
+        "right": 299.21875,
+        "parentRight": 359.40625,
+        "reachable": true
+      },
+      {
+        "label": "Tema oscuro",
+        "left": 299.21875,
+        "right": 328.8125,
+        "parentRight": 359.40625,
+        "reachable": true
+      },
+      {
+        "label": "Tema del sistema",
+        "left": 328.8125,
+        "right": 358.40625,
+        "parentRight": 359.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "portal",
+    "width": 417,
+    "viewport": 417,
+    "scroll": 417,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 269.625,
+        "right": 299.21875,
+        "parentRight": 359.40625,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 299.21875,
+        "right": 328.8125,
+        "parentRight": 359.40625,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 328.8125,
+        "right": 358.40625,
+        "parentRight": 359.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "architecture",
+    "width": 417,
+    "viewport": 417,
+    "scroll": 417,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 269.625,
+        "right": 299.21875,
+        "parentRight": 359.40625,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 299.21875,
+        "right": 328.8125,
+        "parentRight": 359.40625,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 328.8125,
+        "right": 358.40625,
+        "parentRight": 359.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "snapshot",
+    "width": 417,
+    "viewport": 417,
+    "scroll": 417,
+    "overviewScroll": 417,
+    "controls": [
+      {
+        "label": "Light appearance",
+        "left": 313.28125,
+        "right": 343.65625,
+        "parentRight": 407.40625,
+        "reachable": true
+      },
+      {
+        "label": "Dark appearance",
+        "left": 343.65625,
+        "right": 375.03125,
+        "parentRight": 407.40625,
+        "reachable": true
+      },
+      {
+        "label": "Follow the system appearance",
+        "left": 375.03125,
+        "right": 406.40625,
+        "parentRight": 407.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "public-en",
+    "width": 544,
+    "viewport": 544,
+    "scroll": 544,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 396.625,
+        "right": 426.21875,
+        "parentRight": 486.40625,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 426.21875,
+        "right": 455.8125,
+        "parentRight": 486.40625,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 455.8125,
+        "right": 485.40625,
+        "parentRight": 486.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "public-es",
+    "width": 544,
+    "viewport": 544,
+    "scroll": 544,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Tema claro",
+        "left": 396.625,
+        "right": 426.21875,
+        "parentRight": 486.40625,
+        "reachable": true
+      },
+      {
+        "label": "Tema oscuro",
+        "left": 426.21875,
+        "right": 455.8125,
+        "parentRight": 486.40625,
+        "reachable": true
+      },
+      {
+        "label": "Tema del sistema",
+        "left": 455.8125,
+        "right": 485.40625,
+        "parentRight": 486.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "portal",
+    "width": 544,
+    "viewport": 544,
+    "scroll": 544,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 396.625,
+        "right": 426.21875,
+        "parentRight": 486.40625,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 426.21875,
+        "right": 455.8125,
+        "parentRight": 486.40625,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 455.8125,
+        "right": 485.40625,
+        "parentRight": 486.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "architecture",
+    "width": 544,
+    "viewport": 544,
+    "scroll": 544,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 396.625,
+        "right": 426.21875,
+        "parentRight": 486.40625,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 426.21875,
+        "right": 455.8125,
+        "parentRight": 486.40625,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 455.8125,
+        "right": 485.40625,
+        "parentRight": 486.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "snapshot",
+    "width": 544,
+    "viewport": 544,
+    "scroll": 544,
+    "overviewScroll": 544,
+    "controls": [
+      {
+        "label": "Light appearance",
+        "left": 440.28125,
+        "right": 470.65625,
+        "parentRight": 534.40625,
+        "reachable": true
+      },
+      {
+        "label": "Dark appearance",
+        "left": 470.65625,
+        "right": 502.03125,
+        "parentRight": 534.40625,
+        "reachable": true
+      },
+      {
+        "label": "Follow the system appearance",
+        "left": 502.03125,
+        "right": 533.40625,
+        "parentRight": 534.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "public-en",
+    "width": 545,
+    "viewport": 545,
+    "scroll": 545,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 397.625,
+        "right": 427.21875,
+        "parentRight": 487.40625,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 427.21875,
+        "right": 456.8125,
+        "parentRight": 487.40625,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 456.8125,
+        "right": 486.40625,
+        "parentRight": 487.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "public-es",
+    "width": 545,
+    "viewport": 545,
+    "scroll": 545,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Tema claro",
+        "left": 397.625,
+        "right": 427.21875,
+        "parentRight": 487.40625,
+        "reachable": true
+      },
+      {
+        "label": "Tema oscuro",
+        "left": 427.21875,
+        "right": 456.8125,
+        "parentRight": 487.40625,
+        "reachable": true
+      },
+      {
+        "label": "Tema del sistema",
+        "left": 456.8125,
+        "right": 486.40625,
+        "parentRight": 487.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "portal",
+    "width": 545,
+    "viewport": 545,
+    "scroll": 545,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 397.625,
+        "right": 427.21875,
+        "parentRight": 487.40625,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 427.21875,
+        "right": 456.8125,
+        "parentRight": 487.40625,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 456.8125,
+        "right": 486.40625,
+        "parentRight": 487.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "architecture",
+    "width": 545,
+    "viewport": 545,
+    "scroll": 545,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 397.625,
+        "right": 427.21875,
+        "parentRight": 487.40625,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 427.21875,
+        "right": 456.8125,
+        "parentRight": 487.40625,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 456.8125,
+        "right": 486.40625,
+        "parentRight": 487.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "snapshot",
+    "width": 545,
+    "viewport": 545,
+    "scroll": 545,
+    "overviewScroll": 545,
+    "controls": [
+      {
+        "label": "Light appearance",
+        "left": 407.28125,
+        "right": 437.65625,
+        "parentRight": 501.40625,
+        "reachable": true
+      },
+      {
+        "label": "Dark appearance",
+        "left": 437.65625,
+        "right": 469.03125,
+        "parentRight": 501.40625,
+        "reachable": true
+      },
+      {
+        "label": "Follow the system appearance",
+        "left": 469.03125,
+        "right": 500.40625,
+        "parentRight": 501.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "public-en",
     "width": 1024,
     "viewport": 1024,
     "scroll": 1024,
@@ -466,6 +1086,471 @@
   },
   {
     "name": "public-en",
+    "width": 1216,
+    "viewport": 1216,
+    "scroll": 1216,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 1068.625,
+        "right": 1098.21875,
+        "parentRight": 1158.40625,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 1098.21875,
+        "right": 1127.8125,
+        "parentRight": 1158.40625,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 1127.8125,
+        "right": 1157.40625,
+        "parentRight": 1158.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "public-es",
+    "width": 1216,
+    "viewport": 1216,
+    "scroll": 1216,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Tema claro",
+        "left": 1068.625,
+        "right": 1098.21875,
+        "parentRight": 1158.40625,
+        "reachable": true
+      },
+      {
+        "label": "Tema oscuro",
+        "left": 1098.21875,
+        "right": 1127.8125,
+        "parentRight": 1158.40625,
+        "reachable": true
+      },
+      {
+        "label": "Tema del sistema",
+        "left": 1127.8125,
+        "right": 1157.40625,
+        "parentRight": 1158.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "portal",
+    "width": 1216,
+    "viewport": 1216,
+    "scroll": 1216,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 1068.625,
+        "right": 1098.21875,
+        "parentRight": 1158.40625,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 1098.21875,
+        "right": 1127.8125,
+        "parentRight": 1158.40625,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 1127.8125,
+        "right": 1157.40625,
+        "parentRight": 1158.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "architecture",
+    "width": 1216,
+    "viewport": 1216,
+    "scroll": 1216,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 1068.625,
+        "right": 1098.21875,
+        "parentRight": 1158.40625,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 1098.21875,
+        "right": 1127.8125,
+        "parentRight": 1158.40625,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 1127.8125,
+        "right": 1157.40625,
+        "parentRight": 1158.40625,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "snapshot",
+    "width": 1216,
+    "viewport": 1216,
+    "scroll": 1216,
+    "overviewScroll": 1216,
+    "controls": [
+      {
+        "label": "Light appearance",
+        "left": 1067.09375,
+        "right": 1097.46875,
+        "parentRight": 1161.21875,
+        "reachable": true
+      },
+      {
+        "label": "Dark appearance",
+        "left": 1097.46875,
+        "right": 1128.84375,
+        "parentRight": 1161.21875,
+        "reachable": true
+      },
+      {
+        "label": "Follow the system appearance",
+        "left": 1128.84375,
+        "right": 1160.21875,
+        "parentRight": 1161.21875,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "public-en",
+    "width": 1217,
+    "viewport": 1217,
+    "scroll": 1217,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 1046.4375,
+        "right": 1084.03125,
+        "parentRight": 1160.21875,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 1084.03125,
+        "right": 1121.625,
+        "parentRight": 1160.21875,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 1121.625,
+        "right": 1159.21875,
+        "parentRight": 1160.21875,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "public-es",
+    "width": 1217,
+    "viewport": 1217,
+    "scroll": 1217,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Tema claro",
+        "left": 1046.4375,
+        "right": 1084.03125,
+        "parentRight": 1160.21875,
+        "reachable": true
+      },
+      {
+        "label": "Tema oscuro",
+        "left": 1084.03125,
+        "right": 1121.625,
+        "parentRight": 1160.21875,
+        "reachable": true
+      },
+      {
+        "label": "Tema del sistema",
+        "left": 1121.625,
+        "right": 1159.21875,
+        "parentRight": 1160.21875,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "portal",
+    "width": 1217,
+    "viewport": 1217,
+    "scroll": 1217,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 1046.4375,
+        "right": 1084.03125,
+        "parentRight": 1160.21875,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 1084.03125,
+        "right": 1121.625,
+        "parentRight": 1160.21875,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 1121.625,
+        "right": 1159.21875,
+        "parentRight": 1160.21875,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "architecture",
+    "width": 1217,
+    "viewport": 1217,
+    "scroll": 1217,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 1046.4375,
+        "right": 1084.03125,
+        "parentRight": 1160.21875,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 1084.03125,
+        "right": 1121.625,
+        "parentRight": 1160.21875,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 1121.625,
+        "right": 1159.21875,
+        "parentRight": 1160.21875,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "snapshot",
+    "width": 1217,
+    "viewport": 1217,
+    "scroll": 1217,
+    "overviewScroll": 1217,
+    "controls": [
+      {
+        "label": "Light appearance",
+        "left": 1068.09375,
+        "right": 1098.46875,
+        "parentRight": 1162.21875,
+        "reachable": true
+      },
+      {
+        "label": "Dark appearance",
+        "left": 1098.46875,
+        "right": 1129.84375,
+        "parentRight": 1162.21875,
+        "reachable": true
+      },
+      {
+        "label": "Follow the system appearance",
+        "left": 1129.84375,
+        "right": 1161.21875,
+        "parentRight": 1162.21875,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "public-en",
+    "width": 1280,
+    "viewport": 1280,
+    "scroll": 1280,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 1109.4375,
+        "right": 1147.03125,
+        "parentRight": 1223.21875,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 1147.03125,
+        "right": 1184.625,
+        "parentRight": 1223.21875,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 1184.625,
+        "right": 1222.21875,
+        "parentRight": 1223.21875,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "public-es",
+    "width": 1280,
+    "viewport": 1280,
+    "scroll": 1280,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Tema claro",
+        "left": 1109.4375,
+        "right": 1147.03125,
+        "parentRight": 1223.21875,
+        "reachable": true
+      },
+      {
+        "label": "Tema oscuro",
+        "left": 1147.03125,
+        "right": 1184.625,
+        "parentRight": 1223.21875,
+        "reachable": true
+      },
+      {
+        "label": "Tema del sistema",
+        "left": 1184.625,
+        "right": 1222.21875,
+        "parentRight": 1223.21875,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "portal",
+    "width": 1280,
+    "viewport": 1280,
+    "scroll": 1280,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 1109.4375,
+        "right": 1147.03125,
+        "parentRight": 1223.21875,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 1147.03125,
+        "right": 1184.625,
+        "parentRight": 1223.21875,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 1184.625,
+        "right": 1222.21875,
+        "parentRight": 1223.21875,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "architecture",
+    "width": 1280,
+    "viewport": 1280,
+    "scroll": 1280,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 1109.4375,
+        "right": 1147.03125,
+        "parentRight": 1223.21875,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 1147.03125,
+        "right": 1184.625,
+        "parentRight": 1223.21875,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 1184.625,
+        "right": 1222.21875,
+        "parentRight": 1223.21875,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "snapshot",
+    "width": 1280,
+    "viewport": 1280,
+    "scroll": 1280,
+    "overviewScroll": 1280,
+    "controls": [
+      {
+        "label": "Light appearance",
+        "left": 1131.09375,
+        "right": 1161.46875,
+        "parentRight": 1225.21875,
+        "reachable": true
+      },
+      {
+        "label": "Dark appearance",
+        "left": 1161.46875,
+        "right": 1192.84375,
+        "parentRight": 1225.21875,
+        "reachable": true
+      },
+      {
+        "label": "Follow the system appearance",
+        "left": 1192.84375,
+        "right": 1224.21875,
+        "parentRight": 1225.21875,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "public-en",
     "width": 1440,
     "viewport": 1440,
     "scroll": 1440,
@@ -614,6 +1699,161 @@
         "left": 1352.84375,
         "right": 1384.21875,
         "parentRight": 1385.21875,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "public-en",
+    "width": 1441,
+    "viewport": 1441,
+    "scroll": 1441,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 1270.4375,
+        "right": 1308.03125,
+        "parentRight": 1384.21875,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 1308.03125,
+        "right": 1345.625,
+        "parentRight": 1384.21875,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 1345.625,
+        "right": 1383.21875,
+        "parentRight": 1384.21875,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "public-es",
+    "width": 1441,
+    "viewport": 1441,
+    "scroll": 1441,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Tema claro",
+        "left": 1270.4375,
+        "right": 1308.03125,
+        "parentRight": 1384.21875,
+        "reachable": true
+      },
+      {
+        "label": "Tema oscuro",
+        "left": 1308.03125,
+        "right": 1345.625,
+        "parentRight": 1384.21875,
+        "reachable": true
+      },
+      {
+        "label": "Tema del sistema",
+        "left": 1345.625,
+        "right": 1383.21875,
+        "parentRight": 1384.21875,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "portal",
+    "width": 1441,
+    "viewport": 1441,
+    "scroll": 1441,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 1270.4375,
+        "right": 1308.03125,
+        "parentRight": 1384.21875,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 1308.03125,
+        "right": 1345.625,
+        "parentRight": 1384.21875,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 1345.625,
+        "right": 1383.21875,
+        "parentRight": 1384.21875,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "architecture",
+    "width": 1441,
+    "viewport": 1441,
+    "scroll": 1441,
+    "overviewScroll": null,
+    "controls": [
+      {
+        "label": "Light theme",
+        "left": 1270.4375,
+        "right": 1308.03125,
+        "parentRight": 1384.21875,
+        "reachable": true
+      },
+      {
+        "label": "Dark theme",
+        "left": 1308.03125,
+        "right": 1345.625,
+        "parentRight": 1384.21875,
+        "reachable": true
+      },
+      {
+        "label": "System theme",
+        "left": 1345.625,
+        "right": 1383.21875,
+        "parentRight": 1384.21875,
+        "reachable": true
+      }
+    ],
+    "passed": true
+  },
+  {
+    "name": "snapshot",
+    "width": 1441,
+    "viewport": 1441,
+    "scroll": 1441,
+    "overviewScroll": 1441,
+    "controls": [
+      {
+        "label": "Light appearance",
+        "left": 1292.09375,
+        "right": 1322.46875,
+        "parentRight": 1386.21875,
+        "reachable": true
+      },
+      {
+        "label": "Dark appearance",
+        "left": 1322.46875,
+        "right": 1353.84375,
+        "parentRight": 1386.21875,
+        "reachable": true
+      },
+      {
+        "label": "Follow the system appearance",
+        "left": 1353.84375,
+        "right": 1385.21875,
+        "parentRight": 1386.21875,
         "reachable": true
       }
     ],

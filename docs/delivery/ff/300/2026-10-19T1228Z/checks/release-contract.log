@@ -1,7 +1,7 @@
 $ node --import tsx scripts/release-contract-smoke.mts
 Building @prodshape/cli@0.22.1
 
-added 43 packages, and audited 44 packages in 1s
+added 43 packages, and audited 44 packages in 949ms
 
 6 packages are looking for funding
   run `npm fund` for details
@@ -47,7 +47,7 @@ warning PRODUCT061 openspec/refund.citations.yml entry 1: Citation of 'BR-REFUND
 1 citation(s): 0 current, 1 stale, 0 tampered, 0 unresolved
 Tip: use --provider openspec for OpenSpec-aware verification that distinguishes current from archived material and enforces scope declarations.
 
-added 43 packages, and audited 44 packages in 746ms
+added 43 packages, and audited 44 packages in 760ms
 
 6 packages are looking for funding
   run `npm fund` for details
@@ -83,7 +83,7 @@ Next steps:
   - Pair with an SDD framework when ready: OpenSpec installs in one command (prodshape init --sdd openspec); Kiro and Spec Kit set up from their own tooling.
 0 error(s), 0 warning(s) across 0 artifact(s)
 No product definition exists yet: 0 artifacts were found under the model directory. Create the first baseline through CHG-INITIAL (prodshape change create CHG-INITIAL); the citation-first walkthrough in the @prodshape/cli README walks the whole loop.
-Created docs/product/changes/active/chg-initial/change.md (status draft, base-revision d4eb07a73c856bf3a9346d31aaf4bed96580dbc0)
+Created docs/product/changes/active/chg-initial/change.md (status draft, base-revision f21a3a95ec9d1069b0a81a31436da1449b5312fc)
 Next steps:
   - Describe the problem and the intended product outcome in change.md.
   - Declare operations and author complete proposed artifacts under docs/product/changes/active/chg-initial/proposed/.
@@ -107,7 +107,7 @@ Affected citations: 0
 Applied and archived. Nothing was committed: open a pull request so a human can accept it.
 current	ACT-USER	docs/decisions/adr-001.md:3
 1 citation(s): 1 current, 0 stale, 0 tampered, 0 unresolved
-Created docs/product/changes/active/chg-user-scope/change.md (status draft, base-revision 92ff05d0cb2963c65f22ee18d3101beb0f695a54)
+Created docs/product/changes/active/chg-user-scope/change.md (status draft, base-revision ed84f3381944690ee494ec480553f87f2518b488)
 Next steps:
   - Describe the problem and the intended product outcome in change.md.
   - Declare operations and author complete proposed artifacts under docs/product/changes/active/chg-user-scope/proposed/.

@@ -26,7 +26,7 @@
 
 - [x] 3.1 Update site README/design guidance and changelog for shell/output behavior and exact local artifact build/validate/download layout; verify every documented local command against produced output.
 - [x] 3.2 Document conditional Direct Upload dashboard versus Wrangler folder paths, preview/production branch semantics, prior-artifact rollback, project-mode verification and productshape.dev activation with official references; verify no account fact or hosted availability is claimed and execute no upload/DNS command.
-- [ ] 3.3 Record an acceptance-criterion matrix and Chromium desktop/narrow light/dark evidence for public English/Spanish, portal, architecture and standalone Snapshot; verify browser errors/overflow, all twelve links and themes/navigation using the plan's procedure.
+- [x] 3.3 Record an acceptance-criterion matrix and Chromium desktop/narrow light/dark evidence for public English/Spanish, portal, architecture and standalone Snapshot; verify browser errors/overflow, all twelve links and themes/navigation using the plan's procedure.
 - [x] 3.4 Refresh all affected citations using inspect/cite where needed and verify every current OpenSpec document with the CLI available; require no stale/tampered/unresolved or unclassified result.
 - [ ] 3.5 Run all applicable deterministic checks derived from current CI workflows/engineering-lifecycle.md, push and record passing final-head CI plus exact local command evidence; verify no skipped required check is represented as passing.
 - [ ] 3.6 Request the isolated gpt-6-astra final audit over final plan/diff/evidence, preserve decision/commit/round in the FF record, and update the existing PR; verify human-owned Done judgements/maintainer approval remain explicit and stop before merge/publication.
@@ -38,7 +38,7 @@
 
 - [x] 4.1 After independent amendment approval, constrain overview grid children and use a narrow two-row header in the existing Snapshot CSS only; verify every header action at 320/390px and local matrix scrolling without document overflow.
 - [x] 4.2 Add required core/CLI patch changesets, regenerate the Snapshot using the existing invocation and verify byte-identical publisher copying; run existing Snapshot tests and final full CI-equivalent checks.
-- [ ] 4.3 Preserve a reproducible browser regression harness/evidence at both narrow widths and both appearances, checking search/navigation, all appearance choices, URL state and no storage/network dependence; include its observed results in independent final audit.
+- [x] 4.3 Preserve a reproducible browser regression harness/evidence at both narrow widths and both appearances, checking search/navigation, all appearance choices, URL state and no storage/network dependence; include its observed results in independent final audit.
 
 <!-- pdac:cite id="QR-ACCESSIBILITY-001" digest="sha256:7694a090493fb8963717e168d1bba8d692e392d7b988a2850ab7357f53cb4f48" -->
 <!-- pdac:cite id="QR-PRESENTATION-001" digest="sha256:d16a3c4eb8a38f0282d47a962ec3822bcd882f1910131d504ed0d2ed75352e88" -->
@@ -47,3 +47,7 @@
 ## Human-owned completion gates
 
 Maintainer acceptance-criteria, completeness, coverage, security where applicable, design/ADR conformance, documentation and limitations judgements; Product Engineer consistency judgement when applicable; maintainer approval before merge. Independent agent review cannot discharge these gates. Integration, spec archive and retrospective follow only after the human gate; production/domain activation is a separate future owner action.
+
+## Final-head supplements
+
+Implementation and local/runtime evidence are complete at source0c6d2af436efcd01d655fcdb4af2d712d86257f7. Tasks3.5 (final-head CI result) and3.6 (independent final-head audit decision) are outgoing events recorded on PR#301 after this evidence commit exists. Their unchecked state is explicit, not dropped scope; the PR supplement reconciles their actual outcomes. Human-owned Done judgements and maintainer merge approval remain unmet.

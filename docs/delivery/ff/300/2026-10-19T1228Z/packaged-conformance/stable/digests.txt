@@ -1,0 +1,16 @@
+Pinned digest verification
+
+  match                citation-anchor-not-found: repo/specs/feature-x.citations.yml [FR-VALIDATE-001]
+  match                citation-current: repo/specs/feature-x.citations.yml [FR-VALIDATE-001]
+  differs-as-expected  citation-stale: repo/specs/feature-x.citations.yml [FR-VALIDATE-001]
+  differs-as-expected  citation-tampered-and-stale: repo/specs/feature-x.md [FR-VALIDATE-001]
+  unresolved-as-expected citation-unresolved: repo/specs/feature-x.citations.yml [FR-VALIDATE-002]
+  match                digest-bytes-not-text: repo/specs/feature-x.citations.yml [FR-VALIDATE-001]
+  match                greenfield-first-increment: repo/specs/feature-greenfield.citations.yml [FR-GREENFIELD-001]
+  match                greenfield-first-increment: repo/specs/feature-greenfield.citations.yml [BR-NO-SILENT-EDITS]
+  match                structured-behaviour-citation-anchor: repo/specs/feature-sb.citations.yml [SB-CITATION]
+  match                structured-behaviour-citation-current: repo/specs/feature-sb.citations.yml [SB-CITATION]
+  differs-as-expected  structured-behaviour-citation-stale: repo/specs/feature-sb.citations.yml [SB-CITATION]
+  match                structured-behaviour-citation-unaffected: repo/specs/feature-sb.citations.yml [SB-CITATION]
+
+12 of 12 pinned digest(s) verified across 45 case(s); 0 skipped

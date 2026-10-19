@@ -1,0 +1,152 @@
+{
+  "schema": "pdac-conformance/report/v1",
+  "kind": "digests",
+  "provenance": {
+    "observed": {
+      "runner": {
+        "name": "pdac-conformance",
+        "version": "1.0.1"
+      },
+      "spec": {
+        "cases": "/tmp/productshape-300-pdac-spec-stable/conformance/cases",
+        "root": "/tmp/productshape-300-pdac-spec-stable",
+        "revision": "b3f44d2179a58bbee0478fae517ab75f3249ca39",
+        "branch": null,
+        "dirty": false
+      }
+    },
+    "claimed": {
+      "implementation": {
+        "name": "@prodshape/cli",
+        "version": "0.22.1",
+        "artifactIdentity": "sha256:6e8fd0d0dc063f212fea372990df5d58a764ac2015a4462c0365c4e41bbac75e"
+      },
+      "spec": {
+        "version": "0.2.0",
+        "serializationVersion": "v1alpha1"
+      }
+    }
+  },
+  "pins": [
+    {
+      "case": "citation-anchor-not-found",
+      "source": "repo/specs/feature-x.citations.yml",
+      "kind": "ledger",
+      "id": "FR-VALIDATE-001",
+      "anchor": "S2",
+      "pinned": "sha256:cb93b565e529ada665c37f3c962ed50221bb6cade065fa332a4aa9ee148a4970",
+      "status": "match",
+      "recomputed": "sha256:cb93b565e529ada665c37f3c962ed50221bb6cade065fa332a4aa9ee148a4970"
+    },
+    {
+      "case": "citation-current",
+      "source": "repo/specs/feature-x.citations.yml",
+      "kind": "ledger",
+      "id": "FR-VALIDATE-001",
+      "anchor": "S1",
+      "pinned": "sha256:cb93b565e529ada665c37f3c962ed50221bb6cade065fa332a4aa9ee148a4970",
+      "status": "match",
+      "recomputed": "sha256:cb93b565e529ada665c37f3c962ed50221bb6cade065fa332a4aa9ee148a4970"
+    },
+    {
+      "case": "citation-stale",
+      "source": "repo/specs/feature-x.citations.yml",
+      "kind": "ledger",
+      "id": "FR-VALIDATE-001",
+      "anchor": "S1",
+      "pinned": "sha256:cb93b565e529ada665c37f3c962ed50221bb6cade065fa332a4aa9ee148a4970",
+      "status": "differs-as-expected",
+      "recomputed": "sha256:3045dbb42aef886f5a6103c50ab98f54b6432ee47f120f2418af597a1bd5ee37"
+    },
+    {
+      "case": "citation-tampered-and-stale",
+      "source": "repo/specs/feature-x.md",
+      "kind": "marker",
+      "id": "FR-VALIDATE-001",
+      "pinned": "sha256:cd567f9e119089438556095f639b896e63f638a7cf5efd50d951f2ae24ead8c4",
+      "status": "differs-as-expected",
+      "recomputed": "sha256:cb93b565e529ada665c37f3c962ed50221bb6cade065fa332a4aa9ee148a4970"
+    },
+    {
+      "case": "citation-unresolved",
+      "source": "repo/specs/feature-x.citations.yml",
+      "kind": "ledger",
+      "id": "FR-VALIDATE-002",
+      "pinned": "sha256:cb93b565e529ada665c37f3c962ed50221bb6cade065fa332a4aa9ee148a4970",
+      "status": "unresolved-as-expected"
+    },
+    {
+      "case": "digest-bytes-not-text",
+      "source": "repo/specs/feature-x.citations.yml",
+      "kind": "ledger",
+      "id": "FR-VALIDATE-001",
+      "anchor": "S1",
+      "pinned": "sha256:a0c093007c7a31ca9173032817b9040466b2061bfb76877440ad1bd9bd344215",
+      "status": "match",
+      "recomputed": "sha256:a0c093007c7a31ca9173032817b9040466b2061bfb76877440ad1bd9bd344215"
+    },
+    {
+      "case": "greenfield-first-increment",
+      "source": "repo/specs/feature-greenfield.citations.yml",
+      "kind": "ledger",
+      "id": "FR-GREENFIELD-001",
+      "anchor": "S1",
+      "pinned": "sha256:33ad9e304af7e6971e878c71f505d7d3f248a726831a9fec069a173a6fab52d3",
+      "status": "match",
+      "recomputed": "sha256:33ad9e304af7e6971e878c71f505d7d3f248a726831a9fec069a173a6fab52d3"
+    },
+    {
+      "case": "greenfield-first-increment",
+      "source": "repo/specs/feature-greenfield.citations.yml",
+      "kind": "ledger",
+      "id": "BR-NO-SILENT-EDITS",
+      "pinned": "sha256:174a29bb4dc0290ab32ff001c3104282ea2117754ce697b8c096caf6a59a5ee9",
+      "status": "match",
+      "recomputed": "sha256:174a29bb4dc0290ab32ff001c3104282ea2117754ce697b8c096caf6a59a5ee9"
+    },
+    {
+      "case": "structured-behaviour-citation-anchor",
+      "source": "repo/specs/feature-sb.citations.yml",
+      "kind": "ledger",
+      "id": "SB-CITATION",
+      "anchor": "S1",
+      "pinned": "sha256:66f8ceae1132556013df62643df782cc1db67db1815154ef5a8f0ded1b62a4c5",
+      "status": "match",
+      "recomputed": "sha256:66f8ceae1132556013df62643df782cc1db67db1815154ef5a8f0ded1b62a4c5"
+    },
+    {
+      "case": "structured-behaviour-citation-current",
+      "source": "repo/specs/feature-sb.citations.yml",
+      "kind": "ledger",
+      "id": "SB-CITATION",
+      "pinned": "sha256:bacc625a4e5f4208ce40964824ca4e00fcfd47348690f619831c2680a3aa2aa8",
+      "status": "match",
+      "recomputed": "sha256:bacc625a4e5f4208ce40964824ca4e00fcfd47348690f619831c2680a3aa2aa8"
+    },
+    {
+      "case": "structured-behaviour-citation-stale",
+      "source": "repo/specs/feature-sb.citations.yml",
+      "kind": "ledger",
+      "id": "SB-CITATION",
+      "pinned": "sha256:bacc625a4e5f4208ce40964824ca4e00fcfd47348690f619831c2680a3aa2aa8",
+      "status": "differs-as-expected",
+      "recomputed": "sha256:97658401b38fc2652eccb449d157475333c27c203298b6dc9e91ec1429f725b8"
+    },
+    {
+      "case": "structured-behaviour-citation-unaffected",
+      "source": "repo/specs/feature-sb.citations.yml",
+      "kind": "ledger",
+      "id": "SB-CITATION",
+      "pinned": "sha256:03d1025395a48fe383e2c1c56a8c800861d7beed413154e7b435e71915f637d0",
+      "status": "match",
+      "recomputed": "sha256:03d1025395a48fe383e2c1c56a8c800861d7beed413154e7b435e71915f637d0"
+    }
+  ],
+  "skipped": [],
+  "summary": {
+    "total": 12,
+    "verified": 12,
+    "failed": 0,
+    "cases": 45
+  }
+}

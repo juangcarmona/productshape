@@ -1,16 +1,16 @@
 {
   "kind": "local Cloudflare Pages runtime, not a hosted deployment",
   "wranglerVersion": "4.151.2",
-  "sourceRevision": "1e0891d652186c1509989da2dbd2668714de52a7",
+  "sourceRevision": "0c6d2af436efcd01d655fcdb4af2d712d86257f7",
   "sourceDirty": false,
-  "observedAt": "2026-10-19T12:53:00.489Z",
+  "observedAt": "2026-10-19T13:03:54.125Z",
   "public": {
     "schemaVersion": 1,
     "profile": "public",
     "basePath": "/",
     "siteOrigin": "https://productshape.dev",
     "cliVersion": "0.22.1",
-    "sourceRevision": "1e0891d652186c1509989da2dbd2668714de52a7",
+    "sourceRevision": "0c6d2af436efcd01d655fcdb4af2d712d86257f7",
     "dirty": false
   },
   "engineering": {
@@ -19,7 +19,7 @@
     "basePath": "/productshape/",
     "siteOrigin": "https://juangcarmona.github.io",
     "cliVersion": "0.22.1",
-    "sourceRevision": "1e0891d652186c1509989da2dbd2668714de52a7",
+    "sourceRevision": "0c6d2af436efcd01d655fcdb4af2d712d86257f7",
     "dirty": false
   },
   "checks": [
@@ -203,8 +203,8 @@
     },
     {
       "path": "assets/site.css",
-      "bytes": 50115,
-      "sha256": "553086aea72382e62461ed174f4b4573eb26acd6b375c2d3706b2bd196e4b081"
+      "bytes": 50446,
+      "sha256": "2899bf0a7e99d76f4117b088e818860da81b44b637783af4273ad9c865e74550"
     },
     {
       "path": "en/get-started/index.html",
@@ -284,7 +284,7 @@
     {
       "path": "publication.json",
       "bytes": 219,
-      "sha256": "ffdee23b2c4c22757748ae5d5c468127a95400af1b458019147e77b2f696883e"
+      "sha256": "03dc8b706d15a48f089457a54f9f3d1099c4b4f65bb99f2a4582fedb7088eea2"
     },
     {
       "path": "robots.txt",
@@ -350,68 +350,68 @@
     },
     {
       "path": "assets/site.css",
-      "bytes": 50115,
-      "sha256": "553086aea72382e62461ed174f4b4573eb26acd6b375c2d3706b2bd196e4b081"
+      "bytes": 50446,
+      "sha256": "2899bf0a7e99d76f4117b088e818860da81b44b637783af4273ad9c865e74550"
     },
     {
       "path": "en/engineering/01-introduction-and-goals/index.html",
       "bytes": 19951,
-      "sha256": "3f3c2013e73418ac35b385d207027c6f80aff3024f56724624c9c666650d50d9"
+      "sha256": "aad3ba43f7f73e130a52bcd5350c89f4d02432b134c6e47a9c81872ef4f07b9f"
     },
     {
       "path": "en/engineering/02-constraints/index.html",
       "bytes": 20032,
-      "sha256": "823c7aeb54d83ceefea03adbb255d5c058741e4ba16ab5d60550327eeddd0d05"
+      "sha256": "e2197284f5e1479cc57a0564f5d041dd39003dff55b3344304352f47fee29ad8"
     },
     {
       "path": "en/engineering/03-context-and-scope/index.html",
       "bytes": 19466,
-      "sha256": "0e0c3b1188d05bfb58a272f5146590b94e93bff52e3461851e3f809bda32b6c6"
+      "sha256": "8c8fea9f71e989db46add2b9a67bea2fea8adc0c1b24293c4de3219b12e94f6b"
     },
     {
       "path": "en/engineering/04-solution-strategy/index.html",
       "bytes": 20468,
-      "sha256": "63370f5f7f6fa7af1f41ef198e0a03bf34444097bffcac1ec4364d9c464c7360"
+      "sha256": "d02407b864f695eb18536ec74e737d129e8a962545e0d919af2f8247db104ac0"
     },
     {
       "path": "en/engineering/05-building-block-view/index.html",
       "bytes": 21076,
-      "sha256": "13b0428f55ed72829bb0723a5ed459c6d6366f800c86826a8aa208e07122c216"
+      "sha256": "fde877c2dd9aaa78a55c6cdbc7f4a4373b19c4d3b5df34a9d521dc00b948da4e"
     },
     {
       "path": "en/engineering/06-runtime-view/index.html",
       "bytes": 19195,
-      "sha256": "bf29ff4aece668cfbc64fed9f9cf42e9bda8f9c001edde33f7d9c39c727dddb3"
+      "sha256": "c18b4e2a720169e958a93f7e2db80fd0ee854739ccc8eddc1b42d20d704d6e32"
     },
     {
       "path": "en/engineering/07-deployment-view/index.html",
       "bytes": 20169,
-      "sha256": "265a63426d2b92fc1a890ea318b79f39b059a91597c7661fbec4f37823b4c668"
+      "sha256": "df4cc27cd8667f75c1c25c4894228b3bbe843c3a47ce3818c3e03088284d6614"
     },
     {
       "path": "en/engineering/08-crosscutting-concepts/index.html",
       "bytes": 20117,
-      "sha256": "049e8b2a64a87b68148db9cc0ef9ae64f3fb6f49f6ac8b74098b6ee4860c77eb"
+      "sha256": "e8e0d133eae818f2af59fe245f25df63da519c06849a42ffdb74207913c7b4fc"
     },
     {
       "path": "en/engineering/09-architecture-decisions/index.html",
       "bytes": 20001,
-      "sha256": "de1a1f253a3f6bd8edb20e61a6d541633263b050300e2226aa8e7ac2a385cd28"
+      "sha256": "e49c81ba9c7f91c1d55d5a47c7e5b05f06d209de483d4cb8c66d1121490bf818"
     },
     {
       "path": "en/engineering/10-quality-requirements/index.html",
       "bytes": 19819,
-      "sha256": "936b21e99d295b4900e3006c909e42a2108bfff7c16c8e01232b378c7fdcface"
+      "sha256": "d77db281c4295c475baf89eaf4df00bf7d980a076b005b1c653e08ba1a752f58"
     },
     {
       "path": "en/engineering/11-risks-and-technical-debt/index.html",
       "bytes": 19137,
-      "sha256": "cd814466299593aa7e88d8ee54827908bfd7b5a22a8f756c60eafeb7e9af6b15"
+      "sha256": "895d7cfe57742e5e8669e942e2dd3fb8e5fe6746ccc2434354cdfea12ff49adf"
     },
     {
       "path": "en/engineering/12-glossary/index.html",
       "bytes": 18184,
-      "sha256": "6636b79e4a992eb3b796564ff6c5f5feaca1085b9d7c359754330d46cd6743e3"
+      "sha256": "bdb90228c9f88bde457585fbc9a5e4d94db0a77f5aa876880a4da29bec4f1cf3"
     },
     {
       "path": "en/engineering/index.html",
@@ -421,22 +421,22 @@
     {
       "path": "en/index.html",
       "bytes": 12369,
-      "sha256": "b4b73c03df002562199351ea7e70e684b09ffe64d5a775f1d80eeb757fe7817e"
+      "sha256": "de8358a3fa28b26281e039d6bed8e943d0f8650e2a8978503aea75e8eb43bc3f"
     },
     {
       "path": "en/model/explorer.html",
       "bytes": 517919,
-      "sha256": "53b091d05a8423bb48b844045f6fcb096a77a813cd93bb9d9741df514500dddb"
+      "sha256": "a0545ae01ecf4205ea6ddf0c59d88e73967aa255e6b79cc032038609bd067633"
     },
     {
       "path": "index.html",
       "bytes": 12369,
-      "sha256": "b4b73c03df002562199351ea7e70e684b09ffe64d5a775f1d80eeb757fe7817e"
+      "sha256": "de8358a3fa28b26281e039d6bed8e943d0f8650e2a8978503aea75e8eb43bc3f"
     },
     {
       "path": "publication.json",
       "bytes": 243,
-      "sha256": "d30d9493577265e36b3e811eac02f966c81b1d1f79614fa05461508096fe705b"
+      "sha256": "a58c979c17bb872f4a2d0742325a7872d2d754160483bd0caa3abf65322dd7d0"
     },
     {
       "path": "robots.txt",

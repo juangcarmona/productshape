@@ -1,0 +1,57 @@
+Citation omission negative control
+Expected result: pdac-conformance exits 1 only because citation diagnostics are missing.
+
+  pass  artifact-kinds-valid
+  pass  change-modify-missing-target
+  pass  change-open-questions
+  pass  change-operation-unproposed
+  pass  change-proposed-undeclared
+  pass  change-removal-dangling-reference
+  pass  change-remove-missing-target
+  fail  citation-anchor-not-found
+        missing error PRODUCT063 specs/feature-x.citations.yml
+  fail  citation-current
+  fail  citation-stale
+        missing warning PRODUCT061 specs/feature-x.citations.yml
+  fail  citation-tampered-and-stale
+        missing error PRODUCT062 specs/feature-x.md
+  fail  citation-unresolved
+        missing error PRODUCT060 specs/feature-x.citations.yml
+  pass  concurrent-changes
+  pass  configuration-custom-root
+  pass  configuration-malformed
+  pass  configuration-unknown-key
+  pass  dedicated-topology
+  fail  digest-bytes-not-text
+  fail  greenfield-first-increment
+  pass  schema-instance-path-escaping
+  pass  semantic-uses-terms-unknown
+  pass  structured-behaviour-body-section-missing
+  pass  structured-behaviour-body-section-order
+  pass  structured-behaviour-change-add
+  pass  structured-behaviour-change-modify
+  fail  structured-behaviour-citation-anchor
+        missing error PRODUCT063 specs/feature-sb.citations.yml
+  fail  structured-behaviour-citation-current
+  fail  structured-behaviour-citation-stale
+        missing warning PRODUCT061 specs/feature-sb.citations.yml
+  fail  structured-behaviour-citation-unaffected
+  pass  structured-behaviour-illustrates-no-consumer
+  pass  structured-behaviour-illustrates-removed
+  pass  structured-behaviour-illustrates-retired
+  pass  structured-behaviour-illustrates-unknown
+  pass  structured-behaviour-quality-reference
+  pass  structured-behaviour-retired-governed-by-no-consumer
+  pass  structured-behaviour-retired-uses-terms-no-usage
+  pass  structured-behaviour-scenario-ref-removed
+  pass  structured-behaviour-scenario-ref-retired
+  pass  structured-behaviour-scenario-ref-unknown
+  pass  structured-behaviour-semantic-keyword
+  pass  structured-behaviour-semantic-keyword-case
+  pass  structured-behaviour-uses-terms-removed
+  pass  structured-behaviour-uses-terms-retired
+  pass  structured-behaviour-uses-terms-unknown
+  pass  use-case-without-journey
+
+45 case(s): 34 passed, 11 failed, 0 skipped, 0 errored
+Expected citation-only failures: 11 case(s), 6 missing diagnostic(s)

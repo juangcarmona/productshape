@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "1e0891d652186c1509989da2dbd2668714de52a7",
+  "sourceCommit": "0c6d2af436efcd01d655fcdb4af2d712d86257f7",
   "environment": {
     "node": "22.22.1",
     "pnpm": "11.1.0",
@@ -13,112 +13,112 @@
       "name": "lint",
       "command": "pnpm lint",
       "exitCode": 0,
-      "seconds": 5.35,
+      "seconds": 5.08,
       "log": "checks/lint.log"
     },
     {
       "name": "format",
       "command": "pnpm format:check",
       "exitCode": 0,
-      "seconds": 12.76,
+      "seconds": 12.54,
       "log": "checks/format.log"
     },
     {
       "name": "typecheck",
       "command": "pnpm typecheck",
       "exitCode": 0,
-      "seconds": 7.24,
+      "seconds": 7.34,
       "log": "checks/typecheck.log"
     },
     {
       "name": "build",
       "command": "pnpm build",
       "exitCode": 0,
-      "seconds": 9.11,
+      "seconds": 8.94,
       "log": "checks/build.log"
     },
     {
       "name": "test",
       "command": "pnpm test",
       "exitCode": 0,
-      "seconds": 60.65,
+      "seconds": 57.64,
       "log": "checks/test.log"
     },
     {
       "name": "lifecycle",
       "command": "pnpm lifecycle:check",
       "exitCode": 0,
-      "seconds": 0.8,
+      "seconds": 0.91,
       "log": "checks/lifecycle.log"
     },
     {
       "name": "release-workflow",
       "command": "pnpm release-workflow:check",
       "exitCode": 0,
-      "seconds": 0.72,
+      "seconds": 0.82,
       "log": "checks/release-workflow.log"
     },
     {
       "name": "release-contract",
       "command": "pnpm release-contract:smoke",
       "exitCode": 0,
-      "seconds": 24.68,
+      "seconds": 24.42,
       "log": "checks/release-contract.log"
     },
     {
       "name": "validate",
       "command": "node packages/cli/dist/bin.js validate",
       "exitCode": 0,
-      "seconds": 0.57,
+      "seconds": 0.6,
       "log": "checks/validate.log"
     },
     {
       "name": "change-validate",
       "command": "node packages/cli/dist/bin.js change validate",
       "exitCode": 0,
-      "seconds": 0.54,
+      "seconds": 0.62,
       "log": "checks/change-validate.log"
     },
     {
       "name": "graph",
       "command": "node packages/cli/dist/bin.js graph",
       "exitCode": 0,
-      "seconds": 0.66,
+      "seconds": 0.57,
       "log": "checks/graph.log"
     },
     {
       "name": "doctor",
       "command": "node packages/cli/dist/bin.js doctor",
       "exitCode": 0,
-      "seconds": 2.94,
+      "seconds": 2.67,
       "log": "checks/doctor.log"
     },
     {
       "name": "citations",
       "command": "node packages/cli/dist/bin.js citations verify --provider openspec",
       "exitCode": 0,
-      "seconds": 2.77,
+      "seconds": 3.05,
       "log": "checks/citations.log"
     },
     {
       "name": "integration",
       "command": "node packages/cli/dist/bin.js integration update --check",
       "exitCode": 0,
-      "seconds": 2.66,
+      "seconds": 2.41,
       "log": "checks/integration.log"
     },
     {
       "name": "openspec",
       "command": "openspec validate --all --no-interactive",
       "exitCode": 0,
-      "seconds": 2.05,
+      "seconds": 2.37,
       "log": "checks/openspec.log"
     },
     {
       "name": "release-drift",
       "command": "node scripts/check-release-drift.mjs",
       "exitCode": 0,
-      "seconds": 0.24,
+      "seconds": 0.26,
       "log": "checks/release-drift.log"
     }
   ],

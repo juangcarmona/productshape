@@ -1,20 +1,20 @@
 $ pnpm -r run typecheck
 Scope: 9 of 10 workspace projects
-packages/core typecheck$ tsc --noEmit
 packages/cli typecheck$ tsc --noEmit
+packages/core typecheck$ tsc --noEmit
 packages/integration-claude typecheck$ tsc --noEmit
 packages/integration-codex typecheck$ tsc --noEmit
-packages/integration-codex typecheck: Done
-packages/integration-copilot typecheck$ tsc --noEmit
 packages/integration-claude typecheck: Done
+packages/integration-copilot typecheck$ tsc --noEmit
+packages/integration-codex typecheck: Done
 packages/integration-opencode typecheck$ tsc --noEmit
-packages/integration-copilot typecheck: Done
 packages/integration-opencode typecheck: Done
+packages/integration-copilot typecheck: Done
 packages/core typecheck: Done
 packages/cli typecheck: Done
 packages/distribution typecheck$ tsc --noEmit
-packages/integration-openspec typecheck$ tsc --noEmit
 packages/integration-speckit typecheck$ tsc --noEmit
+packages/integration-openspec typecheck$ tsc --noEmit
 packages/distribution typecheck: Done
 packages/integration-speckit typecheck: Done
 packages/integration-openspec typecheck: Done
