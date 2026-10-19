@@ -1,0 +1,17 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@prodshape/core": ["../core/src/index.ts"],
+      "@prodshape/distribution": ["../distribution/src/index.ts"],
+      "@prodshape/integration-openspec": ["../integration-openspec/src/index.ts"],
+      "@prodshape/integration-speckit": ["../integration-speckit/src/index.ts"],
+      "@prodshape/integration-claude": ["../integration-claude/src/index.ts"],
+      "@prodshape/integration-codex": ["../integration-codex/src/index.ts"],
+      "@prodshape/integration-opencode": ["../integration-opencode/src/index.ts"],
+      "@prodshape/integration-copilot": ["../integration-copilot/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

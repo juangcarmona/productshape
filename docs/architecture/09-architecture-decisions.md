@@ -19,3 +19,4 @@ The authoritative rationale and consequences stay in the linked ADRs under [`dec
 | Deterministic core and AI reasoning are separated | [0007](decisions/0007-deterministic-core-and-ai-reasoning-are-separated.md) | 04, 05, 06, 08 |
 | Vendor assets are generated | [0008](decisions/0008-vendor-assets-are-generated.md) | 05, 06, 08 |
 | Reference documentation is generated | [0009](decisions/0009-reference-documentation-is-generated.md) | 05, 07, 08 |
+| Source-oriented repository layout and Astro publication shell | [0010](decisions/0010-source-oriented-repository-layout.md) | 04, 05, 07, 08, 09, 10 |

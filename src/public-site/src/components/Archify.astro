@@ -1,0 +1,25 @@
+---
+interface Props {
+  src: string;
+  title: string;
+  sourceHref?: string;
+  sourceRevision?: string;
+}
+
+const { src, title, sourceHref, sourceRevision } = Astro.props;
+---
+
+<figure class="public-diagram archify-diagram" data-renderer="archify">
+  <iframe
+    sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+    referrerpolicy="no-referrer"
+    loading="lazy"
+    title={title}
+    src={src}
+  ></iframe>
+  <figcaption>{title}</figcaption>
+  {sourceHref && <a href={sourceHref}>View source</a>}
+  {sourceRevision && (
+    <small data-source-revision={sourceRevision}>Source revision: {sourceRevision}</small>
+  )}
+</figure>

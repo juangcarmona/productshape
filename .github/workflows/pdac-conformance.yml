@@ -53,8 +53,8 @@ jobs:
           reports_dir="$PDAC_REPORTS_DIR"
           mkdir -p "$package_dir" "$toolchain_dir" "$reports_dir"
 
-          cli_version="$(node -p "require('./packages/cli/package.json').version")"
-          pnpm --dir packages/cli pack --pack-destination "$package_dir"
+          cli_version="$(node -p "require('./src/packages/cli/package.json').version")"
+          pnpm --dir src/packages/cli pack --pack-destination "$package_dir"
           cli_tarball="$package_dir/prodshape-cli-$cli_version.tgz"
           test -f "$cli_tarball"
 
@@ -90,7 +90,7 @@ jobs:
 
       - name: run pinned PDaC conformance
         run: |
-          node scripts/verify-pdac-conformance.mjs \
+          node src/scripts/verify-pdac-conformance.mjs \
             --spec "$GITHUB_WORKSPACE/pdac-spec" \
             --spec-sha "$PDAC_SPEC_SHA" \
             --prodshape "$PRODSHAPE_BIN" \

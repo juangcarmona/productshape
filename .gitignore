@@ -5,6 +5,7 @@ node_modules/
 _site/
 dist/
 *.tsbuildinfo
+**/.astro/
 
 # Test output
 coverage/
@@ -21,9 +22,9 @@ docs/product/changes/archive/
 Thumbs.db
 
 # Staged into the publishable CLI at build time (copies of canonical schemas/ and distribution assets).
-packages/cli/schemas/
-packages/cli/assets/
-packages/cli/*.tgz
+src/packages/cli/schemas/
+src/packages/cli/assets/
+src/packages/cli/*.tgz
 
 # vscode settings
 .vscode/

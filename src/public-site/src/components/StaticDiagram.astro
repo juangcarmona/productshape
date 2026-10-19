@@ -1,0 +1,20 @@
+---
+interface Props {
+  renderer: 'mermaid' | 'archify';
+  title: string;
+  sourceHref: string;
+  sourceRevision?: string;
+  html: string;
+}
+
+const { renderer, title, sourceHref, sourceRevision, html } = Astro.props;
+---
+
+<figure class="public-diagram" data-renderer={renderer}>
+  <figcaption>{title}</figcaption>
+  <div class="diagram-canvas" set:html={html} />
+  <a href={sourceHref}>View canonical source</a>
+  {sourceRevision && (
+    <small data-source-revision={sourceRevision}>Source revision: {sourceRevision}</small>
+  )}
+</figure>

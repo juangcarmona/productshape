@@ -75,7 +75,7 @@ async function readDirRecursive(dir: string): Promise<string[]> {
 beforeAll(async () => {
   scratch = await mkdtemp(join(tmpdir(), 'prodshape-conformance-'));
 
-  const cliDir = join(repoRoot, 'packages', 'cli');
+  const cliDir = join(repoRoot, 'src', 'packages', 'cli');
   await execFileAsync('npm', ['pack', '--pack-destination', scratch], {
     cwd: cliDir,
     encoding: 'utf8',

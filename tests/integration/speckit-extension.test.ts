@@ -222,7 +222,13 @@ describe('pdac extension catalog', () => {
       await copyFile(catalogPath, scratch);
       await execFileAsync(
         process.execPath,
-        [join(repoRoot, 'scripts', 'update-speckit-catalog.mjs'), 'pdac', version, sha, scratch],
+        [
+          join(repoRoot, 'src', 'scripts', 'update-speckit-catalog.mjs'),
+          'pdac',
+          version,
+          sha,
+          scratch,
+        ],
         { cwd: repoRoot },
       );
       const updated = JSON.parse(await readFile(scratch, 'utf8'));
@@ -245,7 +251,7 @@ describe('pdac extension catalog', () => {
         execFileAsync(
           process.execPath,
           [
-            join(repoRoot, 'scripts', 'update-speckit-catalog.mjs'),
+            join(repoRoot, 'src', 'scripts', 'update-speckit-catalog.mjs'),
             'pdac',
             '99.99.99',
             'b'.repeat(64),
@@ -285,7 +291,7 @@ describe('pdac extension catalog', () => {
       await execFileAsync(
         process.execPath,
         [
-          join(repoRoot, 'scripts', 'update-speckit-catalog.mjs'),
+          join(repoRoot, 'src', 'scripts', 'update-speckit-catalog.mjs'),
           'pdac-product',
           '0.1.0',
           'c'.repeat(64),

@@ -59,8 +59,8 @@ function run(
 
 const openspecVersion = detectedOpenSpecVersion();
 const distBuilt =
-  existsSync(join(repoRoot, 'packages', 'integration-openspec', 'dist', 'index.js')) &&
-  existsSync(join(repoRoot, 'packages', 'core', 'dist', 'index.js'));
+  existsSync(join(repoRoot, 'src', 'packages', 'integration-openspec', 'dist', 'index.js')) &&
+  existsSync(join(repoRoot, 'src', 'packages', 'core', 'dist', 'index.js'));
 const canRun = meetsProductFloor(openspecVersion) && distBuilt;
 
 describe.skipIf(!canRun)(

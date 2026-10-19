@@ -1,0 +1,41 @@
+{
+  "name": "@prodshape/integration-openspec",
+  "version": "0.6.5",
+  "description": "OpenSpec integration for Product Definition as Code: configures OpenSpec workspaces with PDaC citation rules and verifies citations against the OpenSpec population.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juangcarmona/productshape.git",
+    "directory": "src/packages/integration-openspec"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "assets",
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@prodshape/core": "workspace:*",
+    "cross-spawn": "^7.0.6",
+    "fast-glob": "^3.3.0",
+    "yaml": "^2.5.0"
+  },
+  "devDependencies": {
+    "@types/cross-spawn": "^6.0.6",
+    "tsup": "^8.0.0"
+  }
+}

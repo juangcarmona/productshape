@@ -50,22 +50,22 @@ jobs:
       # Self-application: the repository must satisfy its own methodology. The built CLI bundles
       # its data files, so it runs from dist/bin.js after `pnpm build`.
       - name: prodshape validate
-        run: node packages/cli/dist/bin.js validate
+        run: node src/packages/cli/dist/bin.js validate
       # Conformance requires every live Product Change to satisfy the change contract, so the
       # gate runs whether or not one happens to be in flight on this branch.
       - name: prodshape change validate
-        run: node packages/cli/dist/bin.js change validate
+        run: node src/packages/cli/dist/bin.js change validate
       - name: prodshape graph
-        run: node packages/cli/dist/bin.js graph
+        run: node src/packages/cli/dist/bin.js graph
       - name: prodshape doctor
-        run: node packages/cli/dist/bin.js doctor
+        run: node src/packages/cli/dist/bin.js doctor
       # The citation gate this repository tells adopters to run (.product/integrations/
       # openspec.ci.yml): every current OpenSpec consumer document must be bound or exempt,
       # and every citation must verify against the self-hosted model.
       - name: prodshape citations verify
-        run: node packages/cli/dist/bin.js citations verify --provider openspec
+        run: node src/packages/cli/dist/bin.js citations verify --provider openspec
       - name: managed integrations up to date
-        run: node packages/cli/dist/bin.js integration update --check
+        run: node src/packages/cli/dist/bin.js integration update --check
 
   quality:
     name: lint and format (docs-only checks run once)
@@ -131,4 +131,4 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
-      - run: node scripts/check-release-drift.mjs
+      - run: node src/scripts/check-release-drift.mjs

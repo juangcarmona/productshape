@@ -6,11 +6,11 @@ tests/conformance/cases/
 .product/generated/
 # Archify HTML and finalize receipts are generated from `.archify/` candidates; formatting them
 # would change the validated artifact bytes and invalidate the Archify receipts.
-/site/diagrams/
+/src/public-site/diagrams/
 pnpm-lock.yaml
 # Vendored v1alpha2 schemas retain the exact upstream bytes at their recorded revision.
 schemas/v1alpha2/*.schema.json
-packages/core/schemas/v1alpha2/*.schema.json
+src/packages/core/schemas/v1alpha2/*.schema.json
 # Generated, managed AI-integration files are produced by the renderers, not hand-formatted;
 # formatting them would break the installation-lock hashes (managed-file drift).
 # openspec/config.yaml and .product/integrations/ are the OpenSpec renderer's managed outputs,

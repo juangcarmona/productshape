@@ -54,7 +54,7 @@ Step 3 is not optional housekeeping. Until it is done the package depends on a t
 
 1. Land feature PRs, each including a `pnpm changeset` describing its bump.
 2. On merge to `main`, the workflow opens/updates a **"Version Packages"** PR that applies the bumps and writes `CHANGELOG.md` entries.
-3. In the Version Packages PR, update the exact supported CLI version in the primary README, package README and limitations file. The release-contract check must agree with `packages/cli/package.json`; it does not follow an npm dist-tag.
+3. In the Version Packages PR, update the exact supported CLI version in the primary README, package README and limitations file. The release-contract check must agree with `src/packages/cli/package.json`; it does not follow an npm dist-tag.
 4. Review and merge that PR. The resulting release commit triggers the `publish-stable` job, which (after environment approval) builds, tests, runs the packed release-contract smoke test and then runs `pnpm changeset publish` — publishing only the changed packages to the `latest` dist-tag, with provenance, and pushing git tags.
 
 If a stable Version Packages commit is already on `main` but its push did not reach `publish-stable`, use **Actions → Release → Run workflow → `publish-current-stable`**. This recovery path reads the committed stable versions, runs the same build, typecheck, test, conformance and release-contract gates, and then waits for the protected `npm-publish` approval before publishing. Use it only for a committed release that has not been published.

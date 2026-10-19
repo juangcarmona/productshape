@@ -95,7 +95,7 @@ describe('root and distribution copies are byte-identical', () => {
     ['templates', 'templates'],
   ])('%s root matches distribution assets', async (kind, distKind) => {
     const rootDir = join(repoRoot, kind);
-    const distDir = join(repoRoot, 'packages', 'distribution', 'assets', distKind);
+    const distDir = join(repoRoot, 'src', 'packages', 'distribution', 'assets', distKind);
     const rootFiles = await listFiles(rootDir);
     const distFiles = await listFiles(distDir);
     const rootRel = rootFiles.map((f) => f.slice(rootDir.length + 1)).sort();

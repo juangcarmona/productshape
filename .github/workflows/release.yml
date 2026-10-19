@@ -186,7 +186,7 @@ jobs:
             echo "::error::SITE_DISPATCH_TOKEN is not set. Create a fine-grained PAT with Contents: write on product-definition-as-code/product-definition-as-code.github.io and add it as a repository secret."
             exit 1
           fi
-          version=$(node -p "require('./packages/cli/package.json').version")
+          version=$(node -p "require('./src/packages/cli/package.json').version")
           code=$(curl -sS -o response.txt -w '%{http_code}' -X POST \
             -H 'Accept: application/vnd.github+json' \
             -H "Authorization: Bearer $TOKEN" \
@@ -307,7 +307,7 @@ jobs:
           git checkout --detach origin/main
           echo "Publishing exact main commit $(git rev-parse HEAD)"
           set +e
-          node scripts/check-prerelease-publication.mjs | tee prerelease-publication-plan.md
+          node src/scripts/check-prerelease-publication.mjs | tee prerelease-publication-plan.md
           status=${PIPESTATUS[0]}
           set -e
           cat prerelease-publication-plan.md >> "$GITHUB_STEP_SUMMARY"

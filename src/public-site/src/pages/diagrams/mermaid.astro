@@ -1,0 +1,35 @@
+---
+import Mermaid from '../../components/Mermaid.astro';
+
+const source = `flowchart LR
+  Product[Product knowledge] --> Snapshot[Product Snapshot]
+  Product --> Portal[Engineering portal]
+  Product --> Site[Public site]
+`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Mermaid diagram · ProductShape</title>
+    <link rel="stylesheet" href="../../assets/site.css" />
+  </head>
+  <body class="site-shell">
+    <main class="page-hero">
+      <div class="narrow">
+        <p class="eyebrow">Mermaid · authored view</p>
+        <h1>ProductShape publication relationships</h1>
+        <p class="lead">
+          This Mermaid source is an explanatory view, not canonical Product Model data.
+        </p>
+        <Mermaid
+          source={source}
+          title="ProductShape publication relationships"
+          sourceHref="https://github.com/juangcarmona/productshape/tree/main/docs/product/model"
+        />
+      </div>
+    </main>
+  </body>
+</html>

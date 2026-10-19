@@ -49,10 +49,10 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/v030-package" "$RUNNER_TEMP/v030-install"
-          pnpm --dir packages/cli pack --pack-destination "$RUNNER_TEMP/v030-package"
+          pnpm --dir src/packages/cli pack --pack-destination "$RUNNER_TEMP/v030-package"
           tarball="$(find "$RUNNER_TEMP/v030-package" -name '*.tgz' -print -quit)"
           npm install --prefix "$RUNNER_TEMP/v030-install" --ignore-scripts "$tarball"
-          node scripts/verify-v030-conformance.mjs \
+          node src/scripts/verify-v030-conformance.mjs \
             --cli "$RUNNER_TEMP/v030-install/node_modules/@prodshape/cli/dist/bin.js" \
             --runner "$GITHUB_WORKSPACE/pdac-runner/dist/bin.js" \
             --spec "$GITHUB_WORKSPACE/pdac-spec" \

@@ -4,7 +4,7 @@ import {
   formatPlan,
   validatePlan,
   validatePrereleaseState,
-} from '../../scripts/check-prerelease-publication.mjs';
+} from '../../src/scripts/check-prerelease-publication.mjs';
 
 const packages = [
   { name: '@prodshape/cli', version: '0.19.0-alpha.3' },

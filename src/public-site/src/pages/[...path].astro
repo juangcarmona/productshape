@@ -1,0 +1,38 @@
+---
+import { readdir, readFile } from 'node:fs/promises';
+import { join, relative } from 'node:path';
+
+export async function getStaticPaths() {
+  const legacyOutput = process.env.LEGACY_SITE_DIR;
+  if (!legacyOutput) throw new Error('LEGACY_SITE_DIR is required for the Astro site build.');
+  async function htmlFiles(directory) {
+    const files = [];
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const path = join(directory, entry.name);
+      if (entry.isDirectory() && entry.name !== 'assets' && entry.name !== 'model') {
+        files.push(...(await htmlFiles(path)));
+      } else if (entry.name.endsWith('.html')) files.push(path);
+    }
+    return files;
+  }
+  function routeParam(file) {
+    const path = relative(legacyOutput, file)
+      .replaceAll('\\', '/')
+      .replace(/\.html$/u, '');
+    if (path === 'index') return undefined;
+    if (path.endsWith('/index')) return path.slice(0, -'/index'.length);
+    return path;
+  }
+  const files = await htmlFiles(legacyOutput);
+  return Promise.all(
+    files.map(async (file) => ({
+      params: { path: routeParam(file) },
+      props: { html: await readFile(file, 'utf8') },
+    })),
+  );
+}
+
+const { html } = Astro.props;
+---
+
+<Fragment set:html={html} />

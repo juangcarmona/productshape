@@ -8,7 +8,7 @@ This project is in an early bootstrap phase (v0.1). The methodology, specificati
 
 - **The specification is normative.** Changes to artifact semantics, identifiers, relationships or lifecycle states must update `docs/specification/` and, when they change the current product, go through a Product Change under `docs/product/changes/`.
 - **Markdown and authored YAML under `docs/product` are canonical.** Generated files must never be edited by hand: `.product/generated/`, provider integration files carrying a managed header, and the generated field tables in `docs/specification/frontmatter-reference.md`. That last one is the easy mistake — it is a specification chapter, so it looks authored, but the tables between its `BEGIN GENERATED` / `END GENERATED` markers come from the JSON Schemas (ADR 0009). Change the schema, run `pnpm docs:frontmatter`, and commit the regenerated chapter; a conformance test fails the build if the two disagree. The prose around the markers _is_ hand-written.
-- **Deterministic core, AI reasoning separated.** Structural validation logic belongs in `packages/core`; semantic reasoning belongs in `skills/`. Do not blur that boundary.
+- **Deterministic core, AI reasoning separated.** Structural validation logic belongs in `src/packages/core`; semantic reasoning belongs in `skills/`. Do not blur that boundary.
 - **Small dependency set.** New runtime dependencies need a strong justification; review the package manifests and [architecture constraints](docs/architecture/02-constraints.md).
 
 ## Development setup
@@ -30,7 +30,7 @@ pnpm test
 
 Run the single command rather than the five: a partial run passes locally and fails in CI, and `format:check` is the one that gets skipped.
 
-`pnpm build` before `pnpm test`: one test packs the CLI tarball and needs `dist/`. If you changed a JSON Schema, also run `pnpm docs:frontmatter`. If you changed anything under `skills/`, `commands/` or `templates/`, run `pnpm sync:assets` to mirror it into `packages/distribution/assets/` and then `prodshape integration update`, or CI's drift check will fail.
+`pnpm build` before `pnpm test`: one test packs the CLI tarball and needs `dist/`. If you changed a JSON Schema, also run `pnpm docs:frontmatter`. If you changed anything under `skills/`, `commands/` or `templates/`, run `pnpm sync:assets` to mirror it into `src/packages/distribution/assets/` and then `prodshape integration update`, or CI's drift check will fail.
 
 Node >= 22 (the current Node.js LTS lines) and pnpm (see `packageManager` in `package.json`) are required.
 

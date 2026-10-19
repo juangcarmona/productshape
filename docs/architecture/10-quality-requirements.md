@@ -10,10 +10,10 @@ description: Architectural realization and evidence for product quality requirem
 
 | ProductShape requirement | Architectural realization | Evidence or gap |
 | --- | --- | --- |
-| [QR-DETERMINISM-001](../product/model/requirements/quality/qr-determinism-001.md): identical content gives identical structural results | Core logic is deterministic; generated artifacts are derived from the model | `packages/core/`; CI and conformance workflows compare behavior. The product requirement owns the pass criteria. |
+| [QR-DETERMINISM-001](../product/model/requirements/quality/qr-determinism-001.md): identical content gives identical structural results | Core logic is deterministic; generated artifacts are derived from the model | `src/packages/core/`; CI and conformance workflows compare behavior. The product requirement owns the pass criteria. |
 | [QR-PORTABILITY-001](../product/model/requirements/quality/qr-portability-001.md): consistent supported development platforms | Node.js package with platform-neutral path handling and no shell-dependent core logic | `.github/workflows/ci.yml` runs a Linux, Windows, and macOS matrix on Node 22 and 24. |
-| [QR-ACCESSIBILITY-001](../product/model/requirements/quality/qr-accessibility-001.md): generated explorer is keyboard operable and understandable without color | Semantic HTML, visible focus, keyboard controls, and embedded assets are implemented in the snapshot renderer | `packages/cli/src/snapshot/`; product verification criteria require rendered inspection. |
-| [QR-PRESENTATION-001](../product/model/requirements/quality/qr-presentation-001.md): compact, text-first snapshot | System fonts, restrained palette, explicit artifact-kind labels, responsive layout | Snapshot source and `scripts/screenshot-snapshot.mts`; inspect rendered results against the requirement. |
+| [QR-ACCESSIBILITY-001](../product/model/requirements/quality/qr-accessibility-001.md): generated explorer is keyboard operable and understandable without color | Semantic HTML, visible focus, keyboard controls, and embedded assets are implemented in the snapshot renderer | `src/packages/cli/src/snapshot/`; product verification criteria require rendered inspection. |
+| [QR-PRESENTATION-001](../product/model/requirements/quality/qr-presentation-001.md): compact, text-first snapshot | System fonts, restrained palette, explicit artifact-kind labels, responsive layout | Snapshot source and `src/scripts/screenshot-snapshot.mts`; inspect rendered results against the requirement. |
 
 <!-- pdac:cite id="QR-DETERMINISM-001" digest="sha256:222606693286667f7974e3dd8b88e6248ca29ce75cb54c9285cc7aaef2c08da3" -->
 

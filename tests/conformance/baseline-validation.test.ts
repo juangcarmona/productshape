@@ -61,7 +61,7 @@ describe('bundled schemas', () => {
     expect(canonical.length).toBe(28);
     for (const file of canonical) {
       const name = file.slice(schemasDir.length + 1);
-      const bundled = join(repoRoot, 'packages', 'core', 'schemas', name);
+      const bundled = join(repoRoot, 'src', 'packages', 'core', 'schemas', name);
       expect(await readFile(bundled, 'utf8'), name).toBe(await readFile(file, 'utf8'));
     }
   });

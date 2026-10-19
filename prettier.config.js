@@ -3,4 +3,5 @@ export default {
   printWidth: 100,
   singleQuote: true,
   proseWrap: 'never',
+  plugins: ['prettier-plugin-astro'],
 };

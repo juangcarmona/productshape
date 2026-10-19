@@ -10,7 +10,7 @@ The parsing contract that turns canonical Markdown-plus-frontmatter files into t
 
 ### Requirement: Markdown artifacts parse deterministically
 
-`packages/core` SHALL parse a Markdown artifact file into YAML frontmatter and body, reporting invalid YAML as a diagnostic rather than throwing, and SHALL normalize content to LF before computing any content digest.
+`src/packages/core` SHALL parse a Markdown artifact file into YAML frontmatter and body, reporting invalid YAML as a diagnostic rather than throwing, and SHALL normalize content to LF before computing any content digest.
 
 {pdac:cite id="FR-PARSE-001" digest="sha256:a7ef243c24cc861fe39a127ee31aa3c330655120c39184ba3b54ce63317c220d"}
 
@@ -28,7 +28,7 @@ The parsing contract that turns canonical Markdown-plus-frontmatter files into t
 
 ### Requirement: Frontmatter validates against the artifact schema
 
-`packages/core` SHALL select the JSON Schema matching the artifact's `type` field and validate the frontmatter against it, mapping schema violations to diagnostics.
+`src/packages/core` SHALL select the JSON Schema matching the artifact's `type` field and validate the frontmatter against it, mapping schema violations to diagnostics.
 
 #### Scenario: Unknown artifact type
 

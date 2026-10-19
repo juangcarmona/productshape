@@ -1,0 +1,21 @@
+---
+interface Props {
+  source: string;
+  title: string;
+  sourceHref?: string;
+  sourceRevision?: string;
+  svgHref?: string;
+}
+
+const { source, title, sourceHref, sourceRevision, svgHref } = Astro.props;
+---
+
+<figure class="public-diagram mermaid-diagram" data-renderer="mermaid">
+  <figcaption>{title}</figcaption>
+  {svgHref && <img src={svgHref} alt={title} loading="lazy" />}
+  <pre aria-label={title}><code class="language-mermaid">{source}</code></pre>
+  {sourceHref && <a href={sourceHref}>View source</a>}
+  {sourceRevision && (
+    <small data-source-revision={sourceRevision}>Source revision: {sourceRevision}</small>
+  )}
+</figure>

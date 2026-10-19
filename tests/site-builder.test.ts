@@ -6,10 +6,11 @@ import { JSDOM } from 'jsdom';
 import { describe, expect, it } from 'vitest';
 
 const repoRoot = process.cwd();
-const validator = join(repoRoot, 'scripts/validate-public-site.mjs');
+const validator = join(repoRoot, 'src/scripts/validate-public-site.mjs');
+const legacyBuilder = join(repoRoot, 'src/scripts/build-legacy-public-content.mjs');
 
 async function build(args: string[], root = repoRoot, env = process.env) {
-  return spawnSync(process.execPath, [join(root, 'scripts/build-public-site.mjs'), ...args], {
+  return spawnSync(process.execPath, [join(root, 'src/scripts/build-public-site.mjs'), ...args], {
     cwd: root,
     env,
     encoding: 'utf8',
@@ -17,6 +18,54 @@ async function build(args: string[], root = repoRoot, env = process.env) {
 }
 
 describe('static site publication profiles', () => {
+  it('keeps representative page HTML byte-identical through the Astro shell', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'productshape-astro-parity-'));
+    const legacy = join(directory, 'legacy');
+    const astro = join(directory, 'astro');
+    try {
+      const legacyResult = spawnSync(
+        process.execPath,
+        [
+          legacyBuilder,
+          '--profile',
+          'public',
+          '--out',
+          legacy,
+          '--base-path',
+          '/',
+          '--site-origin',
+          'https://productshape.dev',
+        ],
+        { cwd: repoRoot, encoding: 'utf8' },
+      );
+      expect(legacyResult.status, legacyResult.stderr).toBe(0);
+      const astroResult = await build([
+        '--profile',
+        'public',
+        '--out',
+        astro,
+        '--base-path',
+        '/',
+        '--site-origin',
+        'https://productshape.dev',
+      ]);
+      expect(astroResult.status, astroResult.stderr).toBe(0);
+      for (const file of [
+        'index.html',
+        'en/index.html',
+        'en/product/index.html',
+        'es/index.html',
+        '404.html',
+      ]) {
+        expect(await readFile(join(astro, file), 'utf8'), file).toBe(
+          await readFile(join(legacy, file), 'utf8'),
+        );
+      }
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
   it('builds the public root-domain site without engineering routes', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'productshape-public-site-'));
     const output = join(directory, 'public');
@@ -280,11 +329,12 @@ describe('static site publication profiles', () => {
     const directory = await mkdtemp(join(tmpdir(), 'productshape-public-independent-'));
     try {
       for (const path of [
-        'scripts/build-public-site.mjs',
-        'site',
+        'src/scripts/build-public-site.mjs',
+        'src/scripts/build-legacy-public-content.mjs',
+        'src/public-site',
         'docs/adoption',
         'docs/assets/snapshot/01-overview-desktop.png',
-        'packages/cli/package.json',
+        'src/packages/cli/package.json',
       ]) {
         await mkdir(join(directory, path, '..'), { recursive: true });
         await cp(join(repoRoot, path), join(directory, path), { recursive: true });

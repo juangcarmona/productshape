@@ -62,7 +62,14 @@ function meetsProductFloor(version: string | undefined): boolean {
 }
 
 const openspecVersion = detectedOpenSpecVersion();
-const integrationEntry = join(repoRoot, 'packages', 'integration-openspec', 'dist', 'index.js');
+const integrationEntry = join(
+  repoRoot,
+  'src',
+  'packages',
+  'integration-openspec',
+  'dist',
+  'index.js',
+);
 const canRun = meetsProductFloor(openspecVersion) && existsSync(integrationEntry);
 
 /** The test resolution hook: production resolves @prodshape/integration-openspec from the

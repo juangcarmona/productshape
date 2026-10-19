@@ -67,7 +67,7 @@ The CLI bundles every package below, so installing `@prodshape/cli` is all you n
 
 ## Quickstart
 
-> **This is a disposable sandbox, not the adoption path.** It writes into the accepted model directly to show the mechanics in two minutes and is deliberately non-governed. Real adoption changes the definition only through Product Changes: follow the governed citation-first walkthrough in the [`@prodshape/cli` README](packages/cli/README.md#the-governed-citation-first-walkthrough).
+> **This is a disposable sandbox, not the adoption path.** It writes into the accepted model directly to show the mechanics in two minutes and is deliberately non-governed. Real adoption changes the definition only through Product Changes: follow the governed citation-first walkthrough in the [`@prodshape/cli` README](src/packages/cli/README.md#the-governed-citation-first-walkthrough).
 
 Your model, rendered, in a couple of minutes:
 

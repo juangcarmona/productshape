@@ -6,7 +6,7 @@ import {
   isShippedSourcePath,
   parseChangesetPackages,
   shippedSourceDirs,
-} from '../../scripts/check-release-drift.mjs';
+} from '../../src/scripts/check-release-drift.mjs';
 import { repoRoot } from '../helpers.js';
 
 describe('release drift check', () => {
@@ -19,12 +19,14 @@ describe('release drift check', () => {
   });
 
   it('ignores tests and snapshots inside shipped directories', () => {
-    expect(isShippedSourcePath('packages/core/src/validate.ts')).toBe(true);
-    expect(isShippedSourcePath('packages/core/src/validate.test.ts')).toBe(false);
-    expect(isShippedSourcePath('packages/core/src/__snapshots__/graph.test.ts.snap')).toBe(false);
-    expect(isShippedSourcePath('packages/distribution/assets/skills/define-product/SKILL.md')).toBe(
-      true,
+    expect(isShippedSourcePath('src/packages/core/src/validate.ts')).toBe(true);
+    expect(isShippedSourcePath('src/packages/core/src/validate.test.ts')).toBe(false);
+    expect(isShippedSourcePath('src/packages/core/src/__snapshots__/graph.test.ts.snap')).toBe(
+      false,
     );
+    expect(
+      isShippedSourcePath('src/packages/distribution/assets/skills/define-product/SKILL.md'),
+    ).toBe(true);
     expect(isShippedSourcePath('packages\\core\\src\\apply.test.ts')).toBe(false);
   });
 
@@ -56,11 +58,11 @@ describe('release drift check', () => {
         version: '0.20.0',
         tag: '@prodshape/core@0.20.0',
         status: 'drift',
-        changedFiles: ['packages/core/src/index.ts'],
+        changedFiles: ['src/packages/core/src/index.ts'],
       },
     ]);
     expect(report).toContain('| @prodshape/core | 0.20.0 | drift |');
-    expect(report).toContain('packages/core/src/index.ts');
+    expect(report).toContain('src/packages/core/src/index.ts');
   });
 
   /**

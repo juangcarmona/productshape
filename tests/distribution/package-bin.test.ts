@@ -42,12 +42,12 @@ async function runBin(name: string, args: string[], cwd = scratch) {
 
 beforeAll(async () => {
   scratch = await mkdtemp(join(tmpdir(), 'prodshape-package-'));
-  const cliDir = join(repoRoot, 'packages', 'cli');
+  const cliDir = join(repoRoot, 'src', 'packages', 'cli');
   try {
     await stat(join(cliDir, 'dist', 'bin.js'));
   } catch {
     throw new Error(
-      'packages/cli/dist/bin.js is missing: this test packs the BUILT package — run `pnpm build` before the test suite',
+      'src/packages/cli/dist/bin.js is missing: this test packs the BUILT package — run `pnpm build` before the test suite',
     );
   }
   await execFileAsync('npm', ['pack', '--pack-destination', scratch], {
@@ -72,7 +72,7 @@ afterAll(async () => {
 describe('packed tarball binaries', () => {
   it('--version reports the packed CLI package version', async () => {
     const packageJson = JSON.parse(
-      await readFile(join(repoRoot, 'packages', 'cli', 'package.json'), 'utf8'),
+      await readFile(join(repoRoot, 'src', 'packages', 'cli', 'package.json'), 'utf8'),
     ) as { version: string };
     const result = await runBin('prodshape', ['--version']);
     expect(result.code, result.stderr).toBe(0);

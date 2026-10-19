@@ -4,11 +4,12 @@ The public site at `productshape.dev` and GitHub Pages engineering portal have s
 
 ## Build and review locally
 
-Public generation and validation use only Node 22 or newer and repository source; no package installation, generated Product Snapshot or architecture input is needed:
+Public generation and validation use Node 22 or newer and the workspace dependencies for the Astro shell; no generated Product Snapshot or architecture input is needed:
 
 ```bash
-node scripts/build-public-site.mjs --profile public --out dist/public-site --base-path / --site-origin https://productshape.dev
-node scripts/validate-public-site.mjs --dir dist/public-site --profile public --base-path / --site-origin https://productshape.dev
+pnpm install --frozen-lockfile
+node src/scripts/build-public-site.mjs --profile public --out dist/public-site --base-path / --site-origin https://productshape.dev
+node src/scripts/validate-public-site.mjs --dir dist/public-site --profile public --base-path / --site-origin https://productshape.dev
 python3 -m http.server 4173 --directory dist/public-site
 ```
 
@@ -28,7 +29,7 @@ Find the successful **Public site** workflow run for the intended source in GitH
 
 ```bash
 gh run download RUN_ID --repo juangcarmona/productshape --name ARTIFACT_NAME --dir dist/public-site
-node scripts/validate-public-site.mjs --dir dist/public-site --profile public --base-path / --site-origin https://productshape.dev
+node src/scripts/validate-public-site.mjs --dir dist/public-site --profile public --base-path / --site-origin https://productshape.dev
 ```
 
 Download into an empty directory so older files cannot contaminate the artifact. GitHub's downloaded artifact ZIP has the upload directory's **contents at the archive root**:

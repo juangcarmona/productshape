@@ -1,7 +1,7 @@
 /**
  * The diagnostic codes emitted by the implementation and the tables in
  * docs/specification/validation.md are a single contract that must change together
- * (packages/core/src/diagnostics.ts says so; nothing enforced it until this test).
+ * (src/packages/core/src/diagnostics.ts says so; nothing enforced it until this test).
  *
  * Codes are emitted as string literals across many modules rather than from one registry, so
  * the check is a scan of the sources rather than an import.
@@ -50,7 +50,7 @@ const specifiedButNotEmitted: string[] = [];
 async function sourceFiles(): Promise<string[]> {
   const files: string[] = [];
   for (const pkg of ['core', 'cli', 'distribution', 'integration-openspec']) {
-    files.push(...(await listFilesRecursive(join(repoRoot, 'packages', pkg, 'src'), '.ts')));
+    files.push(...(await listFilesRecursive(join(repoRoot, 'src', 'packages', pkg, 'src'), '.ts')));
   }
   return files.filter((file) => !file.endsWith('.test.ts') && !file.endsWith('test-support.ts'));
 }

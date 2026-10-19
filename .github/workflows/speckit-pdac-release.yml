@@ -68,7 +68,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main
           git checkout -B "$BRANCH" origin/main
-          node scripts/update-speckit-catalog.mjs "$EXT_ID" "$TAG_VERSION" "$(cat "speckit-$EXT_ID.zip.sha256")"
+          node src/scripts/update-speckit-catalog.mjs "$EXT_ID" "$TAG_VERSION" "$(cat "speckit-$EXT_ID.zip.sha256")"
           git add extensions/catalog.json
           git commit -m "chore: serve speckit-$EXT_ID v${TAG_VERSION} from the extension catalog"
           git push -u origin "$BRANCH" --force-with-lease

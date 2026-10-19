@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sameDiagnosticMultiset } from '../../scripts/pdac-conformance-diagnostics.mjs';
+import { sameDiagnosticMultiset } from '../../src/scripts/pdac-conformance-diagnostics.mjs';
 
 describe('the pinned conformance harness diagnostic matcher', () => {
   it('ignores optional fields omitted by the expected diagnostic', () => {

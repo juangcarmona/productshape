@@ -20,13 +20,13 @@ The core owns deterministic model behavior. The CLI owns command parsing, orches
 
 | Building block | Responsibility | Interfaces | Source location |
 | --- | --- | --- | --- |
-| Core | Parse artifacts; validate schemas and relationships; compile graph; plan changes; emit and verify citations | TypeScript library API | `packages/core/` |
-| CLI | Commands, arguments, output formats, exit codes, command orchestration | `prodshape` binary | `packages/cli/` |
-| Distribution | Initialize repositories and render/update managed assistant assets | CLI-internal package API | `packages/distribution/` |
-| Provider integrations | Map canonical skills/commands to Claude, Copilot, Codex, and OpenCode paths | Renderer interfaces | `packages/integration-*` |
-| SDD integrations | Configure OpenSpec and Spec Kit workflows around the product-definition interface | Integration package APIs | `packages/integration-openspec/`, `packages/integration-speckit/` |
+| Core | Parse artifacts; validate schemas and relationships; compile graph; plan changes; emit and verify citations | TypeScript library API | `src/packages/core/` |
+| CLI | Commands, arguments, output formats, exit codes, command orchestration | `prodshape` binary | `src/packages/cli/` |
+| Distribution | Initialize repositories and render/update managed assistant assets | CLI-internal package API | `src/packages/distribution/` |
+| Provider integrations | Map canonical skills/commands to Claude, Copilot, Codex, and OpenCode paths | Renderer interfaces | `src/packages/integration-*` |
+| SDD integrations | Configure OpenSpec and Spec Kit workflows around the product-definition interface | Integration package APIs | `src/packages/integration-openspec/`, `src/packages/integration-speckit/` |
 | Schemas and templates | Authoring contracts and conformant examples | Files loaded by CLI or printed on demand | `schemas/`, `templates/` |
-| Static site builder | Build separate public and engineering output profiles from shared localized content and static assets | Node build script | `scripts/build-public-site.mjs`, `site/` |
+| Static site builder | Build separate public and engineering output profiles from shared localized content and static assets | Node build script | `src/scripts/build-public-site.mjs`, `src/public-site/` |
 
 ### Important Interfaces
 

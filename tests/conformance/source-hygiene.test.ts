@@ -5,13 +5,13 @@ import { listFilesRecursive, repoRoot } from '../helpers.js';
 
 /**
  * Source files must stay plain text. Twice now a literal U+0000 has been used as a map-key delimiter in
- * packages/core/src/snapshot.ts, which works at runtime but makes the file a *binary* file to grep,
+ * src/packages/core/src/snapshot.ts, which works at runtime but makes the file a *binary* file to grep,
  * ripgrep and GitHub's blob view — so the largest source file in the package silently stopped being
  * searchable. Both times it reached main. This is the guard that stops a third.
  */
 describe('source hygiene', () => {
   it('contains no control characters that would make a source file unsearchable', async () => {
-    const roots = ['packages', 'scripts', 'tests'];
+    const roots = ['src/packages', 'src/scripts', 'tests'];
     const offenders: string[] = [];
     for (const root of roots) {
       for (const file of await listFilesRecursive(join(repoRoot, root), '.ts')) {
@@ -47,7 +47,7 @@ describe('source hygiene', () => {
  */
 describe('the snapshot client script', () => {
   it('contains no backtick or template placeholder that would end its own literal', async () => {
-    const source = await readFile(join(repoRoot, 'packages/core/src/snapshot.ts'), 'utf8');
+    const source = await readFile(join(repoRoot, 'src/packages/core/src/snapshot.ts'), 'utf8');
     const marker = 'const script = String.raw`';
     const start = source.indexOf(marker);
     expect(start, 'the client script literal').toBeGreaterThan(-1);

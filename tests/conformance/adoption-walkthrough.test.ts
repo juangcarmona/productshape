@@ -113,7 +113,7 @@ beforeAll(async () => {
   scratch = await mkdtemp(join(tmpdir(), 'prodshape-walkthrough-'));
 
   await execFileAsync('npm', ['pack', '--pack-destination', scratch], {
-    cwd: join(repoRoot, 'packages', 'cli'),
+    cwd: join(repoRoot, 'src', 'packages', 'cli'),
     encoding: 'utf8',
     shell: isWindows,
   });

@@ -11,7 +11,7 @@
       "link_mode": "web",
       "revision": "245de1fd5d10faaeb2b30f401853fcb805eca00b"
     },
-    "output": "site/diagrams/productshape-publication-workflow.html"
+    "output": "src/public-site/diagrams/productshape-publication-workflow.html"
   },
   "lanes": [
     { "id": "intent", "label": "Product intent and review" },

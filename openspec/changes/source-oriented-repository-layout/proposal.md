@@ -4,7 +4,7 @@
 
 ## Why
 
-ProductShape currently keeps maintained implementation under several top-level directories (`packages/`, `site/`, and `scripts/`). That layout makes the repository boundary less obvious, scatters executable source from documentation and canonical assets, and makes it harder to understand where a change belongs.
+ProductShape currently keeps maintained implementation under several top-level directories (`src/packages/`, `src/public-site/`, and `src/scripts/`). That layout makes the repository boundary less obvious, scatters executable source from documentation and canonical assets, and makes it harder to understand where a change belongs.
 
 Raccord and DomusMind use a clearer repository shape: documentation and repository-level assets remain discoverable at the root, while maintained implementation is grouped under a source directory. ProductShape should adopt the same principle without changing package names, published entry points, generated artifacts, current site appearance, or product behavior. The site migration should also establish Astro as a maintainable static site engine, with first-class localization and authored Mermaid/Archify diagram support.
 
@@ -35,9 +35,9 @@ Raccord and DomusMind use a clearer repository shape: documentation and reposito
 ```text
 docs/                         # canonical engineering and product documentation
 src/
-  packages/*                  # maintained workspace packages
+  packages/*                     # maintained workspace packages
   public-site/                # Astro site shells, content, assets, diagrams
-  scripts/                    # maintained build and validation scripts
+  scripts/                       # maintained build and validation scripts
 tests/                        # repository-level tests and fixtures
 openspec/                     # product and engineering change specifications
 skills/ commands/ templates/ schemas/ extensions/ examples/

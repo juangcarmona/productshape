@@ -52,7 +52,7 @@ describe('bundled assets', () => {
         const relative = toPosix(file).slice(toPosix(repoRoot).length + 1);
         const bundled = join(
           repoRoot,
-          'packages',
+          'src/packages',
           'distribution',
           'assets',
           ...relative.split('/'),

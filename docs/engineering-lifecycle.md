@@ -56,7 +56,7 @@ No additional Done dimensions.
 
 ### Deterministic checks
 
-These checks are the CI bar. The ProductShape commands run in `.github/workflows/ci.yml` as `node packages/cli/dist/bin.js ...` after the build; the listed `pnpm` checks run as shown in the workflows.
+These checks are the CI bar. The ProductShape commands run in `.github/workflows/ci.yml` as `node src/packages/cli/dist/bin.js ...` after the build; the listed `pnpm` checks run as shown in the workflows.
 
 | Check | How it runs | Evidence it produces |
 | --- | --- | --- |
@@ -68,12 +68,12 @@ These checks are the CI bar. The ProductShape commands run in `.github/workflows
 | Lifecycle validation | `pnpm lifecycle:check` | Passing GitHub Actions check |
 | Release workflow validation | `pnpm release-workflow:check` | Passing GitHub Actions check |
 | Release contract smoke | `pnpm release-contract:smoke` | Passing GitHub Actions check |
-| ProductShape model validation | `node packages/cli/dist/bin.js validate` | Passing GitHub Actions check |
-| ProductShape change validation | `node packages/cli/dist/bin.js change validate` | Passing GitHub Actions check |
-| ProductShape graph | `node packages/cli/dist/bin.js graph` | Passing GitHub Actions check |
-| ProductShape doctor | `node packages/cli/dist/bin.js doctor` | Passing GitHub Actions check |
-| OpenSpec citation verification | `node packages/cli/dist/bin.js citations verify --provider openspec` | Passing GitHub Actions check |
-| Managed integration consistency | `node packages/cli/dist/bin.js integration update --check` | Passing GitHub Actions check |
+| ProductShape model validation | `node src/packages/cli/dist/bin.js validate` | Passing GitHub Actions check |
+| ProductShape change validation | `node src/packages/cli/dist/bin.js change validate` | Passing GitHub Actions check |
+| ProductShape graph | `node src/packages/cli/dist/bin.js graph` | Passing GitHub Actions check |
+| ProductShape doctor | `node src/packages/cli/dist/bin.js doctor` | Passing GitHub Actions check |
+| OpenSpec citation verification | `node src/packages/cli/dist/bin.js citations verify --provider openspec` | Passing GitHub Actions check |
+| Managed integration consistency | `node src/packages/cli/dist/bin.js integration update --check` | Passing GitHub Actions check |
 
 The changeset reminder is warning-only and is not a blocking check. The workflow's `npm audit signatures || true` is non-blocking. No blocking dependency, secret, or SAST scan was found.
 

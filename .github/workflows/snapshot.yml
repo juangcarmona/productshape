@@ -6,11 +6,17 @@ on:
       - '.github/workflows/snapshot.yml'
       - 'docs/architecture/**'
       - 'docs/product/model/**'
-      - 'packages/**'
-      - 'scripts/build-public-site.mjs'
-      - 'scripts/validate-public-site.mjs'
-      - 'site/assets/**'
-      - 'site/content/**'
+      - 'src/packages/**'
+      - 'src/scripts/build-public-site.mjs'
+      - 'src/scripts/build-legacy-public-content.mjs'
+      - 'src/scripts/validate-public-site.mjs'
+      - 'src/public-site/assets/**'
+      - 'src/public-site/content/**'
+      - 'src/public-site/src/**'
+      - 'src/public-site/astro.config.mjs'
+      - 'src/public-site/diagrams/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
   push:
     branches: [main]
   workflow_dispatch:
@@ -37,7 +43,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - name: generate the product explorer
-        run: node packages/cli/dist/bin.js graph --format html --product-url https://productshape.dev
+        run: node src/packages/cli/dist/bin.js graph --format html --product-url https://productshape.dev
       - name: identify engineering snapshot sources
         env:
           SOURCE_REVISION: ${{ github.sha }}
@@ -60,9 +66,11 @@ jobs:
           );
           NODE
       - name: assemble the engineering portal
-        run: node scripts/build-public-site.mjs --profile engineering --out _site --base-path /productshape/ --site-origin https://juangcarmona.github.io
+        env:
+          MERMAID_RENDER: '1'
+        run: node src/scripts/build-public-site.mjs --profile engineering --out _site --base-path /productshape/ --site-origin https://juangcarmona.github.io
       - name: Validate the engineering directory
-        run: node scripts/validate-public-site.mjs --dir _site --profile engineering --base-path /productshape/ --site-origin https://juangcarmona.github.io
+        run: node src/scripts/validate-public-site.mjs --dir _site --profile engineering --base-path /productshape/ --site-origin https://juangcarmona.github.io
       - name: Upload the engineering review artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

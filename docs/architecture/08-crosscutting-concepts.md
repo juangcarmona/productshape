@@ -18,7 +18,7 @@ Markdown and YAML files under version control are authoritative. The core parses
 
 ### Evidence
 
-ADRs [0001](decisions/0001-markdown-is-canonical.md), [0002](decisions/0002-the-graph-is-derived.md), and [0008](decisions/0008-vendor-assets-are-generated.md); implementation in `packages/core/`, `packages/distribution/`, and `scripts/`.
+ADRs [0001](decisions/0001-markdown-is-canonical.md), [0002](decisions/0002-the-graph-is-derived.md), and [0008](decisions/0008-vendor-assets-are-generated.md); implementation in `src/packages/core/`, `src/packages/distribution/`, and `src/scripts/`.
 
 ## Deterministic and semantic work
 
@@ -32,7 +32,7 @@ Core code enforces structural rules and repeatable outputs. AI assistant skills 
 
 ### Evidence
 
-[ADR 0007](decisions/0007-deterministic-core-and-ai-reasoning-are-separated.md), `packages/core/`, and canonical assets in `skills/`.
+[ADR 0007](decisions/0007-deterministic-core-and-ai-reasoning-are-separated.md), `src/packages/core/`, and canonical assets in `skills/`.
 
 ## Stable identity and citations
 
@@ -46,4 +46,4 @@ Stable artifact IDs decouple identity from repository paths. A citation binds a 
 
 ### Evidence
 
-[ADRs 0003 and 0006](09-architecture-decisions.md), `packages/core/src/citations.ts`, and `packages/core/src/artifact.ts`.
+[ADRs 0003 and 0006](09-architecture-decisions.md), `src/packages/core/src/citations.ts`, and `src/packages/core/src/artifact.ts`.
