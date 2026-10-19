@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "agent-toolkit": {
+      "source": {
+        "source": "github",
+        "repo": "juangcarmona/agent-toolkit"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "agentic-sdlc@agent-toolkit": true
+  }
+}
