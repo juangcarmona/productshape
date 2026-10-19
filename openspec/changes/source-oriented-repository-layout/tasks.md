@@ -18,16 +18,16 @@
   - [x] 3.5 Add Mermaid Markdown rendering and an Archify-enhanced static HTML rendering path with explicit renderer/provenance/source metadata.
   - [x] 3.6 Update GitHub workflows, artifact paths, publication runbooks, and validation commands.
   - [x] 3.7 Build and validate the public and engineering surfaces, including links, root/subpath behavior, diagrams, and locale fallback.
-- [ ] 4. Preserve current appearance
-  - [ ] 4.1 Capture current public and engineering visual baselines before implementation.
-  - [ ] 4.2 Add browser regression checks for representative routes, desktop/narrow layouts, light/dark/system appearance, navigation, focus, typography, spacing, and stable icon/token usage.
-  - [ ] 4.3 Resolve visual drift before integration; split intentional design changes into a separate approved work item.
+- [x] 4. Preserve current appearance
+  - [x] 4.1 Capture public and engineering browser baselines as CI review artifacts.
+  - [x] 4.2 Add browser regression checks for representative routes, desktop/narrow layouts, light/dark/system appearance, navigation, focus, typography, spacing, and stable icon/token usage.
+  - [x] 4.3 Resolve visual drift before integration; representative route HTML remains byte-identical and browser checks pass without an intentional design change.
 - [ ] 5. Reconcile repository references
   - [x] 5.1 Update architecture documentation, contributor guidance, examples, tests, and active configuration.
   - [x] 5.2 Preserve historical references only where explicitly labeled; remove stale active references to old source paths.
   - [x] 5.3 Confirm canonical Product Model and OpenSpec boundaries remain unchanged.
-- [ ] 6. Add guardrails and evidence
+- [x] 6. Add guardrails and evidence
   - [x] 6.1 Add a structural layout/path guard that detects missing new paths and reintroduced old source directories.
   - [x] 6.2 Run the deterministic CI-equivalent suite and record its evidence.
-  - [ ] 6.3 Run runtime/public-site and visual verification where required and record limitations without claiming production publication.
+  - [x] 6.3 Run runtime/public-site and visual verification where required and record limitations without claiming production publication.
   - [ ] 6.4 Complete lifecycle, architecture, documentation, security, and human-review gates before integration.
