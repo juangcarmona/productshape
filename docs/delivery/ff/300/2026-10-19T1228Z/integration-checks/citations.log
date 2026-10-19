@@ -1,0 +1,134 @@
+provider openspec 0.22.1, root openspec
+bound	openspec/changes/issue-296-publication-surfaces/proposal.md [issue-296-publication-surfaces]	14 citation(s)
+bound	openspec/changes/issue-296-publication-surfaces/design.md [issue-296-publication-surfaces]	3 citation(s)
+bound	openspec/changes/issue-296-publication-surfaces/tasks.md [issue-296-publication-surfaces]	10 citation(s)
+bound	openspec/changes/issue-296-publication-surfaces/specs/engineering-publication/spec.md [issue-296-publication-surfaces]	2 citation(s)
+bound	openspec/changes/issue-296-publication-surfaces/specs/public-product-site/spec.md [issue-296-publication-surfaces]	3 citation(s)
+bound	openspec/specs/ai-skills/spec.md	3 citation(s)
+bound	openspec/specs/artifact-parsing/spec.md	3 citation(s)
+bound	openspec/specs/artifact-schemas/spec.md	4 citation(s)
+bound	openspec/specs/cli/spec.md	1 citation(s)
+bound	openspec/specs/distribution/spec.md	3 citation(s)
+bound	openspec/specs/impact-analysis/spec.md	4 citation(s)
+bound	openspec/specs/methodology-docs/spec.md	6 citation(s)
+bound	openspec/specs/normative-specification/spec.md	11 citation(s)
+bound	openspec/specs/product-exploration/spec.md	2 citation(s)
+bound	openspec/specs/product-graph/spec.md	3 citation(s)
+bound	openspec/specs/public-brand/spec.md	2 citation(s)
+bound	openspec/specs/release-publishing/spec.md	1 citation(s)
+bound	openspec/specs/self-hosted-product-model/spec.md	3 citation(s)
+bound	openspec/specs/snapshot-generation/spec.md	29 citation(s)
+bound	openspec/specs/structural-validation/spec.md	4 citation(s)
+current	ACT-ENGINEERING-READER	openspec/changes/issue-296-publication-surfaces/proposal.md:11
+current	ACT-PUBLIC-READER	openspec/changes/issue-296-publication-surfaces/proposal.md:12
+current	BC-PUBLICATION	openspec/changes/issue-296-publication-surfaces/proposal.md:13
+current	UC-ENGINEERING-PORTAL-001	openspec/changes/issue-296-publication-surfaces/proposal.md:14
+current	UC-PUBLIC-SITE-001	openspec/changes/issue-296-publication-surfaces/proposal.md:15
+current	FR-ENGINEERING-PORTAL-001	openspec/changes/issue-296-publication-surfaces/proposal.md:40
+current	FR-PUBLIC-SITE-001	openspec/changes/issue-296-publication-surfaces/proposal.md:41
+current	TERM-ARCHITECTURE-SNAPSHOT	openspec/changes/issue-296-publication-surfaces/proposal.md:42
+current	FR-SNAPSHOT-001	openspec/changes/issue-296-publication-surfaces/proposal.md:46
+current	UC-SNAPSHOT-001	openspec/changes/issue-296-publication-surfaces/proposal.md:47
+current	TERM-PRODUCT-SNAPSHOT	openspec/changes/issue-296-publication-surfaces/proposal.md:48
+current	BR-CANONICAL-001	openspec/changes/issue-296-publication-surfaces/proposal.md:49
+current	CON-MARKDOWN-001	openspec/changes/issue-296-publication-surfaces/proposal.md:50
+current	CON-BRAND-001	openspec/changes/issue-296-publication-surfaces/proposal.md:54
+current	FR-ENGINEERING-PORTAL-001	openspec/changes/issue-296-publication-surfaces/design.md:9
+current	FR-PUBLIC-SITE-001	openspec/changes/issue-296-publication-surfaces/design.md:10
+current	BC-PUBLICATION	openspec/changes/issue-296-publication-surfaces/design.md:11
+current	FR-PUBLIC-SITE-001	openspec/changes/issue-296-publication-surfaces/tasks.md:7
+current	FR-ENGINEERING-PORTAL-001	openspec/changes/issue-296-publication-surfaces/tasks.md:8
+current	UC-ENGINEERING-PORTAL-001	openspec/changes/issue-296-publication-surfaces/tasks.md:16
+current	TERM-ARCHITECTURE-SNAPSHOT	openspec/changes/issue-296-publication-surfaces/tasks.md:17
+current	FR-SNAPSHOT-001	openspec/changes/issue-296-publication-surfaces/tasks.md:18
+current	UC-PUBLIC-SITE-001	openspec/changes/issue-296-publication-surfaces/tasks.md:26
+current	CON-BRAND-001	openspec/changes/issue-296-publication-surfaces/tasks.md:27
+current	BR-CANONICAL-001	openspec/changes/issue-296-publication-surfaces/tasks.md:28
+current	BC-PUBLICATION	openspec/changes/issue-296-publication-surfaces/tasks.md:36
+current	ACT-PUBLIC-READER	openspec/changes/issue-296-publication-surfaces/tasks.md:37
+current	FR-ENGINEERING-PORTAL-001	openspec/changes/issue-296-publication-surfaces/specs/engineering-publication/spec.md:14
+current	FR-ENGINEERING-PORTAL-001	openspec/changes/issue-296-publication-surfaces/specs/engineering-publication/spec.md:34
+current	CON-BRAND-001	openspec/changes/issue-296-publication-surfaces/specs/public-product-site/spec.md:14
+current	FR-PUBLIC-SITE-001	openspec/changes/issue-296-publication-surfaces/specs/public-product-site/spec.md:24
+current	FR-ENGINEERING-PORTAL-001	openspec/changes/issue-296-publication-surfaces/specs/public-product-site/spec.md:44
+current	FR-DISTRIBUTION-001	openspec/specs/ai-skills/spec.md:15
+current	ACT-AI-ASSISTANT	openspec/specs/ai-skills/spec.md:17
+current	FR-DISTRIBUTION-001	openspec/specs/ai-skills/spec.md:37
+current	FR-PARSE-001	openspec/specs/artifact-parsing/spec.md:15
+current	CON-MARKDOWN-001	openspec/specs/artifact-parsing/spec.md:17
+current	QR-DETERMINISM-001	openspec/specs/artifact-parsing/spec.md:56
+current	FR-SCHEMA-001	openspec/specs/artifact-schemas/spec.md:15
+current	TERM-PRODUCT-ARTIFACT	openspec/specs/artifact-schemas/spec.md:17
+current	BR-CHANGE-001	openspec/specs/artifact-schemas/spec.md:28
+current	BR-RELATIONSHIPS-001	openspec/specs/artifact-schemas/spec.md:39
+current	UC-VALIDATE-001	openspec/specs/cli/spec.md:15
+current	FR-INIT-002	openspec/specs/distribution/spec.md:29
+current	UC-INIT-001	openspec/specs/distribution/spec.md:31
+current	FR-OPENSPEC-001	openspec/specs/distribution/spec.md:33
+current	FR-IMPACT-001	openspec/specs/impact-analysis/spec.md:15
+current	UC-IMPACT-001	openspec/specs/impact-analysis/spec.md:17
+current	FR-INSPECT-001	openspec/specs/impact-analysis/spec.md:33
+current	UC-INSPECT-001	openspec/specs/impact-analysis/spec.md:35
+current	QR-EXPLAINABILITY-001	openspec/specs/methodology-docs/spec.md:15
+current	TERM-METHODOLOGY	openspec/specs/methodology-docs/spec.md:17
+current	BR-CHANGE-001	openspec/specs/methodology-docs/spec.md:37
+current	BR-CANONICAL-001	openspec/specs/methodology-docs/spec.md:48
+current	BR-RELATIONSHIPS-001	openspec/specs/methodology-docs/spec.md:50
+current	JRN-ADOPT-001	openspec/specs/methodology-docs/spec.md:61
+current	TERM-METHODOLOGY	openspec/specs/normative-specification/spec.md:15
+current	TERM-PRODUCT-ARTIFACT	openspec/specs/normative-specification/spec.md:17
+current	BR-IDENTITY-001	openspec/specs/normative-specification/spec.md:28
+current	BR-RELATIONSHIPS-001	openspec/specs/normative-specification/spec.md:39
+current	BR-CANONICAL-001	openspec/specs/normative-specification/spec.md:50
+current	TERM-CURRENT-PRODUCT-MODEL	openspec/specs/normative-specification/spec.md:52
+current	BR-CHANGE-001	openspec/specs/normative-specification/spec.md:72
+current	UC-CHANGE-001	openspec/specs/normative-specification/spec.md:74
+current	BR-SDD-001	openspec/specs/normative-specification/spec.md:85
+current	TERM-CITATION	openspec/specs/normative-specification/spec.md:87
+current	FR-CITATIONS-VERIFY-001	openspec/specs/normative-specification/spec.md:89
+current	FR-EXPLORE-001	openspec/specs/product-exploration/spec.md:13
+current	UC-EXPLORE-001	openspec/specs/product-exploration/spec.md:15
+current	FR-GRAPH-001	openspec/specs/product-graph/spec.md:15
+current	BR-RELATIONSHIPS-001	openspec/specs/product-graph/spec.md:17
+current	BR-CANONICAL-001	openspec/specs/product-graph/spec.md:33
+current	CON-BRAND-001	openspec/specs/public-brand/spec.md:15
+current	TERM-REFERENCE-IMPLEMENTATION	openspec/specs/public-brand/spec.md:17
+current	FR-RELEASE-001	openspec/specs/release-publishing/spec.md:15
+current	TERM-REFERENCE-IMPLEMENTATION	openspec/specs/self-hosted-product-model/spec.md:15
+current	BR-CHANGE-001	openspec/specs/self-hosted-product-model/spec.md:17
+current	TERM-CURRENT-PRODUCT-MODEL	openspec/specs/self-hosted-product-model/spec.md:19
+current	FR-SNAPSHOT-001	openspec/specs/snapshot-generation/spec.md:13
+current	UC-SNAPSHOT-001	openspec/specs/snapshot-generation/spec.md:15
+current	FR-SNAPSHOT-001	openspec/specs/snapshot-generation/spec.md:31
+current	CON-NO-WEB-UI	openspec/specs/snapshot-generation/spec.md:33
+current	FR-SNAPSHOT-002	openspec/specs/snapshot-generation/spec.md:51
+current	QR-DETERMINISM-001	openspec/specs/snapshot-generation/spec.md:86
+current	CON-NO-WEB-UI	openspec/specs/snapshot-generation/spec.md:111
+current	BR-RELATIONSHIPS-001	openspec/specs/snapshot-generation/spec.md:127
+current	FR-SNAPSHOT-005	openspec/specs/snapshot-generation/spec.md:145
+current	FR-SNAPSHOT-009	openspec/specs/snapshot-generation/spec.md:146
+current	FR-SNAPSHOT-004	openspec/specs/snapshot-generation/spec.md:182
+current	QR-ACCESSIBILITY-001	openspec/specs/snapshot-generation/spec.md:183
+current	FR-SNAPSHOT-003	openspec/specs/snapshot-generation/spec.md:274
+current	FR-SNAPSHOT-005	openspec/specs/snapshot-generation/spec.md:310
+current	FR-SNAPSHOT-006	openspec/specs/snapshot-generation/spec.md:335
+current	QR-ACCESSIBILITY-001	openspec/specs/snapshot-generation/spec.md:408
+current	QR-SCALABILITY-001	openspec/specs/snapshot-generation/spec.md:436
+current	FR-SNAPSHOT-002	openspec/specs/snapshot-generation/spec.md:462
+current	FR-SNAPSHOT-002	openspec/specs/snapshot-generation/spec.md:483
+current	FR-SNAPSHOT-008	openspec/specs/snapshot-generation/spec.md:520
+current	FR-SNAPSHOT-003	openspec/specs/snapshot-generation/spec.md:546
+current	FR-SNAPSHOT-004	openspec/specs/snapshot-generation/spec.md:547
+current	FR-SNAPSHOT-002	openspec/specs/snapshot-generation/spec.md:565
+current	QR-PRESENTATION-001	openspec/specs/snapshot-generation/spec.md:595
+current	CON-NO-WEB-UI	openspec/specs/snapshot-generation/spec.md:596
+current	FR-SNAPSHOT-009	openspec/specs/snapshot-generation/spec.md:640
+current	TERM-FOCUSED-TOPOLOGY	openspec/specs/snapshot-generation/spec.md:641
+current	FR-SNAPSHOT-002	openspec/specs/snapshot-generation/spec.md:689
+current	QR-ACCESSIBILITY-001	openspec/specs/snapshot-generation/spec.md:690
+current	FR-VALIDATE-001	openspec/specs/structural-validation/spec.md:15
+current	BR-AI-001	openspec/specs/structural-validation/spec.md:17
+current	FR-VALIDATE-002	openspec/specs/structural-validation/spec.md:38
+current	QR-DETERMINISM-001	openspec/specs/structural-validation/spec.md:59
+20 document(s), 20 current: 20 bound, 0 exempt, 0 unclassified
+111 citation(s): 111 current, 0 stale, 0 tampered, 0 unresolved

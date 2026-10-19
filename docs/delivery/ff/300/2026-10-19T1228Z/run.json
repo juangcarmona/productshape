@@ -8,7 +8,7 @@
   "executorModel": "gpt-6.1-sol",
   "reviewerModel": "gpt-6-astra",
   "maxCorrectionRounds": 3,
-  "status": "awaiting-integration",
+  "status": "integration-in-progress",
   "stages": [
     {
       "name": "refine",
@@ -44,7 +44,7 @@
     {
       "name": "implement",
       "inputCommit": "411fb614318e4eebe4d0346a8581e0de08922196",
-      "result": "deterministic-and-runtime-passed; final-head-ci/audit-supplement-pending; human-owned-Done-unmet",
+      "result": "deterministic/runtime/final-head-CI/independent-audit-passed; human-maintainer-approved-integration",
       "outputCommit": "0c6d2af436efcd01d655fcdb4af2d712d86257f7",
       "evidence": [
         "checks/results.json",
@@ -54,9 +54,30 @@
         "runtime/browser-results.json",
         "runtime/layout-results.json",
         "runtime/snapshot-interaction-results.json",
-        "packaged-conformance/package-equivalence.json"
+        "packaged-conformance/package-equivalence.json",
+        "https://github.com/juangcarmona/productshape/pull/301#issuecomment-6268058397"
       ],
-      "startedAt": "2026-10-19T12:35:18Z"
+      "startedAt": "2026-10-19T12:35:18Z",
+      "historicalResult": "deterministic-and-runtime-passed; final-head-ci/audit-supplement-pending; human-owned-Done-unmet",
+      "finalEvidenceCommit": "335ec4ec747a0af25da3481d1a5857f11a9b144f"
+    },
+    {
+      "name": "integrate",
+      "startedAt": "2026-10-19T13:20:23Z",
+      "inputCommit": "335ec4ec747a0af25da3481d1a5857f11a9b144f",
+      "targetCommit": "632670261100b46751d6aa3eefd1b099986169d5",
+      "result": "in-progress; final archive-head audit and CI required before merge",
+      "specSync": {
+        "result": "no delta specs",
+        "skip_specs": true,
+        "existingOutputPaths": []
+      },
+      "archivePath": "openspec/changes/archive/2026-10-19-issue-300-publication-handoff",
+      "evidence": [
+        "https://github.com/juangcarmona/productshape/pull/301#issuecomment-6268058397",
+        "integration.md"
+      ],
+      "checks": "integration-checks/results.json"
     }
   ],
   "reviews": [
@@ -105,6 +126,25 @@
         }
       ],
       "correctionCount": 1
+    },
+    {
+      "reviewerModel": "gpt-6-astra",
+      "reviewerExecution": "/root/site_reviewer",
+      "kind": "independent-final-audit",
+      "reviewedCommit": "335ec4ec747a0af25da3481d1a5857f11a9b144f",
+      "decision": "approve",
+      "findings": [],
+      "correctionCount": 1,
+      "evidence": ["https://github.com/juangcarmona/productshape/pull/301#issuecomment-6268058397"]
+    },
+    {
+      "reviewerModel": "gpt-6-astra",
+      "reviewerExecution": "/root/integration_auditor",
+      "kind": "fresh-integration-Done-audit",
+      "reviewedCommit": "335ec4ec747a0af25da3481d1a5857f11a9b144f",
+      "decision": "pass",
+      "findings": [],
+      "evidence": ["https://github.com/juangcarmona/productshape/pull/301#issuecomment-6268207321"]
     }
   ],
   "corrections": [
@@ -119,19 +159,31 @@
       "outcome": "All16 applicable local checks passed (1039 tests,0 skipped); canonical/sitemap negative fixtures and expanded60-case layout passed; final clean runtime source/hashes/copy passed; fresh independent audit required at final evidence head."
     }
   ],
-  "stopReason": "Human-owned Definition of Done judgements and required Repository Maintainer approval remain unmet. Final-head CI and independent audit decisions are recorded as PR supplements after this evidence head exists; no merge or production operation is authorized by this record.",
+  "stopReason": "Merge is authorized by the human maintainer; integration documentation/archive is in progress. Await fresh independent audit and CI on the final archive head before merge. Cloudflare activation remains explicitly deferred.",
   "pullRequest": "https://github.com/juangcarmona/productshape/pull/301",
   "links": ["https://github.com/juangcarmona/productshape/issues/300"],
   "implementationSourceCommit": "0c6d2af436efcd01d655fcdb4af2d712d86257f7",
   "knownLimitations": [
-    "Human-owned Done judgements and maintainer approval remain unmet",
     "No Cloudflare account/project-mode verification or publication/domain operation",
     "Issue #296 retrospective/lifecycle/spec-archive debt unchanged"
   ],
   "clockEvidence": "Ready/proposed/in-progress times verified from GitHub issue label events; proposal start is the observed OpenSpec scaffold creation time in the executor worktree.",
   "terminalSupplement": {
     "pullRequest": "https://github.com/juangcarmona/productshape/pull/301",
-    "pending": ["final-head GitHub CI results", "isolated independent final-audit decision"],
-    "recording": "PR conversation supplement after the evidence head exists; no post-audit source mutation."
+    "evidence": "https://github.com/juangcarmona/productshape/pull/301#issuecomment-6268058397",
+    "reviewedCommit": "335ec4ec747a0af25da3481d1a5857f11a9b144f",
+    "finalHeadCI": "passed; 15 successful check runs; engineering production publisher intentionally skipped for PR",
+    "independentAudit": "approve; gpt-6-astra /root/site_reviewer; correction round 1 of 3; zero outstanding findings",
+    "pending": []
+  },
+  "historicalStopReason": "Human-owned Definition of Done judgements and required Repository Maintainer approval remain unmet. Final-head CI and independent audit decisions are recorded as PR supplements after this evidence head exists; no merge or production operation is authorized by this record.",
+  "humanApproval": {
+    "receivedOn": "2026-10-19",
+    "channel": "Codex chat",
+    "actor": "human maintainer",
+    "quote": "Approved. Merge PR #301 and close the loop. Keep the Cloudflare activation pending; I’ll handle that manual step later.",
+    "scope": "Approve PR #301 integration and close-out; Cloudflare activation expressly deferred",
+    "forgeReviewVoteCreated": false,
+    "evidence": "https://github.com/juangcarmona/productshape/pull/301#issuecomment-6268207321"
   }
 }

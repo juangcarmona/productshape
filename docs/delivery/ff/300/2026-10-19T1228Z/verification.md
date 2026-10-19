@@ -1,5 +1,7 @@
 # Publication delivery verification
 
+The implementation-stage gate tables below retain the historical pre-approval status. The dated integration update at the end supersedes their pending CI/audit/human approval entries; it does not rewrite historical evidence.
+
 Implementation source: `0c6d2af436efcd01d655fcdb4af2d712d86257f7`. Subsequent evidence-only commits do not change the implementation. Local checks ran on the frozen implementation tree before commit; clean output provenance was recorded after commit. No canonical product or architecture document changed.
 
 ## Acceptance criteria
@@ -56,3 +58,9 @@ The isolated gpt-6-astra audit of1e0891d652186c1509989da2dbd2668714de52a7 reques
 The isolated Node24 packaged jobs passed on the earlier1e0891d source: candidate147/147 with0 skips; stable45/45 plus12 pinned digests; the required negative control failed the expected11 cases. Reports retain that original source and tarball identity. `packaged-conformance/package-equivalence.json` proves all85 member-file hashes in the corrected0c6d2af repack are byte-identical; archive metadata makes the compressed tarball hash differ. No package source changed in the correction. These reports are supporting evidence, not a claim that the historical tarball has a new identity. Final GitHub Actions independently repacks and runs the configured jobs at the final evidence head.
 
 This committed evidence necessarily precedes its own final-head CI/audit. The final CI URLs/results and isolated gpt-6-astra final decision are durable supplements on PR#301 after this head exists. The two outgoing task checkboxes for those events remain explicitly pending here until the PR supplement records them; no implementation scope is deferred. Human-owned Done judgements and maintainer approval remain unmet regardless of those results.
+
+## Integration update — 2026-10-19
+
+The [terminal PR supplement](https://github.com/juangcarmona/productshape/pull/301#issuecomment-6268058397) completes tasks 3.5/3.6: all final-head CI checks passed and the isolated gpt-6-astra reviewer approved `335ec4ec747a0af25da3481d1a5857f11a9b144f` with no outstanding findings after correction round 1 of 3. The human maintainer then explicitly approved: “Approved. Merge PR #301 and close the loop. Keep the Cloudflare activation pending; I’ll handle that manual step later.”
+
+This human decision satisfies the previously pending human-owned integration judgements and maintainer approval; no forge review vote is fabricated. The plan contains no delta specs (`skip_specs: true`), so no main spec is changed. Only issue #300 is archived. Integration remains in progress until fresh audit/CI of the archive commit and the authorized merge; retrospective and tracker closure follow merge. Cloudflare activation and actual account/project/domain verification remain pending.

@@ -1,0 +1,46 @@
+{
+  "scope": "Issue #300 integration documentation and plan archive only; implementation unchanged",
+  "environment": "PATH=/tmp/productshape-300-bin:$PATH; Node22.22.1/pnpm11.1.0/OpenSpec1.11.0",
+  "checks": [
+    {
+      "command": "node packages/cli/dist/bin.js citations verify --provider openspec",
+      "exitCode": 0,
+      "log": "prearchive-citations.log"
+    },
+    {
+      "command": "pnpm format:check",
+      "exitCode": 0,
+      "log": "format.log"
+    },
+    {
+      "command": "pnpm lint",
+      "exitCode": 0,
+      "log": "lint.log"
+    },
+    {
+      "command": "pnpm lifecycle:check",
+      "exitCode": 0,
+      "log": "lifecycle.log"
+    },
+    {
+      "command": "node packages/cli/dist/bin.js citations verify --provider openspec",
+      "exitCode": 0,
+      "log": "citations.log"
+    },
+    {
+      "command": "node packages/cli/dist/bin.js citations verify openspec/changes/archive/2026-10-19-issue-300-publication-handoff",
+      "exitCode": 0,
+      "log": "archived-citations.log"
+    },
+    {
+      "command": "openspec validate --all --strict",
+      "exitCode": 0,
+      "log": "openspec.log"
+    },
+    {
+      "command": "openspec validate --archived --strict",
+      "exitCode": 0,
+      "log": "archived-openspec.log"
+    }
+  ]
+}

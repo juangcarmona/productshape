@@ -28,8 +28,8 @@
 - [x] 3.2 Document conditional Direct Upload dashboard versus Wrangler folder paths, preview/production branch semantics, prior-artifact rollback, project-mode verification and productshape.dev activation with official references; verify no account fact or hosted availability is claimed and execute no upload/DNS command.
 - [x] 3.3 Record an acceptance-criterion matrix and Chromium desktop/narrow light/dark evidence for public English/Spanish, portal, architecture and standalone Snapshot; verify browser errors/overflow, all twelve links and themes/navigation using the plan's procedure.
 - [x] 3.4 Refresh all affected citations using inspect/cite where needed and verify every current OpenSpec document with the CLI available; require no stale/tampered/unresolved or unclassified result.
-- [ ] 3.5 Run all applicable deterministic checks derived from current CI workflows/engineering-lifecycle.md, push and record passing final-head CI plus exact local command evidence; verify no skipped required check is represented as passing.
-- [ ] 3.6 Request the isolated gpt-6-astra final audit over final plan/diff/evidence, preserve decision/commit/round in the FF record, and update the existing PR; verify human-owned Done judgements/maintainer approval remain explicit and stop before merge/publication.
+- [x] 3.5 Run all applicable deterministic checks derived from current CI workflows/engineering-lifecycle.md, push and record passing final-head CI plus exact local command evidence; verify no skipped required check is represented as passing.
+- [x] 3.6 Request the isolated gpt-6-astra final audit over final plan/diff/evidence, preserve decision/commit/round in the FF record, and update the existing PR; verify human-owned Done judgements/maintainer approval remain explicit and stop before merge/publication.
 
 <!-- pdac:cite id="BR-CANONICAL-001" digest="sha256:7ed6dc7c588e0b79da8e6036548cf2fd2c6a1b02a9393f467f50cb0cb02475d6" -->
 <!-- pdac:cite id="CON-MARKDOWN-001" digest="sha256:e1d4c39d7e5fc5f1a1573dbb6433986a26248289c9a97c11bb039db7af0f5c17" -->
@@ -48,6 +48,8 @@
 
 Maintainer acceptance-criteria, completeness, coverage, security where applicable, design/ADR conformance, documentation and limitations judgements; Product Engineer consistency judgement when applicable; maintainer approval before merge. Independent agent review cannot discharge these gates. Integration, spec archive and retrospective follow only after the human gate; production/domain activation is a separate future owner action.
 
-## Final-head supplements
+## Final-head supplements and integration approval
 
-Implementation and local/runtime evidence are complete at source0c6d2af436efcd01d655fcdb4af2d712d86257f7. Tasks3.5 (final-head CI result) and3.6 (independent final-head audit decision) are outgoing events recorded on PR#301 after this evidence commit exists. Their unchecked state is explicit, not dropped scope; the PR supplement reconciles their actual outcomes. Human-owned Done judgements and maintainer merge approval remain unmet.
+Tasks 3.5 and 3.6 are complete: the [durable PR supplement](https://github.com/juangcarmona/productshape/pull/301#issuecomment-6268058397) records all final-head CI checks passing and the isolated gpt-6-astra approval of `335ec4ec747a0af25da3481d1a5857f11a9b144f`, correction round 1 of 3 with no outstanding findings. The engineering production publisher was intentionally skipped on the PR; no required check was silently skipped.
+
+On 2026-10-19 the human maintainer approved in the Codex chat: “Approved. Merge PR #301 and close the loop. Keep the Cloudflare activation pending; I’ll handle that manual step later.” This satisfies the previously pending human review/integration gate; it is not a fabricated GitHub review vote. Integration may now archive this completed plan, then requires fresh audit and CI on the archive commit before merge. Production/domain activation remains pending. A retrospective follows only after merge.
