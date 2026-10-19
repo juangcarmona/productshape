@@ -22,7 +22,7 @@
   - [x] 4.1 Capture public and engineering browser baselines as CI review artifacts.
   - [x] 4.2 Add browser regression checks for representative routes, desktop/narrow layouts, light/dark/system appearance, navigation, focus, typography, spacing, and stable icon/token usage.
   - [x] 4.3 Resolve visual drift before integration; representative route HTML remains byte-identical and browser checks pass without an intentional design change.
-- [ ] 5. Reconcile repository references
+- [x] 5. Reconcile repository references
   - [x] 5.1 Update architecture documentation, contributor guidance, examples, tests, and active configuration.
   - [x] 5.2 Preserve historical references only where explicitly labeled; remove stale active references to old source paths.
   - [x] 5.3 Confirm canonical Product Model and OpenSpec boundaries remain unchanged.

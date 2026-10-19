@@ -16,7 +16,7 @@ python3 -m http.server 4173 --directory dist/public-site
 
 Open `http://localhost:4173/`, `/en/`, `/es/`, a product/adoption deep link and `404.html`; inspect light/dark/system appearance and mobile navigation. Python's server is a file preview, not proof of Cloudflare routing. To test Pages routing locally without an account or upload:
 
-The browser check above is the repeatable runtime evidence path. It also captures desktop screenshots for the public home and Archify routes. The engineering workflow runs the same check against its `/productshape/` base path and uploads a separate evidence artifact. Both checks require the Chromium runtime installed by the workspace dependency; a local environment without it must record the limitation rather than claim visual verification.
+The browser check above is the repeatable runtime evidence path. It also captures desktop screenshots for the public home and Archify routes and compares the representative Astro shell HTML against a freshly built legacy compatibility baseline. The engineering workflow runs the same check against its `/productshape/` base path and uploads a separate evidence artifact. Both checks require the Chromium runtime installed by the workspace dependency; a local environment without it must record the limitation rather than claim visual verification.
 
 ```bash
 npx wrangler@4.151.2 pages dev dist/public-site --port 8788

@@ -56,8 +56,10 @@ jobs:
         run: node src/scripts/build-public-site.mjs --profile public --out dist/public-site --base-path / --site-origin https://productshape.dev
       - name: Validate the public upload directory
         run: node src/scripts/validate-public-site.mjs --dir dist/public-site --profile public --base-path / --site-origin https://productshape.dev
+      - name: Build compatibility visual baseline
+        run: node src/scripts/build-legacy-public-content.mjs --profile public --out dist/public-site-baseline --base-path / --site-origin https://productshape.dev
       - name: Run public browser regression checks
-        run: node src/scripts/check-public-site-browser.mjs --dir dist/public-site --profile public --base-path / --evidence-dir dist/public-site-browser
+        run: node src/scripts/check-public-site-browser.mjs --dir dist/public-site --baseline-dir dist/public-site-baseline --profile public --base-path / --evidence-dir dist/public-site-browser
       - name: Upload browser regression evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

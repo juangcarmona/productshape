@@ -66,6 +66,8 @@ jobs:
             `${JSON.stringify(manifest, null, 2)}\n`,
           );
           NODE
+      - name: Build compatibility visual baseline
+        run: node src/scripts/build-legacy-public-content.mjs --profile engineering --out engineering-baseline --base-path /productshape/ --site-origin https://juangcarmona.github.io --snapshot-source .product/generated/snapshot.html --engineering-manifest .product/generated/engineering/manifest.json
       - name: assemble the engineering portal
         env:
           MERMAID_RENDER: '1'
@@ -73,7 +75,7 @@ jobs:
       - name: Validate the engineering directory
         run: node src/scripts/validate-public-site.mjs --dir _site --profile engineering --base-path /productshape/ --site-origin https://juangcarmona.github.io
       - name: Run engineering browser regression checks
-        run: node src/scripts/check-public-site-browser.mjs --dir _site --profile engineering --base-path /productshape/ --evidence-dir engineering-browser-evidence
+        run: node src/scripts/check-public-site-browser.mjs --dir _site --baseline-dir engineering-baseline --profile engineering --base-path /productshape/ --evidence-dir engineering-browser-evidence
       - name: Upload engineering browser regression evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

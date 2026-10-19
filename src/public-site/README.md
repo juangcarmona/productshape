@@ -24,7 +24,7 @@ node src/scripts/check-public-site-browser.mjs --dir _site --profile engineering
 
 `publication.json` records the profile, base path, origin, CLI version, full source revision and dirty state. A local uncommitted build is explicitly marked dirty. The public builder needs no generated engineering output or architecture input. The engineering output copies the generated standalone Snapshot byte-for-byte; its attribution URL is selected at generation time with the existing option shown above.
 
-The browser check serves a built directory locally, verifies representative routes in both profiles, checks renderer markers and source surfaces, exercises dark/system appearance, narrow navigation and keyboard focus, and captures route screenshots plus a JSON manifest. CI uploads these files as review evidence; they do not represent a production deployment.
+The browser check serves a built directory locally, verifies representative routes in both profiles, checks renderer markers and source surfaces, exercises dark/system appearance, narrow navigation and keyboard focus, and captures route screenshots plus a JSON manifest. When given `--baseline-dir`, it also compares the representative Astro shell HTML byte-for-byte with the legacy compatibility output. CI uploads these files as review evidence; they do not represent a production deployment.
 
 Public and engineering pages reuse the compact shell, theme assets and keyboard/mobile controls. Public navigation serves localized product/process/adoption content; engineering navigation distinguishes the portal, Product Snapshot, Architecture Snapshot and external public site. The standalone Snapshot owns its own interface and URL state.
 

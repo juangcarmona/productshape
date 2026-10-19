@@ -16,6 +16,8 @@ function option(name, fallback) {
 const directory = resolve(option('--dir', 'dist/public-site'));
 const profile = option('--profile', 'public');
 const basePath = option('--base-path', profile === 'public' ? '/' : '/productshape/');
+const baselineDirectoryOption = option('--baseline-dir', null);
+const baselineDirectory = baselineDirectoryOption ? resolve(baselineDirectoryOption) : null;
 const evidenceDirectory = resolve(
   option('--evidence-dir', `.product/generated/site-browser/${profile}`),
 );
@@ -79,6 +81,7 @@ function serveStatic() {
 
 const server = serveStatic();
 await new Promise((resolveServer) => server.listen(0, '127.0.0.1', resolveServer));
+server.unref();
 const address = server.address();
 if (!address || typeof address === 'string')
   throw new Error('Could not determine browser server port.');
@@ -92,7 +95,14 @@ const browser = await puppeteer.launch({
 });
 const page = await browser.newPage();
 page.setDefaultTimeout(15000);
+page.setDefaultNavigationTimeout(15000);
 await mkdir(evidenceDirectory, { recursive: true });
+
+const baselineRoutes = [routes[0], routes[1]];
+function outputFile(route) {
+  const relativeRoute = route.startsWith(basePath) ? route.slice(basePath.length) : route;
+  return relativeRoute ? `${relativeRoute}index.html` : 'index.html';
+}
 
 const evidence = {
   profile,
@@ -104,8 +114,19 @@ const evidence = {
     themeChoices: false,
     focus: false,
     screenshots: [],
+    baselineComparisons: [],
   },
 };
+
+if (baselineDirectory) {
+  for (const route of baselineRoutes) {
+    const currentFile = await readFile(join(directory, outputFile(route)));
+    const baselineFile = await readFile(join(baselineDirectory, outputFile(route)));
+    const identical = currentFile.equals(baselineFile);
+    evidence.checks.baselineComparisons.push({ route, identical });
+    if (!identical) throw new Error(`Compatibility baseline drift detected for ${route}.`);
+  }
+}
 
 try {
   await page.setViewport({ width: 1440, height: 900 });
