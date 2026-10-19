@@ -1,0 +1,127 @@
+$ node --import tsx scripts/release-contract-smoke.mts
+Building @prodshape/cli@0.22.1
+
+added 43 packages, and audited 44 packages in 1s
+
+6 packages are looking for funding
+  run `npm fund` for details
+
+8 vulnerabilities (4 moderate, 4 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+AI providers:
+  detected: none
+SDD frameworks:
+  detected: none
+Initialized Product Definition as Code (4 file(s) created).
+Next steps:
+  - Scaffold the first change with: prodshape change create CHG-INITIAL
+  - Author its complete proposed artifacts under docs/product/changes/active/chg-initial/proposed.
+  - Print an authoring template with: prodshape template <kind> (and the allowed frontmatter with: prodshape schema <kind>)
+  - Validate the overlay with: prodshape change validate CHG-INITIAL
+  - After human product approval, set CHG-INITIAL to approved and dry-run: prodshape change apply CHG-INITIAL --dry-run
+  - Apply explicitly with: prodshape change apply CHG-INITIAL
+  - Open a pull request with the applied result; its merge accepts the initial baseline. Apply does not.
+  - Implementation may share that pull request or follow later; Product Change status never reports delivery.
+  - Commit .product/config.yaml: every clone reads the repository configuration from it.
+  - Ignore regenerable outputs: add .product/generated/ and .product/cache/ to .gitignore, or re-run with --gitignore.
+  - Cite product artifacts from consumer docs with: prodshape cite
+  - Verify citations with: prodshape citations verify
+  - Expand later on demand: prodshape init --full installs the per-kind layout and the template library; prodshape init --ai <provider> adds an AI integration.
+  - Pair with an SDD framework when ready: OpenSpec installs in one command (prodshape init --sdd openspec); Kiro and Spec Kit set up from their own tooling.
+0 error(s), 0 warning(s) across 0 artifact(s)
+No product definition exists yet: 0 artifacts were found under the model directory. Create the first baseline through CHG-INITIAL (prodshape change create CHG-INITIAL); the citation-first walkthrough in the @prodshape/cli README walks the whole loop.
+current	BR-REFUND-001	openspec/refund.citations.yml:1
+warning PRODUCT105 docs/product/model/business-rules/br-refund-001.md [BR-REFUND-001]: Business rule 'BR-REFUND-001' has no consumers
+1 citation(s): 1 current, 0 stale, 0 tampered, 0 unresolved
+Tip: use --provider openspec for OpenSpec-aware verification that distinguishes current from archived material and enforces scope declarations.
+stale	BR-REFUND-001	openspec/refund.citations.yml:1
+warning PRODUCT105 docs/product/model/business-rules/br-refund-001.md [BR-REFUND-001]: Business rule 'BR-REFUND-001' has no consumers
+warning PRODUCT061 openspec/refund.citations.yml entry 1: Citation of 'BR-REFUND-001' is stale: canonical content changed since the citation was recorded (BR-REFUND-001)
+1 citation(s): 0 current, 1 stale, 0 tampered, 0 unresolved
+Tip: use --provider openspec for OpenSpec-aware verification that distinguishes current from archived material and enforces scope declarations.
+
+added 43 packages, and audited 44 packages in 746ms
+
+6 packages are looking for funding
+  run `npm fund` for details
+
+8 vulnerabilities (4 moderate, 4 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+AI providers:
+  detected: none
+SDD frameworks:
+  detected: none
+Initialized Product Definition as Code (4 file(s) created).
+Next steps:
+  - Scaffold the first change with: prodshape change create CHG-INITIAL
+  - Author its complete proposed artifacts under docs/product/changes/active/chg-initial/proposed.
+  - Print an authoring template with: prodshape template <kind> (and the allowed frontmatter with: prodshape schema <kind>)
+  - Validate the overlay with: prodshape change validate CHG-INITIAL
+  - After human product approval, set CHG-INITIAL to approved and dry-run: prodshape change apply CHG-INITIAL --dry-run
+  - Apply explicitly with: prodshape change apply CHG-INITIAL
+  - Open a pull request with the applied result; its merge accepts the initial baseline. Apply does not.
+  - Implementation may share that pull request or follow later; Product Change status never reports delivery.
+  - Commit .product/config.yaml: every clone reads the repository configuration from it.
+  - Ignore regenerable outputs: add .product/generated/ and .product/cache/ to .gitignore, or re-run with --gitignore.
+  - Cite product artifacts from consumer docs with: prodshape cite
+  - Verify citations with: prodshape citations verify
+  - Expand later on demand: prodshape init --full installs the per-kind layout and the template library; prodshape init --ai <provider> adds an AI integration.
+  - Pair with an SDD framework when ready: OpenSpec installs in one command (prodshape init --sdd openspec); Kiro and Spec Kit set up from their own tooling.
+0 error(s), 0 warning(s) across 0 artifact(s)
+No product definition exists yet: 0 artifacts were found under the model directory. Create the first baseline through CHG-INITIAL (prodshape change create CHG-INITIAL); the citation-first walkthrough in the @prodshape/cli README walks the whole loop.
+Created docs/product/changes/active/chg-initial/change.md (status draft, base-revision d4eb07a73c856bf3a9346d31aaf4bed96580dbc0)
+Next steps:
+  - Describe the problem and the intended product outcome in change.md.
+  - Declare operations and author complete proposed artifacts under docs/product/changes/active/chg-initial/proposed/.
+  - Validate the overlay: prodshape change validate CHG-INITIAL
+0 error(s), 0 warning(s) across 0 accepted artifact(s) and 1 live change(s)
+Would apply CHG-INITIAL:
+  Add ACT-USER at docs/product/model/actors/act-user.md
+  Set CHG-INITIAL status to applied
+  Move change to docs/product/changes/completed/chg-initial
+Product diff: 1 added, 0 modified, 0 removed
+  ACT-USER	added	sha256:409646247d087c023d0dd4794d4ba75ab022483bf5b93241587b215dbd6dfc87
+Affected citations: 0
+Dry run: nothing was written.
+Applying CHG-INITIAL:
+  Add ACT-USER at docs/product/model/actors/act-user.md
+  Set CHG-INITIAL status to applied
+  Move change to docs/product/changes/completed/chg-initial
+Product diff: 1 added, 0 modified, 0 removed
+  ACT-USER	added	sha256:409646247d087c023d0dd4794d4ba75ab022483bf5b93241587b215dbd6dfc87
+Affected citations: 0
+Applied and archived. Nothing was committed: open a pull request so a human can accept it.
+current	ACT-USER	docs/decisions/adr-001.md:3
+1 citation(s): 1 current, 0 stale, 0 tampered, 0 unresolved
+Created docs/product/changes/active/chg-user-scope/change.md (status draft, base-revision 92ff05d0cb2963c65f22ee18d3101beb0f695a54)
+Next steps:
+  - Describe the problem and the intended product outcome in change.md.
+  - Declare operations and author complete proposed artifacts under docs/product/changes/active/chg-user-scope/proposed/.
+  - Validate the overlay: prodshape change validate CHG-USER-SCOPE
+Applying CHG-USER-SCOPE:
+  Replace ACT-USER at docs/product/model/actors/act-user.md
+  Set CHG-USER-SCOPE status to applied
+  Move change to docs/product/changes/completed/chg-user-scope
+Product diff: 0 added, 1 modified, 0 removed
+  ACT-USER	modified	sha256:1aa4650832e8a3c192c9d994b5dab1a331625c19092fe7fe280c450d222490de
+Affected citations: 1
+  docs/decisions/adr-001.md:3	ACT-USER	stale
+Applied and archived. Nothing was committed: open a pull request so a human can accept it.
+stale	ACT-USER	docs/decisions/adr-001.md:3
+warning PRODUCT061 docs/decisions/adr-001.md:3: Citation of 'ACT-USER' is stale: canonical content changed since the citation was recorded (ACT-USER)
+1 citation(s): 0 current, 1 stale, 0 tampered, 0 unresolved
+Release contract passed: packed @prodshape/cli@0.22.1, sandbox quickstart (current -> stale PRODUCT061), governed walkthrough (CHG-INITIAL applied, CHG-USER-SCOPE named 1 affected citation, 1 stale PRODUCT061), --version 0.22.1

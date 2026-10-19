@@ -1,0 +1,15 @@
+| package | version | status |
+| --- | --- | --- |
+| @prodshape/cli | 0.22.1 | unpublished |
+| @prodshape/core | 0.24.0 | changeset pending |
+| @prodshape/distribution | 0.17.0 | clean |
+| @prodshape/integration-claude | 0.3.0 | clean |
+| @prodshape/integration-codex | 0.1.0 | clean |
+| @prodshape/integration-copilot | 0.4.0 | clean |
+| @prodshape/integration-opencode | 0.2.0 | clean |
+| @prodshape/integration-openspec | 0.6.5 | unpublished |
+| @prodshape/integration-speckit | 0.4.4 | clean |
+
+@prodshape/core: shipped source differs from @prodshape/core@0.24.0
+  packages/core/src/index.ts
+  packages/core/src/snapshot.ts

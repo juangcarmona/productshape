@@ -357,6 +357,28 @@ describe('static site publication profiles', () => {
         expect(validation.stderr).toContain(item.expected);
         await writeFile(join(output, item.path), content);
       }
+      const indexPath = join(output, 'en/index.html');
+      const index = await readFile(indexPath, 'utf8');
+      await writeFile(
+        indexPath,
+        index.replace(
+          /<link rel="canonical" href="[^"]+">/u,
+          '<link rel="canonical" href="https://incorrect.example/">',
+        ),
+      );
+      expect(runValidation().stderr).toContain('canonical URL must be');
+      await writeFile(indexPath, index);
+      const sitemapPath = join(output, 'sitemap.xml');
+      const sitemap = await readFile(sitemapPath, 'utf8');
+      for (const invalid of [
+        '<urlset></urlset>',
+        sitemap.replace(/<url><loc>.*?<\/loc><\/url>/u, ''),
+        sitemap.replace('https://productshape.dev/en/', 'https://incorrect.example/en/'),
+      ]) {
+        await writeFile(sitemapPath, invalid);
+        expect(runValidation().stderr).toContain('complete publication route set');
+      }
+      await writeFile(sitemapPath, sitemap);
       const metadataPath = join(output, 'publication.json');
       const metadata = await readFile(metadataPath, 'utf8');
       await writeFile(

@@ -1,0 +1,8 @@
+All managed integration files match the installation lock.
+ok   openspec CLI: OpenSpec 1.11.0 detected.
+ok   config.yaml: PDaC context block present and current.
+ok   metadata: Integration recorded (OpenSpec 1.12.0, installed 2026-08-30T08:04:44.281Z, updated 2026-09-26T04:50:55.030Z).
+ok   ci example: CI-ready verification example present at .product/integrations/openspec.ci.yml.
+ok   rules: All PDaC citation rules present.
+ok   product workflow: Product workflow available: schema installed and OpenSpec 1.11.0 meets the 1.7.0 floor.
+ok   product recovery workflow: Product recovery workflow available: schema installed at openspec/schemas/product-recovery.

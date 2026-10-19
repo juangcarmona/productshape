@@ -1,0 +1,135 @@
+{
+  "sourceCommit": "1e0891d652186c1509989da2dbd2668714de52a7",
+  "environment": {
+    "node": "22.22.1",
+    "pnpm": "11.1.0",
+    "openspec": "1.11.0",
+    "specify": "1.0.4",
+    "specifyCommit": "cb610277fdea781fcfa83d20522c2db37c94068d",
+    "PRODSHAPE_REQUIRE_SPECKIT": "1"
+  },
+  "checks": [
+    {
+      "name": "lint",
+      "command": "pnpm lint",
+      "exitCode": 0,
+      "seconds": 5.35,
+      "log": "checks/lint.log"
+    },
+    {
+      "name": "format",
+      "command": "pnpm format:check",
+      "exitCode": 0,
+      "seconds": 12.76,
+      "log": "checks/format.log"
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm typecheck",
+      "exitCode": 0,
+      "seconds": 7.24,
+      "log": "checks/typecheck.log"
+    },
+    {
+      "name": "build",
+      "command": "pnpm build",
+      "exitCode": 0,
+      "seconds": 9.11,
+      "log": "checks/build.log"
+    },
+    {
+      "name": "test",
+      "command": "pnpm test",
+      "exitCode": 0,
+      "seconds": 60.65,
+      "log": "checks/test.log"
+    },
+    {
+      "name": "lifecycle",
+      "command": "pnpm lifecycle:check",
+      "exitCode": 0,
+      "seconds": 0.8,
+      "log": "checks/lifecycle.log"
+    },
+    {
+      "name": "release-workflow",
+      "command": "pnpm release-workflow:check",
+      "exitCode": 0,
+      "seconds": 0.72,
+      "log": "checks/release-workflow.log"
+    },
+    {
+      "name": "release-contract",
+      "command": "pnpm release-contract:smoke",
+      "exitCode": 0,
+      "seconds": 24.68,
+      "log": "checks/release-contract.log"
+    },
+    {
+      "name": "validate",
+      "command": "node packages/cli/dist/bin.js validate",
+      "exitCode": 0,
+      "seconds": 0.57,
+      "log": "checks/validate.log"
+    },
+    {
+      "name": "change-validate",
+      "command": "node packages/cli/dist/bin.js change validate",
+      "exitCode": 0,
+      "seconds": 0.54,
+      "log": "checks/change-validate.log"
+    },
+    {
+      "name": "graph",
+      "command": "node packages/cli/dist/bin.js graph",
+      "exitCode": 0,
+      "seconds": 0.66,
+      "log": "checks/graph.log"
+    },
+    {
+      "name": "doctor",
+      "command": "node packages/cli/dist/bin.js doctor",
+      "exitCode": 0,
+      "seconds": 2.94,
+      "log": "checks/doctor.log"
+    },
+    {
+      "name": "citations",
+      "command": "node packages/cli/dist/bin.js citations verify --provider openspec",
+      "exitCode": 0,
+      "seconds": 2.77,
+      "log": "checks/citations.log"
+    },
+    {
+      "name": "integration",
+      "command": "node packages/cli/dist/bin.js integration update --check",
+      "exitCode": 0,
+      "seconds": 2.66,
+      "log": "checks/integration.log"
+    },
+    {
+      "name": "openspec",
+      "command": "openspec validate --all --no-interactive",
+      "exitCode": 0,
+      "seconds": 2.05,
+      "log": "checks/openspec.log"
+    },
+    {
+      "name": "release-drift",
+      "command": "node scripts/check-release-drift.mjs",
+      "exitCode": 0,
+      "seconds": 0.24,
+      "log": "checks/release-drift.log"
+    }
+  ],
+  "testSummary": {
+    "files": 70,
+    "passed": 1039,
+    "skipped": 0,
+    "changedTests": [
+      "tests/site-builder.test.ts (8 cases)",
+      "tests/conformance/speckit-consumer.test.ts (9 cases, including five previously skipped real-CLI cases)"
+    ],
+    "snapshotTests": "packages/core/src/snapshot.test.ts (124 cases)"
+  }
+}

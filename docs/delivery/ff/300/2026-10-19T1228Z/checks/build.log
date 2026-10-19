@@ -1,0 +1,137 @@
+$ pnpm -r run build
+Scope: 9 of 10 workspace projects
+packages/cli build$ tsup && node scripts/stage.mjs
+packages/core build$ tsup
+packages/integration-claude build$ tsup
+packages/integration-codex build$ tsup
+packages/cli build: CLI Building entry: src/bin.ts
+packages/cli build: CLI Using tsconfig: tsconfig.json
+packages/cli build: CLI tsup v8.5.1
+packages/cli build: CLI Using tsup config: /srv/repos/juangcarmona/productshape-issue-300/packages/cli/tsup.config.ts
+packages/integration-claude build: CLI Building entry: src/index.ts
+packages/integration-claude build: CLI Using tsconfig: tsconfig.json
+packages/integration-claude build: CLI tsup v8.5.1
+packages/integration-claude build: CLI Using tsup config: /srv/repos/juangcarmona/productshape-issue-300/packages/integration-claude/tsup.config.ts
+packages/cli build: CLI Target: es2022
+packages/cli build: CLI Cleaning output folder
+packages/integration-claude build: CLI Target: es2022
+packages/cli build: ESM Build start
+packages/integration-claude build: CLI Cleaning output folder
+packages/integration-claude build: ESM Build start
+packages/integration-claude build: ESM dist/index.js     2.29 KB
+packages/integration-claude build: ESM dist/index.js.map 5.61 KB
+packages/integration-claude build: ESM ⚡️ Build success in 12ms
+packages/integration-codex build: CLI Building entry: src/index.ts
+packages/integration-codex build: CLI Using tsconfig: tsconfig.json
+packages/integration-codex build: CLI tsup v8.5.1
+packages/integration-codex build: CLI Using tsup config: /srv/repos/juangcarmona/productshape-issue-300/packages/integration-codex/tsup.config.ts
+packages/integration-codex build: CLI Target: es2022
+packages/integration-codex build: CLI Cleaning output folder
+packages/integration-codex build: ESM Build start
+packages/cli build: ESM dist/bin.js 651.90 KB
+packages/cli build: ESM ⚡️ Build success in 78ms
+packages/integration-codex build: ESM dist/index.js     1.73 KB
+packages/integration-codex build: ESM dist/index.js.map 4.72 KB
+packages/integration-codex build: ESM ⚡️ Build success in 12ms
+packages/core build: CLI Building entry: src/index.ts
+packages/core build: CLI Using tsconfig: tsconfig.json
+packages/core build: CLI tsup v8.5.1
+packages/core build: CLI Using tsup config: /srv/repos/juangcarmona/productshape-issue-300/packages/core/tsup.config.ts
+packages/core build: CLI Target: es2022
+packages/core build: CLI Cleaning output folder
+packages/core build: ESM Build start
+packages/core build: ESM dist/index.js     325.16 KB
+packages/core build: ESM dist/index.js.map 614.08 KB
+packages/core build: ESM ⚡️ Build success in 61ms
+packages/cli build: staged /srv/repos/juangcarmona/productshape-issue-300/schemas -> /srv/repos/juangcarmona/productshape-issue-300/packages/cli/schemas
+packages/cli build: staged /srv/repos/juangcarmona/productshape-issue-300/packages/distribution/assets -> /srv/repos/juangcarmona/productshape-issue-300/packages/cli/assets
+packages/cli build: staged /srv/repos/juangcarmona/productshape-issue-300/packages/integration-openspec/assets/openspec-product-change-schema -> /srv/repos/juangcarmona/productshape-issue-300/packages/cli/assets/openspec-product-change-schema
+packages/cli build: staged /srv/repos/juangcarmona/productshape-issue-300/packages/integration-openspec/assets/openspec-product-recovery-schema -> /srv/repos/juangcarmona/productshape-issue-300/packages/cli/assets/openspec-product-recovery-schema
+packages/cli build: Done
+packages/integration-copilot build$ tsup
+packages/integration-claude build: DTS Build start
+packages/core build: DTS Build start
+packages/integration-codex build: DTS Build start
+packages/integration-copilot build: CLI Building entry: src/index.ts
+packages/integration-copilot build: CLI Using tsconfig: tsconfig.json
+packages/integration-copilot build: CLI tsup v8.5.1
+packages/integration-copilot build: CLI Using tsup config: /srv/repos/juangcarmona/productshape-issue-300/packages/integration-copilot/tsup.config.ts
+packages/integration-copilot build: CLI Target: es2022
+packages/integration-copilot build: CLI Cleaning output folder
+packages/integration-copilot build: ESM Build start
+packages/integration-copilot build: ESM dist/index.js     2.59 KB
+packages/integration-copilot build: ESM dist/index.js.map 6.42 KB
+packages/integration-copilot build: ESM ⚡️ Build success in 11ms
+packages/integration-copilot build: DTS Build start
+packages/integration-claude build: DTS ⚡️ Build success in 1103ms
+packages/integration-claude build: DTS dist/index.d.ts 1.36 KB
+packages/integration-claude build: Done
+packages/integration-opencode build$ tsup
+packages/integration-codex build: DTS ⚡️ Build success in 1196ms
+packages/integration-codex build: DTS dist/index.d.ts 1.55 KB
+packages/integration-codex build: Done
+packages/integration-opencode build: CLI Building entry: src/index.ts
+packages/integration-opencode build: CLI Using tsconfig: tsconfig.json
+packages/integration-opencode build: CLI tsup v8.5.1
+packages/integration-opencode build: CLI Using tsup config: /srv/repos/juangcarmona/productshape-issue-300/packages/integration-opencode/tsup.config.ts
+packages/integration-opencode build: CLI Target: es2022
+packages/integration-opencode build: CLI Cleaning output folder
+packages/integration-opencode build: ESM Build start
+packages/integration-opencode build: ESM dist/index.js     2.56 KB
+packages/integration-opencode build: ESM dist/index.js.map 6.99 KB
+packages/integration-opencode build: ESM ⚡️ Build success in 15ms
+packages/integration-opencode build: DTS Build start
+packages/integration-copilot build: DTS ⚡️ Build success in 1214ms
+packages/integration-copilot build: DTS dist/index.d.ts 1.37 KB
+packages/integration-copilot build: Done
+packages/core build: DTS ⚡️ Build success in 2423ms
+packages/core build: DTS dist/index.d.ts 85.71 KB
+packages/core build: Done
+packages/integration-opencode build: DTS ⚡️ Build success in 1181ms
+packages/integration-opencode build: DTS dist/index.d.ts 1.77 KB
+packages/integration-opencode build: Done
+packages/distribution build$ tsup
+packages/integration-openspec build$ tsup
+packages/integration-speckit build$ tsup
+packages/integration-speckit build: CLI Building entry: src/index.ts
+packages/integration-speckit build: CLI Using tsconfig: tsconfig.json
+packages/integration-speckit build: CLI tsup v8.5.1
+packages/integration-speckit build: CLI Using tsup config: /srv/repos/juangcarmona/productshape-issue-300/packages/integration-speckit/tsup.config.ts
+packages/integration-speckit build: CLI Target: es2022
+packages/integration-speckit build: CLI Cleaning output folder
+packages/integration-speckit build: ESM Build start
+packages/integration-speckit build: ESM dist/index.js     39.06 KB
+packages/integration-speckit build: ESM dist/index.js.map 81.25 KB
+packages/integration-speckit build: ESM ⚡️ Build success in 25ms
+packages/integration-openspec build: CLI Building entry: src/index.ts
+packages/integration-openspec build: CLI Using tsconfig: tsconfig.json
+packages/integration-openspec build: CLI tsup v8.5.1
+packages/integration-openspec build: CLI Using tsup config: /srv/repos/juangcarmona/productshape-issue-300/packages/integration-openspec/tsup.config.ts
+packages/integration-openspec build: CLI Target: es2022
+packages/integration-openspec build: CLI Cleaning output folder
+packages/integration-openspec build: ESM Build start
+packages/distribution build: CLI Building entry: src/index.ts
+packages/distribution build: CLI Using tsconfig: tsconfig.json
+packages/distribution build: CLI tsup v8.5.1
+packages/distribution build: CLI Using tsup config: /srv/repos/juangcarmona/productshape-issue-300/packages/distribution/tsup.config.ts
+packages/distribution build: CLI Target: es2022
+packages/distribution build: CLI Cleaning output folder
+packages/distribution build: ESM Build start
+packages/integration-openspec build: ESM dist/index.js     71.87 KB
+packages/integration-openspec build: ESM dist/index.js.map 155.33 KB
+packages/integration-openspec build: ESM ⚡️ Build success in 51ms
+packages/distribution build: ESM dist/index.js     37.93 KB
+packages/distribution build: ESM dist/index.js.map 93.54 KB
+packages/distribution build: ESM ⚡️ Build success in 36ms
+packages/integration-speckit build: DTS Build start
+packages/integration-openspec build: DTS Build start
+packages/distribution build: DTS Build start
+packages/distribution build: DTS ⚡️ Build success in 2259ms
+packages/distribution build: DTS dist/index.d.ts 24.42 KB
+packages/integration-openspec build: DTS ⚡️ Build success in 2351ms
+packages/integration-openspec build: DTS dist/index.d.ts 25.01 KB
+packages/distribution build: Done
+packages/integration-openspec build: Done
+packages/integration-speckit build: DTS ⚡️ Build success in 2553ms
+packages/integration-speckit build: DTS dist/index.d.ts 20.43 KB
+packages/integration-speckit build: Done

@@ -87,6 +87,38 @@ if (profile === 'public') {
   }
 }
 
+const sitemapPages = [...files].filter((file) =>
+  profile === 'public'
+    ? /^(?:en|es)\/(?:[^/]+\/)*index\.html$/u.test(file)
+    : file === 'index.html' ||
+      file === 'en/index.html' ||
+      file === 'en/model/explorer.html' ||
+      /^en\/engineering\/(?:[^/]+\/)?index\.html$/u.test(file),
+);
+const expectedSitemap = new Set(
+  sitemapPages.map((file) => `${siteOrigin}${basePath}${file.replace(/index\.html$/u, '')}`),
+);
+const shellPages = [...files].filter(
+  (file) =>
+    file === 'index.html' ||
+    file === '404.html' ||
+    (profile === 'public'
+      ? /^(?:en|es)\/(?:[^/]+\/)*index\.html$/u.test(file)
+      : file === 'en/index.html' || /^en\/engineering\/(?:[^/]+\/)?index\.html$/u.test(file)),
+);
+for (const file of shellPages) {
+  const html = await readFile(join(directory, file), 'utf8');
+  const links = [...html.matchAll(/<link\b[^>]*>/giu)].map((match) => match[0]);
+  const canonicals = links.filter((tag) => /\brel\s*=\s*(["'])canonical\1/iu.test(tag));
+  const canonical = canonicals[0]?.match(/\bhref\s*=\s*(["'])(.*?)\1/iu)?.[2];
+  const route =
+    file === 'index.html' || file === '404.html' ? 'en/' : file.replace(/index\.html$/u, '');
+  const expected = `${siteOrigin}${basePath}${route}`;
+  if (canonicals.length !== 1 || canonical !== expected) {
+    throw new Error(`${file}: canonical URL must be ${expected}`);
+  }
+}
+
 let references = 0;
 function checkUrl(value, source) {
   const decoded = value.replaceAll('&amp;', '&').trim();
@@ -125,10 +157,18 @@ for (const file of files) {
     checkUrl(match[1], file);
 }
 const sitemap = await readFile(join(directory, 'sitemap.xml'), 'utf8');
-for (const match of sitemap.matchAll(/<loc>(.*?)<\/loc>/gu)) {
-  if (!match[1].startsWith(`${siteOrigin}${basePath}`))
+const locations = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/gu)].map((match) => match[1]);
+if (
+  locations.length !== expectedSitemap.size ||
+  new Set(locations).size !== expectedSitemap.size ||
+  locations.some((url) => !expectedSitemap.has(url))
+) {
+  throw new Error('Sitemap must contain exactly the complete publication route set.');
+}
+for (const location of locations) {
+  if (!location.startsWith(`${siteOrigin}${basePath}`))
     throw new Error('Sitemap origin/base path mismatch.');
-  checkUrl(match[1], 'sitemap.xml');
+  checkUrl(location, 'sitemap.xml');
 }
 const robots = await readFile(join(directory, 'robots.txt'), 'utf8');
 if (!robots.includes(`Sitemap: ${siteOrigin}${basePath}sitemap.xml`))

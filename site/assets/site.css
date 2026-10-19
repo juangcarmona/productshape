@@ -2342,3 +2342,19 @@ h3 {
     flex: none;
   }
 }
+
+/* Localized navigation yields available width at every breakpoint boundary. */
+@media (min-width: 76.001rem) {
+  .main-nav {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+  }
+  .main-nav > a,
+  .main-nav .language-switch {
+    flex: none;
+  }
+  .main-nav a {
+    padding-inline: clamp(0.4rem, 0.7vw, 0.7rem);
+  }
+}

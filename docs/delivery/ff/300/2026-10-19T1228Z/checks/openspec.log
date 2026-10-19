@@ -1,0 +1,18 @@
+✓ spec/ai-skills
+✓ spec/artifact-parsing
+✓ spec/artifact-schemas
+✓ spec/cli
+✓ spec/distribution
+✓ spec/impact-analysis
+✓ change/issue-296-publication-surfaces
+✓ change/issue-300-publication-handoff
+✓ spec/methodology-docs
+✓ spec/normative-specification
+✓ spec/product-exploration
+✓ spec/product-graph
+✓ spec/public-brand
+✓ spec/release-publishing
+✓ spec/self-hosted-product-model
+✓ spec/snapshot-generation
+✓ spec/structural-validation
+Totals: 17 passed, 0 failed (17 items)

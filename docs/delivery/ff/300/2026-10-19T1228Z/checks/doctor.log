@@ -1,0 +1,17 @@
+ok   configuration: .product/config.yaml valid (or defaults in effect)
+ok   model validation: 0 error(s), 0 warning(s) across 94 artifact(s)
+ok   product structure: docs/product/model present
+ok   authoring templates: .product/templates absent (informational; run: prodshape init)
+ok   framework version: integrations generated with v0.22.1
+ok   managed files: all managed files match the installation lock
+ok   skill references: all skill references resolve
+ok   openspec integration: OpenSpec integration healthy
+ok   openspec: openspec CLI: OpenSpec 1.11.0 detected.
+ok   openspec: config.yaml: PDaC context block present and current.
+ok   openspec: metadata: Integration recorded (OpenSpec 1.12.0, installed 2026-08-30T08:04:44.281Z, updated 2026-09-26T04:50:55.030Z).
+ok   openspec: ci example: CI-ready verification example present at .product/integrations/openspec.ci.yml.
+ok   openspec: rules: All PDaC citation rules present.
+ok   openspec: product workflow: Product workflow available: schema installed and OpenSpec 1.11.0 meets the 1.7.0 floor.
+ok   openspec: product recovery workflow: Product recovery workflow available: schema installed at openspec/schemas/product-recovery.
+ok   generated outputs: .product/generated present
+All checks passed.

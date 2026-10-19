@@ -1,0 +1,12 @@
+94 node(s), 231 edge(s)
+  actor: 6
+  bounded-context: 3
+  business-rule: 7
+  constraint: 6
+  domain-term: 11
+  functional-requirement: 32
+  journey: 2
+  quality-requirement: 7
+  structured-behaviour: 3
+  use-case: 17
+Generated outputs written to .product/generated

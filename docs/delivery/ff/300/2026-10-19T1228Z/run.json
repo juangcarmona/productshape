@@ -43,7 +43,9 @@
     {
       "name": "implement",
       "inputCommit": "411fb614318e4eebe4d0346a8581e0de08922196",
-      "result": "running"
+      "result": "correction-round-1-in-progress",
+      "outputCommit": "1e0891d652186c1509989da2dbd2668714de52a7",
+      "evidence": ["checks/results.json", "verification.md", "runtime/"]
     }
   ],
   "reviews": [
@@ -74,13 +76,45 @@
         "320/390px controls, matrix scroll, URL-only state, copy equality and changesets included",
         "Human Done and merge/publication gates preserved"
       ]
+    },
+    {
+      "reviewerModel": "gpt-6-astra",
+      "reviewerExecution": "/root/site_reviewer",
+      "kind": "independent-final-audit",
+      "reviewedCommit": "1e0891d652186c1509989da2dbd2668714de52a7",
+      "decision": "request-changes",
+      "findings": [
+        {
+          "priority": "P2",
+          "finding": "Spanish toolbar overflows at1217px and1441px boundary widths"
+        },
+        {
+          "priority": "P2",
+          "finding": "Output validator accepts wrong external canonical and empty sitemap despite promised URL/inventory checks"
+        }
+      ],
+      "correctionCount": 1
     }
   ],
-  "corrections": [],
+  "corrections": [
+    {
+      "gate": "independent-final-audit",
+      "round": 1,
+      "requestedChanges": [
+        "Contain localized navigation at breakpoint boundaries and add boundary regression evidence",
+        "Verify shell canonical URLs against expected profile route/origin/base and require complete sitemap route inventory; add negative fixtures"
+      ],
+      "resultingCommit": null,
+      "outcome": "implemented; await expanded runtime and whole deterministic rerun"
+    }
+  ],
   "stopReason": null,
   "pullRequest": "https://github.com/juangcarmona/productshape/pull/301",
-  "links": [
-    "https://github.com/juangcarmona/productshape/issues/300",
-    "Plan amendment: existing Snapshot overflow at390px, narrow CSS-only repair proposed; await independent approval before Snapshot edits"
+  "links": ["https://github.com/juangcarmona/productshape/issues/300"],
+  "implementationSourceCommit": "1e0891d652186c1509989da2dbd2668714de52a7",
+  "knownLimitations": [
+    "Human-owned Done judgements and maintainer approval remain unmet",
+    "No Cloudflare account/project-mode verification or publication/domain operation",
+    "Issue #296 retrospective/lifecycle/spec-archive debt unchanged"
   ]
 }

@@ -1,0 +1,191 @@
+{
+  "browser": "Chromium 1248 via Playwright",
+  "observedAt": "2026-10-19T12:53:17.613Z",
+  "results": [
+    {
+      "name": "public-en",
+      "url": "http://127.0.0.1:8788/en/",
+      "size": "desktop",
+      "appearance": "light",
+      "status": 200,
+      "metrics": {
+        "viewport": 1440,
+        "scroll": 1440
+      },
+      "pageErrors": [],
+      "screenshot": "public-en-desktop-light.png",
+      "passed": true
+    },
+    {
+      "name": "public-en",
+      "url": "http://127.0.0.1:8788/en/",
+      "size": "mobile",
+      "appearance": "dark",
+      "status": 200,
+      "metrics": {
+        "viewport": 390,
+        "scroll": 390
+      },
+      "pageErrors": [],
+      "screenshot": "public-en-mobile-dark.png",
+      "passed": true
+    },
+    {
+      "name": "public-es",
+      "url": "http://127.0.0.1:8788/es/",
+      "size": "desktop",
+      "appearance": "light",
+      "status": 200,
+      "metrics": {
+        "viewport": 1440,
+        "scroll": 1440
+      },
+      "pageErrors": [],
+      "screenshot": "public-es-desktop-light.png",
+      "passed": true
+    },
+    {
+      "name": "public-es",
+      "url": "http://127.0.0.1:8788/es/",
+      "size": "mobile",
+      "appearance": "dark",
+      "status": 200,
+      "metrics": {
+        "viewport": 390,
+        "scroll": 390
+      },
+      "pageErrors": [],
+      "screenshot": "public-es-mobile-dark.png",
+      "passed": true
+    },
+    {
+      "name": "portal",
+      "url": "http://127.0.0.1:8789/productshape/en/",
+      "size": "desktop",
+      "appearance": "light",
+      "status": 200,
+      "metrics": {
+        "viewport": 1440,
+        "scroll": 1440
+      },
+      "pageErrors": [],
+      "screenshot": "portal-desktop-light.png",
+      "passed": true
+    },
+    {
+      "name": "portal",
+      "url": "http://127.0.0.1:8789/productshape/en/",
+      "size": "mobile",
+      "appearance": "dark",
+      "status": 200,
+      "metrics": {
+        "viewport": 390,
+        "scroll": 390
+      },
+      "pageErrors": [],
+      "screenshot": "portal-mobile-dark.png",
+      "passed": true
+    },
+    {
+      "name": "architecture",
+      "url": "http://127.0.0.1:8789/productshape/en/engineering/",
+      "size": "desktop",
+      "appearance": "light",
+      "status": 200,
+      "metrics": {
+        "viewport": 1440,
+        "scroll": 1440
+      },
+      "pageErrors": [],
+      "screenshot": "architecture-desktop-light.png",
+      "passed": true
+    },
+    {
+      "name": "architecture",
+      "url": "http://127.0.0.1:8789/productshape/en/engineering/",
+      "size": "mobile",
+      "appearance": "dark",
+      "status": 200,
+      "metrics": {
+        "viewport": 390,
+        "scroll": 390
+      },
+      "pageErrors": [],
+      "screenshot": "architecture-mobile-dark.png",
+      "passed": true
+    },
+    {
+      "name": "architecture-section",
+      "url": "http://127.0.0.1:8789/productshape/en/engineering/01-introduction-and-goals/",
+      "size": "desktop",
+      "appearance": "light",
+      "status": 200,
+      "metrics": {
+        "viewport": 1440,
+        "scroll": 1440
+      },
+      "pageErrors": [],
+      "screenshot": "architecture-section-desktop-light.png",
+      "passed": true
+    },
+    {
+      "name": "architecture-section",
+      "url": "http://127.0.0.1:8789/productshape/en/engineering/01-introduction-and-goals/",
+      "size": "mobile",
+      "appearance": "dark",
+      "status": 200,
+      "metrics": {
+        "viewport": 390,
+        "scroll": 390
+      },
+      "pageErrors": [],
+      "screenshot": "architecture-section-mobile-dark.png",
+      "passed": true
+    },
+    {
+      "name": "snapshot",
+      "url": "http://127.0.0.1:8789/productshape/en/model/explorer.html",
+      "size": "desktop",
+      "appearance": "light",
+      "status": 200,
+      "metrics": {
+        "viewport": 1440,
+        "scroll": 1440
+      },
+      "pageErrors": [],
+      "screenshot": "snapshot-desktop-light.png",
+      "passed": true
+    },
+    {
+      "name": "snapshot",
+      "url": "http://127.0.0.1:8789/productshape/en/model/explorer.html",
+      "size": "mobile",
+      "appearance": "dark",
+      "status": 200,
+      "metrics": {
+        "viewport": 390,
+        "scroll": 390
+      },
+      "pageErrors": [],
+      "screenshot": "snapshot-mobile-dark.png",
+      "passed": true
+    },
+    {
+      "name": "all-twelve-architecture-sections",
+      "count": 12,
+      "passed": true
+    },
+    {
+      "name": "portal-keyboard-/",
+      "url": "http://127.0.0.1:8789/productshape/en/model/explorer.html?search=1",
+      "dialog": "#find",
+      "passed": true
+    },
+    {
+      "name": "portal-keyboard-?",
+      "url": "http://127.0.0.1:8789/productshape/en/model/explorer.html?keys=1",
+      "dialog": "#keys",
+      "passed": true
+    }
+  ]
+}
