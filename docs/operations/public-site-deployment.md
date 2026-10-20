@@ -2,13 +2,19 @@
 
 The public site at `productshape.dev` and GitHub Pages engineering portal have separate outputs and publication controls. GitHub Actions builds and validates the public directory, then retains a seven-day artifact. It has no Cloudflare credential and does not upload, publish or configure DNS. Preparation of an artifact is not production publication.
 
+## Cloudflare Pages Git build settings
+
+For the Git-integrated Pages project, set the repository root as the root directory, `pnpm run build:public-site` as the build command, and `dist/public-site` as the build output directory. Use Node.js 24. Set the Pages build environment variable `PUPPETEER_SKIP_DOWNLOAD=true`: the published output is static and does not run a browser, while the GitHub Actions browser regression job downloads Chromium and must leave this setting unset.
+
+These are Cloudflare project settings and are not encoded by `wrangler.jsonc`; that file identifies the Pages project name and output directory for Wrangler. Verify the current dashboard settings and the complete build log when diagnosing a failed deploy. A log that ends during dependency installation does not identify the failing build command.
+
 ## Build and review locally
 
 Public generation and validation use Node 22 or newer and the workspace dependencies for the Astro shell; no generated Product Snapshot or architecture input is needed:
 
 ```bash
 pnpm install --frozen-lockfile
-node src/scripts/build-public-site.mjs --profile public --out dist/public-site --base-path / --site-origin https://productshape.dev
+pnpm run build:public-site
 node src/scripts/validate-public-site.mjs --dir dist/public-site --profile public --base-path / --site-origin https://productshape.dev
 node src/scripts/check-public-site-browser.mjs --dir dist/public-site --profile public --base-path / --evidence-dir dist/public-site-browser
 python3 -m http.server 4173 --directory dist/public-site

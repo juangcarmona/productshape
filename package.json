@@ -21,6 +21,7 @@
     "typecheck": "pnpm -r run typecheck",
     "test": "vitest run",
     "build": "pnpm -r run build",
+    "build:public-site": "node src/scripts/build-public-site.mjs --profile public --out dist/public-site --base-path / --site-origin https://productshape.dev",
     "verify": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm build && pnpm test",
     "release-contract:smoke": "node --import tsx src/scripts/release-contract-smoke.mts",
     "release-workflow:check": "node src/scripts/check-release-workflow.mjs",

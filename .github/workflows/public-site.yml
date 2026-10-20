@@ -53,7 +53,7 @@ jobs:
       - name: Build the public site
         env:
           MERMAID_RENDER: '1'
-        run: node src/scripts/build-public-site.mjs --profile public --out dist/public-site --base-path / --site-origin https://productshape.dev
+        run: pnpm run build:public-site
       - name: Validate the public upload directory
         run: node src/scripts/validate-public-site.mjs --dir dist/public-site --profile public --base-path / --site-origin https://productshape.dev
       - name: Build compatibility visual baseline

@@ -4,7 +4,7 @@ The Astro publication project lives under `src/public-site/`. Localized copy liv
 
 ```bash
 # Public ProductShape site for productshape.dev
-node src/scripts/build-public-site.mjs --profile public --out dist/public-site --base-path / --site-origin https://productshape.dev
+pnpm run build:public-site
 
 # Engineering portal for GitHub Pages
 node src/packages/cli/dist/bin.js graph --format html --product-url https://productshape.dev
