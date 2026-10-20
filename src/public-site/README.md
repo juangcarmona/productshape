@@ -3,7 +3,7 @@
 The Astro publication project lives under `src/public-site/`. Localized copy lives in `content/en.json` and `content/es.json`; Astro components live in `src/`; shared presentation lives in `assets/site.css`. One Astro builder creates two independent outputs while the compatibility content compiler preserves the existing rendered appearance:
 
 ```bash
-# Public ProductShape site for productshape.dev
+# Public ProductShape site for productshape.dev (built and deployed by Cloudflare Pages)
 pnpm run build:public-site
 
 # Engineering portal for GitHub Pages
@@ -24,11 +24,11 @@ node src/scripts/check-public-site-browser.mjs --dir _site --profile engineering
 
 `publication.json` records the profile, base path, origin, CLI version, full source revision and dirty state. A local uncommitted build is explicitly marked dirty. The public builder needs no generated engineering output or architecture input. The engineering output copies the generated standalone Snapshot byte-for-byte; its attribution URL is selected at generation time with the existing option shown above.
 
-The browser check serves a built directory locally, verifies representative routes in both profiles, checks renderer markers and source surfaces, exercises dark/system appearance, narrow navigation and keyboard focus, and captures route screenshots plus a JSON manifest. When given `--baseline-dir`, it also compares the representative Astro shell HTML byte-for-byte with the legacy compatibility output. CI uploads these files as review evidence; they do not represent a production deployment.
+The browser check serves a built directory locally, verifies representative routes in both profiles, checks renderer markers and source surfaces, exercises dark/system appearance, narrow navigation and keyboard focus, and captures route screenshots plus a JSON manifest. When given `--baseline-dir`, it also compares the representative Astro shell HTML byte-for-byte with the legacy compatibility output. These files are local review evidence; they do not represent a production deployment.
 
 Public and engineering pages reuse the compact shell, theme assets and keyboard/mobile controls. Public navigation serves localized product/process/adoption content; engineering navigation distinguishes the portal, Product Snapshot, Architecture Snapshot and external public site. The standalone Snapshot owns its own interface and URL state.
 
-For exact CI artifact layout, future manual Cloudflare preview/upload, rollback and custom-domain steps, use the [publication runbook](../docs/operations/public-site-deployment.md). No public deployment runs in GitHub Actions.
+For Cloudflare Git integration settings and rollback guidance, use the [deployment runbook](../docs/operations/public-site-deployment.md). Cloudflare owns public-site builds and deployment; no public-site workflow runs in GitHub Actions.
 
 To preview either static output locally, serve the selected build directory:
 
