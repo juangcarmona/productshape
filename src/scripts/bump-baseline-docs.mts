@@ -13,7 +13,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { baselineDocs } from './baseline-docs.mts';
 
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 const cliPackage = JSON.parse(
   await readFile(join(repoRoot, 'src', 'packages', 'cli', 'package.json'), 'utf8'),
