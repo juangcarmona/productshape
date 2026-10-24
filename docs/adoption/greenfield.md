@@ -2,7 +2,7 @@
 
 Use this guide for a new product or a repository with only code scaffolding and no product behaviour to recover. You will set up ProductShape, define and accept the first product baseline, then make a change through the same review process you will use later.
 
-> These commands target the supported published baseline, [`@prodshape/cli@0.22.1`](https://www.npmjs.com/package/@prodshape/cli/v/0.22.1). `prodshape` is canonical; `product-definition` is an identical v0.x compatibility alias, removed before v1. Every step marked "by hand" also works without the CLI: the layout, schemas and templates are plain files. See [Limitations](../limitations.md).
+> These commands target the supported published baseline, [`@prodshape/cli@0.23.0`](https://www.npmjs.com/package/@prodshape/cli/v/0.23.0). `prodshape` is canonical; `product-definition` is an identical v0.x compatibility alias, removed before v1. Every step marked "by hand" also works without the CLI: the layout, schemas and templates are plain files. See [Limitations](../limitations.md).
 
 ## 1. Set up the repository
 

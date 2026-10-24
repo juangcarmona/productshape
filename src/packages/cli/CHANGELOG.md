@@ -1,5 +1,16 @@
 # @prodshape/cli
 
+## 0.23.0
+
+### Minor Changes
+
+- 29577a8: Allow snapshots to use a project-specific title, link back to ProductShape and show the generating CLI version in the sidebar attribution.
+
+### Patch Changes
+
+- 659784a: Keep every Snapshot header control reachable on narrow screens and contain its relationship matrix in the existing local scroll area, while preserving standalone output and URL-only state.
+- 82b580d: Update the dependency graph to remove current security advisories in ProductShape's runtime and development tooling.
+
 ## 0.22.1
 
 ### Patch Changes

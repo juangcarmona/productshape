@@ -1,5 +1,14 @@
 # @prodshape/distribution
 
+## 0.17.1
+
+### Patch Changes
+
+- Updated dependencies [29577a8]
+- Updated dependencies [659784a]
+- Updated dependencies [82b580d]
+  - @prodshape/core@0.25.0
+
 ## 0.17.0
 
 ### Minor Changes
