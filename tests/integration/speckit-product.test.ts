@@ -435,14 +435,7 @@ describe('Spec Kit PRODUCT adapter', () => {
   it('apply reports the citations the change affects, skipping its own container and the archive', async () => {
     const root = await workspace();
     try {
-      const rulePath = join(
-        root,
-        'docs',
-        'product',
-        'model',
-        'business-rules',
-        'br-valid-url.md',
-      );
+      const rulePath = join(root, 'docs', 'product', 'model', 'business-rules', 'br-valid-url.md');
       const digest = contentDigest(await readFile(rulePath, 'utf8'));
       const citing = (title: string) =>
         `<!-- pdac-scope: cited -->\n\n# ${title}\n\nOnly well-formed URLs are shortened.\n<!-- pdac:cite id="BR-VALID-URL" digest="${digest}" -->\n`;
@@ -521,7 +514,7 @@ describe('Spec Kit PRODUCT adapter', () => {
       await mkdir(join(nativeDir, 'proposed', 'business-rules'), { recursive: true });
       await writeFile(
         join(nativeDir, 'change.md'),
-        `---\nid: CHG-NATIVE-TOUCH-001\ntype: product-change\ntitle: Native change touching the same rule\nstatus: draft\nbase-revision: '0000000'\noperations:\n  add: []\n  modify:\n    - BR-VALID-URL\n  remove: []\n---\n\n## Problem\n\nNative.\n\n## Intended Product Outcome\n\nNative.\n\n## Rationale\n\nNative.\n\n## Affected Product Areas\n\nBR-VALID-URL-001.\n\n## Open Questions\n\nNone.\n\n## Product Acceptance\n\nNone.\n\n## Out of Scope\n\nNone.\n`,
+        `---\nid: CHG-NATIVE-TOUCH-001\ntype: product-change\ntitle: Native change touching the same rule\nstatus: draft\nbase-revision: '0000000'\noperations:\n  add: []\n  modify:\n    - BR-VALID-URL\n  remove: []\n---\n\n## Problem\n\nNative.\n\n## Intended Product Outcome\n\nNative.\n\n## Rationale\n\nNative.\n\n## Affected Product Areas\n\nBR-VALID-URL.\n\n## Open Questions\n\nNone.\n\n## Product Acceptance\n\nNone.\n\n## Out of Scope\n\nNone.\n`,
         'utf8',
       );
       await cp(

@@ -20,6 +20,7 @@
 .claude/skills/analyze-product-change/SKILL.md
 .claude/skills/audit-product-model/references/diagnostic-codes.md
 .claude/skills/audit-product-model/references/finding-classification.md
+.claude/skills/audit-product-model/references/id-suffix-migration.md
 .claude/skills/audit-product-model/SKILL.md
 .claude/skills/bind-consumers/references/openspec.md
 .claude/skills/bind-consumers/references/speckit.md

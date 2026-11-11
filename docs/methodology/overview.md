@@ -10,6 +10,12 @@ Five minutes here gives you the artifact families, the product graph, the operat
 
 A product definition is a set of small, individually addressable Markdown artifacts, each with a stable immutable ID (like `ACT-PRODUCT-ENGINEER` or `FR-VALIDATE-REFERENCES`):
 
+### How to name an ID
+
+An ID is its kind's prefix and a name that identifies the thing: `PREFIX-NAME`, uppercase words joined by hyphens (`UC-IMPACT`, `FR-CITE`, `BR-IDENTITY`). It carries **no sequence number**: `UC-IMPACT-001` says nothing that `UC-IMPACT` does not. A number is appended only to break a tie between two IDs that would otherwise be equal, as a plain integer without padding (`FR-ORDERS-CONFIRM-2`), and a more distinguishing name is better than a number. The identifier grammar (`PREFIX-[A-Z0-9]+(-[A-Z0-9]+)*`) accepts both forms, so IDs with a numeric suffix keep working.
+
+IDs are immutable once assigned. The one exception is the one-time removal of the old numeric suffixes in 0.23: `prodshape fix --id-suffixes` plans it, asks for consent, never renames into a collision and rolls back if validation would get worse. The changelog carries the migration steps.
+
 - **Actors** — who or what interacts with the product to achieve an outcome.
 - **Journeys** — end-to-end outcomes an actor pursues, spanning multiple use cases.
 - **Use Cases** — concrete interactions through which an actor obtains an outcome.

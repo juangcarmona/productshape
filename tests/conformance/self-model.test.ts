@@ -34,6 +34,8 @@ const expectedIds: Record<string, string[]> = {
     // Added by CHG-CLI-POLISH-001 (adoption improvements).
     'UC-SCHEMA',
     'UC-FIX',
+    // Added by CHG-ID-NOSUFFIX (ID-suffix migration).
+    'UC-ID-MIGRATE',
     // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
     'UC-SNAPSHOT',
     // Added by CHG-SPECKIT-001 (Spec Kit bridge and cited context projection).
@@ -50,6 +52,8 @@ const expectedIds: Record<string, string[]> = {
   'business-rule': [
     'BR-CANONICAL',
     'BR-IDENTITY',
+    // Added by CHG-ID-NOSUFFIX (ID form).
+    'BR-ID-FORM',
     'BR-RELATIONSHIPS',
     'BR-CHANGE',
     'BR-SDD',
@@ -106,6 +110,8 @@ const expectedIds: Record<string, string[]> = {
     // Added by CHG-CLI-POLISH-001 (adoption improvements).
     'FR-SCHEMA',
     'FR-FIX',
+    // Added by CHG-ID-NOSUFFIX (ID-suffix migration).
+    'FR-ID-MIGRATION',
     // Added by CHG-MODEL-TRUEUP-001 (baseline corrected against shipped behaviour).
     'FR-DOCTOR',
     // Added by CHG-SNAPSHOT-001 (Product Snapshot page).

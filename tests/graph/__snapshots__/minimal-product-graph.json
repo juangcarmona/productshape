@@ -23,7 +23,7 @@
       "title": "Only well-formed absolute URLs are shortened",
       "status": "active",
       "path": "product/model/business-rules/br-valid-url.md",
-      "digest": "sha256:08a2beb833c78440ad392220d2aa29f77fed51da8b886ea0a2328a26f2ea42be"
+      "digest": "sha256:84252caf31252645e0bf899966ff2540eaafa8c0b2027883b495118ebd526fb0"
     },
     {
       "id": "CON-NO-TRACKING",
@@ -39,7 +39,7 @@
       "title": "Issue a resolving short link for every accepted URL",
       "status": "active",
       "path": "product/model/requirements/functional/fr-shorten.md",
-      "digest": "sha256:7e8957aff5ed6edd8c58d476fc6f972dd00f4a426d7fd1aeee56cd57a4518d5d"
+      "digest": "sha256:526030aa3efd6fb7bac5ce0f263dfea768b50cb9fe74d7dc2d175274b81cc697"
     },
     {
       "id": "JRN-SHARE",
@@ -47,7 +47,7 @@
       "title": "Share a long address as a short link",
       "status": "active",
       "path": "product/model/journeys/jrn-share.md",
-      "digest": "sha256:9b0b9885690f5227584842cbf4647f29adaba67b6e9098978f9fce5f3488c2bf"
+      "digest": "sha256:553eea8348e37f4953d445c2fa5325b0d8cb829721acaff9e691ef651594e793"
     },
     {
       "id": "QR-RESOLVE",
@@ -55,7 +55,7 @@
       "title": "Short links keep resolving",
       "status": "active",
       "path": "product/model/requirements/quality/qr-resolve.md",
-      "digest": "sha256:c18911939ab5645cc02f4b42f308bf32d033ff8ec515a3c2ea4c97e47da778a3"
+      "digest": "sha256:3e3600c70425df21c66afd3d201d43b4e8375588517826ffe7a65e8463891066"
     },
     {
       "id": "TERM-SHORT-LINK",
@@ -71,7 +71,7 @@
       "title": "Shorten a URL",
       "status": "active",
       "path": "product/model/use-cases/uc-shorten.md",
-      "digest": "sha256:6dbf4cfe242af19f50495db0cdd070df5bfd155a85bc1d812b14d3b28adc1fa8"
+      "digest": "sha256:db3ab88ea973775d050c3571ac8ac6f1d9c75dcf17fdc2af8e2c9d32925daee9"
     }
   ],
   "edges": [

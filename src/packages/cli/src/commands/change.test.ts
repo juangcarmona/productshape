@@ -932,7 +932,7 @@ describe('change apply', () => {
     const text = result.out.join('\n');
     expect(text).toContain('Affected citations: 2');
     // A citation of a modified artifact forecasts stale; of a removed artifact, unresolved.
-    expect(text).toContain('specs/shortening.md:3\tBR-VALID-URL-001\tstale');
+    expect(text).toContain('specs/shortening.md:3\tBR-VALID-URL\tstale');
     expect(text).toContain('specs/shortening.md:4\tCON-NO-TRACKING\tunresolved');
     // The report is recomputed output: reporting it writes nothing (RFC 0048).
     expect(await git('status', '--porcelain')).toBe(before);
@@ -1048,7 +1048,7 @@ describe('change apply', () => {
 
     // The sidecar's point of use is its ledger entry, not a file line.
     const text = (await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run'])).out.join('\n');
-    expect(text).toContain('specs/ledger.citations.yaml entry 1\tBR-VALID-URL-001\tstale');
+    expect(text).toContain('specs/ledger.citations.yaml entry 1\tBR-VALID-URL\tstale');
   });
 });
 
