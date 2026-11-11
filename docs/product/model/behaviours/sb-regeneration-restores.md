@@ -4,7 +4,7 @@ type: structured-behaviour
 title: Rebuilding derived outputs restores them identically
 status: active
 illustrates:
-  - BR-CANONICAL-001
+  - BR-CANONICAL
 given:
   - Every generated output has been deleted from a working copy
 when: The derived outputs are rebuilt from the authored artifacts

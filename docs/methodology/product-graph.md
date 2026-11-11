@@ -8,7 +8,7 @@ Every product artifact — actor, journey, use case, rule, term, context, requir
 
 ```yaml
 ---
-id: UC-VALIDATE-001
+id: UC-VALIDATE
 type: use-case
 title: Validate the product model
 status: active

@@ -12,7 +12,7 @@ The manifesto and methodology documentation that explain Product Definition as C
 
 The documentation SHALL provide an overview (`docs/methodology/overview.md`) that explains the product graph, the artifact families, the three operations (Define, Recover, Change) and the flow from Product Definition to SDD implementation, readable in under five minutes.
 
-{pdac:cite id="QR-EXPLAINABILITY-001" digest="sha256:d791810ec7b98dc4f411d2b839f0d123396c27e27accdb8a88ef6d3c41e2debc"}
+{pdac:cite id="QR-EXPLAINABILITY" digest="sha256:b6de6f9737c65d9a21205c9efa75377d0287878df737663d3829d42a0f242d43"}
 
 {pdac:cite id="TERM-METHODOLOGY" digest="sha256:9b07509aa4d8df05755689697d21d69e96a269b5e941b9a04c63fe419ac5c55a"}
 
@@ -34,7 +34,7 @@ The documentation SHALL describe each part of the methodology in its own documen
 
 The Define documentation SHALL state that `CHG-INITIAL` proposes the complete first Product Definition against an empty baseline, validates as an overlay, receives human product approval, is applied explicitly on a working branch and is accepted only when a human merges the reviewed result. Every subsequent semantic evolution MUST use the same Product Change lifecycle.
 
-{pdac:cite id="BR-CHANGE-001" digest="sha256:e6ce08a14e1aecd91000659eb9b6642354f19ba3df3b2261324fc520b951f013"}
+{pdac:cite id="BR-CHANGE" digest="sha256:db602cf0f15ccc7de39a30d2e05c0139a02fe4182122d32c3dea61d51962f537"}
 
 #### Scenario: Establishing a new product model
 
@@ -45,9 +45,9 @@ The Define documentation SHALL state that `CHG-INITIAL` proposes the complete fi
 
 The repository SHALL contain `docs/manifesto.md` stating the central assertions — the relationships are the methodology; authored artifacts are the source of truth and the graph is compiled from them — without marketing claims or invented benchmarks.
 
-{pdac:cite id="BR-CANONICAL-001" digest="sha256:7ed6dc7c588e0b79da8e6036548cf2fd2c6a1b02a9393f467f50cb0cb02475d6"}
+{pdac:cite id="BR-CANONICAL" digest="sha256:efd03de6c8d94b59bf2843d3ce20cde9446c36050b7d34cc16b42ce548ed8084"}
 
-{pdac:cite id="BR-RELATIONSHIPS-001" digest="sha256:a6f9d40c2c1ac926149fe171660e5715b66b4e82ce8129f128eab0e6c1c7de8c"}
+{pdac:cite id="BR-RELATIONSHIPS" digest="sha256:948608d2a917204d7aab5042dcfe4a4731b805163d54d546a6d1ee38c6954102"}
 
 #### Scenario: Reading the founding position
 
@@ -58,7 +58,7 @@ The repository SHALL contain `docs/manifesto.md` stating the central assertions 
 
 The documentation SHALL provide adoption guides for greenfield products, brownfield products, existing repositories and existing OpenSpec repositories.
 
-{pdac:cite id="JRN-ADOPT-001" digest="sha256:25fc9ac1d42c5bff2cbfa2bc79321ce19196acd33ee0485e47b79d42cb7650f7"}
+{pdac:cite id="JRN-ADOPT" digest="sha256:b2ea7bd90524007d2789be72aff321a02b7898680cab8adab0a929599d8829d7"}
 
 #### Scenario: Adopting in a repository that already uses OpenSpec
 

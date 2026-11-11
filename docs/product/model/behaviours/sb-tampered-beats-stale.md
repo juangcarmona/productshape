@@ -4,7 +4,7 @@ type: structured-behaviour
 title: A tampered embedding is reported even when its target also moved
 status: active
 illustrates:
-  - UC-CITATIONS-VERIFY-001
+  - UC-CITATIONS-VERIFY
 uses-terms:
   - TERM-CITATION
 given:

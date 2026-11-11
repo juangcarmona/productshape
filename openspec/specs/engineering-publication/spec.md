@@ -10,7 +10,7 @@ The engineering publication surface lets readers inspect distinct, source-aware 
 
 The portal MUST distinguish Product, architecture and E2E outputs and show only outputs that have been produced.
 
-<!-- pdac:cite id="FR-ENGINEERING-PORTAL-001" digest="sha256:641a6d2ae3bbb10951584e3b2b648ba12b59c8aebab1f0e6787aed751f53b1c5" -->
+<!-- pdac:cite id="FR-ENGINEERING-PORTAL" digest="sha256:f32c683fd04766f8987f17efbce625468e6181549ec83216192b6bcc3e0063b8" -->
 
 #### Scenario: Product Snapshot remains distinct
 
@@ -31,7 +31,7 @@ The portal MUST distinguish Product, architecture and E2E outputs and show only 
 
 Each available snapshot MUST identify its source revision. Each E2E report MUST identify its originating commit or run and recorded result, and link to relevant source evidence.
 
-<!-- pdac:cite id="FR-ENGINEERING-PORTAL-001" digest="sha256:641a6d2ae3bbb10951584e3b2b648ba12b59c8aebab1f0e6787aed751f53b1c5" -->
+<!-- pdac:cite id="FR-ENGINEERING-PORTAL" digest="sha256:f32c683fd04766f8987f17efbce625468e6181549ec83216192b6bcc3e0063b8" -->
 
 #### Scenario: Snapshot source revision is visible
 

@@ -25,7 +25,7 @@ The specification SHALL define, using RFC-style normative language (MUST, MUST N
 
 The specification SHALL define stable immutable IDs with the fixed artifact prefixes ACT-, JRN-, UC-, BR-, TERM-, BC-, FR-, QR- and CON-, and the Product Change prefix CHG-. It SHALL state that artifact IDs become immutable after first acceptance into the current model, are never reused, and are never inferred from file paths, and that file-name alignment is a warning, not an identity mechanism. Retired prefixes SLI- and HOF- are never reused.
 
-{pdac:cite id="BR-IDENTITY-001" digest="sha256:4260c4babe1b49464e1ebe6c6aa2f1001c59b2e4c6e8e9d81781e112bfee47c4"}
+{pdac:cite id="BR-IDENTITY" digest="sha256:1cdd6a76d633a06d08ab646c81c1549aaafa73389adcb60d904759baaeef0a4f"}
 
 #### Scenario: Renaming an artifact file
 
@@ -36,7 +36,7 @@ The specification SHALL define stable immutable IDs with the fixed artifact pref
 
 The specification SHALL define the canonical relationship fields per source artifact type with their allowed target types, and SHALL state that reverse relationships are always derived and never manually maintained. `Domain Term.defined-in` SHALL be canonical and `Bounded Context.owns-terms` SHALL be a derived display relationship that is not authored.
 
-{pdac:cite id="BR-RELATIONSHIPS-001" digest="sha256:a6f9d40c2c1ac926149fe171660e5715b66b4e82ce8129f128eab0e6c1c7de8c"}
+{pdac:cite id="BR-RELATIONSHIPS" digest="sha256:948608d2a917204d7aab5042dcfe4a4731b805163d54d546a6d1ee38c6954102"}
 
 #### Scenario: Authoring term ownership
 
@@ -47,7 +47,7 @@ The specification SHALL define the canonical relationship fields per source arti
 
 The specification SHALL distinguish accepted current semantics (`docs/product/model/**/*.md` on the canonical branch) from a Product Change overlay and from generated non-canonical outputs (graph files, indexes, diagrams, traceability reports). `docs/product/model/index.md` SHALL be defined as a human navigation document that never duplicates relationships. Apply MAY write the approved proposal into `docs/product/model` on a working branch, but only a human merge of the reviewed result changes the accepted baseline.
 
-{pdac:cite id="BR-CANONICAL-001" digest="sha256:7ed6dc7c588e0b79da8e6036548cf2fd2c6a1b02a9393f467f50cb0cb02475d6"}
+{pdac:cite id="BR-CANONICAL" digest="sha256:efd03de6c8d94b59bf2843d3ce20cde9446c36050b7d34cc16b42ce548ed8084"}
 
 {pdac:cite id="TERM-CURRENT-PRODUCT-MODEL" digest="sha256:0699a1113e526f3a566b52b3f409e68933cfc23a5ac64387bc4b4a72c6211175"}
 
@@ -69,9 +69,9 @@ The specification SHALL define artifact status (draft, active, deprecated, retir
 
 The specification SHALL define the lifecycle as accepted baseline → proposed Product Change → overlay validation → human product approval → explicit apply on a working branch → pull-request review → human merge accepting the resulting baseline. It SHALL state that a Product Change is not a pull request, apply is not acceptance, and neither apply nor merge attests implementation, verification, release or deployment. Product-definition work and implementation work MAY share a pull request or proceed at different times, but they remain independent. Tools MUST NOT grant product approval, merge, auto-approve or self-merge model changes. `CHG-INITIAL` establishes the first baseline through the same lifecycle as every later change.
 
-{pdac:cite id="BR-CHANGE-001" digest="sha256:e6ce08a14e1aecd91000659eb9b6642354f19ba3df3b2261324fc520b951f013"}
+{pdac:cite id="BR-CHANGE" digest="sha256:db602cf0f15ccc7de39a30d2e05c0139a02fe4182122d32c3dea61d51962f537"}
 
-{pdac:cite id="UC-CHANGE-001" digest="sha256:43d756bd7c45a2357142fe8c8f310401684822a39c5a95f6dcbe48469dd5c64a"}
+{pdac:cite id="UC-CHANGE" digest="sha256:72cfa456ae831e09d4f4f561d63022e89d8957da16503b4079db97765fb5dda0"}
 
 #### Scenario: Requesting a change
 
@@ -82,11 +82,11 @@ The specification SHALL define the lifecycle as accepted baseline → proposed P
 
 The specification SHALL define a citation as a machine-verifiable reference from a consumer document to canonical product text, carrying the target artifact `id`, a content `digest`, and an optional `anchor` (a verification scenario id). The specification SHALL define four citation statuses (current, stale, tampered, unresolved) and the diagnostics PRODUCT042, PRODUCT060, PRODUCT061, PRODUCT062 and PRODUCT063. Consumers MUST NOT write to the canonical product model; they cite it.
 
-{pdac:cite id="BR-SDD-001" digest="sha256:ccbf28775b1b0f3c23e5bbc4c9252a8d7c4cd1e7328e05c4d3baa2df0b76727d"}
+{pdac:cite id="BR-SDD" digest="sha256:52ba27504d0ed29995581033537fd8d29b645fbb522ebbac5b358f1d023d805e"}
 
 {pdac:cite id="TERM-CITATION" digest="sha256:3451ef0f31f948a5f3fe1a228e699cf5677aa7e6906ac48faaf48f97c1b00dcf"}
 
-{pdac:cite id="FR-CITATIONS-VERIFY-001" digest="sha256:850eeca68d751eee955a82ceab2c42fa12aaa7d6aab22dbd62296c3716c8ab6c"}
+{pdac:cite id="FR-CITATIONS-VERIFY" digest="sha256:486ae9129549ab404e6f5f6f1d92add695caa93890585a5fb1af5de91e163cb0"}
 
 #### Scenario: A consumer document cites an artifact
 

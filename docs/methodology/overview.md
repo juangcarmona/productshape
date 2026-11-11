@@ -8,7 +8,7 @@ Five minutes here gives you the artifact families, the product graph, the operat
 
 ## The artifact families
 
-A product definition is a set of small, individually addressable Markdown artifacts, each with a stable immutable ID (like `ACT-PRODUCT-ENGINEER` or `FR-VALIDATE-001`):
+A product definition is a set of small, individually addressable Markdown artifacts, each with a stable immutable ID (like `ACT-PRODUCT-ENGINEER` or `FR-VALIDATE-REFERENCES`):
 
 - **Actors** — who or what interacts with the product to achieve an outcome.
 - **Journeys** — end-to-end outcomes an actor pursues, spanning multiple use cases.

@@ -11,22 +11,22 @@ Human navigation for the current product model. This page orients; it never dupl
 
 ## Journeys — end-to-end outcomes
 
-- [JRN-ADOPT-001](journeys/jrn-adopt-001.md) — adopt Product Definition as Code in a repository.
-- [JRN-SNAPSHOT-001](journeys/jrn-snapshot-001.md) — explore the product graph through a snapshot.
+- [JRN-ADOPT](journeys/jrn-adopt.md) — adopt Product Definition as Code in a repository.
+- [JRN-SNAPSHOT](journeys/jrn-snapshot.md) — explore the product graph through a snapshot.
 
 ## Use cases — concrete interactions
 
-Adoption: [UC-INIT-001](use-cases/uc-init-001.md), [UC-DEFINE-001](use-cases/uc-define-001.md). Understanding the model: [UC-VALIDATE-001](use-cases/uc-validate-001.md), [UC-INSPECT-001](use-cases/uc-inspect-001.md), [UC-IMPACT-001](use-cases/uc-impact-001.md), [UC-SCHEMA-001](use-cases/uc-schema-001.md). Keeping it tidy: [UC-FIX-001](use-cases/uc-fix-001.md). Evolving it: [UC-CHANGE-001](use-cases/uc-change-001.md). Citing and verifying: [UC-CITE-001](use-cases/uc-cite-001.md), [UC-CITATIONS-VERIFY-001](use-cases/uc-citations-verify-001.md). Exploring: [UC-EXPLORE-001](use-cases/uc-explore-001.md). Snapshots: [UC-SNAPSHOT-001](use-cases/uc-snapshot-001.md), [UC-SNAPSHOT-EXPLORE-001](use-cases/uc-snapshot-explore-001.md).
+Adoption: [UC-INIT](use-cases/uc-init.md), [UC-DEFINE](use-cases/uc-define.md). Understanding the model: [UC-VALIDATE](use-cases/uc-validate.md), [UC-INSPECT](use-cases/uc-inspect.md), [UC-IMPACT](use-cases/uc-impact.md), [UC-SCHEMA](use-cases/uc-schema.md). Keeping it tidy: [UC-FIX](use-cases/uc-fix.md). Evolving it: [UC-CHANGE](use-cases/uc-change.md). Citing and verifying: [UC-CITE](use-cases/uc-cite.md), [UC-CITATIONS-VERIFY](use-cases/uc-citations-verify.md). Exploring: [UC-EXPLORE](use-cases/uc-explore.md). Snapshots: [UC-SNAPSHOT](use-cases/uc-snapshot.md), [UC-SNAPSHOT-EXPLORE](use-cases/uc-snapshot-explore.md).
 
 ## Business rules — what governs behaviour
 
-- [BR-CANONICAL-001](business-rules/br-canonical-001.md) — authored artifacts are canonical.
-- [BR-IDENTITY-001](business-rules/br-identity-001.md) — identity is immutable IDs, not paths.
-- [BR-RELATIONSHIPS-001](business-rules/br-relationships-001.md) — reverse relationships are derived.
-- [BR-CHANGE-001](business-rules/br-change-001.md) — Product Changes are overlay-validated, approved and applied; merge accepts the resulting baseline.
-- [BR-SDD-001](business-rules/br-sdd-001.md) — consumers cite, never own semantics.
-- [BR-AI-001](business-rules/br-ai-001.md) — deterministic validation is never delegated to AI.
-- [BR-MUTATION-001](business-rules/br-mutation-001.md) — repository mutation is contained, planned, drift-safe and fails closed.
+- [BR-CANONICAL](business-rules/br-canonical.md) — authored artifacts are canonical.
+- [BR-IDENTITY](business-rules/br-identity.md) — identity is immutable IDs, not paths.
+- [BR-RELATIONSHIPS](business-rules/br-relationships.md) — reverse relationships are derived.
+- [BR-CHANGE](business-rules/br-change.md) — Product Changes are overlay-validated, approved and applied; merge accepts the resulting baseline.
+- [BR-SDD](business-rules/br-sdd.md) — consumers cite, never own semantics.
+- [BR-AI](business-rules/br-ai.md) — deterministic validation is never delegated to AI.
+- [BR-MUTATION](business-rules/br-mutation.md) — repository mutation is contained, planned, drift-safe and fails closed.
 
 ## Structured behaviours
 
@@ -42,8 +42,8 @@ Terms: [TERM-PRODUCT-ARTIFACT](domain/terms/term-product-artifact.md), [TERM-PRO
 
 ## Requirements — derived obligations
 
-Functional: [FR-INIT-001](requirements/functional/fr-init-001.md), [FR-RELEASE-001](requirements/functional/fr-release-001.md), [FR-PARSE-001](requirements/functional/fr-parse-001.md), [FR-VALIDATE-001](requirements/functional/fr-validate-001.md), [FR-VALIDATE-002](requirements/functional/fr-validate-002.md), [FR-GRAPH-001](requirements/functional/fr-graph-001.md), [FR-INSPECT-001](requirements/functional/fr-inspect-001.md), [FR-IMPACT-001](requirements/functional/fr-impact-001.md), [FR-CHANGE-001](requirements/functional/fr-change-001.md), [FR-CITE-001](requirements/functional/fr-cite-001.md), [FR-CITATIONS-VERIFY-001](requirements/functional/fr-citations-verify-001.md), [FR-DISTRIBUTION-001](requirements/functional/fr-distribution-001.md), [FR-OPENSPEC-001](requirements/functional/fr-openspec-001.md), [FR-SCHEMA-001](requirements/functional/fr-schema-001.md), [FR-FIX-001](requirements/functional/fr-fix-001.md), [FR-DOCTOR-001](requirements/functional/fr-doctor-001.md), [FR-EXPLORE-001](requirements/functional/fr-explore-001.md), [FR-SNAPSHOT-001](requirements/functional/fr-snapshot-001.md) through [FR-SNAPSHOT-009](requirements/functional/fr-snapshot-009.md).
+Functional: [FR-INIT-PRESERVE](requirements/functional/fr-init-preserve.md), [FR-RELEASE](requirements/functional/fr-release.md), [FR-PARSE](requirements/functional/fr-parse.md), [FR-VALIDATE-REFERENCES](requirements/functional/fr-validate-references.md), [FR-VALIDATE-DIAGNOSTICS](requirements/functional/fr-validate-diagnostics.md), [FR-GRAPH](requirements/functional/fr-graph.md), [FR-INSPECT](requirements/functional/fr-inspect.md), [FR-IMPACT](requirements/functional/fr-impact.md), [FR-CHANGE-VALIDATE](requirements/functional/fr-change-validate.md), [FR-CITE](requirements/functional/fr-cite.md), [FR-CITATIONS-VERIFY](requirements/functional/fr-citations-verify.md), [FR-DISTRIBUTION](requirements/functional/fr-distribution.md), [FR-OPENSPEC](requirements/functional/fr-openspec.md), [FR-SCHEMA](requirements/functional/fr-schema.md), [FR-FIX](requirements/functional/fr-fix.md), [FR-DOCTOR](requirements/functional/fr-doctor.md), [FR-EXPLORE](requirements/functional/fr-explore.md), [FR-SNAPSHOT-PAGE](requirements/functional/fr-snapshot-page.md) through [FR-SNAPSHOT-TOPOLOGY](requirements/functional/fr-snapshot-topology.md).
 
-Quality: [QR-PORTABILITY-001](requirements/quality/qr-portability-001.md), [QR-DETERMINISM-001](requirements/quality/qr-determinism-001.md), [QR-EXPLAINABILITY-001](requirements/quality/qr-explainability-001.md), [QR-EXTENSIBILITY-001](requirements/quality/qr-extensibility-001.md), [QR-ACCESSIBILITY-001](requirements/quality/qr-accessibility-001.md), [QR-PRESENTATION-001](requirements/quality/qr-presentation-001.md), [QR-SCALABILITY-001](requirements/quality/qr-scalability-001.md).
+Quality: [QR-PORTABILITY](requirements/quality/qr-portability.md), [QR-DETERMINISM](requirements/quality/qr-determinism.md), [QR-EXPLAINABILITY](requirements/quality/qr-explainability.md), [QR-EXTENSIBILITY](requirements/quality/qr-extensibility.md), [QR-ACCESSIBILITY](requirements/quality/qr-accessibility.md), [QR-PRESENTATION](requirements/quality/qr-presentation.md), [QR-SCALABILITY](requirements/quality/qr-scalability.md).
 
-Constraints: [CON-MARKDOWN-001](requirements/constraints/con-markdown-001.md), [CON-NO-GRAPH-DATABASE](requirements/constraints/con-no-graph-database.md), [CON-NO-WEB-UI](requirements/constraints/con-no-web-ui.md), [CON-SDD-AGNOSTIC](requirements/constraints/con-sdd-agnostic.md), [CON-PUBLIC-GENERIC](requirements/constraints/con-public-generic.md), [CON-BRAND-001](requirements/constraints/con-brand-001.md).
+Constraints: [CON-MARKDOWN](requirements/constraints/con-markdown.md), [CON-NO-GRAPH-DATABASE](requirements/constraints/con-no-graph-database.md), [CON-NO-WEB-UI](requirements/constraints/con-no-web-ui.md), [CON-SDD-AGNOSTIC](requirements/constraints/con-sdd-agnostic.md), [CON-PUBLIC-GENERIC](requirements/constraints/con-public-generic.md), [CON-BRAND](requirements/constraints/con-brand.md).

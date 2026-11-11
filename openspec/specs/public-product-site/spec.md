@@ -10,7 +10,7 @@ The public ProductShape site helps readers understand the product, its process a
 
 The site MUST explain ProductShape's purpose, process and artifacts, distinguishing the product from the PDaC methodology.
 
-<!-- pdac:cite id="CON-BRAND-001" digest="sha256:888e80751e04d389d5cee683c18fb47e1795a39dd8213454b16e09aa426be9cc" -->
+<!-- pdac:cite id="CON-BRAND" digest="sha256:0479c42858b67632f3e7956466e74b3c20123f3922a42355b33595158d781c5f" -->
 
 #### Scenario: Reader learns what ProductShape is
 
@@ -21,7 +21,7 @@ The site MUST explain ProductShape's purpose, process and artifacts, distinguish
 
 The site MUST include Archify diagrams of process and artifact relationships. Diagrams MUST label conceptual explanations and derived facts, link source-backed facts, and convey meaning without color alone.
 
-<!-- pdac:cite id="FR-PUBLIC-SITE-001" digest="sha256:3cb2c22372dc4696fedaf5ef88ed42158f828accc65a4fa45f46812ee5a1f20a" -->
+<!-- pdac:cite id="FR-PUBLIC-SITE" digest="sha256:4f8aa29bc2a05f0528d888f997c206f62fb96737adb26a7de59e2de86b2e840b" -->
 
 #### Scenario: Source-backed diagram links to its source
 
@@ -42,7 +42,7 @@ The site MUST include Archify diagrams of process and artifact relationships. Di
 
 The site MUST link to Product, architecture or E2E outputs only when they are available in the engineering portal.
 
-<!-- pdac:cite id="FR-ENGINEERING-PORTAL-001" digest="sha256:641a6d2ae3bbb10951584e3b2b648ba12b59c8aebab1f0e6787aed751f53b1c5" -->
+<!-- pdac:cite id="FR-ENGINEERING-PORTAL" digest="sha256:f32c683fd04766f8987f17efbce625468e6181549ec83216192b6bcc3e0063b8" -->
 
 #### Scenario: Link appears when its output exists
 

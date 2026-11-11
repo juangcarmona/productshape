@@ -26,11 +26,11 @@ Repository scaffolding, managed provider assets, the installation lock and the d
 
 `init` SHALL detect supported SDD frameworks present in the repository by passive inspection (OpenSpec via `openspec/`, Kiro via `.kiro/`, Spec Kit via `.specify/`) and report the detection without executing framework tooling. `--sdd openspec` SHALL wire the OpenSpec integration in the same run, creating the workspace first (`openspec init --tools none`, through the pinned `npx -y @fission-ai/openspec@1` when no CLI is installed) when none exists; frameworks that install through their own tooling SHALL receive printed setup guidance instead of an installation attempt. With an explicit selection, an explicit `--sdd none`, or no interactive terminal, init SHALL NOT prompt, and report-only mode SHALL describe the SDD actions while executing no external command and writing nothing. When the scaffold succeeds but the integration step fails, the partial outcome SHALL be reported distinctly together with the command that retries only the failed step.
 
-{pdac:cite id="FR-INIT-002" digest="sha256:48bd2d28649dc2079f8fd5d111740f588616da5695293e6e44e47f9c24617e0d"}
+{pdac:cite id="FR-INIT-SDD" digest="sha256:b7d961c479e640a7c0d03b8abfb640a0f9d6251af14673b98513b848785e0716"}
 
-{pdac:cite id="UC-INIT-001" digest="sha256:82f4a1b7f382d5f60b2c02257213e35c9e9e7ebb4f438123d2bd5f0e31a6f86c"}
+{pdac:cite id="UC-INIT" digest="sha256:4fd5fb47648dd648763ebaa7fdc0e78484a711b620451cb62b1352e8f72abed0"}
 
-{pdac:cite id="FR-OPENSPEC-001" digest="sha256:2a30f3efedb9ec5c9910969efd99fb3f2b67c160af22a0856f1660c73de9db5e"}
+{pdac:cite id="FR-OPENSPEC" digest="sha256:db50643236b54c14cfedd9db4b52c5309e8646c55caa1fc1a3acf6e1cbac2f2a"}
 
 #### Scenario: Existing workspace wired in one run
 

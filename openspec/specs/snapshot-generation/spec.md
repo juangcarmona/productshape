@@ -10,9 +10,9 @@ Specify the generation of the Product Snapshot: a static, self-contained, read-o
 
 The system SHALL generate a Product Snapshot when the graph command is invoked with the HTML format (`prodshape graph --format html`). Generation SHALL produce exactly one self-contained HTML file under the generated-output area and SHALL report the output path. Generation SHALL never modify any authored file.
 
-{pdac:cite id="FR-SNAPSHOT-001" digest="sha256:4b516c17b1b0895996d48135fa1729bd2cc20913f98a8d820d5a5c82a0310a5d"}
+{pdac:cite id="FR-SNAPSHOT-PAGE" digest="sha256:49e51b34a04128d0b76254ed78b938da6160c77e1625db9240a3538ba5ec8e50"}
 
-{pdac:cite id="UC-SNAPSHOT-001" digest="sha256:c0ccfa6c37694a43bfad609bc70cada84a512aa0d77db1611051f55bfc97bf58"}
+{pdac:cite id="UC-SNAPSHOT" digest="sha256:d33ec028f385ad635fd193973ce2441177ffcab15ac568eb847fc97fbd7238b6"}
 
 #### Scenario: Engineer generates a snapshot
 
@@ -28,7 +28,7 @@ The system SHALL generate a Product Snapshot when the graph command is invoked w
 
 The generated page SHALL function completely when opened from local disk with no server and no network access: no external scripts, styles, fonts, images or data are referenced. All CSS and any data the page needs SHALL be embedded in the single file.
 
-{pdac:cite id="FR-SNAPSHOT-001" digest="sha256:4b516c17b1b0895996d48135fa1729bd2cc20913f98a8d820d5a5c82a0310a5d"}
+{pdac:cite id="FR-SNAPSHOT-PAGE" digest="sha256:49e51b34a04128d0b76254ed78b938da6160c77e1625db9240a3538ba5ec8e50"}
 
 {pdac:cite id="CON-NO-WEB-UI" digest="sha256:467b7a87238629673c45dac7b72e85e4cb17a969cbcdbf6f4bf5d1711209ddbf"}
 
@@ -48,7 +48,7 @@ The single generated file SHALL contain every product artifact — its frontmatt
 
 Completeness is a property of the file, not of the display: all artifacts are embedded, and none but the selected one is rendered.
 
-<!-- pdac:cite id="FR-SNAPSHOT-002" digest="sha256:426d0203a9491acef6dd97281ad967d545070f6fe14208ba5f77f13da2f8fc5a" -->
+<!-- pdac:cite id="FR-SNAPSHOT-READER" digest="sha256:755cdb9d6221a00c6b2670a5547c32719b4f24ef628b8aaf1c79d8aa11afc654" -->
 
 #### Scenario: Browse by kind and select one artifact
 
@@ -83,7 +83,7 @@ The page SHALL display the source revision of the model it was generated from, p
 
 Identical model content SHALL yield a byte-identical HTML file across runs and platforms. Output SHALL NOT embed timestamps, random values, or environment-dependent content; artifact ordering SHALL be stable; line endings SHALL be normalized.
 
-{pdac:cite id="QR-DETERMINISM-001" digest="sha256:222606693286667f7974e3dd8b88e6248ca29ce75cb54c9285cc7aaef2c08da3"}
+{pdac:cite id="QR-DETERMINISM" digest="sha256:3f52f1051dbd065f0bcdfa951ffb2fdcf3b16265f3080c325931e83cbf9f86f2"}
 
 #### Scenario: Double generation is byte-identical
 
@@ -124,7 +124,7 @@ The page SHALL offer no capability to create, edit, annotate or approve anything
 
 On an artifact's rendered view, every reference to another artifact SHALL be a link that navigates to the referenced artifact — both the relationships the artifact's frontmatter declares (outgoing) and the derived reverse views computed from the rest of the model (incoming, "referenced by"). The reader SHALL NOT need to know which side authored the edge.
 
-{pdac:cite id="BR-RELATIONSHIPS-001" digest="sha256:a6f9d40c2c1ac926149fe171660e5715b66b4e82ce8129f128eab0e6c1c7de8c"}
+{pdac:cite id="BR-RELATIONSHIPS" digest="sha256:948608d2a917204d7aab5042dcfe4a4731b805163d54d546a6d1ee38c6954102"}
 
 #### Scenario: Outgoing reference is a link
 
@@ -142,8 +142,8 @@ The page SHALL provide exactly two graph projections — the kind-level aggregat
 
 The Focused Topology SHALL be local, bounded and progressive: anchored on the selected artifact, its immediate canonical relationships grouped by relationship meaning and artifact type with complete counts, direction distinguished other than by colour alone, and members revealed only on deliberate action. Its disclosure SHALL be carried in the address and SHALL replace the history entry on toggle; refocusing on a member SHALL be a navigation to a newly focused projection with disclosure reset — the traversal never accumulates. An opened group SHALL present its members as a structured list attached to that group, named by its relationship type and kind, with every entry selectable, whatever the group's size.
 
-<!-- pdac:cite id="FR-SNAPSHOT-005" digest="sha256:6f4280d6db76da8e0188db3dbb63e55d8df4ea045950cea506a50beae1d9259b" -->
-<!-- pdac:cite id="FR-SNAPSHOT-009" digest="sha256:ab9721cb7fb71a07fa8a48789379024ecd0eeda9122267329ee3dcbc20718ff7" -->
+<!-- pdac:cite id="FR-SNAPSHOT-PROJECTIONS" digest="sha256:ada79535a2e73f049b6407744641f22d27f87de99927400a2fbbc3ef76e3fad2" -->
+<!-- pdac:cite id="FR-SNAPSHOT-TOPOLOGY" digest="sha256:70b3a9ea0257ce57744bdc25a0c49cc8eee84f85a85542df0a898b121a7d1a12" -->
 
 #### Scenario: Exactly two projections
 
@@ -179,8 +179,8 @@ If the page limits how many results it displays, it SHALL state how many matches
 
 Search SHALL be fully operable from the keyboard: invoking it, moving through results, selecting a result and clearing the query. Selecting a result SHALL make its artifact the page's single selected artifact and close the dialog. Clearing the query SHALL return the reader to browsing without discarding the artifact they had selected. A query matching no artifact SHALL produce an explicit no-results state that names the query rather than an empty list.
 
-<!-- pdac:cite id="FR-SNAPSHOT-004" digest="sha256:79141d7904dd9088a5f0643acb9217c0badc0e6356e4053b6fcf4c817c35b5ec" -->
-<!-- pdac:cite id="QR-ACCESSIBILITY-001" digest="sha256:7694a090493fb8963717e168d1bba8d692e392d7b988a2850ab7357f53cb4f48" -->
+<!-- pdac:cite id="FR-SNAPSHOT-SEARCH" digest="sha256:d924ae0adf5ab9304030acf7c64642db30b1862562a21197ad176b3fce90b353" -->
+<!-- pdac:cite id="QR-ACCESSIBILITY" digest="sha256:5aaf32bd1141581f505558a4379ff7d6498a2cc3e959512523333767716ae8a6" -->
 
 #### Scenario: Search is one gesture from every view
 
@@ -271,7 +271,7 @@ The orientation view MAY report the artifacts that hold no relationships, statin
 
 Everything displayed SHALL be derived from the compiled model. A derived ordering SHALL state its criterion where it is shown and SHALL NOT be worded as importance, priority or a recommended reading order. The orientation view SHALL NOT assert importance, centrality, health, completeness, quality, ownership, ranking, ordering or lifecycle progression that the model does not record. It SHALL describe only the artifact kinds the model actually contains.
 
-<!-- pdac:cite id="FR-SNAPSHOT-003" digest="sha256:e943d44f1e487316d7c50a59534c220a155da3387a93954a882be0754a615b07" -->
+<!-- pdac:cite id="FR-SNAPSHOT-ORIENTATION" digest="sha256:a937594055f4ccbd0e22b9be943b12a2511ff160d8da1e5e77f1670c63063950" -->
 
 #### Scenario: Oriented before reading anything
 
@@ -307,7 +307,7 @@ Everything displayed SHALL be derived from the compiled model. A derived orderin
 
 The page SHALL provide a kind-level aggregate projection: the model's artifacts and relationships grouped by artifact kind and relationship type, with exact counts, communicating composition and traceability without rendering individual artifacts. It SHALL display nothing absent from the compiled graph, SHALL imply no importance, health, ownership or ordering, and SHALL be arranged identically for identical model content.
 
-{pdac:cite id="FR-SNAPSHOT-005" digest="sha256:6f4280d6db76da8e0188db3dbb63e55d8df4ea045950cea506a50beae1d9259b"}
+{pdac:cite id="FR-SNAPSHOT-PROJECTIONS" digest="sha256:ada79535a2e73f049b6407744641f22d27f87de99927400a2fbbc3ef76e3fad2"}
 
 #### Scenario: Composition and traceability without artifacts
 
@@ -332,7 +332,7 @@ Changing a presentation choice SHALL update the address in place, replacing the 
 
 Opening the page at an address naming an artifact SHALL open on that artifact. Browser Back and Forward SHALL restore previously visited views and selections. An address naming an artifact the snapshot does not contain SHALL produce an explicit state naming the identifier it could not resolve and offering a way to continue exploring.
 
-<!-- pdac:cite id="FR-SNAPSHOT-006" digest="sha256:b29e1faa337fb90b5dcac8b9ddeb92325c7acb2c29a2b18bb512ec2e6be7bf3f" -->
+<!-- pdac:cite id="FR-SNAPSHOT-ADDRESSING" digest="sha256:0909cf9944d132e540621f984a03ec6cc1a66dd415c2d3e2bab2dad7deb7148d" -->
 
 #### Scenario: Selection is shared and addressable
 
@@ -366,13 +366,13 @@ Opening the page at an address naming an artifact SHALL open on that artifact. B
 
 ### Requirement: Legacy artifact fragments resolve permanently
 
-A bare artifact identifier such as `#FR-SNAPSHOT-002` SHALL resolve to that artifact — the fragment form earlier snapshots produced. This inbound compatibility is permanent: it SHALL NOT be treated as transitional and SHALL NOT be withdrawn once shared links are assumed to have aged out. Newly generated navigation within the page MAY use the current fragment route.
+A bare artifact identifier such as `#FR-SNAPSHOT-READER` SHALL resolve to that artifact — the fragment form earlier snapshots produced. This inbound compatibility is permanent: it SHALL NOT be treated as transitional and SHALL NOT be withdrawn once shared links are assumed to have aged out. Newly generated navigation within the page MAY use the current fragment route.
 
 On resolving a legacy fragment, the page SHALL normalize the address to the current route for the same artifact and SHALL do so in place, replacing the current history entry rather than adding one. Pressing Back immediately after arriving on a legacy fragment SHALL leave the snapshot, exactly as it would after arriving on a current-route address.
 
 #### Scenario: Legacy fragment resolves and normalizes in place
 
-- **WHEN** a fragment of the form `#FR-SNAPSHOT-002` produced by an earlier snapshot is opened
+- **WHEN** a fragment of the form `#FR-SNAPSHOT-READER` produced by an earlier snapshot is opened
 - **THEN** it resolves to that artifact and the address becomes the current route without a second history entry appearing
 
 #### Scenario: Back after a legacy arrival leaves the page
@@ -405,7 +405,7 @@ Every capability of the delivered surfaces SHALL be reachable and operable by ke
 
 The page SHALL expose semantic landmarks for its regions and a heading hierarchy without skipped levels. The selected artifact SHALL be reported as current with `aria-current` in the list, the active view SHALL be reported as current in the page navigation, and expanded state — of kind groups, relationship groups, projection groups and the master area — SHALL be exposed as state. Every icon-only control SHALL carry an accessible name stating what it does. All text SHALL meet WCAG 2.1 AA contrast in every appearance. No information a reader needs SHALL require hover or pointer proximity to reveal. Where the reader's environment expresses a reduced-motion preference, no non-essential animation or transition SHALL run.
 
-<!-- pdac:cite id="QR-ACCESSIBILITY-001" digest="sha256:7694a090493fb8963717e168d1bba8d692e392d7b988a2850ab7357f53cb4f48" -->
+<!-- pdac:cite id="QR-ACCESSIBILITY" digest="sha256:5aaf32bd1141581f505558a4379ff7d6498a2cc3e959512523333767716ae8a6" -->
 
 #### Scenario: Whole increment operable by keyboard
 
@@ -433,7 +433,7 @@ The document rendered when the snapshot opens SHALL NOT grow in proportion to th
 
 Artifact-selection latency SHALL be measured on an identified reference environment — named hardware, operating system and browser version — across representative models, and the figures SHALL be recorded. A concrete artifact-selection budget SHALL be established from those recorded figures. No numeric interaction budget SHALL be asserted without a measurement supporting it. Artifacts that are hardest at scale — the longest-titled and longest-bodied — SHALL remain readable at every measured scale.
 
-{pdac:cite id="QR-SCALABILITY-001" digest="sha256:ce964e20dec3fb9facb301afb75ef2026c908a05ea56b11f3de1981522a7dfe1"}
+{pdac:cite id="QR-SCALABILITY" digest="sha256:071ed61458c77f0f9652f64777066e45cc3c6c658466a9bfa87ef77845e9db6d"}
 
 #### Scenario: Opening document does not scale with the model
 
@@ -459,7 +459,7 @@ Artifact-selection latency SHALL be measured on an identified reference environm
 
 An artifact's relationships SHALL be presented grouped within each direction, by relationship type and by the artifact kind at the other end, rather than as one undifferentiated list. Every group SHALL state its direction, its relationship type, the kind at the other end and the exact number of relationships it contains, and each direction SHALL state its total. Grouping and ordering SHALL be derived from the compiled graph and SHALL be identical for identical model content.
 
-<!-- pdac:cite id="FR-SNAPSHOT-002" digest="sha256:426d0203a9491acef6dd97281ad967d545070f6fe14208ba5f77f13da2f8fc5a" -->
+<!-- pdac:cite id="FR-SNAPSHOT-READER" digest="sha256:755cdb9d6221a00c6b2670a5547c32719b4f24ef628b8aaf1c79d8aa11afc654" -->
 
 #### Scenario: Neighbours arrive grouped, not spilled
 
@@ -480,7 +480,7 @@ An artifact's relationships SHALL be presented grouped within each direction, by
 
 A relationship group large enough to overwhelm the view SHALL start collapsed, showing its exact count rather than its members, and SHALL reveal its members only when the reader expands it. Expansion SHALL be operable by keyboard, and the collapsed or expanded state SHALL be exposed to assistive technology as state rather than conveyed only by appearance. A group small enough to read at a glance SHALL be shown expanded, so nothing is hidden without reason.
 
-<!-- pdac:cite id="FR-SNAPSHOT-002" digest="sha256:426d0203a9491acef6dd97281ad967d545070f6fe14208ba5f77f13da2f8fc5a" -->
+<!-- pdac:cite id="FR-SNAPSHOT-READER" digest="sha256:755cdb9d6221a00c6b2670a5547c32719b4f24ef628b8aaf1c79d8aa11afc654" -->
 
 #### Scenario: A high-degree artifact stays readable
 
@@ -517,7 +517,7 @@ The catalog's active query and filters SHALL be part of the page address, serial
 
 Every active filter SHALL be shown beside the list as a named chip, each removable in one step, with one control that clears them all; clearing them all SHALL restore the complete list.
 
-<!-- pdac:cite id="FR-SNAPSHOT-008" digest="sha256:b9ae2520c7778c6c7a90d1866db57873cfa0fe5e2995a05b8786a7797efd281a" -->
+<!-- pdac:cite id="FR-SNAPSHOT-CATALOG" digest="sha256:a022d15c0034783e4eb057e18abd9a2e40ef44bc85ba5c162c33bcf494a57eee" -->
 
 #### Scenario: A discovery is shareable
 
@@ -543,8 +543,8 @@ Every active filter SHALL be shown beside the list as a named chip, each removab
 
 Each artifact kind on the orientation view SHALL be an entry point into the catalog narrowed to that family, and the orientation view SHALL present a control on its first screen that opens the search dialog.
 
-<!-- pdac:cite id="FR-SNAPSHOT-003" digest="sha256:e943d44f1e487316d7c50a59534c220a155da3387a93954a882be0754a615b07" -->
-<!-- pdac:cite id="FR-SNAPSHOT-004" digest="sha256:79141d7904dd9088a5f0643acb9217c0badc0e6356e4053b6fcf4c817c35b5ec" -->
+<!-- pdac:cite id="FR-SNAPSHOT-ORIENTATION" digest="sha256:a937594055f4ccbd0e22b9be943b12a2511ff160d8da1e5e77f1670c63063950" -->
+<!-- pdac:cite id="FR-SNAPSHOT-SEARCH" digest="sha256:d924ae0adf5ab9304030acf7c64642db30b1862562a21197ad176b3fce90b353" -->
 
 #### Scenario: Family entry
 
@@ -562,7 +562,7 @@ Relationship links on the artifact detail SHALL carry the active catalog state, 
 
 Every identifier of an artifact the model contains, where it appears in the selected artifact's metadata or authored body, SHALL be a link that makes that artifact the new focus and carries the active catalog state; the authored text SHALL otherwise be displayed exactly as written, and an identifier the model does not contain SHALL remain plain text. The detail SHALL offer the previous and the next artifact of the current list in one step each, SHALL state the selected artifact's position within its kind, and SHALL offer to copy the artifact's identifier and the address of the current view.
 
-<!-- pdac:cite id="FR-SNAPSHOT-002" digest="sha256:426d0203a9491acef6dd97281ad967d545070f6fe14208ba5f77f13da2f8fc5a" -->
+<!-- pdac:cite id="FR-SNAPSHOT-READER" digest="sha256:755cdb9d6221a00c6b2670a5547c32719b4f24ef628b8aaf1c79d8aa11afc654" -->
 
 #### Scenario: Following an edge keeps the discovery
 
@@ -592,7 +592,7 @@ Body and interface text SHALL use the reader's system sans-serif stack, and arti
 
 Every artifact kind SHALL have one stable icon, defined within the file, shown beside that kind's text token wherever a kind is shown and never in place of it. The interface SHALL be compact. The page SHALL NOT use gradients, glass or blur effects, decorative illustration, oversized hero typography, or a rounded-card dashboard treatment of its content.
 
-<!-- pdac:cite id="QR-PRESENTATION-001" digest="sha256:d16a3c4eb8a38f0282d47a962ec3822bcd882f1910131d504ed0d2ed75352e88" -->
+<!-- pdac:cite id="QR-PRESENTATION" digest="sha256:4f97ecbb30cc068257d98e1d4de29a1dc7ecac8137f12cfbdf8bee5bafdb1881" -->
 <!-- pdac:cite id="CON-NO-WEB-UI" digest="sha256:467b7a87238629673c45dac7b72e85e4cb17a969cbcdbf6f4bf5d1711209ddbf" -->
 
 #### Scenario: The environment preference is followed
@@ -637,7 +637,7 @@ A group SHALL state its identity in visible text, so nothing needed is available
 
 Placement SHALL remain a pure function of the model, the pane width and which group is open: identical model content, width and open group SHALL produce an identical arrangement.
 
-<!-- pdac:cite id="FR-SNAPSHOT-009" digest="sha256:ab9721cb7fb71a07fa8a48789379024ecd0eeda9122267329ee3dcbc20718ff7" -->
+<!-- pdac:cite id="FR-SNAPSHOT-TOPOLOGY" digest="sha256:70b3a9ea0257ce57744bdc25a0c49cc8eee84f85a85542df0a898b121a7d1a12" -->
 <!-- pdac:cite id="TERM-FOCUSED-TOPOLOGY" digest="sha256:0078e5754fc215a6bdde6b601ac543c391491356666cc36265c26e83fa134595" -->
 
 #### Scenario: Groups surround the anchor, not artifacts
@@ -686,8 +686,8 @@ The artifact list SHALL group artifacts by kind in groups the reader can open an
 
 The reader SHALL be able to collapse the master area to a rail of the artifact kinds — each an icon with its text token — through a visible control and a stated shortcut, and to restore it the same ways. The rail SHALL mark the selected artifact's kind by more than colour, and activating a kind on the rail SHALL restore the master area with that kind's group open and in view. While collapsed, the Reader and the projection SHALL take the freed width.
 
-<!-- pdac:cite id="FR-SNAPSHOT-002" digest="sha256:426d0203a9491acef6dd97281ad967d545070f6fe14208ba5f77f13da2f8fc5a" -->
-<!-- pdac:cite id="QR-ACCESSIBILITY-001" digest="sha256:7694a090493fb8963717e168d1bba8d692e392d7b988a2850ab7357f53cb4f48" -->
+<!-- pdac:cite id="FR-SNAPSHOT-READER" digest="sha256:755cdb9d6221a00c6b2670a5547c32719b4f24ef628b8aaf1c79d8aa11afc654" -->
+<!-- pdac:cite id="QR-ACCESSIBILITY" digest="sha256:5aaf32bd1141581f505558a4379ff7d6498a2cc3e959512523333767716ae8a6" -->
 
 #### Scenario: The selection's group opens and shows the entry
 
