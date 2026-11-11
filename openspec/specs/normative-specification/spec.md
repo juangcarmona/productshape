@@ -25,7 +25,7 @@ The specification SHALL define, using RFC-style normative language (MUST, MUST N
 
 The specification SHALL define stable immutable IDs with the fixed artifact prefixes ACT-, JRN-, UC-, BR-, TERM-, BC-, FR-, QR- and CON-, and the Product Change prefix CHG-. It SHALL state that artifact IDs become immutable after first acceptance into the current model, are never reused, and are never inferred from file paths, and that file-name alignment is a warning, not an identity mechanism. Retired prefixes SLI- and HOF- are never reused.
 
-{pdac:cite id="BR-IDENTITY" digest="sha256:1cdd6a76d633a06d08ab646c81c1549aaafa73389adcb60d904759baaeef0a4f"}
+{pdac:cite id="BR-IDENTITY" digest="sha256:c0aa42c4d145dc5046499152ca388f41ade6b21a10cccc5a85146aa2d706a07b"}
 
 #### Scenario: Renaming an artifact file
 

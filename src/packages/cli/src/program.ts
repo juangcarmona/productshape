@@ -268,7 +268,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
   change
     .command('create')
     .description('Scaffold a draft Product Change under changes/active/')
-    .argument('<id>', 'change ID (e.g. CHG-ADD-CITE-001)')
+    .argument('<id>', 'change ID (e.g. CHG-ADD-CITE)')
     .option('--title <title>', 'change title (default: derived from the ID)')
     .option('--format <format>', 'output format: text or json', 'text')
     .action(async (id: string, options: { title?: string; format: 'text' | 'json' }) => {
@@ -277,7 +277,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
   change
     .command('validate')
     .description('Validate live Product Changes as overlays on the baseline')
-    .argument('[id]', 'change ID (e.g. CHG-ADD-CITE-001); omit to validate every live change')
+    .argument('[id]', 'change ID (e.g. CHG-ADD-CITE); omit to validate every live change')
     .option('--format <format>', 'output format: text or json', 'text')
     .option('--root <dir>', 'product repository root (default: discovered upward from cwd)')
     .option(
@@ -303,7 +303,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
   change
     .command('apply')
     .description('Apply an approved Product Change to the model (never commits, never merges)')
-    .argument('<id>', 'change ID (e.g. CHG-ADD-CITE-001)')
+    .argument('<id>', 'change ID (e.g. CHG-ADD-CITE)')
     .option('--dry-run', 'print the plan and the product diff without writing anything')
     .option('--format <format>', 'output format: text or json', 'text')
     .action(async (id: string, options: { dryRun?: boolean; format: 'text' | 'json' }) => {
@@ -312,7 +312,7 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
   change
     .command('archive')
     .description('File a rejected or superseded change into the change history')
-    .argument('<id>', 'change ID (e.g. CHG-ADD-CITE-001)')
+    .argument('<id>', 'change ID (e.g. CHG-ADD-CITE)')
     .option('--format <format>', 'output format: text or json', 'text')
     .action(async (id: string, options: { format: 'text' | 'json' }) => {
       capture.code = await runChangeArchive(io, id, options);

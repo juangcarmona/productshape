@@ -21,7 +21,8 @@ Product knowledge outlives any particular file layout. Teams reorganise folders,
 - A file whose name no longer matches its artifact ID is at most a warning from validation — a housekeeping nudge, never an identity error.
 - Reusing a retired ID for a new concept is rejected outright; `SB-ID-REUSE-REJECTED` carries that behaviour, and the new concept receives a fresh ID.
 - A use case references a business rule as `governed-by: BR-CANONICAL`, never by the rule's title or file path.
+- After the one-time suffix migration, `UC-IMPACT-001` is `UC-IMPACT`, and the old ID is never reused for a different artifact.
 
 ## Exceptions
 
-None.
+One, once: the migration that removed numeric suffixes from artifact IDs (`UC-IMPACT-001` became `UC-IMPACT`) renamed IDs in this model, and `prodshape fix --id-suffixes` offers the same one-time rename to adopters, only with their explicit consent. The suffix carried no meaning, which is why renaming was acceptable; it is not a precedent. From then on IDs are immutable again, and a name (BR-ID-FORM) is the only thing an ID encodes.
