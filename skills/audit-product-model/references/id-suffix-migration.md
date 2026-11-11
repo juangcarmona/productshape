@@ -1,0 +1,23 @@
+# ID-suffix migration (upgrade to 0.23)
+
+Version 0.23 retires the numeric suffix that artifact IDs carried by habit (`UC-IMPACT-001`). An ID is now `PREFIX-NAME`; a number is appended only to break a tie. The migration is a one-time exception to ID immutability (BR-IDENTITY), so it changes the repository only with the adopter's explicit consent.
+
+## When this applies
+
+- `prodshape integration update` prints an "ID-suffix migration" plan while upgrading.
+- `prodshape doctor` reports `id suffixes: N artifact ID(s) end in a numeric suffix`.
+- An audit finds IDs ending in `-001`-style numbers.
+
+## Procedure
+
+1. Show the plan without changing anything: `prodshape fix --id-suffixes --dry-run` (exit code 1 means a migration is pending; nothing was written).
+2. Present it to the adopter in plain words: which IDs become which (`old -> new`), how many files are renamed, how many references and citation digests are updated, and which IDs keep their number because renaming would collide (those are left as they are).
+3. Ask: "Apply this one-time ID migration?" Stop and wait. A decline is final for this run: change nothing and say that nothing changed. The adopter can opt out by never passing the flag; the notice is informational.
+4. Only after an explicit yes in this conversation, run `prodshape fix --id-suffixes --apply-id-migration` (or `prodshape integration update --apply-id-migration`). It updates frontmatter, relationships, file names, citations, sidecars and live Product Change overlays together, and rolls everything back if validation would get worse.
+5. Run `prodshape validate` and `prodshape citations verify`, then report the result. Do not commit unless asked.
+
+## Never
+
+- Pass `--apply-id-migration` without the adopter's explicit yes.
+- Rename IDs by hand, or edit citation digests: the command does both together and checks the result.
+- Touch completed Product Changes or archived specs: they describe the past and keep the old IDs.

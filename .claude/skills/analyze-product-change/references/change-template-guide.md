@@ -9,16 +9,16 @@ A Product Change lives at `docs/product/changes/active/<chg-id>/change.md`. Star
 
 ```yaml
 ---
-id: CHG-EXAMPLE-001
+id: CHG-EXAMPLE
 type: product-change
 title: Example product change
 status: draft
 base-revision: '3f2a91c'
 operations:
   add:
-    - FR-EXAMPLE-001
+    - FR-EXAMPLE
   modify:
-    - UC-EXAMPLE-001
+    - UC-EXAMPLE
   remove: []
 ---
 ```

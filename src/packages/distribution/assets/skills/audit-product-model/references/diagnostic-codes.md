@@ -2,7 +2,7 @@
 
 `prodshape validate --format json` is the authoritative structural baseline. Every diagnostic carries a stable code, a severity (`error` or `warning`), a message, the source file, and when available the artifact ID, field and target. This reference lists the codes an auditor cites when classifying structural findings.
 
-Run `prodshape validate --format json` first, record every diagnostic verbatim, and never re-derive by reading files anything the command already reports (BR-AI-001).
+Run `prodshape validate --format json` first, record every diagnostic verbatim, and never re-derive by reading files anything the command already reports (BR-AI).
 
 ## Error codes (PRODUCT0xx)
 
@@ -55,7 +55,7 @@ Warnings are severity `warning`. They do not block validation unless the reposit
 | `PRODUCT108` | Product Change in status `approved` with an unresolved question under `## Open Questions` |
 | `PRODUCT111` | Draft artifact whose `provenance.confidence` is `low` |
 
-`PRODUCT101` is resolved mechanically by `prodshape fix --filenames`, which renames each file to `<id.toLowerCase()>.md`. It is the only repair the toolkit automates and the only one an auditor should recommend running directly.
+`PRODUCT101` is resolved mechanically by `prodshape fix --filenames`, which renames each file to `<id.toLowerCase()>.md`. It is the only repair the toolkit automates and the only one an auditor should recommend running directly. The one-time removal of numeric ID suffixes (`prodshape fix --id-suffixes`) is not a repair of that kind: it rewrites IDs and runs only with the adopter's consent (see `id-suffix-migration.md`).
 
 `PRODUCT111` marks recovered knowledge that needs human validation, not a defect to repair. It is not configuration-gated: it reports what the artifact says about itself regardless of repository settings.
 

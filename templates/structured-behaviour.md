@@ -14,6 +14,7 @@ uses-terms: []
 ---
 
 <!--
+ID: PREFIX-NAME, named after the thing it identifies, with no sequence number. Append a plain number only to break a tie with another ID (e.g. UC-IMPACT-2).
 Structured behaviour: one concrete, implementation-independent example of accepted observable
 product behaviour, with explicit context (given), a single stimulus (when) and observable
 outcomes (then). All given entries and all then entries are conjunctive; alternatives are

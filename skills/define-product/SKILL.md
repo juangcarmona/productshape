@@ -46,7 +46,7 @@ Never substitute your own judgement for these commands. If the CLI reports a str
 1. Understand product intent. Restate it in one sentence and confirm with the engineer if unclear.
 2. Work the dependency chain in `references/authoring-order.md`: actors, then journeys, use cases, business rules, domain terms and bounded contexts, then requirements with `derived-from`. Loop back freely; the chain is the completeness checklist, not a gate sequence.
 3. Preserve uncertainty. Record every unresolved question visibly in the change's `## Open Questions`. Never invent an answer.
-4. Generate draft artifacts from the templates, `status: draft`, one file per artifact named by lowercase ID, under the Product Change's `proposed/` directory.
+4. Generate draft artifacts from the templates, `status: draft`, one file per artifact named by lowercase ID, under the Product Change's `proposed/` directory. Name each ID after the thing it identifies: `PREFIX-NAME`, uppercase words joined by hyphens (`UC-IMPACT`, `FR-CITE`, `BR-IDENTITY`). Do not add a sequence number (`-001`). Append a number only to break a tie between two IDs that would otherwise be equal, as a plain integer without padding (`FR-CHANGE-2`), and prefer a more distinguishing name to a number. IDs stay immutable once assigned.
 5. Run `prodshape change validate <chg-id>` and fix every reported error without touching the baseline.
 6. Present the drafts, open questions and validation result to a human for review. Artifacts become `active` only on explicit human approval; never mark them yourself.
 

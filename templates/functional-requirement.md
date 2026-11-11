@@ -11,6 +11,7 @@ uses-terms: []
 ---
 
 <!--
+ID: PREFIX-NAME, named after the thing it identifies, with no sequence number. Append a plain number only to break a tie with another ID (e.g. UC-IMPACT-2).
 Functional requirement: a derived product obligation stating what the product must do.
 derived-from: the use cases, business rules or constraints it originates from (traceability).
 uses-terms (optional): TERM ids whose definitions understanding this requirement requires.

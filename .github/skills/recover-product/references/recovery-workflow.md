@@ -43,7 +43,7 @@ The inventory survives restarts. Later additions go through `recover evidence ad
 1. Read the complete in-scope content, not a sample. Skimming produces confident nonsense.
 2. Identify explicit product claims (what the source states the product does or must do) and implications (what the source suggests but does not state) separately.
 3. Extract or update candidates per `references/artifact-extraction.md`.
-4. Classify every relevant section and record it: `prodshape recover mark --source E-0001 --as represented --artifacts "UC-CHECKOUT-001,BR-LIMIT-001"` (quote the list). One source usually accumulates several findings across multiple `mark` calls. A wrong finding is retracted with `recover unmark`, never by editing session files.
+4. Classify every relevant section and record it: `prodshape recover mark --source E-0001 --as represented --artifacts "UC-CHECKOUT,BR-LIMIT"` (quote the list). One source usually accumulates several findings across multiple `mark` calls. A wrong finding is retracted with `recover unmark`, never by editing session files.
 5. When nothing relevant remains unclassified, add `--complete` to the final mark. A source is not processed because it was opened; it is processed when every relevant section is accounted for.
 6. When a whole class of remaining sources carries the identical verdict (typically implementation code that only corroborates existing candidates), record it in one call: `prodshape recover mark --glob 'src/**' --as no-product-intent --reason "<why>" --complete`. One command, one state write; never a shell loop over the single-source form.
 

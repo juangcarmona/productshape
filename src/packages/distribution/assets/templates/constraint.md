@@ -7,6 +7,7 @@ uses-terms: []
 ---
 
 <!--
+ID: PREFIX-NAME, named after the thing it identifies, with no sequence number. Append a plain number only to break a tie with another ID (e.g. UC-IMPACT-2).
 Constraint: an externally imposed or deliberately fixed boundary.
 applies-to (optional): journeys, use cases or bounded contexts constrained; when absent,
 the constraint applies to the entire product.

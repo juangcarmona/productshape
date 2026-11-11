@@ -12,6 +12,7 @@ uses-terms: []
 ---
 
 <!--
+ID: PREFIX-NAME, named after the thing it identifies, with no sequence number. Append a plain number only to break a tie with another ID (e.g. UC-IMPACT-2).
 Quality requirement: a measurable quality obligation. "The system should be fast" does not
 satisfy this contract - Measurement must state how conformance is measured.
 quality-attribute: e.g. portability, determinism, explainability, extensibility.

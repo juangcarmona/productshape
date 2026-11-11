@@ -37,16 +37,16 @@ Do not use this skill to reconstruct knowledge from an existing system (use `rec
 - `prodshape inspect <ID>`: details of an existing artifact before referencing it.
 - `prodshape impact <ID>`: what an existing artifact touches, before extending near it.
 - `prodshape schema <kind>`: the allowed frontmatter for a kind, read from the schemas bundled with the CLI. Use it instead of guessing; it needs no repository.
-- `prodshape inspect BR-CHANGE-001`: the rule governing how the definition changes: every evolution is an applied and accepted Product Change. Run it to read the rule before authoring a change.
+- `prodshape inspect BR-CHANGE`: the rule governing how the definition changes: every evolution is an applied and accepted Product Change. Run it to read the rule before authoring a change.
 
-Never substitute your own judgement for these commands. If the CLI reports a structural fact, that fact is authoritative (BR-AI-001).
+Never substitute your own judgement for these commands. If the CLI reports a structural fact, that fact is authoritative (BR-AI).
 
 ## Reasoning procedure
 
 1. Understand product intent. Restate it in one sentence and confirm with the engineer if unclear.
 2. Work the dependency chain in `references/authoring-order.md`: actors, then journeys, use cases, business rules, domain terms and bounded contexts, then requirements with `derived-from`. Loop back freely; the chain is the completeness checklist, not a gate sequence.
 3. Preserve uncertainty. Record every unresolved question visibly in the change's `## Open Questions`. Never invent an answer.
-4. Generate draft artifacts from the templates, `status: draft`, one file per artifact named by lowercase ID, under the Product Change's `proposed/` directory.
+4. Generate draft artifacts from the templates, `status: draft`, one file per artifact named by lowercase ID, under the Product Change's `proposed/` directory. Name each ID after the thing it identifies: `PREFIX-NAME`, uppercase words joined by hyphens (`UC-IMPACT`, `FR-CITE`, `BR-IDENTITY`). Do not add a sequence number (`-001`). Append a number only to break a tie between two IDs that would otherwise be equal, as a plain integer without padding (`FR-CHANGE-2`), and prefer a more distinguishing name to a number. IDs stay immutable once assigned.
 5. Run `prodshape change validate <chg-id>` and fix every reported error without touching the baseline.
 6. Present the drafts, open questions and validation result to a human for review. Artifacts become `active` only on explicit human approval; never mark them yourself.
 
@@ -62,7 +62,7 @@ Never substitute your own judgement for these commands. If the CLI reports a str
 - Inventing product decisions: if the intent does not answer a question, it becomes an open question, not an assumption.
 - Adding frontmatter fields the artifact's schema does not define: frontmatter is a closed contract and an unrecognised property is rejected as PRODUCT002. Check with `schema <kind>`.
 - Writing implementation design into artifact bodies (class names, frameworks, storage choices).
-- Replacing deterministic validation with your own reading of the files (BR-AI-001).
+- Replacing deterministic validation with your own reading of the files (BR-AI).
 - Merging, pushing, or creating Git commits, unless the engineer explicitly asks.
 
 ## Human approval points

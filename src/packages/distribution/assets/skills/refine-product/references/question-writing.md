@@ -4,7 +4,7 @@ The interview is the product. A question that wastes the human's attention costs
 
 ## What makes a question worth asking
 
-- It names one artifact and one uncertainty. "Is BR-REFUND-001's ninety-day window calendar days or business days?" is a question; "can you review the refund rules?" is a delegation.
+- It names one artifact and one uncertainty. "Is BR-REFUND's ninety-day window calendar days or business days?" is a question; "can you review the refund rules?" is a delegation.
 - The evidence genuinely forks. If the repository already answers it, cite the answer into the artifact instead of asking.
 - The answer changes product text. A question whose every answer leaves the model byte-identical is curiosity, not refinement.
 - It is decidable by this engineer, now. Questions for absent stakeholders are parked with a name attached, not asked into the void.

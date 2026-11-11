@@ -24,7 +24,7 @@ Provide a structured, AI-assisted elaboration workflow that reads the product gr
 
 - The Product Definition under `docs/product/model/` (must exist and be valid).
 - The change request (natural language intent from the engineer).
-- A change ID (e.g. `CHG-ADD-CITE-001`). The directory is its lowercase form.
+- A change ID (e.g. `CHG-ADD-CITE`). The directory is its lowercase form.
 
 ## Files to read
 
@@ -51,7 +51,7 @@ prodshape schema product-change     # The frontmatter contract for a change
 2. **Read the full model**: read all artifact files under `docs/product/model/**`. Understand the current graph: actors, journeys, use cases, rules, terms, requirements.
 3. **Analyze the change request**: identify which artifacts the intended outcome requires added, modified or removed. Use `prodshape impact <ID>` to check structural reach, especially before proposing a removal.
 4. **Create the change**: `docs/product/changes/active/<chg-id>/change.md` from `.product/templates/product-change.md`, filling every frontmatter field and every ordered body section per `references/change-template-guide.md`. The frontmatter is closed (PRODUCT002) and the body sections are ordered (PRODUCT009).
-5. **Draft the proposed artifacts**: the complete future-state artifact for every ID under `add` and `modify`, into the change's `proposed/` directory, per the guide. A modification keeps the same ID.
+5. **Draft the proposed artifacts**: the complete future-state artifact for every ID under `add` and `modify`, into the change's `proposed/` directory, per the guide. A modification keeps the same ID. Name each ID after the thing it identifies: `PREFIX-NAME`, uppercase words joined by hyphens (`UC-IMPACT`, `FR-CITE`, `BR-IDENTITY`). Do not add a sequence number (`-001`). Append a number only to break a tie between two IDs that would otherwise be equal, as a plain integer without padding (`FR-CHANGE-2`), and prefer a more distinguishing name to a number. IDs stay immutable once assigned. The `CHG-` identifier follows the same convention.
 6. **Validate the overlay**: run `prodshape change validate <chg-id>`. It compiles the baseline with the operations applied virtually and validates the result. Fix the diagnostics it reports.
 7. **Surface open questions**: any unresolved product decision goes in `## Open Questions`, unanswered. Write `None.` only when there genuinely are none.
 8. **Report**: summarize what the change adds, modifies and removes, what diagnostics were found and fixed, and what open questions remain for the engineer.
