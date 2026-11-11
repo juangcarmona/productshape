@@ -1,11 +1,11 @@
 ---
-id: FR-SHORTEN-001
+id: FR-SHORTEN
 type: functional-requirement
 title: Issue a resolving short link for every accepted URL
 status: active
 derived-from:
-  - UC-SHORTEN-001
-  - BR-VALID-URL-001
+  - UC-SHORTEN
+  - BR-VALID-URL
 verification:
   - scenario: Submitting a well-formed URL returns a short link that resolves to it
   - scenario: Submitting a malformed URL is rejected with a reason

@@ -31,7 +31,7 @@ interface DriftReport {
 
 /**
  * `prodshape drift` — enumerate the product-definition drift warnings recorded in consumer
- * documents (FR-OPENSPEC-001). A drift warning is a `<!-- pdac-drift ids="..." summary="..." -->`
+ * documents (FR-OPENSPEC). A drift warning is a `<!-- pdac-drift ids="..." summary="..." -->`
  * marker a consumer wrote inside its proposal's drift note when a change's goals contradicted or
  * exceeded the accepted definition; this command lists them so a product owner reviews open
  * drift from one listing instead of reading every proposal.

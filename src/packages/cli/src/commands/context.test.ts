@@ -44,21 +44,21 @@ afterEach(async () => {
 
 describe('context', () => {
   it('renders the requested artifact with a canonical comment payload and the related listing', async () => {
-    const result = await run(['context', 'FR-SHORTEN-001']);
+    const result = await run(['context', 'FR-SHORTEN']);
     expect(result.code).toBe(0);
     const text = result.out.join('\n');
 
-    expect(text).toContain('# Product context: FR-SHORTEN-001');
-    expect(text).toMatch(/<!-- pdac:cite id="FR-SHORTEN-001" digest="sha256:[0-9a-f]{64}" -->/);
+    expect(text).toContain('# Product context: FR-SHORTEN');
+    expect(text).toMatch(/<!-- pdac:cite id="FR-SHORTEN" digest="sha256:[0-9a-f]{64}" -->/);
     // The projection announces itself as derived and non-canonical.
     expect(text).toContain('Derived, non-canonical projection');
     // The structural neighborhood is listed with its own ready citations.
     expect(text).toContain('## Related artifacts');
-    expect(text).toMatch(/UC-SHORTEN-001.*<!-- pdac:cite id="UC-SHORTEN-001"/);
+    expect(text).toMatch(/UC-SHORTEN.*<!-- pdac:cite id="UC-SHORTEN"/);
   });
 
   it('emits citations that verify as current against the model they were generated from', async () => {
-    const result = await run(['context', 'FR-SHORTEN-001', 'BR-VALID-URL-001']);
+    const result = await run(['context', 'FR-SHORTEN', 'BR-VALID-URL']);
     expect(result.code).toBe(0);
 
     await mkdir(join(workDir, 'specs'), { recursive: true });
@@ -74,13 +74,13 @@ describe('context', () => {
   });
 
   it('is deterministic for a given model state', async () => {
-    const first = await run(['context', 'FR-SHORTEN-001', '--format', 'json']);
-    const second = await run(['context', 'FR-SHORTEN-001', '--format', 'json']);
+    const first = await run(['context', 'FR-SHORTEN', '--format', 'json']);
+    const second = await run(['context', 'FR-SHORTEN', '--format', 'json']);
     expect(first.out.join('\n')).toBe(second.out.join('\n'));
 
     const payload = JSON.parse(first.out.join('\n'));
     expect(payload.schema).toBe('product-definition-as-code/context/v1alpha1');
-    expect(payload.requested[0]).toMatchObject({ id: 'FR-SHORTEN-001' });
+    expect(payload.requested[0]).toMatchObject({ id: 'FR-SHORTEN' });
     expect(typeof payload.requested[0].body).toBe('string');
     expect(payload.related.length).toBeGreaterThan(0);
   });
@@ -92,7 +92,7 @@ describe('context', () => {
   });
 
   it('rejects an invalid depth', async () => {
-    const result = await run(['context', 'FR-SHORTEN-001', '--depth', 'zero']);
+    const result = await run(['context', 'FR-SHORTEN', '--depth', 'zero']);
     expect(result.code).toBe(2);
     expect(result.err.join('\n')).toContain("Invalid --depth 'zero'");
   });

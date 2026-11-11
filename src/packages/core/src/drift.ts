@@ -1,11 +1,11 @@
 /**
- * Recorded product-definition drift warnings (FR-OPENSPEC-001).
+ * Recorded product-definition drift warnings (FR-OPENSPEC).
  *
  * A consumer that finds its change's goals contradicting or exceeding the accepted product
  * definition records the divergence in its proposal under a drift note carrying a
  * machine-readable marker:
  *
- *     <!-- pdac-drift ids="BR-REFUND-001, FR-REFUND-002" summary="PBI wants 14 days; the rule says 30" -->
+ *     <!-- pdac-drift ids="BR-REFUND, FR-REFUND" summary="PBI wants 14 days; the rule says 30" -->
  *
  * This module parses and scans those markers so the product can enumerate every recorded drift
  * warning across the consumer-document population. Enumeration is a report and never a gate:

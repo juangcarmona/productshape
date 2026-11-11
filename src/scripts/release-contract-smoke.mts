@@ -231,8 +231,8 @@ for (const phrase of stalePendingPhrases) {
 }
 
 const countSources = [
-  'docs/product/model/requirements/functional/fr-snapshot-004.md',
-  'docs/product/model/requirements/quality/qr-scalability-001.md',
+  'docs/product/model/requirements/functional/fr-snapshot-search.md',
+  'docs/product/model/requirements/quality/qr-scalability.md',
   'src/scripts/screenshot-snapshot.mts',
   'docs/assets/snapshot/manifest.json',
 ];

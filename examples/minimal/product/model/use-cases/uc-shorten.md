@@ -1,12 +1,12 @@
 ---
-id: UC-SHORTEN-001
+id: UC-SHORTEN
 type: use-case
 title: Shorten a URL
 status: active
 primary-actor: ACT-VISITOR
 bounded-context: BC-SHORTENING
 governed-by:
-  - BR-VALID-URL-001
+  - BR-VALID-URL
 uses-terms:
   - TERM-SHORT-LINK
 ---
@@ -26,7 +26,7 @@ None.
 ## Main Flow
 
 1. The visitor submits a URL.
-2. The service validates it (BR-VALID-URL-001).
+2. The service validates it (BR-VALID-URL).
 3. The service returns a short link.
 
 ## Alternative Flows

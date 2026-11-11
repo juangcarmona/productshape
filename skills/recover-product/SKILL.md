@@ -50,7 +50,7 @@ Do not use this skill for greenfield intent (use `define-product`) or to review 
 - `prodshape recover report`: the final report into the session directory.
 - `prodshape schema <kind>`: the exact allowed frontmatter per kind. `prodshape validate --format json` for baseline validation.
 
-Structural facts come from these commands, never from your own reading of state files (BR-AI-001).
+Structural facts come from these commands, never from your own reading of state files (BR-AI).
 
 ## Reasoning procedure
 

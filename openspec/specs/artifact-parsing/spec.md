@@ -37,7 +37,7 @@ The parsing contract that turns canonical Markdown-plus-frontmatter files into t
 
 #### Scenario: Prefix mismatch
 
-- **WHEN** an artifact declares `type: actor` with `id: FR-EXAMPLE-001`
+- **WHEN** an artifact declares `type: actor` with `id: FR-EXAMPLE`
 - **THEN** schema validation reports the invalid ID pattern for that type
 
 ### Requirement: Conformance fixtures exercise valid and invalid artifacts

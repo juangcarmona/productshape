@@ -59,7 +59,7 @@ The renderer accepts `.md`/`.markdown` documents with fenced Mermaid blocks as w
 
 ## Product identity and canonical sources
 
-ProductShape is the branded reference implementation. Product Definition as Code (PDaC) names the methodology and normative specification. The distinction is defined by [`CON-BRAND-001`](../docs/product/model/requirements/constraints/con-brand-001.md). Public onboarding follows the canonical [product model index](../docs/product/model/index.md), [adoption journey](../docs/product/model/journeys/jrn-adopt-001.md), and [initialization use case](../docs/product/model/use-cases/uc-init-001.md).
+ProductShape is the branded reference implementation. Product Definition as Code (PDaC) names the methodology and normative specification. The distinction is defined by [`CON-BRAND`](../docs/product/model/requirements/constraints/con-brand.md). Public onboarding follows the canonical [product model index](../docs/product/model/index.md), [adoption journey](../docs/product/model/journeys/jrn-adopt.md), and [initialization use case](../docs/product/model/use-cases/uc-init.md).
 
 ## Archify diagrams
 
@@ -67,6 +67,6 @@ Candidate JSON sources live in `.archify/`; delivered standalone HTML lives in `
 
 ## Visual language and adoption guides
 
-ProductShape's logo establishes a technical blueprint identity: white drawing surfaces, blue ink, fine drafting lines, and a system sans-serif stack. The model explorer's [`QR-PRESENTATION-001`](../docs/product/model/requirements/quality/qr-presentation-001.md) informs its own compact, text-first interface; it is not the whole site's design system.
+ProductShape's logo establishes a technical blueprint identity: white drawing surfaces, blue ink, fine drafting lines, and a system sans-serif stack. The model explorer's [`QR-PRESENTATION`](../docs/product/model/requirements/quality/qr-presentation.md) informs its own compact, text-first interface; it is not the whole site's design system.
 
 The three general adoption guides are rendered from `docs/adoption/greenfield.md`, `brownfield.md`, and `existing-repository.md`. Their Markdown remains canonical; the site turns them into readable HTML pages in English and Spanish routes. The guide text is maintained in English, and Spanish pages say so.

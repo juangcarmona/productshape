@@ -51,7 +51,7 @@ describe('citations verify --format json', () => {
     // tampered and stale at once. Precedence requires tampered, PRODUCT062, and no PRODUCT061.
     const recordedDigest =
       'sha256:2222222222222222222222222222222222222222222222222222222222222222';
-    const consumerContent = `<!-- pdac:cite id="FR-SHORTEN-001" digest="${recordedDigest}" -->
+    const consumerContent = `<!-- pdac:cite id="FR-SHORTEN" digest="${recordedDigest}" -->
 This is not the canonical requirement text.
 <!-- /pdac:cite -->
 `;
@@ -181,7 +181,7 @@ This is not the canonical requirement text.
     await writeFile(
       join(workDir, 'specs', 'z-consumer.md'),
       [
-        `{pdac:cite id="FR-SHORTEN-001" digest="${VALID_DIGEST}" anchor="MISSING"}`,
+        `{pdac:cite id="FR-SHORTEN" digest="${VALID_DIGEST}" anchor="MISSING"}`,
         `{pdac:cite id="FR-Z-NOT-FOUND" digest="${VALID_DIGEST}"}`,
         `{pdac:cite id="FR-A-NOT-FOUND" digest="${VALID_DIGEST}"}`,
         '',
@@ -215,7 +215,7 @@ This is not the canonical requirement text.
     expect(payload.citations.map(({ id, source, line }) => ({ id, source, line }))).toEqual([
       { id: 'FR-Z-UNKNOWN', source: 'specs/a-consumer.md', line: 1 },
       { id: 'FR-A-BAD-DIGEST', source: 'specs/a-consumer.md', line: 2 },
-      { id: 'FR-SHORTEN-001', source: 'specs/z-consumer.md', line: 1 },
+      { id: 'FR-SHORTEN', source: 'specs/z-consumer.md', line: 1 },
       { id: 'FR-Z-NOT-FOUND', source: 'specs/z-consumer.md', line: 2 },
       { id: 'FR-A-NOT-FOUND', source: 'specs/z-consumer.md', line: 3 },
     ]);
@@ -224,7 +224,7 @@ This is not the canonical requirement text.
     const expectedOrder = [
       { file: 'specs/a-consumer.md', line: 1, code: 'PRODUCT060', target: 'FR-Z-UNKNOWN' },
       { file: 'specs/a-consumer.md', line: 2, code: 'PRODUCT042', target: 'FR-A-BAD-DIGEST' },
-      { file: 'specs/z-consumer.md', line: 1, code: 'PRODUCT063', target: 'FR-SHORTEN-001' },
+      { file: 'specs/z-consumer.md', line: 1, code: 'PRODUCT063', target: 'FR-SHORTEN' },
       { file: 'specs/z-consumer.md', line: 2, code: 'PRODUCT060', target: 'FR-Z-NOT-FOUND' },
       { file: 'specs/z-consumer.md', line: 3, code: 'PRODUCT060', target: 'FR-A-NOT-FOUND' },
     ];
@@ -521,11 +521,11 @@ describe('citations verify --provider openspec (scope model)', () => {
 
   it('passes a population where every current document is bound or exempt, keeping exemptions visible', async () => {
     await installFakeOpenSpec();
-    const digest = await currentDigest('FR-SHORTEN-001');
+    const digest = await currentDigest('FR-SHORTEN');
     await writeChangeDoc(
       'add-x',
       'proposal.md',
-      `---\npdac-scope: cited\n---\n\n## Why\n\n{pdac:cite id="FR-SHORTEN-001" digest="${digest}"}\n`,
+      `---\npdac-scope: cited\n---\n\n## Why\n\n{pdac:cite id="FR-SHORTEN" digest="${digest}"}\n`,
     );
     await writeChangeDoc(
       'add-x',
@@ -573,11 +573,11 @@ describe('citations verify --provider openspec (scope model)', () => {
 
   it('turns a bound document stale when the cited canonical text changes, blocking under warnings-as-errors', async () => {
     await installFakeOpenSpec();
-    const digest = await currentDigest('FR-SHORTEN-001');
+    const digest = await currentDigest('FR-SHORTEN');
     await writeChangeDoc(
       'add-x',
       'proposal.md',
-      `<!-- pdac-scope: cited -->\n\n## Why\n\n{pdac:cite id="FR-SHORTEN-001" digest="${digest}"}\n`,
+      `<!-- pdac-scope: cited -->\n\n## Why\n\n{pdac:cite id="FR-SHORTEN" digest="${digest}"}\n`,
     );
 
     const green = await verifyJson();
@@ -591,7 +591,7 @@ describe('citations verify --provider openspec (scope model)', () => {
       'model',
       'requirements',
       'functional',
-      'fr-shorten-001.md',
+      'fr-shorten.md',
     );
     const artifact = await readFile(artifactPath, 'utf8');
     await writeFile(artifactPath, `${artifact}\nThe requirement text moved.\n`, 'utf8');

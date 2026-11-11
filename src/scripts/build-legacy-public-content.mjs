@@ -556,9 +556,9 @@ function renderProduct(words, locale) {
     .join('');
   const modelUrl = modelHref();
   const modelSource = `${repoUrl}/blob/main/docs/product/model/index.md`;
-  const brandSource = `${repoUrl}/blob/main/docs/product/model/requirements/constraints/con-brand-001.md`;
-  const journeySource = `${repoUrl}/blob/main/docs/product/model/journeys/jrn-adopt-001.md`;
-  const initSource = `${repoUrl}/blob/main/docs/product/model/use-cases/uc-init-001.md`;
+  const brandSource = `${repoUrl}/blob/main/docs/product/model/requirements/constraints/con-brand.md`;
+  const journeySource = `${repoUrl}/blob/main/docs/product/model/journeys/jrn-adopt.md`;
+  const initSource = `${repoUrl}/blob/main/docs/product/model/use-cases/uc-init.md`;
   return `<section class="page-hero"><div class="narrow"><p class="eyebrow">${escapeHtml(words.product.eyebrow)}</p><h1>${escapeHtml(words.product.title)}</h1><p class="lead">${escapeHtml(words.product.intro)}</p></div></section><section class="section"><div class="wrap"><div class="feature-grid">${sections}</div></div></section><section class="section"><div class="narrow"><p class="eyebrow">${words.nav.workflow}</p><h2>${escapeHtml(words.product.boundaryTitle)}</h2><p class="lead">${escapeHtml(words.product.boundaryText)}</p><div class="link-list product-source-links"><a href="${modelUrl}">${escapeHtml(words.product.liveModel)} →</a><a href="${modelSource}">${escapeHtml(words.product.modelSource)} →</a><a href="${brandSource}">${escapeHtml(words.product.brandSource)} →</a><a href="${journeySource}">${escapeHtml(words.product.adoptionSource)} →</a><a href="${initSource}">${escapeHtml(words.product.initSource)} →</a></div></div></section><section class="section"><div class="narrow"><p><a class="button" href="${basePath}${locale}/get-started/">${escapeHtml(words.nav.start)} →</a></p></div></section>`;
 }
 

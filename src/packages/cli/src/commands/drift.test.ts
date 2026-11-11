@@ -82,7 +82,7 @@ describe('drift (recursive scan)', () => {
       [
         '## Product definition drift',
         '',
-        '<!-- pdac-drift ids="FR-SHORTEN-001, FR-MISSING-001" summary="PBI exceeds the accepted rule" -->',
+        '<!-- pdac-drift ids="FR-SHORTEN, FR-MISSING-001" summary="PBI exceeds the accepted rule" -->',
         '',
       ].join('\n'),
       'utf8',
@@ -96,7 +96,7 @@ describe('drift (recursive scan)', () => {
         source: 'openspec/changes/add-x/proposal.md',
         line: 3,
         ids: [
-          { id: 'FR-SHORTEN-001', resolves: true },
+          { id: 'FR-SHORTEN', resolves: true },
           { id: 'FR-MISSING-001', resolves: false },
         ],
         summary: 'PBI exceeds the accepted rule',
@@ -145,7 +145,7 @@ describe('drift --provider openspec', () => {
       await mkdir(join(workDir, 'openspec', dir), { recursive: true });
       await writeFile(
         join(workDir, 'openspec', dir, file),
-        '<!-- pdac-drift ids="FR-SHORTEN-001" summary="recorded divergence" -->\n',
+        '<!-- pdac-drift ids="FR-SHORTEN" summary="recorded divergence" -->\n',
         'utf8',
       );
     }

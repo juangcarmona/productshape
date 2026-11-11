@@ -1,11 +1,11 @@
 ---
-id: QR-EXAMPLE-001
+id: QR-EXAMPLE
 type: quality-requirement
 title: Example Quality Requirement
 status: draft
 quality-attribute: portability
 applies-to:
-  - UC-EXAMPLE-001
+  - UC-EXAMPLE
 verification:
   - scenario: A measurable scenario demonstrating the quality level is met
 uses-terms: []

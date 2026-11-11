@@ -33,7 +33,7 @@ const SEVERITY_FIELD = /severity: '(?:error|warning)',/g;
  * naming its authority on the line above. The scan excludes these from the emission count, so a
  * mutation is a deliberate, commented act with a reviewer — an unmarked one still fails.
  * The one current site: archived consumer documents' citation defects report as warnings
- * (FR-OPENSPEC-001), because archived history is immutable and its drift is information.
+ * (FR-OPENSPEC), because archived history is immutable and its drift is information.
  */
 const SANCTIONED_MUTATION = /\/\/ severity-mutation: [^\n]*\n\s*severity: '(?:error|warning)',/g;
 

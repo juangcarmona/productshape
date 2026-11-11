@@ -37,9 +37,9 @@ Do not use this skill to reconstruct knowledge from an existing system (use `rec
 - `prodshape inspect <ID>`: details of an existing artifact before referencing it.
 - `prodshape impact <ID>`: what an existing artifact touches, before extending near it.
 - `prodshape schema <kind>`: the allowed frontmatter for a kind, read from the schemas bundled with the CLI. Use it instead of guessing; it needs no repository.
-- `prodshape inspect BR-CHANGE-001`: the rule governing how the definition changes: every evolution is an applied and accepted Product Change. Run it to read the rule before authoring a change.
+- `prodshape inspect BR-CHANGE`: the rule governing how the definition changes: every evolution is an applied and accepted Product Change. Run it to read the rule before authoring a change.
 
-Never substitute your own judgement for these commands. If the CLI reports a structural fact, that fact is authoritative (BR-AI-001).
+Never substitute your own judgement for these commands. If the CLI reports a structural fact, that fact is authoritative (BR-AI).
 
 ## Reasoning procedure
 
@@ -62,7 +62,7 @@ Never substitute your own judgement for these commands. If the CLI reports a str
 - Inventing product decisions: if the intent does not answer a question, it becomes an open question, not an assumption.
 - Adding frontmatter fields the artifact's schema does not define: frontmatter is a closed contract and an unrecognised property is rejected as PRODUCT002. Check with `schema <kind>`.
 - Writing implementation design into artifact bodies (class names, frameworks, storage choices).
-- Replacing deterministic validation with your own reading of the files (BR-AI-001).
+- Replacing deterministic validation with your own reading of the files (BR-AI).
 - Merging, pushing, or creating Git commits, unless the engineer explicitly asks.
 
 ## Human approval points

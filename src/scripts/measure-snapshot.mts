@@ -1,8 +1,8 @@
 /**
- * Snapshot measurement harness (SLI-SNAPSHOT-003, QR-SCALABILITY-001).
+ * Snapshot measurement harness (SLI-SNAPSHOT-003, QR-SCALABILITY).
  *
  * Establishes the reusable measurement procedure and the named reference environment for the
- * Product Snapshot Explorer, and records the figures QR-SCALABILITY-001 requires:
+ * Product Snapshot Explorer, and records the figures QR-SCALABILITY requires:
  *
  *   - opening-document composition: markup bytes rendered at open, artifact-level graph elements
  *   - generated file size, and size per authored byte
@@ -64,7 +64,7 @@ interface Measurement {
    */
   searchMs: { queries: string[]; samples: number; p50: number; p95: number; max: number };
   /**
-   * Catalog filter latency (SLI-EXPLORER-001, FR-SNAPSHOT-008): elapsed time from a filter
+   * Catalog filter latency (SLI-EXPLORER-001, FR-SNAPSHOT-CATALOG): elapsed time from a filter
    * changing to the narrowed list being displayed, for the widest kind and for clearing back to
    * everything. Measured in jsdom like the other interaction figures.
    */
@@ -80,7 +80,7 @@ interface Measurement {
    */
   focusMs: { anchors: string[]; samples: number; p50: number; p95: number; max: number };
   /**
-   * Group-expansion latency (SLI-EXPLORER-003, FR-SNAPSHOT-009): elapsed time from toggling a
+   * Group-expansion latency (SLI-EXPLORER-003, FR-SNAPSHOT-TOPOLOGY): elapsed time from toggling a
    * relationship group on the highest-degree focus to the projection being rebuilt.
    */
   expandMs: { samples: number; p50: number; p95: number; max: number };

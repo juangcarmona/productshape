@@ -1,10 +1,10 @@
 ---
-id: FR-EXAMPLE-001
+id: FR-EXAMPLE
 type: functional-requirement
 title: Example Functional Requirement
 status: draft
 derived-from:
-  - UC-EXAMPLE-001
+  - UC-EXAMPLE
 verification:
   - scenario: An observable scenario demonstrating the obligation is met
 uses-terms: []

@@ -1,5 +1,5 @@
 ---
-id: UC-EXAMPLE-001
+id: UC-EXAMPLE
 type: use-case
 title: Example Use Case
 status: draft

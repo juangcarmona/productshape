@@ -1,10 +1,10 @@
 ---
-id: SB-EXAMPLE-001
+id: SB-EXAMPLE
 type: structured-behaviour
 title: Example Structured Behaviour
 status: draft
 illustrates:
-  - UC-EXAMPLE-001
+  - UC-EXAMPLE
 given:
   - An observable context condition holds
 when: One product-level stimulus occurs

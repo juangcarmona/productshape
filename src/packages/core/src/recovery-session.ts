@@ -444,7 +444,7 @@ function assertValidArtifactIds(artifacts: string[]): void {
   if (invalid.length > 0) {
     throw new RecoveryUsageError(
       `Invalid artifact id(s): ${invalid.map((id) => `'${id}'`).join(', ')}. ` +
-        `IDs look like UC-CHECKOUT or BR-REFUND-001. On PowerShell, quote the list: --artifacts "UC-A,UC-B"`,
+        `IDs look like UC-CHECKOUT or BR-REFUND. On PowerShell, quote the list: --artifacts "UC-A,UC-B"`,
     );
   }
 }

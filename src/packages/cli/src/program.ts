@@ -232,7 +232,11 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .description('Regenerate all installed integrations (--check detects drift only)')
     .option('--check', 'detect drift without writing')
     .option('--force', 'regenerate even over hand-edited managed files')
-    .action(async (options: { check?: boolean; force?: boolean }) => {
+    .option(
+      '--apply-id-migration',
+      'consent to the one-time removal of numeric ID suffixes (otherwise a terminal asks and scripts change nothing)',
+    )
+    .action(async (options: { check?: boolean; force?: boolean; applyIdMigration?: boolean }) => {
       capture.code = await runIntegrationUpdate(io, options);
     });
   integration
@@ -428,11 +432,27 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
     .command('fix')
     .description('Apply a mechanical, idempotent repair to the product model')
     .option('--filenames', 'rename artifact files to match their ID casing (resolves PRODUCT101)')
+    .option(
+      '--id-suffixes',
+      'plan the one-time removal of numeric ID suffixes (asks before applying; see --apply-id-migration)',
+    )
+    .option(
+      '--apply-id-migration',
+      'with --id-suffixes: consent to apply the migration without being asked',
+    )
     .option('--dry-run', 'report what would change; exits 1 when anything would')
     .option('--format <format>', 'output format: text or json', 'text')
-    .action(async (options: { filenames?: boolean; dryRun?: boolean; format: 'text' | 'json' }) => {
-      capture.code = await runFix(io, options);
-    });
+    .action(
+      async (options: {
+        filenames?: boolean;
+        idSuffixes?: boolean;
+        applyIdMigration?: boolean;
+        dryRun?: boolean;
+        format: 'text' | 'json';
+      }) => {
+        capture.code = await runFix(io, options);
+      },
+    );
 
   program
     .command('template')

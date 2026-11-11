@@ -1,10 +1,10 @@
 ---
-id: BR-VALID-URL-001
+id: BR-VALID-URL
 type: business-rule
 title: Only well-formed absolute URLs are shortened
 status: active
 applies-to:
-  - UC-SHORTEN-001
+  - UC-SHORTEN
 ---
 
 ## Rule

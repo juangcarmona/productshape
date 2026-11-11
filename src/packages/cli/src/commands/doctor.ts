@@ -1,4 +1,4 @@
-import { blockingDiagnostics, validateBaseline } from '@prodshape/core';
+import { blockingDiagnostics, countSuffixedIds, validateBaseline } from '@prodshape/core';
 import { runDoctor } from '@prodshape/distribution';
 import {
   checkOpenSpecIntegration,
@@ -69,6 +69,14 @@ export async function runDoctorCommand(io: CliIo): Promise<number> {
     io.out(`${check.ok ? 'ok  ' : 'FAIL'} ${check.name}: ${check.detail}`);
   }
   for (const diagnostic of report.diagnostics) io.out(`     ${formatDiagnosticLine(diagnostic)}`);
+
+  // Informational only, never a failure: adopting the new ID convention is the adopter's call.
+  const suffixed = await countSuffixedIds(repo);
+  if (suffixed > 0) {
+    io.out(
+      `ok   id suffixes: ${suffixed} artifact ID(s) end in a numeric suffix, which the ID convention no longer uses (informational; plan: prodshape fix --id-suffixes --dry-run)`,
+    );
+  }
 
   io.out(failed === 0 ? 'All checks passed.' : `${failed} check(s) failed.`);
   return failed === 0 ? exitCodes.success : exitCodes.validationErrors;

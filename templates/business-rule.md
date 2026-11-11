@@ -1,5 +1,5 @@
 ---
-id: BR-EXAMPLE-001
+id: BR-EXAMPLE
 type: business-rule
 title: Example Business Rule
 status: draft

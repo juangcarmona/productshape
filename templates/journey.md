@@ -1,11 +1,11 @@
 ---
-id: JRN-EXAMPLE-001
+id: JRN-EXAMPLE
 type: journey
 title: Example Journey
 status: draft
 primary-actor: ACT-EXAMPLE-ACTOR
 steps:
-  - use-case: UC-EXAMPLE-001
+  - use-case: UC-EXAMPLE
 ---
 
 <!--

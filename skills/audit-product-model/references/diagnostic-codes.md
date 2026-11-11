@@ -2,7 +2,7 @@
 
 `prodshape validate --format json` is the authoritative structural baseline. Every diagnostic carries a stable code, a severity (`error` or `warning`), a message, the source file, and when available the artifact ID, field and target. This reference lists the codes an auditor cites when classifying structural findings.
 
-Run `prodshape validate --format json` first, record every diagnostic verbatim, and never re-derive by reading files anything the command already reports (BR-AI-001).
+Run `prodshape validate --format json` first, record every diagnostic verbatim, and never re-derive by reading files anything the command already reports (BR-AI).
 
 ## Error codes (PRODUCT0xx)
 

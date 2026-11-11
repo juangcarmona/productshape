@@ -1,6 +1,6 @@
 /**
  * The governed citation-first walkthrough, exercised from the packed CLI exactly as the
- * `@prodshape/cli` README documents it (UC-INIT-001, issue #97): kernel init, the first accepted
+ * `@prodshape/cli` README documents it (UC-INIT, issue #97): kernel init, the first accepted
  * baseline through CHG-INITIAL, a verified current citation, and a stale dependency surfaced by a
  * later Product Change. A clean repository completes the loop from copied commands alone; every
  * file this test writes is the file the README shows.

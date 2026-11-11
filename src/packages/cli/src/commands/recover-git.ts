@@ -6,7 +6,7 @@ import { CliError, exitCodes, type CliIo } from '../context.js';
 const run = promisify(execFile);
 
 /**
- * Opt-in git discipline for recovery sessions (FR-RECOVER-001): when the brief declares
+ * Opt-in git discipline for recovery sessions (FR-RECOVER): when the brief declares
  * `git.branch`, the session runs on that dedicated branch and every state-mutating recover
  * command records a checkpoint commit. Without the declaration, nothing here ever runs and the
  * tool never touches git.

@@ -1,11 +1,11 @@
 ---
-id: JRN-SHARE-001
+id: JRN-SHARE
 type: journey
 title: Share a long address as a short link
 status: active
 primary-actor: ACT-VISITOR
 steps:
-  - use-case: UC-SHORTEN-001
+  - use-case: UC-SHORTEN
 ---
 
 ## Intended Outcome

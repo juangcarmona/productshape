@@ -24,7 +24,7 @@ Provide a structured, AI-assisted elaboration workflow that reads the product gr
 
 - The Product Definition under `docs/product/model/` (must exist and be valid).
 - The change request (natural language intent from the engineer).
-- A change ID (e.g. `CHG-ADD-CITE-001`). The directory is its lowercase form.
+- A change ID (e.g. `CHG-ADD-CITE`). The directory is its lowercase form.
 
 ## Files to read
 

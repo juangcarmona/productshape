@@ -71,6 +71,11 @@ export interface IdMigrationOptions {
   overrides?: Record<string, string>;
   /** Extra repository-relative files or globs whose text mentions are rewritten as well. */
   extraTextGlobs?: string[];
+  /**
+   * Runs after the files are changed and before the result is validated. A rejection rolls the
+   * migration back exactly as a failed validation does; tests use it to prove the rollback.
+   */
+  afterWrite?: () => Promise<void>;
 }
 
 interface PreparedMigration {
@@ -391,6 +396,7 @@ export async function applyIdSuffixMigration(
       await rename(join(repo.root, move.from), join(repo.root, move.to));
       doneMoves.push(move);
     }
+    await options.afterWrite?.();
     const after = await health(repo);
     if (after.errors > prepared.before.errors) {
       throw new Error(

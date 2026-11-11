@@ -13,7 +13,7 @@ type: use-case
 title: Validate the product model
 status: active
 primary-actor: ACT-PRODUCT-ENGINEER
-governed-by: [BR-DETERMINISM-001]
+governed-by: [BR-DETERMINISM]
 uses-terms: [TERM-DIAGNOSTIC]
 ---
 ```

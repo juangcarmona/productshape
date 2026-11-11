@@ -82,7 +82,7 @@ interface DocumentReport {
  * enumerates it and verifies the citations it carries, with every defect reported as a warning
  * and the scope gate still current-only: history is immutable, so its drift is information
  * rather than a defect anyone can repair in place
- * (FR-OPENSPEC-001). `--include-archived` holds archived documents to the full gate instead.
+ * (FR-OPENSPEC). `--include-archived` holds archived documents to the full gate instead.
  *
  * Diagnostics: PRODUCT042 (invalid digest), PRODUCT060 (unresolved), PRODUCT061 (stale),
  * PRODUCT062 (tampered), PRODUCT063 (anchor not found), PRODUCT064 (unclassified document),
@@ -281,7 +281,7 @@ async function runRecursiveVerify(
 function softenArchivedDiagnostic(diagnostic: Diagnostic): Diagnostic {
   return {
     ...diagnostic,
-    // severity-mutation: archived history reports at warning severity (FR-OPENSPEC-001).
+    // severity-mutation: archived history reports at warning severity (FR-OPENSPEC).
     severity: 'warning',
     message: `${diagnostic.message} (archived consumer document)`,
   };
@@ -331,7 +331,7 @@ async function runProviderVerify(
 
   // Verify per document so an archived document's diagnostics can be softened: history is
   // immutable, so a defect found there is information for the reader, not a failure anyone can
-  // fix in place (FR-OPENSPEC-001). Softening happens before warning escalation, so a repository
+  // fix in place (FR-OPENSPEC). Softening happens before warning escalation, so a repository
   // that opts into warnings-as-errors deliberately makes history drift block.
   const verifications: ReturnType<typeof verifyCitations> = [];
   const citationDiagnostics: Diagnostic[] = [];

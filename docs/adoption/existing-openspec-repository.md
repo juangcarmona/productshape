@@ -89,19 +89,19 @@ Recovery reads your OpenSpec documents as evidence; it never writes into them. S
 For the documents you write afterwards, the rule is the same in the small: cite instead of restating. Print a citation record (the digest is computed for you) and paste it into the spec inside a Markdown comment, after the requirement text, never between the heading and the text, because OpenSpec reads the first paragraph under a requirement heading as the requirement itself:
 
 ```bash
-prodshape cite --id BR-REFUND-001 --file docs/product/model/business-rules/br-refund-001.md
+prodshape cite --id BR-REFUND --file docs/product/model/business-rules/br-refund.md
 ```
 
 ```diff
  ### Requirement: Refund handling
 
 -The system SHALL accept refund requests within 30 days of delivery and reject later requests with a clear message.
-+The system SHALL accept refund requests within the refund window defined by BR-REFUND-001 and reject later requests with a clear message.
++The system SHALL accept refund requests within the refund window defined by BR-REFUND and reject later requests with a clear message.
 +
-+{pdac:cite id="BR-REFUND-001" digest="sha256:b5c5806732cb3e3f32a6b7da97fd3e712a1bb733b4bb50e2840874ae64713228"}
++{pdac:cite id="BR-REFUND" digest="sha256:b5c5806732cb3e3f32a6b7da97fd3e712a1bb733b4bb50e2840874ae64713228"}
 ```
 
-Never write a citation record by hand: only `prodshape cite` and `prodshape context` emit them. `prodshape context <ID> [<ID>...]` renders the canonical text with citations attached, ready to feed an OpenSpec change from cited material instead of paraphrase. The merged rules in `openspec/config.yaml` direct the agent working a change through an impact pass first: compare the item's intent with the whole definition, widen with `prodshape impact <ID>`, cite every impacted artifact. If the item contradicts or goes beyond the definition, the rules require an explicit drift marker on its own line, `<!-- pdac-drift ids="BR-REFUND-001" summary="PBI wants 14 days; the rule says 30" -->`, so the developer and the product owner decide together. `prodshape drift --provider openspec` lists all recorded drift; it is a report, never a gate, because a failing check would teach people not to record drift.
+Never write a citation record by hand: only `prodshape cite` and `prodshape context` emit them. `prodshape context <ID> [<ID>...]` renders the canonical text with citations attached, ready to feed an OpenSpec change from cited material instead of paraphrase. The merged rules in `openspec/config.yaml` direct the agent working a change through an impact pass first: compare the item's intent with the whole definition, widen with `prodshape impact <ID>`, cite every impacted artifact. If the item contradicts or goes beyond the definition, the rules require an explicit drift marker on its own line, `<!-- pdac-drift ids="BR-REFUND" summary="PBI wants 14 days; the rule says 30" -->`, so the developer and the product owner decide together. `prodshape drift --provider openspec` lists all recorded drift; it is a report, never a gate, because a failing check would teach people not to record drift.
 
 ## Step 4: verify, and gate it in CI
 

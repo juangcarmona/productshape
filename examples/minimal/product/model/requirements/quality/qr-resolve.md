@@ -1,11 +1,11 @@
 ---
-id: QR-RESOLVE-001
+id: QR-RESOLVE
 type: quality-requirement
 title: Short links keep resolving
 status: active
 quality-attribute: reliability
 applies-to:
-  - UC-SHORTEN-001
+  - UC-SHORTEN
 verification:
   - scenario: A short link created earlier still resolves after the service restarts
 ---

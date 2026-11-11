@@ -63,7 +63,7 @@ Run these FIRST and treat their output as the authoritative structural baseline:
 ## Forbidden actions
 
 - Rewriting, "fixing" or reformatting any artifact: the audit reports, humans decide, and fixes after the baseline go through Product Changes.
-- Re-deriving structural facts by reading files when `validate` already reports them, or contradicting the CLI's structural output with your own reading (BR-AI-001).
+- Re-deriving structural facts by reading files when `validate` already reports them, or contradicting the CLI's structural output with your own reading (BR-AI).
 - Presenting an interpretation as a fact: every semantic finding is labeled as interpretation.
 - Deciding QUESTION findings yourself: contradictions and orphan-intent calls are product decisions.
 - Marking artifacts `active`, or merging/pushing changes.

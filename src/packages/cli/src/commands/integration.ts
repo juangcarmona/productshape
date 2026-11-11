@@ -34,6 +34,7 @@ import {
   resolveRepository,
   type CliIo,
 } from '../context.js';
+import { runIdSuffixMigration } from './id-migration.js';
 
 /**
  * An installation lock that exists but cannot be trusted is a refusal, not a crash: every
@@ -186,7 +187,7 @@ export async function runIntegrationAdd(
 
 export async function runIntegrationUpdate(
   io: CliIo,
-  options: { check?: boolean; force?: boolean },
+  options: { check?: boolean; force?: boolean; applyIdMigration?: boolean },
 ): Promise<number> {
   const repo = await resolveRepository(io);
 
@@ -262,9 +263,14 @@ export async function runIntegrationUpdate(
 
   if (results.length === 0 && !openspecInstalled && !speckitInstalled) {
     io.out('No integrations installed; add one with: prodshape integration add <provider>');
-    return exitCodes.success;
   }
-  return exitCodes.success;
+
+  // Upgrade step: IDs ending in a numeric suffix (breaking change in 0.23). Shown on every
+  // update, applied only with consent: asked in a terminal, otherwise only with the explicit flag.
+  return runIdSuffixMigration(io, repo, {
+    apply: options.applyIdMigration,
+    quietWhenNone: true,
+  });
 }
 
 export async function runIntegrationCheck(io: CliIo): Promise<number> {

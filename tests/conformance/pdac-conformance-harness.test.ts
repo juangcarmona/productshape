@@ -8,7 +8,7 @@ describe('the pinned conformance harness diagnostic matcher', () => {
         severity: 'error',
         code: 'PRODUCT063',
         file: 'specs/feature-x.md',
-        artifact: 'FR-VALIDATE-001',
+        artifact: 'FR-VALIDATE-REFERENCES',
       },
     ];
     const emitted = [{ ...expected[0], field: 'anchor' }];

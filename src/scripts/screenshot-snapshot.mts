@@ -2,7 +2,7 @@
  * Snapshot screenshot harness (SLI-SNAPSHOT-004, extending SLI-SNAPSHOT-003's measurement harness).
  *
  * Drives a headless Chromium-family browser over the generated snapshot at a set of routes and
- * viewports, producing the visual evidence QR-PRESENTATION-001 and QR-ACCESSIBILITY-001 require and
+ * viewports, producing the visual evidence QR-PRESENTATION and QR-ACCESSIBILITY require and
  * that jsdom cannot produce: layout, paint, wrapping, focus rendering and colour.
  *
  * Extended by each slice with the routes it introduces rather than rebuilt.
@@ -58,7 +58,7 @@ const shots: Shot[] = [
   },
   {
     name: '02-artifact-detail-desktop',
-    route: '#/artifacts/UC-SNAPSHOT-EXPLORE-001',
+    route: '#/artifacts/UC-SNAPSHOT-EXPLORE',
     ...DESKTOP,
     caption:
       'One active artifact: grouped list with the selection’s kind open, linked metadata, and its neighbourhood beside the Reader.',
@@ -79,7 +79,7 @@ const shots: Shot[] = [
   },
   {
     name: '05-artifact-detail-narrow',
-    route: '#/artifacts/UC-SNAPSHOT-EXPLORE-001',
+    route: '#/artifacts/UC-SNAPSHOT-EXPLORE',
     ...NARROW,
     caption: 'Narrow viewport: the detail is its own state, reached from the list.',
   },
@@ -103,7 +103,7 @@ const shots: Shot[] = [
   },
   {
     name: '10-focus-visible',
-    route: '#/artifacts/UC-SNAPSHOT-EXPLORE-001',
+    route: '#/artifacts/UC-SNAPSHOT-EXPLORE',
     ...DESKTOP,
     caption: 'Keyboard focus is visible: the focus ring on the selected list entry.',
     prepare: `document.querySelector('#artifact-list a[aria-current]').focus()`,
@@ -151,7 +151,7 @@ const shots: Shot[] = [
   },
   {
     name: '17-focus-typical',
-    route: '#/artifacts/UC-SNAPSHOT-EXPLORE-001',
+    route: '#/artifacts/UC-SNAPSHOT-EXPLORE',
     ...DESKTOP,
     caption:
       'Focused neighbourhood of a typical artifact: declared groups in rows above the anchor, referencing groups below.',
@@ -184,27 +184,27 @@ const shots: Shot[] = [
   },
   {
     name: '22-artifact-dark',
-    route: '#/artifacts/UC-SNAPSHOT-EXPLORE-001?a=dark',
+    route: '#/artifacts/UC-SNAPSHOT-EXPLORE?a=dark',
     ...DESKTOP,
     caption: 'The Reader and neighbourhood in the dark appearance.',
   },
   {
     name: '23-master-rail',
-    route: '#/artifacts/FR-SNAPSHOT-002?m=rail',
+    route: '#/artifacts/FR-SNAPSHOT-READER?m=rail',
     ...DESKTOP,
     caption:
       'The master area collapsed to its kind rail: the selected kind stays marked while the Reader takes the room.',
   },
   {
     name: '24-search-narrowed',
-    route: '#/artifacts/UC-SNAPSHOT-EXPLORE-001?k=functional-requirement&q=search',
+    route: '#/artifacts/UC-SNAPSHOT-EXPLORE?k=functional-requirement&q=search',
     ...DESKTOP,
     caption:
       'Search narrowed to one kind where the query is typed; the same narrowing is named beside the list.',
   },
   {
     name: '25-shortcuts',
-    route: '#/artifacts/UC-SNAPSHOT-EXPLORE-001',
+    route: '#/artifacts/UC-SNAPSHOT-EXPLORE',
     ...DESKTOP,
     caption: 'Every shortcut is stated on the page, and each has a visible control.',
     prepare: `document.getElementById('keys-open').click()`,
