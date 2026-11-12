@@ -9,7 +9,12 @@ export async function getStaticPaths() {
     const files = [];
     for (const entry of await readdir(directory, { withFileTypes: true })) {
       const path = join(directory, entry.name);
-      if (entry.isDirectory() && entry.name !== 'assets' && entry.name !== 'model') {
+      if (
+        entry.isDirectory() &&
+        entry.name !== 'assets' &&
+        entry.name !== 'model' &&
+        entry.name !== 'explore'
+      ) {
         files.push(...(await htmlFiles(path)));
       } else if (entry.name.endsWith('.html')) files.push(path);
     }

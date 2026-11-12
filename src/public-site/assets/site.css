@@ -399,6 +399,11 @@ h3 {
   color: var(--muted);
   max-width: 55ch;
 }
+.example-line {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  max-width: 70ch;
+}
 .workflow-graphic {
   width: 100%;
   height: auto;
