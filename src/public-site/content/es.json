@@ -45,6 +45,8 @@
     "principleText": "ProductShape puede detectar referencias rotas y definiciones modificadas. No puede decidir si una idea es cierta, si un cambio es adecuado o si la implementación ha terminado.",
     "explorerTitle": "Explora el modelo de ProductShape, no una demostración comercial.",
     "explorerText": "Este repositorio se define con el mismo modelo de producto que propone a los equipos. Explora artefactos y relaciones reales en una instantánea generada y de solo lectura.",
+    "exampleText": "¿Prefieres un modelo más pequeño? Esta tienda de ejemplo se genera desde su propio Markdown en cada publicación.",
+    "exampleAction": "Explorar un producto de ejemplo (en inglés)",
     "architectureTitle": "Diseñado para seguir siendo comprensible.",
     "architectureText": "Consulta las doce vistas arc42 de la implementación, desde los límites entre paquetes hasta la publicación y la evidencia de calidad.",
     "closingTitle": "Empieza con una decisión de producto.",

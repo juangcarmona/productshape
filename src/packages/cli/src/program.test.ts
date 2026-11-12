@@ -155,6 +155,20 @@ describe('prodshape validate', () => {
     expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across 9 artifact\(s\)/);
   });
 
+  it('--root keeps examples/shop valid, with every citation in its consumers current', async () => {
+    const root = join(repoRoot, 'examples', 'shop');
+    const validation = await run(['validate', '--root', root], workDir);
+    expect(validation.err).toEqual([]);
+    expect(validation.code).toBe(0);
+    expect(validation.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across 39 artifact\(s\)/);
+    const citations = await run(['citations', 'verify', '--root', root], workDir);
+    expect(citations.err).toEqual([]);
+    expect(citations.code).toBe(0);
+    expect(citations.out.join('\n')).toMatch(
+      /5 citation\(s\): 5 current, 0 stale, 0 tampered, 0 unresolved/,
+    );
+  });
+
   it('--root refuses a directory that is not a product repository with exit 2', async () => {
     const empty = await mkdtemp(join(tmpdir(), 'product-definition-empty-'));
     try {

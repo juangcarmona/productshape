@@ -9,6 +9,7 @@ on:
       - 'src/packages/**'
       - 'src/scripts/build-public-site.mjs'
       - 'src/scripts/build-legacy-public-content.mjs'
+      - 'src/scripts/example-snapshot.mjs'
       - 'src/scripts/validate-public-site.mjs'
       - 'src/scripts/check-public-site-browser.mjs'
       - 'src/public-site/assets/**'

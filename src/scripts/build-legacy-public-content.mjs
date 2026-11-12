@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defaultLocale, locales } from '../public-site/site.config.mjs';
+import { exampleSnapshotRoute, generateExampleSnapshot } from './example-snapshot.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const args = process.argv.slice(2);
@@ -181,6 +182,11 @@ if (profile === 'public') {
     }
   }
   await cp(join(outDir, 'en/index.html'), join(outDir, 'index.html'));
+  await generateExampleSnapshot({
+    root,
+    destination: join(outDir, exampleSnapshotRoute, 'index.html'),
+    productUrl: `${siteOrigin}${basePath}`,
+  });
   await writeFile(join(outDir, 'sitemap.xml'), renderSitemap());
   await writeFile(
     join(outDir, 'robots.txt'),
@@ -396,6 +402,7 @@ function renderSitemap() {
         urls.push(`${siteOrigin}${basePath}${locale}/guides/${guide.slug}/`);
       }
     }
+    urls.push(`${siteOrigin}${basePath}${exampleSnapshotRoute}`);
   } else {
     urls.push(`${siteOrigin}${basePath}`);
     urls.push(`${siteOrigin}${basePath}en/`);
@@ -524,7 +531,7 @@ function renderHome(words, locale) {
   const start = `${basePath}${locale}/get-started/`;
   const model = modelHref();
   const engineering = engineeringHref();
-  return `<section class="hero wrap"><div><p class="eyebrow">${escapeHtml(home.eyebrow)}</p><h1>${escapeHtml(home.title)}</h1><p class="lead">${escapeHtml(home.intro)}</p><div class="actions"><a class="button" href="${start}">${escapeHtml(home.primaryAction)}</a><a class="button secondary" href="${model}">${escapeHtml(home.secondaryAction)}</a></div></div><figure class="hero-art"><img src="${basePath}assets/product-explorer.png" width="1440" height="900" alt="${locale === 'es' ? 'Vista real del explorador del modelo de producto de ProductShape' : 'Real view of the ProductShape product model explorer'}"><figcaption class="image-caption">${locale === 'es' ? 'Una instantánea real del modelo, regenerada desde este repositorio.' : 'A real model snapshot, regenerated from this repository.'}</figcaption></figure></section><div class="wrap"><div class="proof-line"><strong>${escapeHtml(home.proofLabel)}</strong><span>${escapeHtml(home.proof)}</span></div></div><section class="section"><div class="wrap"><div class="section-heading"><div><p class="eyebrow">${locale === 'es' ? 'Una estructura común' : 'A shared structure'}</p><h2>${escapeHtml(home.flowTitle)}</h2></div><p>${escapeHtml(home.flowIntro)}</p></div>${flowGraphic(locale)}<div class="flow-grid">${home.flow.map((step) => `<article class="flow-step"><span class="step-number">${step.number}</span><h3>${escapeHtml(step.title)}</h3><p>${escapeHtml(step.text)}</p></article>`).join('')}</div></div></section><section class="section"><div class="wrap split-section"><div><p class="eyebrow">${locale === 'es' ? 'El límite importante' : 'The important boundary'}</p><h2>${escapeHtml(home.principleTitle)}</h2></div><div class="statement"><p>${escapeHtml(home.principleText)}</p></div></div></section><section class="section"><div class="wrap"><div class="section-heading"><div><p class="eyebrow">${locale === 'es' ? 'Dogfooding público' : 'Public dogfooding'}</p><h2>${escapeHtml(home.explorerTitle)}</h2></div><p>${escapeHtml(home.explorerText)}</p></div><p><a class="button secondary" href="${model}">${escapeHtml(words.nav.model)} →</a></p></div></section><section class="section"><div class="wrap split-section"><div><p class="eyebrow">${locale === 'es' ? 'Implementación' : 'Implementation'}</p><h2>${escapeHtml(home.architectureTitle)}</h2></div><div><p class="lead">${escapeHtml(home.architectureText)}</p><a href="${engineering}">${escapeHtml(words.nav.engineering)} →</a></div></div></section><section class="section"><div class="wrap"><div class="cta-band"><div><p class="eyebrow">${locale === 'es' ? 'Siguiente paso' : 'Next step'}</p><h2>${escapeHtml(home.closingTitle)}</h2><p>${escapeHtml(home.closingText)}</p></div><a class="button" href="${start}">${escapeHtml(words.nav.start)} →</a></div></div></section>`;
+  return `<section class="hero wrap"><div><p class="eyebrow">${escapeHtml(home.eyebrow)}</p><h1>${escapeHtml(home.title)}</h1><p class="lead">${escapeHtml(home.intro)}</p><div class="actions"><a class="button" href="${start}">${escapeHtml(home.primaryAction)}</a><a class="button secondary" href="${model}">${escapeHtml(home.secondaryAction)}</a></div></div><figure class="hero-art"><img src="${basePath}assets/product-explorer.png" width="1440" height="900" alt="${locale === 'es' ? 'Vista real del explorador del modelo de producto de ProductShape' : 'Real view of the ProductShape product model explorer'}"><figcaption class="image-caption">${locale === 'es' ? 'Una instantánea real del modelo, regenerada desde este repositorio.' : 'A real model snapshot, regenerated from this repository.'}</figcaption></figure></section><div class="wrap"><div class="proof-line"><strong>${escapeHtml(home.proofLabel)}</strong><span>${escapeHtml(home.proof)}</span></div></div><section class="section"><div class="wrap"><div class="section-heading"><div><p class="eyebrow">${locale === 'es' ? 'Una estructura común' : 'A shared structure'}</p><h2>${escapeHtml(home.flowTitle)}</h2></div><p>${escapeHtml(home.flowIntro)}</p></div>${flowGraphic(locale)}<div class="flow-grid">${home.flow.map((step) => `<article class="flow-step"><span class="step-number">${step.number}</span><h3>${escapeHtml(step.title)}</h3><p>${escapeHtml(step.text)}</p></article>`).join('')}</div></div></section><section class="section"><div class="wrap split-section"><div><p class="eyebrow">${locale === 'es' ? 'El límite importante' : 'The important boundary'}</p><h2>${escapeHtml(home.principleTitle)}</h2></div><div class="statement"><p>${escapeHtml(home.principleText)}</p></div></div></section><section class="section"><div class="wrap"><div class="section-heading"><div><p class="eyebrow">${locale === 'es' ? 'Dogfooding público' : 'Public dogfooding'}</p><h2>${escapeHtml(home.explorerTitle)}</h2></div><p>${escapeHtml(home.explorerText)}</p></div><p><a class="button secondary" href="${model}">${escapeHtml(words.nav.model)} →</a></p><p class="example-line">${escapeHtml(home.exampleText)} <a href="${basePath}${exampleSnapshotRoute}">${escapeHtml(home.exampleAction)} →</a></p></div></section><section class="section"><div class="wrap split-section"><div><p class="eyebrow">${locale === 'es' ? 'Implementación' : 'Implementation'}</p><h2>${escapeHtml(home.architectureTitle)}</h2></div><div><p class="lead">${escapeHtml(home.architectureText)}</p><a href="${engineering}">${escapeHtml(words.nav.engineering)} →</a></div></div></section><section class="section"><div class="wrap"><div class="cta-band"><div><p class="eyebrow">${locale === 'es' ? 'Siguiente paso' : 'Next step'}</p><h2>${escapeHtml(home.closingTitle)}</h2><p>${escapeHtml(home.closingText)}</p></div><a class="button" href="${start}">${escapeHtml(words.nav.start)} →</a></div></div></section>`;
 }
 
 function flowGraphic(locale) {
