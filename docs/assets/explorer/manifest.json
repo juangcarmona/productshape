@@ -1,5 +1,5 @@
 {
-  "browser": "chrome-nosandbox",
+  "browser": "chrome",
   "shots": [
     {
       "name": "01-overview-desktop",
@@ -198,6 +198,24 @@
       "route": "#/",
       "viewport": "430x900",
       "caption": "The Overview map at a phone width: the map fits, pans and pinches."
+    },
+    {
+      "name": "36-phone-opening",
+      "route": "",
+      "viewport": "390x844",
+      "caption": "A phone opened without an address starts on the artifact catalog, under a one-row header."
+    },
+    {
+      "name": "37-phone-menu",
+      "route": "#/artifacts/UC-EXPLORER-BROWSE",
+      "viewport": "390x844",
+      "caption": "The phone menu: the views, the business lens and the appearance open beneath the header."
+    },
+    {
+      "name": "38-phone-card-folded",
+      "route": "#/focus/UC-EXPLORER-BROWSE",
+      "viewport": "390x844",
+      "caption": "On a phone the map summary folds to its title so it does not hide the map."
     },
     {
       "name": "35-map-no-colour",

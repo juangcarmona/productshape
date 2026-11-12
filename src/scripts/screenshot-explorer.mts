@@ -41,6 +41,7 @@ interface Shot {
 
 const DESKTOP = { width: 1440, height: 900 };
 const NARROW = { width: 430, height: 900 };
+const PHONE = { width: 390, height: 844 };
 /**
  * Headless Chromium captures the viewport at the top of the layout, so a state further down the
  * page is framed by making the viewport tall rather than by scrolling — scrolling moves the content
@@ -268,6 +269,28 @@ const shots: Shot[] = [
     route: '#/',
     ...NARROW,
     caption: 'The Overview map at a phone width: the map fits, pans and pinches.',
+  },
+  {
+    name: '36-phone-opening',
+    route: '',
+    ...PHONE,
+    caption:
+      'A phone opened without an address starts on the artifact catalog, under a one-row header.',
+  },
+  {
+    name: '37-phone-menu',
+    route: '#/artifacts/UC-EXPLORER-BROWSE',
+    ...PHONE,
+    caption:
+      'The phone menu: the views, the business lens and the appearance open beneath the header.',
+    prepare: `document.getElementById('menu-toggle').click()`,
+  },
+  {
+    name: '38-phone-card-folded',
+    route: '#/focus/UC-EXPLORER-BROWSE',
+    ...PHONE,
+    caption: 'On a phone the map summary folds to its title so it does not hide the map.',
+    prepare: `document.querySelector('#mcard .cardfold').click()`,
   },
   {
     name: '35-map-no-colour',

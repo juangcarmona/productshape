@@ -271,6 +271,7 @@ header.site .spacer { flex: 1; }
   padding: 0.25rem; cursor: pointer; color: var(--muted); display: inline-flex; align-items: center;
 }
 .iconbtn:hover { border-color: var(--line-strong); color: var(--ink); }
+.menubtn { display: none; }
 .tbtn {
   display: inline-flex; align-items: center; gap: 0.3rem; border: 1px solid var(--line-strong);
   background: var(--bg); color: var(--text); border-radius: 3px; padding: 0.15rem 0.5rem;
@@ -611,6 +612,12 @@ svg.edges path { fill: none; stroke: var(--kc, var(--edge)); stroke-width: 1.3; 
   background: var(--raise); border: 1px solid var(--line-strong); border-top: 3px solid var(--kc, var(--accent)); border-radius: 4px; box-shadow: var(--shadow);
 }
 .mcard[data-passive] { pointer-events: none; }
+.mcard .cardfold {
+  display: none; position: sticky; float: right; top: 0; margin: -0.2rem -2.6rem 0 0; width: 2.4rem; height: 2.4rem;
+  justify-content: center; align-items: center; background: var(--raise);
+}
+.mcard .cardfold .ic { transform: rotate(90deg); }
+.mcard[data-folded] .cardfold .ic { transform: rotate(-90deg); }
 @media (min-width: 56.3rem) {
   body[data-lens='business'] .mcard { left: auto; right: 1rem; top: 7.6rem; bottom: 1rem; width: min(26rem, 40vw); max-height: none; }
 }
@@ -697,22 +704,55 @@ dl.keys dd { margin: 0; }
   .detail dl.meta dd { margin-bottom: 0.35rem; }
   a.ref { max-width: 100%; flex-wrap: wrap; }
 }
-@media (max-width: 34rem) {
+/* A phone. The header keeps the title, search and one menu button; the views and display
+   options open beneath it on request. Text and controls grow to a size read and touched
+   comfortably; the maps keep their own pixel scale. */
+@media (max-width: 40rem) {
+  html { font-size: 17px; }
+  body { font-size: 15px; }
   header.site {
     display: grid; grid-template-columns: minmax(0, 1fr) auto auto;
-    height: auto; padding: 0.35rem 0.6rem 0; gap: 0.35rem 0.5rem;
+    height: auto; padding: 0.25rem 0.5rem; gap: 0 0.35rem;
   }
   header.site h1 {
-    min-width: 0; max-width: none; margin: 0; overflow: hidden; font-size: 0.78rem; text-overflow: ellipsis;
+    grid-column: 1; grid-row: 1; min-width: 0; max-width: none; margin: 0; overflow: hidden;
+    font-size: 1rem; text-overflow: ellipsis;
   }
-  header.site .spacer { display: none; }
-  header.site nav.views { grid-column: 1 / 3; grid-row: 2; min-height: 2.4rem; overflow-x: auto; }
-  header.site .findbtn { grid-column: 2; grid-row: 1; }
-  header.site .seg { grid-column: 3; grid-row: 1; }
-  header.site .lensbtn { grid-column: 3; grid-row: 2; }
-  #keys-open { display: none; }
+  header.site .spacer, header.site .revshort, #keys-open { display: none; }
+  header.site .findbtn, header.site .menubtn {
+    grid-row: 1; width: 2.6rem; height: 2.6rem; min-width: 0; padding: 0; justify-content: center;
+  }
+  header.site .findbtn { grid-column: 2; }
+  header.site .menubtn { grid-column: 3; display: inline-flex; border-color: var(--line-strong); }
+  header.site .findbtn .ic, header.site .menubtn .ic { width: 1.15rem; height: 1.15rem; }
+  header.site nav.views, header.site .lensbtn, header.site .seg { display: none; }
+  body[data-menu='open'] header.site nav.views {
+    display: flex; flex-direction: column; grid-column: 1 / -1; grid-row: 2;
+    margin-top: 0.25rem; padding-top: 0.25rem; border-top: 1px solid var(--line);
+  }
+  body[data-menu='open'] header.site nav.views a {
+    min-height: 2.6rem; padding: 0 0.6rem; font-size: 1rem;
+    border-bottom: 0; border-left: 3px solid transparent;
+  }
+  body[data-menu='open'] header.site nav.views a[aria-current='page'] { border-left-color: var(--accent); background: var(--accent-soft); }
+  body[data-menu='open'] header.site .lensbtn,
+  body[data-menu='open'] header.site .seg { display: inline-flex; grid-row: 3; margin: 0.35rem 0 0.3rem; }
+  body[data-menu='open'] header.site .lensbtn { grid-column: 1 / -1; justify-self: start; height: 2.6rem; font-size: 0.9rem; }
+  body[data-menu='open'] header.site .lensbtn .lbl { display: inline; }
+  body[data-menu='open'] header.site .seg { grid-column: 1 / -1; justify-self: end; }
+  header.site .seg button { min-width: 2.6rem; min-height: 2.6rem; justify-content: center; }
+  .tbtn { min-height: 2.4rem; padding: 0.2rem 0.65rem; font-size: 0.82rem; }
+  .bigfind, .ovhead .bigfind { height: 2.75rem; font-size: 0.95rem; }
+  .ovhead .bigfind kbd, .bigfind kbd { display: none; }
+  .tofacts { display: inline-block; padding: 0.4rem 0; }
   .maphint { display: none; }
-  .mcard { left: 0.5rem; right: 0.5rem; bottom: 0.5rem; width: auto; max-height: 45vh; }
+  .mapctl .tbtn { min-width: 2.6rem; }
+  .mcard { left: 0.5rem; right: 0.5rem; bottom: 0.5rem; width: auto; max-height: 40vh; padding: 0.55rem 0.8rem 0.65rem; }
+  #mcard { padding-right: 2.9rem; }
+  .mcard .cardfold { display: inline-flex; }
+  .mcard[data-folded] { max-height: none; }
+  .mcard[data-folded] > :not(.idline):not(.chead):not(.ctitle):not(.cardfold) { display: none; }
+  .mcard[data-folded] h3.ctitle { margin-bottom: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
@@ -794,6 +834,7 @@ const script = String.raw`
     link: '<path d="M6.7 9.3a2.9 2.9 0 0 0 4.1 0l2.3-2.3a2.9 2.9 0 0 0-4.1-4.1l-.9.9M9.3 6.7a2.9 2.9 0 0 0-4.1 0L2.9 9a2.9 2.9 0 0 0 4.1 4.1l.9-.9"/>',
     close: '<path d="M4 4l8 8M12 4l-8 8"/>',
     focus: '<circle cx="8" cy="8" r="2.2"/><path d="M8 1.5v2.6M8 11.9v2.6M1.5 8h2.6M11.9 8h2.6"/><circle cx="8" cy="8" r="5.2"/>',
+    menu: '<path d="M2.5 4.2h11M2.5 8h11M2.5 11.8h11"/>',
     lens: '<path d="M1.5 8s2.4-4.6 6.5-4.6S14.5 8 14.5 8s-2.4 4.6-6.5 4.6S1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2.1"/>',
   };
   var injectSprite = function () {
@@ -2211,7 +2252,24 @@ const script = String.raw`
     cardEl.setAttribute('data-key', key);
     cardEl.setAttribute('aria-label', (byId[id].title || id) + ' — summary');
     fillCard(cardEl, byId[id], !passive);
+    /* On a phone the card can be folded to its title, so it never hides the map it describes. */
+    var fold = el('button', 'iconbtn cardfold');
+    fold.type = 'button';
+    fold.appendChild(icon('chev'));
+    var syncFold = function () {
+      if (cardFolded) cardEl.setAttribute('data-folded', '');
+      else cardEl.removeAttribute('data-folded');
+      fold.setAttribute('aria-expanded', String(!cardFolded));
+      fold.setAttribute('aria-label', cardFolded ? 'Show the whole summary' : 'Fold the summary to its title');
+    };
+    fold.addEventListener('click', function () {
+      cardFolded = !cardFolded;
+      syncFold();
+    });
+    cardEl.insertBefore(fold, cardEl.firstChild);
+    syncFold();
   };
+  var cardFolded = false;
 
   /* --------------------------------------------------------------- lighting */
 
@@ -3590,8 +3648,57 @@ const script = String.raw`
     fromAddress();
   });
 
+  /* The phone menu: the views and display options open beneath the header on request and close
+     once the reader has chosen, on Escape, or on a tap elsewhere. */
+  var menuToggle = doc.getElementById('menu-toggle');
+  var setMenu = function (open) {
+    var views = doc.getElementById('site-views');
+    /* Closing hides the control that has focus; hand focus back to the menu button, not the body. */
+    if (!open && menuToggle && views && views.contains(doc.activeElement)) menuToggle.focus();
+    if (open) doc.body.setAttribute('data-menu', 'open');
+    else doc.body.removeAttribute('data-menu');
+    if (menuToggle) menuToggle.setAttribute('aria-expanded', String(open));
+  };
+  if (menuToggle) {
+    menuToggle.addEventListener('click', function () {
+      setMenu(doc.body.getAttribute('data-menu') !== 'open');
+    });
+    doc.addEventListener('click', function (ev) {
+      if (doc.body.getAttribute('data-menu') !== 'open') return;
+      var t = ev.target instanceof Element ? ev.target : null;
+      if (!t || t.closest('#menu-toggle')) return;
+      if (t.closest('nav.views a') || t.closest('#find-open') || !t.closest('header.site')) setMenu(false);
+    });
+    doc.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && doc.body.getAttribute('data-menu') === 'open') {
+        setMenu(false);
+        menuToggle.focus();
+      }
+    });
+    window.addEventListener('hashchange', function () {
+      setMenu(false);
+    });
+    var phoneQuery = typeof window.matchMedia === 'function' ? window.matchMedia('(max-width: 40rem)') : null;
+    if (phoneQuery && typeof phoneQuery.addEventListener === 'function') {
+      phoneQuery.addEventListener('change', function () {
+        setMenu(false);
+      });
+    }
+  }
+
   var noscript = doc.getElementById('needs-script');
   if (noscript && noscript.parentNode) noscript.parentNode.removeChild(noscript);
+
+  /* A phone opened without an address starts where it can be read: the artifact catalog. The
+     maps stay one tap away, and any address — including '#/' for the Overview — is honoured. */
+  var phone = typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 40rem)').matches;
+  if (phone && (location.hash === '' || location.hash === '#')) {
+    try {
+      history.replaceState(null, '', '#/artifacts');
+    } catch (err) {
+      /* Some browsers refuse history manipulation on file:// URLs; the Overview then opens. */
+    }
+  }
 
   fromAddress();
   var launch = new URLSearchParams(window.location.search);
@@ -3897,7 +4004,7 @@ export function buildExplorerHtml(
     '<header class="site">',
     `<h1 title="${escapeHtml(explorerTitle)}">${escapeHtml(explorerTitle)}</h1>`,
     revisionShort,
-    '<nav class="views" aria-label="Explorer views">',
+    '<nav class="views" id="site-views" aria-label="Explorer views">',
     '<a href="#/" data-view="overview" aria-current="page">Overview</a>',
     '<a href="#/focus" data-view="focus">Focus</a>',
     '<a href="#/columns" data-view="columns">Columns</a>',
@@ -3905,6 +4012,7 @@ export function buildExplorerHtml(
     '</nav>',
     '<span class="spacer"></span>',
     '<button type="button" class="findbtn" id="find-open" aria-haspopup="dialog" aria-keyshortcuts="/ Control+K" data-icon="search"><span class="lbl">Search the product</span><kbd>/</kbd></button>',
+    '<button type="button" class="iconbtn menubtn" id="menu-toggle" aria-expanded="false" aria-controls="site-views" aria-label="Views and display options" title="Views and display options" data-icon="menu"></button>',
     '<button type="button" class="lensbtn" id="lens-toggle" aria-pressed="false" aria-keyshortcuts="L" title="Business lens: read use cases in business language (l)" data-icon="lens"><span class="lbl">Business lens</span></button>',
     '<div class="seg" role="group" aria-label="Appearance">',
     '<button type="button" data-appearance-set="light" aria-pressed="false" aria-label="Light appearance" title="Light appearance" data-icon="sun"></button>',
