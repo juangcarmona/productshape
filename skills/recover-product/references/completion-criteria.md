@@ -36,7 +36,7 @@ The report is not the handover; you still present the result in the conversation
 Close the handover with the next moves, as offers the user decides on, never as actions you take:
 
 - A checkpoint commit of the recovery output before anything else, so a later apply is separately revertable. Under the brief's git discipline the branch already carries the checkpoints; the offer becomes opening the pull request.
-- A review preview: `prodshape snapshot`, pointing the reviewer at the low-confidence queue first.
+- A review preview: the Product Explorer (`prodshape graph --format html`), pointing the reviewer at the low-confidence queue first.
 - The exact lifecycle commands that follow, outside this skill's authority: human product approval on the change, `prodshape change apply CHG-INITIAL` on a working branch, and a pull-request merge as acceptance.
 - In an SDD workspace, the citation gap: after apply, every consumer document is unclassified until it declares scope and cites the new baseline (`prodshape citations verify --provider <name>` fails by design until then). Offer the consumer-binding work as the follow-up task, ideally shipped in the same pull request as the applied baseline.
 

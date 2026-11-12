@@ -9,7 +9,7 @@ const repoRoot = process.cwd();
 const validator = join(repoRoot, 'src/scripts/validate-public-site.mjs');
 const legacyBuilder = join(repoRoot, 'src/scripts/build-legacy-public-content.mjs');
 
-// The public build generates the example Product Snapshot with a ProductShape CLI. Tests name the
+// The public build generates the example Product Explorer with a ProductShape CLI. Tests name the
 // workspace CLI built by `pnpm build` instead of letting the builder rebuild it, which would
 // replace dist/ under other test files that read it concurrently.
 const cli = join(repoRoot, 'src/packages/cli/dist/bin.js');
@@ -26,10 +26,10 @@ async function build(args: string[], root = repoRoot, env: NodeJS.ProcessEnv = p
 const publicBuildInputs = [
   'src/scripts/build-public-site.mjs',
   'src/scripts/build-legacy-public-content.mjs',
-  'src/scripts/example-snapshot.mjs',
+  'src/scripts/example-explorer.mjs',
   'src/public-site',
   'docs/adoption',
-  'docs/assets/snapshot/01-overview-desktop.png',
+  'docs/assets/explorer/01-overview-desktop.png',
   'src/packages/cli/package.json',
   'examples/shop',
 ];
@@ -170,7 +170,7 @@ describe('static site publication profiles', () => {
       expect(index).toContain('href="/en/explore/"');
       expect(spanish).toContain('href="/en/explore/"');
       const example = await readFile(join(output, 'en/explore/index.html'), 'utf8');
-      expect(example).toContain('<title>Example shop’s Product Snapshot</title>');
+      expect(example).toContain('<title>Example shop’s Product Explorer</title>');
       expect(example).toContain('BR-REFUND-001');
       expect(example).toContain('href="https://productshape.dev/"');
       expect(example).not.toContain('ProductShape model, not a sales demo');
@@ -185,17 +185,17 @@ describe('static site publication profiles', () => {
   it('builds an independent engineering portal with identified optional reports', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'productshape-engineering-site-'));
     const output = join(directory, 'portal');
-    const snapshot = join(directory, 'snapshot.html');
+    const explorer = join(directory, 'explorer.html');
     const report = join(directory, 'journey.html');
     const manifest = join(directory, 'manifest.json');
     try {
-      await writeFile(snapshot, '<!doctype html><title>Snapshot fixture</title>');
+      await writeFile(explorer, '<!doctype html><title>Explorer fixture</title>');
       await writeFile(report, '<!doctype html><title>Journey fixture</title>');
       await writeFile(
         manifest,
         JSON.stringify({
-          schemaVersion: 2,
-          productSnapshot: { sourceRevision: 'prod1234' },
+          schemaVersion: 3,
+          productExplorer: { sourceRevision: 'prod1234' },
           architectureSnapshot: { sourceRevision: 'arch5678' },
           e2eReports: [
             {
@@ -217,8 +217,8 @@ describe('static site publication profiles', () => {
         '/productshape/',
         '--site-origin',
         'https://juangcarmona.github.io',
-        '--snapshot-source',
-        snapshot,
+        '--explorer-source',
+        explorer,
         '--engineering-manifest',
         manifest,
       ]);
@@ -226,7 +226,7 @@ describe('static site publication profiles', () => {
 
       const [
         portal,
-        productSnapshot,
+        productExplorer,
         sitemap,
         journey,
         architecturePage,
@@ -241,7 +241,7 @@ describe('static site publication profiles', () => {
         readFile(join(output, 'diagrams/mermaid/index.html'), 'utf8'),
         readFile(join(output, 'diagrams/archify/index.html'), 'utf8'),
       ]);
-      expect(productSnapshot).toContain('Snapshot fixture');
+      expect(productExplorer).toContain('Explorer fixture');
       expect(portal).toContain('abc1234');
       expect(portal).toContain('prod1234');
       expect(portal).toContain('arch5678');
@@ -257,7 +257,7 @@ describe('static site publication profiles', () => {
       for (const html of [portal, architecturePage]) {
         const document = new JSDOM(html).window.document;
         const navigation = document.querySelector('#primary-navigation');
-        expect(navigation?.textContent).toContain('Product Snapshot');
+        expect(navigation?.textContent).toContain('Product Explorer');
         expect(navigation?.textContent).toContain('Architecture Snapshot');
         expect(navigation?.textContent).toContain('Public site');
         expect(navigation?.textContent).not.toContain('Get started');
@@ -266,7 +266,7 @@ describe('static site publication profiles', () => {
           'primary-navigation',
         );
       }
-      expect(productSnapshot).toBe(await readFile(snapshot, 'utf8'));
+      expect(productExplorer).toBe(await readFile(explorer, 'utf8'));
       expect(journey).toContain('Journey fixture');
       expect(sitemap).toContain(
         'https://juangcarmona.github.io/productshape/en/model/explorer.html',
@@ -282,13 +282,13 @@ describe('static site publication profiles', () => {
     const directory = await mkdtemp(join(tmpdir(), 'productshape-invalid-manifest-'));
     try {
       const manifest = join(directory, 'manifest.json');
-      const snapshot = join(directory, 'snapshot.html');
-      await writeFile(snapshot, '<!doctype html><title>Snapshot fixture</title>');
+      const explorer = join(directory, 'explorer.html');
+      await writeFile(explorer, '<!doctype html><title>Explorer fixture</title>');
       await writeFile(
         manifest,
         JSON.stringify({
-          schemaVersion: 2,
-          productSnapshot: { sourceRevision: 'abc1234' },
+          schemaVersion: 3,
+          productExplorer: { sourceRevision: 'abc1234' },
           architectureSnapshot: { sourceRevision: 'abc1234' },
           e2eReports: [
             {
@@ -308,8 +308,8 @@ describe('static site publication profiles', () => {
         join(directory, 'portal'),
         '--engineering-manifest',
         manifest,
-        '--snapshot-source',
-        snapshot,
+        '--explorer-source',
+        explorer,
       ]);
       expect(result.status).not.toBe(0);
       expect(result.stderr).toContain('Invalid E2E report entry');
@@ -321,16 +321,16 @@ describe('static site publication profiles', () => {
   it('builds without an optional engineering manifest or E2E reports', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'productshape-no-engineering-manifest-'));
     try {
-      const snapshot = join(directory, 'snapshot.html');
+      const explorer = join(directory, 'explorer.html');
       const output = join(directory, 'portal');
-      await writeFile(snapshot, '<!doctype html><title>Snapshot fixture</title>');
+      await writeFile(explorer, '<!doctype html><title>Explorer fixture</title>');
       const result = await build([
         '--profile',
         'engineering',
         '--out',
         output,
-        '--snapshot-source',
-        snapshot,
+        '--explorer-source',
+        explorer,
         '--engineering-manifest',
         join(directory, 'missing-manifest.json'),
       ]);
@@ -346,8 +346,8 @@ describe('static site publication profiles', () => {
   it.each(['/', '/review/'])('validates both complete profiles at base %s', async (basePath) => {
     const directory = await mkdtemp(join(tmpdir(), 'productshape-profile-validation-'));
     try {
-      const snapshot = join(directory, 'snapshot.html');
-      await writeFile(snapshot, '<!doctype html><title>Standalone snapshot</title>');
+      const explorer = join(directory, 'explorer.html');
+      await writeFile(explorer, '<!doctype html><title>Standalone explorer</title>');
       for (const profile of ['public', 'engineering']) {
         const output = join(directory, profile);
         const origin =
@@ -361,8 +361,8 @@ describe('static site publication profiles', () => {
           basePath,
           '--site-origin',
           origin,
-          '--snapshot-source',
-          snapshot,
+          '--explorer-source',
+          explorer,
         ];
         const result = await build(args, repoRoot, { ...process.env, GITHUB_SHA: 'a'.repeat(40) });
         expect(result.status, result.stderr).toBe(0);
@@ -388,7 +388,7 @@ describe('static site publication profiles', () => {
         expect(typeof metadata.dirty).toBe('boolean');
         if (profile === 'engineering') {
           expect(await readFile(join(output, 'en/model/explorer.html'), 'utf8')).toBe(
-            await readFile(snapshot, 'utf8'),
+            await readFile(explorer, 'utf8'),
           );
           const architecture = new JSDOM(
             await readFile(join(output, 'en/engineering/index.html'), 'utf8'),
@@ -426,7 +426,7 @@ describe('static site publication profiles', () => {
       ).rejects.toThrow();
       await expect(readFile(join(directory, 'docs/product/model/index.md'))).rejects.toThrow();
       expect(await readFile(join(output, 'en/explore/index.html'), 'utf8')).toContain(
-        'Example shop’s Product Snapshot',
+        'Example shop’s Product Explorer',
       );
       const metadata = JSON.parse(await readFile(join(output, 'publication.json'), 'utf8'));
       expect(metadata.sourceRevision).toBeNull();

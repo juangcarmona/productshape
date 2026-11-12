@@ -30,7 +30,7 @@ The graph compiler SHALL build nodes (id, type, title, status, path, content dig
 
 `product-definition graph` SHALL write `product-graph.json` (carrying a versioned schema identifier), `product-index.json`, `traceability.json` and `product-graph.mmd` under the configured generated root, and these files SHALL be reproducible and never required as input.
 
-{pdac:cite id="BR-CANONICAL" digest="sha256:efd03de6c8d94b59bf2843d3ce20cde9446c36050b7d34cc16b42ce548ed8084"}
+{pdac:cite id="BR-CANONICAL" digest="sha256:421247e93cb714cad638c5b902a5e33491432afe842739db1de3950d2ba5617f"}
 
 #### Scenario: Rebuild after deletion
 

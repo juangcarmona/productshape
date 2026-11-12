@@ -9,16 +9,16 @@ const expectedIds: Record<string, string[]> = {
     'ACT-PRODUCT-ENGINEER',
     'ACT-REPOSITORY-MAINTAINER',
     'ACT-AI-ASSISTANT',
-    // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
-    'ACT-PRODUCT-EXPLORER',
+    // Added by CHG-SNAPSHOT-001; renamed by CHG-PRODUCT-EXPLORER.
+    'ACT-PRODUCT-STAKEHOLDER',
     // Added by CHG-ARC42-SNAPSHOT-001 (publication surfaces).
     'ACT-ENGINEERING-READER',
     'ACT-PUBLIC-READER',
   ],
   journey: [
     'JRN-ADOPT',
-    // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
-    'JRN-SNAPSHOT',
+    // Added by CHG-SNAPSHOT-001; renamed by CHG-PRODUCT-EXPLORER.
+    'JRN-EXPLORER',
   ],
   'use-case': [
     'UC-INIT',
@@ -36,11 +36,11 @@ const expectedIds: Record<string, string[]> = {
     'UC-FIX',
     // Added by CHG-ID-NOSUFFIX (ID-suffix migration).
     'UC-ID-MIGRATE',
-    // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
-    'UC-SNAPSHOT',
+    // Added by CHG-SNAPSHOT-001; renamed by CHG-PRODUCT-EXPLORER.
+    'UC-EXPLORER-GENERATE',
     // Added by CHG-SPECKIT-001 (Spec Kit bridge and cited context projection).
     'UC-CONTEXT',
-    'UC-SNAPSHOT-EXPLORE',
+    'UC-EXPLORER-BROWSE',
     // Added by CHG-EXPLORE-001 (ps:explore thinking partner).
     'UC-EXPLORE',
     // Added by CHG-RECOVERY-SESSIONS (deterministic brownfield recovery).
@@ -70,12 +70,11 @@ const expectedIds: Record<string, string[]> = {
     // Added by CHG-BRAND-001 (ProductShape brand adoption).
     'TERM-METHODOLOGY',
     'TERM-REFERENCE-IMPLEMENTATION',
-    // Added by CHG-SNAPSHOT-002 (progressive-disclosure Product Snapshot Explorer).
+    // Added by CHG-SNAPSHOT-002; renamed by CHG-PRODUCT-EXPLORER.
     'TERM-GRAPH-PROJECTION',
     'TERM-PRODUCT-EXPLORER',
     'TERM-FOCUSED-TOPOLOGY',
-    // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
-    'TERM-PRODUCT-SNAPSHOT',
+    // Added by CHG-SNAPSHOT-001; renamed by CHG-PRODUCT-EXPLORER.
     // Added by CHG-ARC42-SNAPSHOT-001 (publication surfaces).
     'TERM-ARCHITECTURE-SNAPSHOT',
   ],
@@ -114,19 +113,19 @@ const expectedIds: Record<string, string[]> = {
     'FR-ID-MIGRATION',
     // Added by CHG-MODEL-TRUEUP-001 (baseline corrected against shipped behaviour).
     'FR-DOCTOR',
-    // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
-    'FR-SNAPSHOT-PAGE',
-    'FR-SNAPSHOT-READER',
+    // Added by CHG-SNAPSHOT-001; renamed by CHG-PRODUCT-EXPLORER.
+    'FR-EXPLORER-PAGE',
+    'FR-EXPLORER-READER',
     // Added by CHG-EXPLORE-001 (ps:explore thinking partner).
     'FR-EXPLORE',
-    // Added by CHG-SNAPSHOT-002 (progressive-disclosure Product Snapshot Explorer).
-    'FR-SNAPSHOT-ORIENTATION',
-    'FR-SNAPSHOT-SEARCH',
-    'FR-SNAPSHOT-PROJECTIONS',
-    'FR-SNAPSHOT-ADDRESSING',
-    'FR-SNAPSHOT-CATALOG',
-    'FR-SNAPSHOT-TOPOLOGY',
-    'FR-SNAPSHOT-BUSINESS-LENS',
+    // Added by CHG-SNAPSHOT-002; renamed by CHG-PRODUCT-EXPLORER.
+    'FR-EXPLORER-ORIENTATION',
+    'FR-EXPLORER-SEARCH',
+    'FR-EXPLORER-PROJECTIONS',
+    'FR-EXPLORER-ADDRESSING',
+    'FR-EXPLORER-CATALOG',
+    'FR-EXPLORER-TOPOLOGY',
+    'FR-EXPLORER-BUSINESS-LENS',
     // Added by CHG-RECOVERY-SESSIONS (deterministic brownfield recovery).
     'FR-RECOVER',
     // Added by CHG-RELEASE-CONTRACT-001 (executable release contract).
@@ -140,7 +139,7 @@ const expectedIds: Record<string, string[]> = {
     'QR-DETERMINISM',
     'QR-EXPLAINABILITY',
     'QR-EXTENSIBILITY',
-    // Added by CHG-SNAPSHOT-002 (progressive-disclosure Product Snapshot Explorer).
+    // Added by CHG-SNAPSHOT-002; renamed by CHG-PRODUCT-EXPLORER.
     'QR-ACCESSIBILITY',
     'QR-PRESENTATION',
     'QR-SCALABILITY',

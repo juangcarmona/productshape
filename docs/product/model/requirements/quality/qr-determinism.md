@@ -8,7 +8,7 @@ applies-to:
   - UC-VALIDATE
   - UC-IMPACT
   - UC-CITATIONS-VERIFY
-  - UC-SNAPSHOT
+  - UC-EXPLORER-GENERATE
 verification:
   - scenario: Repeated runs over identical content produce byte-identical generated outputs
   - scenario: Diagnostics appear in the same order on every run and platform
@@ -17,7 +17,7 @@ verification:
 
 ## Requirement
 
-The product MUST produce identical results whenever the product content is identical. Generated outputs MUST be byte-identical across runs and across platforms — including the generated Product Snapshot — diagnostics MUST appear in a deterministic order (by file, then line and entry with absent before present and numeric comparison, then code, field, target, artifact and change), and impact analysis, product diffs and citation verification MUST return the same answers for the same content. Results MUST be independent of the checkout's line endings, path separators, file discovery order and any other environmental accident.
+The product MUST produce identical results whenever the product content is identical. Generated outputs MUST be byte-identical across runs and across platforms — including the generated Product Explorer — diagnostics MUST appear in a deterministic order (by file, then line and entry with absent before present and numeric comparison, then code, field, target, artifact and change), and impact analysis, product diffs and citation verification MUST return the same answers for the same content. Results MUST be independent of the checkout's line endings, path separators, file discovery order and any other environmental accident.
 
 ## Measurement
 
@@ -25,4 +25,4 @@ Conformance is measured by repeated-run comparison: each operation is executed m
 
 ## Verification
 
-Automated determinism tests run validation, impact analysis, change apply dry runs, citation verification and snapshot generation twice in one session and once per supported platform over committed fixtures, asserting equality of outputs against each other and against committed golden files. A dedicated fixture is checked out with CRLF endings to prove digest and output stability. These tests are part of the release gate, so no version ships with a nondeterministic operation.
+Automated determinism tests run validation, impact analysis, change apply dry runs, citation verification and Product Explorer generation twice in one session and once per supported platform over committed fixtures, asserting equality of outputs against each other and against committed golden files. A dedicated fixture is checked out with CRLF endings to prove digest and output stability. These tests are part of the release gate, so no version ships with a nondeterministic operation.

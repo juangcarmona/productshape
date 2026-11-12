@@ -40,4 +40,4 @@ The CLI resolves the working repository, delegates model behavior to `core`, and
 
 ### Whitebox: Publication assembly
 
-The public profile builds the localized product pages, adoption guides and standalone diagrams for `productshape.dev`. The engineering profile copies the CLI-generated Product Snapshot and renders the twelve canonical arc42 Markdown sections for GitHub Pages. Neither output includes the other's primary content routes.
+The public profile builds the localized product pages, adoption guides and standalone diagrams for `productshape.dev`. The engineering profile copies the CLI-generated Product Explorer and renders the twelve canonical arc42 Markdown sections for GitHub Pages. Neither output includes the other's primary content routes.

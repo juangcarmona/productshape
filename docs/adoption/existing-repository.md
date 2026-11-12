@@ -120,6 +120,10 @@ An invalid configuration (malformed YAML, a missing or unsupported `version`, an
 
 From 0.24 an artifact ID is `PREFIX-NAME` (`UC-IMPACT`), not `UC-IMPACT-001`; a number appears only to break a tie. Nothing is forced: IDs with a numeric suffix stay valid, and `prodshape doctor` reports them as informational. To migrate, run `prodshape integration update` (it prints the plan and, in a terminal, asks) or `prodshape fix --id-suffixes`. Use `--dry-run` to see the plan only (exit code 1 while a migration is pending) and `--apply-id-migration` to consent in a script. The migration renames files, updates relationships, citations, sidecars and live Product Changes together, leaves IDs that would collide as they are, and rolls back if validation would get worse. Completed Product Changes are not rewritten. The same `integration update` also refreshes the templates under `.product/templates/` that you never edited, so new artifacts start without a numeric suffix; edited templates are kept and listed, and `--force` replaces them. If an AI assistant drives your upgrade, the `audit-product-model` skill makes it show the plan and ask you first.
 
+## Upgrading: the Product Snapshot is now the Product Explorer
+
+The page `prodshape graph --format html` generates is called the Product Explorer, and it is written to `.product/generated/explorer.html` instead of `snapshot.html`. The command does not change. Run it once after upgrading: it writes the new file and removes the old one, and `prodshape doctor` reports a `snapshot.html` that is still there. Then update whatever publishes or links the page (a CI step that uploads `snapshot.html`, a hosting path, a README link) to the new file name.
+
 ## Choose what to commit
 
 Only two things under `.product/` are regenerable. Everything else in it is how each clone verifies the installation, so it belongs in version control:

@@ -8,7 +8,7 @@ description: Fundamental approaches that shape the architecture and realize its 
 
 | Driver | Strategy | Detailed view or ADR |
 | --- | --- | --- |
-| Product knowledge must remain reviewable | Markdown and YAML are canonical; generated graphs and snapshots are disposable | [ADR 0001](decisions/0001-markdown-is-canonical.md), [ADR 0002](decisions/0002-the-graph-is-derived.md) |
+| Product knowledge must remain reviewable | Markdown and YAML are canonical; generated graphs and Product Explorer pages are disposable | [ADR 0001](decisions/0001-markdown-is-canonical.md), [ADR 0002](decisions/0002-the-graph-is-derived.md) |
 | Artifacts must remain linkable as files move | Stable identifiers own identity; paths are repository-relative locations | [ADR 0003](decisions/0003-stable-identifiers-over-paths.md) |
 | Proposed product evolution must be inspectable before acceptance | Current model and Product Changes are separate; apply materializes a reviewed proposal on a branch | [ADR 0004](decisions/0004-current-model-and-changes-are-separated.md) |
 | Product Definition must work across delivery methods | SDD integrations consume a common product-definition interface rather than defining product semantics | [ADR 0005](decisions/0005-product-definition-is-sdd-agnostic.md), [ADR 0006](decisions/0006-product-handoff-is-the-integration-contract.md) |

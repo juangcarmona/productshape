@@ -321,8 +321,12 @@ export function buildProgram(io: CliIo, capture: { code: number }): Command {
   program
     .command('graph')
     .description('Compile the product graph and write generated outputs')
-    .option('--format <format>', 'output format: summary, json, mermaid or html', 'summary')
-    .option('--product-name <name>', 'name shown in the generated Product Snapshot title')
+    .option(
+      '--format <format>',
+      'output format: summary, json, mermaid or html (the Product Explorer page)',
+      'summary',
+    )
+    .option('--product-name <name>', 'name shown in the generated Product Explorer title')
     .option('--product-url <url>', 'destination for the ProductShape attribution link')
     .action(
       async (options: {

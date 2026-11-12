@@ -1,3 +1,5 @@
+import { access } from 'node:fs/promises';
+import { join } from 'node:path';
 import { blockingDiagnostics, countSuffixedIds, validateBaseline } from '@prodshape/core';
 import { runDoctor } from '@prodshape/distribution';
 import {
@@ -11,6 +13,7 @@ import {
   isSpecKitWorkspace,
 } from '@prodshape/integration-speckit';
 import { exitCodes, formatDiagnosticLine, resolveRepository, type CliIo } from '../context.js';
+import { explorerFile, legacyExplorerFile } from './graph.js';
 
 export async function runDoctorCommand(io: CliIo): Promise<number> {
   const repo = await resolveRepository(io);
@@ -76,6 +79,17 @@ export async function runDoctorCommand(io: CliIo): Promise<number> {
     io.out(
       `ok   id suffixes: ${suffixed} artifact ID(s) end in a numeric suffix, which the ID convention no longer uses (informational; plan: prodshape fix --id-suffixes --dry-run)`,
     );
+  }
+
+  // Informational only: an earlier release wrote the Product Explorer as snapshot.html. The next
+  // `graph --format html` removes it; anything outside the repository that reads it must move.
+  try {
+    await access(join(repo.generatedDir, legacyExplorerFile));
+    io.out(
+      `ok   product explorer: ${repo.config.prodshape.generated.root}/${legacyExplorerFile} is the Product Explorer's former name (informational; run prodshape graph --format html to write ${explorerFile}, and point pipelines that publish it at the new file)`,
+    );
+  } catch {
+    // Absent: nothing to report.
   }
 
   io.out(failed === 0 ? 'All checks passed.' : `${failed} check(s) failed.`);

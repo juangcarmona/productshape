@@ -2,7 +2,7 @@
 
 A small online shop described as a product model: 39 artifacts covering catalogue, cart, checkout, payment, order tracking, cancellation and refunds. It is the model behind the refund-window demo on [pdac.dev](https://pdac.dev/) (`BR-REFUND-001`, a 30-day refund window).
 
-The public site generates its example Product Snapshot from this directory on every build and serves it at `/en/explore/`.
+The public site generates its example Product Explorer from this directory on every build and serves it at `/en/explore/`.
 
 Layout mirrors a consumer repository: the model is under `docs/product/model/`, and `openspec/`, `.agents/`, `src/` and `tests/e2e/` hold consumer documents that cite the refund rule and its behaviours. The C# and Gherkin files are illustrations for the citations; there is no application to build or run.
 

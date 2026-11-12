@@ -8,6 +8,25 @@ The supported published CLI baseline is `@prodshape/cli@0.24.0`. Every stable pu
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING: the Product Snapshot is now the Product Explorer.** The generated page and the experience of opening it have one name, from the model to the file name. Product Change `CHG-PRODUCT-EXPLORER` retires the snapshot-named artifacts and replaces them with Explorer-named ones carrying the same requirements (`FR-SNAPSHOT-*` became `FR-EXPLORER-*`, `JRN-SNAPSHOT` became `JRN-EXPLORER`, `UC-SNAPSHOT` became `UC-EXPLORER-GENERATE`, `UC-SNAPSHOT-EXPLORE` became `UC-EXPLORER-BROWSE`), folds `TERM-PRODUCT-SNAPSHOT` into `TERM-PRODUCT-EXPLORER`, and renames the reader actor to the Product Stakeholder (`ACT-PRODUCT-STAKEHOLDER`, replacing `ACT-PRODUCT-EXPLORER`). The retired IDs are not reused. The Architecture Snapshot is a different output and keeps its name.
+- `prodshape graph --format html` writes `.product/generated/explorer.html` (was `snapshot.html`) and removes the old file; `prodshape doctor` reports a leftover `snapshot.html`. `@prodshape/core` exports `buildExplorerHtml` and `ExplorerOptions` (were `buildSnapshotHtml` and `SnapshotOptions`).
+- ProductShape's own publication follows: the engineering workflow is `.github/workflows/engineering-portal.yml` (was `snapshot.yml`), the engineering manifest is schema version 3 with `productExplorer` (was `productSnapshot`), the public-site builder takes `--explorer-source`, and the scripts are `pnpm measure:explorer` and `pnpm shots:explorer`.
+
+### Migration
+
+**What changed.** The name of the generated page and of the file it is written to. The command is the same.
+
+**How to upgrade.**
+
+```bash
+prodshape graph --format html   # writes .product/generated/explorer.html and removes snapshot.html
+prodshape doctor                # reports a snapshot.html that is still there
+```
+
+Then point every pipeline, script, hosting step or link that reads `.product/generated/snapshot.html` at `.product/generated/explorer.html`. Code that calls `@prodshape/core` directly renames `buildSnapshotHtml` to `buildExplorerHtml` and `SnapshotOptions` to `ExplorerOptions`. Links into an earlier page (`#/artifacts/ID`, `#/focus/ID`, bare `#ID`) keep working in the new one. Completed Product Changes and archived specs keep the name they were written with.
+
 ## [0.24.0]
 
 ### Changed

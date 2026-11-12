@@ -1,0 +1,209 @@
+{
+  "browser": "chrome-nosandbox",
+  "shots": [
+    {
+      "name": "01-overview-desktop",
+      "route": "#/",
+      "viewport": "1440x900",
+      "caption": "Opening view: identity, totals and the Overview map with every artifact as a chip by kind and context — no artifact body."
+    },
+    {
+      "name": "02-artifact-detail-desktop",
+      "route": "#/artifacts/UC-EXPLORER-BROWSE",
+      "viewport": "1440x900",
+      "caption": "One active artifact: grouped list with the selection’s kind open, linked metadata, and the Focus action."
+    },
+    {
+      "name": "03-relationship-groups-collapsed",
+      "route": "#/artifacts/BC-PRODUCT-DEFINITION",
+      "viewport": "1440x2400",
+      "caption": "The most connected artifact: groups derive exact counts and the large ones start collapsed."
+    },
+    {
+      "name": "04-relationship-groups-expanded",
+      "route": "#/artifacts/BC-PRODUCT-DEFINITION",
+      "viewport": "1440x2400",
+      "caption": "The same artifact with every group expanded: exactly the counted members appear."
+    },
+    {
+      "name": "05-artifact-detail-narrow",
+      "route": "#/artifacts/UC-EXPLORER-BROWSE",
+      "viewport": "430x900",
+      "caption": "Narrow viewport: the detail is its own state, reached from the list."
+    },
+    {
+      "name": "06-artifact-list-narrow",
+      "route": "#/artifacts?k=use-case",
+      "viewport": "430x900",
+      "caption": "Narrow viewport: the list is its own state, not a compressed desktop layout."
+    },
+    {
+      "name": "07-long-title-and-body",
+      "route": "#/artifacts/CON-SDD-AGNOSTIC",
+      "viewport": "430x900",
+      "caption": "Long title and body wrap within their container; the page does not scroll sideways."
+    },
+    {
+      "name": "08-unknown-identifier",
+      "route": "#/artifacts/UC-DOES-NOT-EXIST",
+      "viewport": "1440x900",
+      "caption": "An identifier this Product Explorer does not contain is named, with a way onward."
+    },
+    {
+      "name": "10-focus-visible",
+      "route": "#/artifacts/UC-EXPLORER-BROWSE",
+      "viewport": "1440x900",
+      "caption": "Keyboard focus is visible: the focus ring on the selected list entry."
+    },
+    {
+      "name": "11-no-colour",
+      "route": "#/artifacts/BC-PRODUCT-DEFINITION",
+      "viewport": "1440x900",
+      "caption": "Rendered without colour: kind, status, selection and relationship direction remain determinable."
+    },
+    {
+      "name": "12-search-ranked",
+      "route": "#/artifacts?q=product",
+      "viewport": "1440x900",
+      "caption": "Ranked search for \"product\" in the search dialog: the derived total and display limit are visible, identifier and title matches above body-only ones."
+    },
+    {
+      "name": "13-search-snippet",
+      "route": "#/artifacts?q=byte-identical",
+      "viewport": "1440x900",
+      "caption": "A body match shows a snippet of the matching content, inserted as text."
+    },
+    {
+      "name": "14-search-keyboard-active",
+      "route": "#/artifacts?q=explorer",
+      "viewport": "1440x900",
+      "caption": "Arrow keys move an active result, reported with aria-activedescendant; Enter follows it."
+    },
+    {
+      "name": "15-search-no-results",
+      "route": "#/artifacts?q=nothing%20matches%20this",
+      "viewport": "1440x900",
+      "caption": "A query matching nothing says so, and repeats the query it searched for."
+    },
+    {
+      "name": "16-search-narrow",
+      "route": "#/artifacts?q=handoff",
+      "viewport": "430x900",
+      "caption": "The search dialog on a narrow viewport."
+    },
+    {
+      "name": "17-focus-typical",
+      "route": "#/focus/UC-EXPLORER-BROWSE",
+      "viewport": "1440x900",
+      "caption": "The Focus view on a use case: its neighbours grouped by kind, earlier kinds on the left and later ones on the right, the rest of the model faded behind."
+    },
+    {
+      "name": "18-focus-hardest",
+      "route": "#/focus/BC-PRODUCT-DEFINITION",
+      "viewport": "1440x900",
+      "caption": "The most connected artifact: dense kind groups start collapsed with their complete counts."
+    },
+    {
+      "name": "19-focus-expanded",
+      "route": "#/focus/BC-PRODUCT-DEFINITION?x=use-case",
+      "viewport": "1440x900",
+      "caption": "The same focus with one dense group expanded; the disclosure is in the address."
+    },
+    {
+      "name": "20-focus-hover",
+      "route": "#/focus/UC-EXPLORER-BROWSE",
+      "viewport": "1440x900",
+      "caption": "Hovering a neighbour lights it, the focus and the line between them."
+    },
+    {
+      "name": "21-overview-dark",
+      "route": "#/?a=dark",
+      "viewport": "1440x900",
+      "caption": "The Overview in the dark appearance, chosen in the address: every colour from its own token set."
+    },
+    {
+      "name": "22-artifact-dark",
+      "route": "#/artifacts/UC-EXPLORER-BROWSE?a=dark",
+      "viewport": "1440x900",
+      "caption": "The Reader in the dark appearance."
+    },
+    {
+      "name": "23-master-rail",
+      "route": "#/artifacts/FR-EXPLORER-READER?m=rail",
+      "viewport": "1440x900",
+      "caption": "The master area collapsed to its kind rail: the selected kind stays marked while the Reader takes the room."
+    },
+    {
+      "name": "24-search-narrowed",
+      "route": "#/artifacts/UC-EXPLORER-BROWSE?k=functional-requirement&q=search",
+      "viewport": "1440x900",
+      "caption": "Search narrowed to one kind where the query is typed; the same narrowing is named beside the list."
+    },
+    {
+      "name": "25-shortcuts",
+      "route": "#/artifacts/UC-EXPLORER-BROWSE",
+      "viewport": "1440x900",
+      "caption": "Every shortcut is stated on the page, and each has a visible control."
+    },
+    {
+      "name": "26-overview-hover-light",
+      "route": "#/",
+      "viewport": "1440x900",
+      "caption": "The Overview map, light: every artifact as a chip by kind and context; hovering a use case lights its neighbours and lines in neon."
+    },
+    {
+      "name": "27-overview-hover-dark",
+      "route": "#/?a=dark",
+      "viewport": "1440x900",
+      "caption": "The same hover in the dark appearance."
+    },
+    {
+      "name": "28-focus-dark",
+      "route": "#/focus/UC-EXPLORER-BROWSE?a=dark",
+      "viewport": "1440x900",
+      "caption": "The Focus view in the dark appearance."
+    },
+    {
+      "name": "29-columns-light",
+      "route": "#/columns/UC-EXPLORER-BROWSE",
+      "viewport": "1440x900",
+      "caption": "The Columns view, light: one column per kind in the stated order, a selected use case and its neighbourhood lit."
+    },
+    {
+      "name": "30-columns-dark",
+      "route": "#/columns/UC-EXPLORER-BROWSE?a=dark",
+      "viewport": "1440x900",
+      "caption": "The Columns view in the dark appearance."
+    },
+    {
+      "name": "31-lens-focus-light",
+      "route": "#/focus/UC-EXPLORER-BROWSE?l=b",
+      "viewport": "1440x900",
+      "caption": "The business lens on a use case: goal, trigger, users, the rules it must obey, how they are proved, and what a change would put in question, with no identifiers."
+    },
+    {
+      "name": "32-lens-focus-dark",
+      "route": "#/focus/UC-CHANGE?a=dark&l=b",
+      "viewport": "1440x900",
+      "caption": "The business lens in the dark appearance, on another use case."
+    },
+    {
+      "name": "33-lens-reader",
+      "route": "#/artifacts/UC-EXPLORER-BROWSE?l=b",
+      "viewport": "1440x900",
+      "caption": "The business card joins the Reader when the lens is on."
+    },
+    {
+      "name": "34-overview-narrow",
+      "route": "#/",
+      "viewport": "430x900",
+      "caption": "The Overview map at a phone width: the map fits, pans and pinches."
+    },
+    {
+      "name": "35-map-no-colour",
+      "route": "#/columns/BR-CANONICAL",
+      "viewport": "1440x900",
+      "caption": "Without colour: kind by column heading and icon, the selection by outline, the lit neighbourhood by border weight and dimming."
+    }
+  ]
+}

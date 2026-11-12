@@ -10,7 +10,7 @@ description: Shared architectural mechanisms applied across multiple building bl
 
 ### Scope
 
-Applies to the product model, compiled graph, generated indexes, citations, snapshots, and managed provider assets.
+Applies to the product model, compiled graph, generated indexes, citations, Product Explorer pages, and managed provider assets.
 
 ### Mechanism
 

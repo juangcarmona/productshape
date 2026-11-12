@@ -14,7 +14,7 @@ The specification SHALL define, using RFC-style normative language (MUST, MUST N
 
 {pdac:cite id="TERM-METHODOLOGY" digest="sha256:9b07509aa4d8df05755689697d21d69e96a269b5e941b9a04c63fe419ac5c55a"}
 
-{pdac:cite id="TERM-PRODUCT-ARTIFACT" digest="sha256:dfd8386de66abfef0e0384b8a81ef8bb1fb0b0756133e5cc588d382c8b179a46"}
+{pdac:cite id="TERM-PRODUCT-ARTIFACT" digest="sha256:d72e073818c96d6fe8278a94556e6769f38456429643b672cbbcb94dc76435be"}
 
 #### Scenario: Looking up an artifact contract
 
@@ -47,7 +47,7 @@ The specification SHALL define the canonical relationship fields per source arti
 
 The specification SHALL distinguish accepted current semantics (`docs/product/model/**/*.md` on the canonical branch) from a Product Change overlay and from generated non-canonical outputs (graph files, indexes, diagrams, traceability reports). `docs/product/model/index.md` SHALL be defined as a human navigation document that never duplicates relationships. Apply MAY write the approved proposal into `docs/product/model` on a working branch, but only a human merge of the reviewed result changes the accepted baseline.
 
-{pdac:cite id="BR-CANONICAL" digest="sha256:efd03de6c8d94b59bf2843d3ce20cde9446c36050b7d34cc16b42ce548ed8084"}
+{pdac:cite id="BR-CANONICAL" digest="sha256:421247e93cb714cad638c5b902a5e33491432afe842739db1de3950d2ba5617f"}
 
 {pdac:cite id="TERM-CURRENT-PRODUCT-MODEL" digest="sha256:0699a1113e526f3a566b52b3f409e68933cfc23a5ac64387bc4b4a72c6211175"}
 

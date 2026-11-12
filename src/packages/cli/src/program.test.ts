@@ -281,15 +281,15 @@ describe('prodshape graph / inspect / impact', () => {
     expect(result.out.join('\n')).toMatch(/^flowchart LR/);
   });
 
-  it('graph --format html writes one self-contained snapshot and reports its path', async () => {
+  it('graph --format html writes one self-contained Product Explorer and reports its path', async () => {
     const result = await run(['graph', '--format', 'html'], workDir);
     expect(result.code).toBe(0);
-    expect(result.out.at(-1)).toMatch(/snapshot\.html$/);
-    const snapshotPath = join(workDir, '.product', 'generated', 'snapshot.html');
-    const html = await readFile(snapshotPath, 'utf8');
+    expect(result.out.at(-1)).toMatch(/^Product Explorer written to .*explorer\.html$/);
+    const explorerPath = join(workDir, '.product', 'generated', 'explorer.html');
+    const html = await readFile(explorerPath, 'utf8');
     // Every artifact of the model is contained in the file (the graph summary reports 9 nodes),
     // carried as inert data rather than rendered into the opening document.
-    const open = '<script id="snapshot-data" type="application/json">';
+    const open = '<script id="explorer-data" type="application/json">';
     const dataStart = html.indexOf(open) + open.length;
     const data = JSON.parse(
       html.slice(dataStart, html.indexOf('</script>', dataStart)).replaceAll('\\u003c', '<'),
@@ -298,7 +298,7 @@ describe('prodshape graph / inspect / impact', () => {
     expect(html).toMatch(/revision (unavailable|[0-9a-f]{40})/);
     // The opening document orients without exposing the whole product model: no artifact body, no graph.
     const opening = html.slice(html.indexOf('<body'), html.indexOf('<script id='));
-    expect(opening).toContain('Product Snapshot');
+    expect(opening).toContain('Product Explorer');
     expect(opening).toContain('Relationships by kind');
     expect(opening).not.toContain('<circle');
     expect(opening).not.toContain('<svg');
@@ -313,13 +313,28 @@ describe('prodshape graph / inspect / impact', () => {
     for (const map of ['overview', 'focus', 'columns']) expect(html).toContain(`id="map-${map}"`);
   });
 
+  it('graph --format html removes the snapshot.html an earlier release wrote', async () => {
+    const legacy = join(workDir, '.product', 'generated', 'snapshot.html');
+    await mkdir(join(workDir, '.product', 'generated'), { recursive: true });
+    await writeFile(legacy, '<!doctype html><title>Product Snapshot</title>');
+    const doctor = await run(['doctor'], workDir);
+    expect(doctor.out.join('\n')).toContain("snapshot.html is the Product Explorer's former name");
+    const result = await run(['graph', '--format', 'html'], workDir);
+    expect(result.code).toBe(0);
+    await expect(readFile(legacy)).rejects.toThrow();
+    expect((await run(['doctor'], workDir)).out.join('\n')).not.toContain('former name');
+    await expect(
+      readFile(join(workDir, '.product', 'generated', 'explorer.html'), 'utf8'),
+    ).resolves.toContain('Product Explorer');
+  });
+
   it('graph --format html is byte-identical across regenerations', async () => {
-    const snapshotPath = join(workDir, '.product', 'generated', 'snapshot.html');
+    const explorerPath = join(workDir, '.product', 'generated', 'explorer.html');
     await run(['graph', '--format', 'html'], workDir);
-    const first = await readFile(snapshotPath, 'utf8');
-    await rm(snapshotPath);
+    const first = await readFile(explorerPath, 'utf8');
+    await rm(explorerPath);
     await run(['graph', '--format', 'html'], workDir);
-    const second = await readFile(snapshotPath, 'utf8');
+    const second = await readFile(explorerPath, 'utf8');
     expect(second).toBe(first);
     expect(first).not.toContain('\r');
   });

@@ -14,7 +14,7 @@ The repository SHALL provide JSON Schemas (draft 2020-12) for: common definition
 
 {pdac:cite id="FR-SCHEMA" digest="sha256:33d5285c4d9bc0c286407055c3ecfc35e4f639da4cf09ddde667d33fffff595c"}
 
-{pdac:cite id="TERM-PRODUCT-ARTIFACT" digest="sha256:dfd8386de66abfef0e0384b8a81ef8bb1fb0b0756133e5cc588d382c8b179a46"}
+{pdac:cite id="TERM-PRODUCT-ARTIFACT" digest="sha256:d72e073818c96d6fe8278a94556e6769f38456429643b672cbbcb94dc76435be"}
 
 #### Scenario: Validating an actor frontmatter
 

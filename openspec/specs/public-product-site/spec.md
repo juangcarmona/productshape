@@ -21,7 +21,7 @@ The site MUST explain ProductShape's purpose, process and artifacts, distinguish
 
 The site MUST include Archify diagrams of process and artifact relationships. Diagrams MUST label conceptual explanations and derived facts, link source-backed facts, and convey meaning without color alone.
 
-<!-- pdac:cite id="FR-PUBLIC-SITE" digest="sha256:71186b031008e9279b039906bc4ccca648df31e2fd9fa5d22da3a0005e90925e" -->
+<!-- pdac:cite id="FR-PUBLIC-SITE" digest="sha256:d12a1c76c3e9da7e9805014c6b60432a8d6fbcc33e544f2e5703bd28578cab54" -->
 
 #### Scenario: Source-backed diagram links to its source
 
@@ -38,27 +38,27 @@ The site MUST include Archify diagrams of process and artifact relationships. Di
 - **WHEN** the diagram is viewed without colour
 - **THEN** its important distinctions and relationships remain understandable through labels, shape, line style or other non-colour cues
 
-### Requirement: Public site serves a generated example Product Snapshot
+### Requirement: Public site serves a generated example Product Explorer
 
-The public site MUST serve a Product Snapshot generated from the authored example model in `examples/shop/` during the public-site build. The page MUST work without network access, name the source revision it was generated from, and MUST NOT present the example as ProductShape's own model. The public build MUST NOT need ProductShape's own product model to produce it.
+The public site MUST serve a Product Explorer generated from the authored example model in `examples/shop/` during the public-site build. The page MUST work without network access, name the source revision it was generated from, and MUST NOT present the example as ProductShape's own model. The public build MUST NOT need ProductShape's own product model to produce it.
 
-<!-- pdac:cite id="FR-PUBLIC-SITE" digest="sha256:71186b031008e9279b039906bc4ccca648df31e2fd9fa5d22da3a0005e90925e" -->
+<!-- pdac:cite id="FR-PUBLIC-SITE" digest="sha256:d12a1c76c3e9da7e9805014c6b60432a8d6fbcc33e544f2e5703bd28578cab54" -->
 
 #### Scenario: Reader opens the example from the home page
 
 - **WHEN** a reader follows the example link on the public home page
-- **THEN** a standalone Product Snapshot of the example product opens on the public site and loads without any network request outside it
+- **THEN** a standalone Product Explorer of the example product opens on the public site and loads without any network request outside it
 
 #### Scenario: Example is regenerated on every build
 
-- **WHEN** the public site is built from a clean checkout without a generated engineering Snapshot
-- **THEN** the build generates the example Snapshot from `examples/shop/` and the output names the source revision it came from
+- **WHEN** the public site is built from a clean checkout without a generated engineering Product Explorer
+- **THEN** the build generates the example Product Explorer from `examples/shop/` and the output names the source revision it came from
 
 ### Requirement: Public site links only to available engineering outputs
 
 The site MUST link to Product, architecture or E2E outputs only when they are available in the engineering portal.
 
-<!-- pdac:cite id="FR-ENGINEERING-PORTAL" digest="sha256:f32c683fd04766f8987f17efbce625468e6181549ec83216192b6bcc3e0063b8" -->
+<!-- pdac:cite id="FR-ENGINEERING-PORTAL" digest="sha256:614a020f40817d6dd28c11b85507ac700bdfcf7cfd358cdca3600978fcc48b07" -->
 
 #### Scenario: Link appears when its output exists
 

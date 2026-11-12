@@ -8,7 +8,7 @@ When diagnosing a failed Cloudflare build, inspect the complete build log, inclu
 
 ## Build and review locally
 
-Public generation and validation use Node 22 or newer and the workspace dependencies for the Astro shell. No generated engineering Product Snapshot, self-model or architecture input is needed. The build does generate one Product Snapshot of its own: the example product in `examples/shop/`, written to `/en/explore/`. `pnpm run build:public-site` builds the workspace CLI first (`pnpm --filter @prodshape/cli run build`, a few seconds) and runs `prodshape graph --format html` inside the example, so the page carries the revision of the checkout that produced it. Set `PRODUCTSHAPE_CLI` to a built `bin.js` to use another CLI and skip that build; the tests do this so they never rebuild `dist/` under each other.
+Public generation and validation use Node 22 or newer and the workspace dependencies for the Astro shell. No generated engineering Product Explorer, self-model or architecture input is needed. The build does generate one Product Explorer of its own: the example product in `examples/shop/`, written to `/en/explore/`. `pnpm run build:public-site` builds the workspace CLI first (`pnpm --filter @prodshape/cli run build`, a few seconds) and runs `prodshape graph --format html` inside the example, so the page carries the revision of the checkout that produced it. Set `PRODUCTSHAPE_CLI` to a built `bin.js` to use another CLI and skip that build; the tests do this so they never rebuild `dist/` under each other.
 
 ```bash
 pnpm install --frozen-lockfile
@@ -20,7 +20,7 @@ python3 -m http.server 4173 --directory dist/public-site
 
 Open `http://localhost:4173/`, `/en/`, `/es/`, `/en/explore/`, a product/adoption deep link and `404.html`; inspect light/dark/system appearance and mobile navigation. Python's server is a file preview, not proof of Cloudflare routing. To test Pages routing locally without an account or upload:
 
-The browser check above is the repeatable runtime evidence path. It loads the example Product Snapshot at `/en/explore/` and fails if that page requests anything outside the served directory. It also captures desktop screenshots for the public home, example Snapshot and Archify routes and compares the representative Astro shell HTML against a freshly built legacy compatibility baseline. The engineering workflow runs the check against its `/productshape/` base path and uploads a separate evidence artifact. Both checks require Chromium; a local environment without it must record the limitation rather than claim visual verification.
+The browser check above is the repeatable runtime evidence path. It loads the example Product Explorer at `/en/explore/` and fails if that page requests anything outside the served directory. It also captures desktop screenshots for the public home, example Product Explorer and Archify routes and compares the representative Astro shell HTML against a freshly built legacy compatibility baseline. The engineering workflow runs the check against its `/productshape/` base path and uploads a separate evidence artifact. Both checks require Chromium; a local environment without it must record the limitation rather than claim visual verification.
 
 ```bash
 npx wrangler@4.151.2 pages dev dist/public-site --port 8788
@@ -36,9 +36,9 @@ Cloudflare Pages builds pull requests as preview deployments and deploys `main` 
 
 ## Engineering portal
 
-`.github/workflows/snapshot.yml` remains the serialized GitHub Pages publisher. It builds the CLI, generates the self-model Product Snapshot, assembles only engineering outputs and deploys to the repository's Pages site. A successful portal publication does not deploy the public domain.
+`.github/workflows/engineering-portal.yml` remains the serialized GitHub Pages publisher. It builds the CLI, generates the self-model Product Explorer, assembles only engineering outputs and deploys to the repository's Pages site. A successful portal publication does not deploy the public domain.
 
-The workflow writes `.product/generated/engineering/manifest.json` for the build. Schema version 2 records the source revision for the generated Product Snapshot and the Architecture Snapshot assembled from this repository's `docs/architecture/` sources. Both revisions identify the checkout used by the workflow.
+The workflow writes `.product/generated/engineering/manifest.json` for the build. Schema version 3 records the source revision for the generated Product Explorer and the Architecture Snapshot assembled from this repository's `docs/architecture/` sources. Both revisions identify the checkout used by the workflow.
 
 ### Optional E2E reports
 
@@ -46,8 +46,8 @@ A future E2E pipeline may add reports to `.product/generated/engineering/manifes
 
 ```json
 {
-  "schemaVersion": 2,
-  "productSnapshot": { "sourceRevision": "full source commit SHA" },
+  "schemaVersion": 3,
+  "productExplorer": { "sourceRevision": "full source commit SHA" },
   "architectureSnapshot": { "sourceRevision": "full source commit SHA" },
   "e2eReports": [
     {
@@ -61,7 +61,7 @@ A future E2E pipeline may add reports to `.product/generated/engineering/manifes
 }
 ```
 
-Keep the two snapshot source revisions in the manifest. Place each E2E report at the path named by its entry, relative to the manifest directory. Allowed results are `passed`, `failed`, `cancelled` and `unknown`. The builder copies only listed files and displays the recorded source revision, run identity and result. When no manifest is present, it uses the current checkout revision for the snapshots and omits E2E report cards. A pipeline must not publish reports containing secrets or non-public test data.
+Keep the two source revisions in the manifest. Version 3 renamed `productSnapshot` to `productExplorer`; a version 2 manifest is rejected. Place each E2E report at the path named by its entry, relative to the manifest directory. Allowed results are `passed`, `failed`, `cancelled` and `unknown`. The builder copies only listed files and displays the recorded source revision, run identity and result. When no manifest is present, it uses the current checkout revision for the Product Explorer pages and omits E2E report cards. A pipeline must not publish reports containing secrets or non-public test data.
 
 ## Rollback
 

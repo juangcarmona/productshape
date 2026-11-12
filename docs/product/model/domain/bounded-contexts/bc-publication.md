@@ -11,7 +11,7 @@ The language of presenting ProductShape information to readers outside its repos
 
 ## Language
 
-This context uses public site, engineering portal, Product Snapshot, Architecture Snapshot, E2E report, source revision, canonical source and derived output. A snapshot or report is a projection of its source, not the source itself.
+This context uses public site, engineering portal, Product Explorer, Architecture Snapshot, E2E report, source revision, canonical source and derived output. A Product Explorer, Architecture Snapshot or report is a projection of its source, not the source itself.
 
 ## Boundaries
 

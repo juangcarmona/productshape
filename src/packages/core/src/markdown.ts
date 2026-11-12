@@ -16,7 +16,7 @@ export function escapeHtml(text: string): string {
 
 /**
  * Link targets are restricted to schemes that cannot execute. Authored content travels outside the
- * repository inside the generated snapshot, so a `javascript:` or `data:` target would let an
+ * repository inside the generated Product Explorer, so a `javascript:` or `data:` target would let an
  * authored string act on its reader; such a link renders as inert text instead of an anchor.
  */
 function safeHref(href: string): string | undefined {

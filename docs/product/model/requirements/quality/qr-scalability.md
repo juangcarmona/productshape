@@ -5,8 +5,8 @@ title: Stay usable as the product model grows
 status: active
 quality-attribute: scalability
 applies-to:
-  - UC-SNAPSHOT
-  - UC-SNAPSHOT-EXPLORE
+  - UC-EXPLORER-GENERATE
+  - UC-EXPLORER-BROWSE
 verification:
   - scenario: The markup the file carries outside its embedded data does not grow in proportion to the number of artifacts; artifact content and every map are rendered from that data at open time or on demand
   - scenario: Generated file size grows no worse than linearly with authored content, and generation time grows no worse than linearly with artifact count
@@ -18,7 +18,7 @@ verification:
 
 ## Requirement
 
-The Product Snapshot MUST remain usable as the product model it projects grows well beyond the model the product defines for itself. Scalability is defined over the operations a reader actually performs, on representative models extending to an order of magnitude beyond the current model — including drawing the map views, which show every artifact.
+The Product Explorer MUST remain usable as the product model it projects grows well beyond the model the product defines for itself. Scalability is defined over the operations a reader actually performs, on representative models extending to an order of magnitude beyond the current model — including drawing the map views, which show every artifact.
 
 The markup the file carries outside its embedded data MUST NOT grow in proportion to the number of artifacts in the model: it MUST be bounded by the number of artifact kinds present and the kind-level aggregate over them. Artifact content and relationship structure MUST be carried in the file as data, and every map view and every artifact's content MUST be rendered from that data at open time or on demand. The Overview map draws one compact chip per artifact; it MUST NOT draw any artifact's authored content and MUST NOT draw relationship lines until the reader attends to an artifact.
 
@@ -49,7 +49,7 @@ Artifacts that are hardest at scale — the most connected artifact, an artifact
 
 The measurement harness MUST compile each model and record its exact artifact count, relationship count, maximum degree and isolated-artifact count from the generated graph. Those figures are measurement output, not manually maintained values in this requirement. The synthetic models MUST contain dense relationships, high-degree artifacts, isolated artifacts, and long titles and bodies, so that the hard cases are present rather than assumed away.
 
-Historical and current figures are produced by `pnpm measure:snapshot` and recorded with the evidence for the revision measured. The canonical requirement defines the procedure and thresholds; it does not copy revision-specific model counts that become false after the next Product Change.
+Historical and current figures are produced by `pnpm measure:explorer` and recorded with the evidence for the revision measured. The canonical requirement defines the procedure and thresholds; it does not copy revision-specific model counts that become false after the next Product Change.
 
 **Measures and targets:**
 

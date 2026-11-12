@@ -8,7 +8,7 @@ description: System boundary, communication partners, external interfaces, and c
 
 ## Business Context
 
-ProductShape reads and writes product-definition files in the adopter's repository. It derives validation results, graph views, citations, integration files, and snapshots. Delivery tools consume accepted product text through citations; they do not become another store for ProductShape truth.
+ProductShape reads and writes product-definition files in the adopter's repository. It derives validation results, graph views, citations, integration files, and Product Explorer pages. Delivery tools consume accepted product text through citations; they do not become another store for ProductShape truth.
 
 ![ProductShape context and its repository-centered information flows](diagrams/context.svg)
 
@@ -21,7 +21,7 @@ ProductShape reads and writes product-definition files in the adopter's reposito
 | OpenSpec and Spec Kit workspaces | Product Changes or consumer citations, according to the selected integration | Files installed or read by the corresponding integration package |
 | CI | Validation, citation status, release and conformance results | GitHub Actions invoking built CLI commands |
 | npm consumers | Published CLI package | npm registry |
-| Public documentation reader | Informational pages and a generated model snapshot | Static GitHub Pages deployment |
+| Public documentation reader | Informational pages and a generated model Product Explorer | Static GitHub Pages deployment |
 
 ## Input and Output Channel Mapping
 

@@ -44,7 +44,7 @@
     "principleTitle": "Las herramientas comprueban la estructura. Las personas deciden el significado.",
     "principleText": "ProductShape puede detectar referencias rotas y definiciones modificadas. No puede decidir si una idea es cierta, si un cambio es adecuado o si la implementación ha terminado.",
     "explorerTitle": "Explora el modelo de ProductShape, no una demostración comercial.",
-    "explorerText": "Este repositorio se define con el mismo modelo de producto que propone a los equipos. Explora artefactos y relaciones reales en una instantánea generada y de solo lectura.",
+    "explorerText": "Este repositorio se define con el mismo modelo de producto que propone a los equipos. Explora artefactos y relaciones reales en un Product Explorer generado y de solo lectura.",
     "exampleText": "¿Prefieres un modelo más pequeño? Esta tienda de ejemplo se genera desde su propio Markdown en cada publicación.",
     "exampleAction": "Explorar un producto de ejemplo (en inglés)",
     "architectureTitle": "Diseñado para seguir siendo comprensible.",
@@ -160,7 +160,7 @@
     "eyebrow": "ProductShape, descrito con ProductShape",
     "title": "Explora el modelo vivo del proyecto.",
     "intro": "Esta proyección generada y de solo lectura representa el modelo de producto aceptado en este repositorio. La revisión de origen aparece dentro del explorador.",
-    "open": "Abrir la instantánea en una pestaña nueva",
+    "open": "Abrir el Product Explorer en una pestaña nueva",
     "source": "Consultar los archivos del modelo",
     "notice": "El modelo está escrito en inglés. El explorador se genera a partir de esos archivos canónicos y no añade ni guarda conocimiento del producto."
   },

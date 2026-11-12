@@ -19,4 +19,4 @@ The derived directed graph whose nodes are product artifacts and whose typed edg
 
 ## Usage
 
-The graph compiler builds the product graph during validation, inspection, impact analysis, citation resolution and snapshot generation. Structural impact queries ("what is reachable from this artifact, in this direction, to this depth") and reachability diagnostics ("is this requirement connected to any actor") are answered by traversing it. Derived views such as a bounded context's owned terms are read from the graph, never from authored files.
+The graph compiler builds the product graph during validation, inspection, impact analysis, citation resolution and Product Explorer generation. Structural impact queries ("what is reachable from this artifact, in this direction, to this depth") and reachability diagnostics ("is this requirement connected to any actor") are answered by traversing it. Derived views such as a bounded context's owned terms are read from the graph, never from authored files.
