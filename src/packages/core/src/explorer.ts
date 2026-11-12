@@ -613,8 +613,8 @@ svg.edges path { fill: none; stroke: var(--kc, var(--edge)); stroke-width: 1.3; 
 }
 .mcard[data-passive] { pointer-events: none; }
 .mcard .cardfold {
-  display: none; position: absolute; right: 0.35rem; top: 0.35rem; width: 2.4rem; height: 2.4rem;
-  justify-content: center; align-items: center;
+  display: none; position: sticky; float: right; top: 0; margin: -0.2rem -2.6rem 0 0; width: 2.4rem; height: 2.4rem;
+  justify-content: center; align-items: center; background: var(--raise);
 }
 .mcard .cardfold .ic { transform: rotate(90deg); }
 .mcard[data-folded] .cardfold .ic { transform: rotate(-90deg); }
@@ -747,7 +747,8 @@ dl.keys dd { margin: 0; }
   .tofacts { display: inline-block; padding: 0.4rem 0; }
   .maphint { display: none; }
   .mapctl .tbtn { min-width: 2.6rem; }
-  .mcard { left: 0.5rem; right: 0.5rem; bottom: 0.5rem; width: auto; max-height: 40vh; padding: 0.55rem 2.9rem 0.65rem 0.8rem; }
+  .mcard { left: 0.5rem; right: 0.5rem; bottom: 0.5rem; width: auto; max-height: 40vh; padding: 0.55rem 0.8rem 0.65rem; }
+  #mcard { padding-right: 2.9rem; }
   .mcard .cardfold { display: inline-flex; }
   .mcard[data-folded] { max-height: none; }
   .mcard[data-folded] > :not(.idline):not(.chead):not(.ctitle):not(.cardfold) { display: none; }
@@ -2265,7 +2266,7 @@ const script = String.raw`
       cardFolded = !cardFolded;
       syncFold();
     });
-    cardEl.appendChild(fold);
+    cardEl.insertBefore(fold, cardEl.firstChild);
     syncFold();
   };
   var cardFolded = false;
@@ -3651,6 +3652,9 @@ const script = String.raw`
      once the reader has chosen, on Escape, or on a tap elsewhere. */
   var menuToggle = doc.getElementById('menu-toggle');
   var setMenu = function (open) {
+    var views = doc.getElementById('site-views');
+    /* Closing hides the control that has focus; hand focus back to the menu button, not the body. */
+    if (!open && menuToggle && views && views.contains(doc.activeElement)) menuToggle.focus();
     if (open) doc.body.setAttribute('data-menu', 'open');
     else doc.body.removeAttribute('data-menu');
     if (menuToggle) menuToggle.setAttribute('aria-expanded', String(open));
@@ -3663,7 +3667,7 @@ const script = String.raw`
       if (doc.body.getAttribute('data-menu') !== 'open') return;
       var t = ev.target instanceof Element ? ev.target : null;
       if (!t || t.closest('#menu-toggle')) return;
-      if (t.closest('nav.views a') || !t.closest('header.site')) setMenu(false);
+      if (t.closest('nav.views a') || t.closest('#find-open') || !t.closest('header.site')) setMenu(false);
     });
     doc.addEventListener('keydown', function (ev) {
       if (ev.key === 'Escape' && doc.body.getAttribute('data-menu') === 'open') {
@@ -3674,6 +3678,12 @@ const script = String.raw`
     window.addEventListener('hashchange', function () {
       setMenu(false);
     });
+    var phoneQuery = typeof window.matchMedia === 'function' ? window.matchMedia('(max-width: 40rem)') : null;
+    if (phoneQuery && typeof phoneQuery.addEventListener === 'function') {
+      phoneQuery.addEventListener('change', function () {
+        setMenu(false);
+      });
+    }
   }
 
   var noscript = doc.getElementById('needs-script');
@@ -4002,6 +4012,7 @@ export function buildExplorerHtml(
     '</nav>',
     '<span class="spacer"></span>',
     '<button type="button" class="findbtn" id="find-open" aria-haspopup="dialog" aria-keyshortcuts="/ Control+K" data-icon="search"><span class="lbl">Search the product</span><kbd>/</kbd></button>',
+    '<button type="button" class="iconbtn menubtn" id="menu-toggle" aria-expanded="false" aria-controls="site-views" aria-label="Views and display options" title="Views and display options" data-icon="menu"></button>',
     '<button type="button" class="lensbtn" id="lens-toggle" aria-pressed="false" aria-keyshortcuts="L" title="Business lens: read use cases in business language (l)" data-icon="lens"><span class="lbl">Business lens</span></button>',
     '<div class="seg" role="group" aria-label="Appearance">',
     '<button type="button" data-appearance-set="light" aria-pressed="false" aria-label="Light appearance" title="Light appearance" data-icon="sun"></button>',
@@ -4009,7 +4020,6 @@ export function buildExplorerHtml(
     '<button type="button" data-appearance-set="auto" aria-pressed="true" aria-label="Follow the system appearance" title="Follow the system appearance" data-icon="auto"></button>',
     '</div>',
     '<button type="button" class="iconbtn" id="keys-open" aria-haspopup="dialog" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)" data-icon="keys"></button>',
-    '<button type="button" class="iconbtn menubtn" id="menu-toggle" aria-expanded="false" aria-controls="site-views" aria-label="Views and display options" title="Views and display options" data-icon="menu"></button>',
     '</header>',
     '<main id="main">',
 

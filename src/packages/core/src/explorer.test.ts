@@ -738,9 +738,18 @@ describe('the embedded application', () => {
     toggle.click();
     doc.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(doc.body.hasAttribute('data-menu')).toBe(false);
+    toggle.click();
+    (doc.getElementById('find-open') as HTMLButtonElement).click();
+    expect(doc.body.hasAttribute('data-menu')).toBe(false);
+  });
+
+  it('puts the menu button right after search, so focus order follows the phone header', () => {
+    const header = [...doc.querySelectorAll('header.site > button')].map((b) => b.id);
+    expect(header.indexOf('menu-toggle')).toBe(header.indexOf('find-open') + 1);
   });
 
   const loadPhone = (hash = ''): void => {
+    dom.window.close();
     dom = new JSDOM(build(model), {
       url: `https://explorer.invalid/explorer.html${hash}`,
       runScripts: 'dangerously',
