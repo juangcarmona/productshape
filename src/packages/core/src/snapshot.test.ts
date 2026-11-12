@@ -1,6 +1,7 @@
 import { JSDOM } from 'jsdom';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { compileGraph } from './graph.js';
+import { putInQuestionBy } from './impact.js';
 import { buildSnapshotHtml } from './snapshot.js';
 import { artifact } from './test-support.js';
 
@@ -174,9 +175,10 @@ describe('buildSnapshotHtml — generation contract', () => {
     const selectors = [...sheet.cssRules].map((r) => (r as CSSStyleRule).selectorText);
     for (const wanted of [
       ':focus-visible',
-      '.canvas line.edge',
-      'button.tg',
-      '.members-pop',
+      'svg.edges path',
+      '.mchip',
+      '.fbox',
+      '.mcard',
       "#artifact-list a[aria-current='true']",
     ]) {
       expect(selectors).toContain(wanted);
@@ -600,10 +602,11 @@ describe('the embedded application', () => {
     expect(doc.title).toBe('UC-NOPE not found · Product Snapshot');
   });
 
-  it('states the topology gestures on screen rather than leaving them to be discovered', () => {
-    load('#/artifacts/UC-A');
-    expect(doc.querySelector('#graph-host .ghint')?.textContent).toContain('Select a group');
-    expect(doc.querySelector('#graph-host .ghint')?.textContent).toContain('Esc');
+  it('states the map gestures on screen rather than leaving them to be discovered', () => {
+    load('#/');
+    expect(doc.getElementById('maphint-overview')?.textContent).toContain('Drag to pan');
+    expect(doc.getElementById('maphint-focus')?.textContent).toContain('Enter');
+    expect(doc.getElementById('maphint-columns')?.textContent).toContain('Esc');
   });
 
   it('resolves a legacy bare-identifier fragment and normalizes it in place', () => {
@@ -635,10 +638,13 @@ describe('the embedded application', () => {
     );
   });
 
-  it('builds a projection only when that view is opened', () => {
-    expect(doc.querySelector('#graph-host svg')).toBeNull();
-    navigate('#/graph/focus/UC-A');
-    expect(doc.querySelector('#graph-host svg')).not.toBeNull();
+  it('draws each map only when its view is opened', () => {
+    expect(doc.querySelector('#map-overview .mchip')).not.toBeNull();
+    expect(doc.querySelector('#map-focus .plane')).toBeNull();
+    expect(doc.querySelector('#map-columns .plane')).toBeNull();
+    navigate('#/focus/UC-A');
+    expect(doc.querySelector('#map-focus .plane')).not.toBeNull();
+    expect(doc.querySelector('#map-columns .plane')).toBeNull();
   });
 
   it('filters the list by kind, status and text without losing the selection', () => {
@@ -1238,354 +1244,6 @@ describe('ranked search', () => {
   });
 });
 
-describe('graph projections', () => {
-  let dom: JSDOM;
-  let doc: Document;
-
-  /** Twelve use cases on one actor and rule: a hub with several group types in both directions. */
-  const busy = [
-    artifact('ACT-H', 'actor', { 'actor-kind': 'human' }, { body: '## Purpose\n\nA hub.' }),
-    artifact('BR-H', 'business-rule', {}, { body: '## Rule\n\nA rule.' }),
-    artifact(
-      'TERM-H',
-      'domain-term',
-      { 'defined-in': 'BC-H' },
-      { body: '## Definition\n\nA term.' },
-    ),
-    artifact('BC-H', 'bounded-context', {}, { body: '## Responsibility\n\nA context.' }),
-    artifact('JRN-H', 'journey', { 'primary-actor': 'ACT-H', steps: [{ 'use-case': 'UC-H00' }] }),
-    artifact('QR-H', 'quality-requirement', { 'applies-to': ['UC-H00'] }),
-    artifact('CON-H', 'constraint', { 'applies-to': ['BC-H'] }),
-    ...Array.from({ length: 12 }, (_, i) =>
-      artifact(`UC-H${String(i).padStart(2, '0')}`, 'use-case', {
-        'primary-actor': 'ACT-H',
-        'governed-by': ['BR-H'],
-        'uses-terms': ['TERM-H'],
-        'bounded-context': 'BC-H',
-      }),
-    ),
-    artifact('FR-H', 'functional-requirement', { 'derived-from': ['UC-H00'] }),
-  ];
-
-  /** BC-PRODUCT-DEFINITION's shape: five incoming groups of very different sizes, nothing declared. */
-  const fiveGroups = [
-    artifact('BC-X', 'bounded-context', {}, { body: '## Responsibility\n\nA hub context.' }),
-    ...Array.from({ length: 12 }, (_, i) =>
-      artifact(`UC-X${String(i).padStart(2, '0')}`, 'use-case', {
-        'primary-actor': 'ACT-X',
-        'bounded-context': 'BC-X',
-      }),
-    ),
-    ...Array.from({ length: 5 }, (_, i) =>
-      artifact(`BR-X${i}`, 'business-rule', { 'applies-to': ['BC-X'] }),
-    ),
-    ...Array.from({ length: 2 }, (_, i) =>
-      artifact(`CON-X${i}`, 'constraint', { 'applies-to': ['BC-X'] }),
-    ),
-    artifact('QR-X0', 'quality-requirement', { 'applies-to': ['BC-X'] }),
-    ...Array.from({ length: 7 }, (_, i) =>
-      artifact(`TERM-X${i}`, 'domain-term', { 'defined-in': 'BC-X' }),
-    ),
-    artifact('ACT-X', 'actor', { 'actor-kind': 'human' }),
-  ];
-
-  /** Open at a given pane width: the test DOM has no layout, so the pane reports the width asked. */
-  const open = (hash: string, artifacts = busy, width?: number): void => {
-    dom = new JSDOM(build(artifacts), {
-      url: `https://snapshot.invalid/snapshot.html${hash}`,
-      runScripts: 'dangerously',
-      beforeParse(window) {
-        if (width === undefined) return;
-        Object.defineProperty(window.HTMLElement.prototype, 'clientWidth', {
-          configurable: true,
-          get(this: HTMLElement) {
-            return this.id === 'graph-host' ? width : 0;
-          },
-        });
-      },
-    });
-    doc = dom.window.document;
-  };
-  const chips = (): HTMLButtonElement[] =>
-    [...doc.querySelectorAll('#graph-host button.tg')] as HTMLButtonElement[];
-  const box = (n: Element): { x: number; y: number; w: number; h: number } => {
-    const s = (n as HTMLElement).style;
-    return {
-      x: parseFloat(s.left),
-      y: parseFloat(s.top),
-      w: parseFloat(s.width) || 232,
-      h: parseFloat(s.height) || 60,
-    };
-  };
-  const anchor = (): Element => doc.querySelector('#graph-host .anode')!;
-  const click = (n: Element): void => {
-    n.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
-  };
-
-  it('surrounds the anchor with relationship groups, not artifacts, each stating type, kind and count', () => {
-    open('#/artifacts/UC-H00');
-    // UC-H00 declares 4 groups (primary-actor, governed-by, uses-terms, bounded-context) and is
-    // referenced by 3 (steps, applies-to, derived-from).
-    expect(chips().length).toBe(7);
-    for (const chip of chips()) {
-      expect(chip.getAttribute('aria-label')).toMatch(
-        /^(Declares|Referenced by) \d+ .+ through [a-z[\].-]+$/,
-      );
-      expect(Number(chip.querySelector('.gcount')?.textContent)).toBeGreaterThan(0);
-      expect(chip.querySelector('.verb')?.textContent).not.toBe('');
-      expect(chip.querySelector('.token[data-kind]')).not.toBeNull();
-    }
-  });
-
-  it('keeps the projection bounded by relationship types, not by degree', () => {
-    open('#/artifacts/BC-X', fiveGroups);
-    // 27 relationships, 5 groups: one chip per group, however many members each holds.
-    expect(chips().length).toBe(5);
-    const counts = chips().map((c) => Number(c.querySelector('.gcount')?.textContent));
-    expect(counts.reduce((a, b) => a + b, 0)).toBe(27);
-  });
-
-  it('places declared groups above the anchor and referencing groups below, so direction is positional', () => {
-    open('#/artifacts/UC-H00');
-    const a = box(anchor());
-    for (const chip of chips()) {
-      const b = box(chip);
-      if (chip.getAttribute('aria-label')!.startsWith('Declares'))
-        expect(b.y + b.h).toBeLessThan(a.y);
-      else expect(b.y).toBeGreaterThan(a.y + a.h);
-    }
-    // Every group is joined to the anchor by a directed line of its own.
-    const lines = [...doc.querySelectorAll('#graph-host .canvas > svg line.edge')];
-    expect(lines.length).toBe(7);
-    for (const line of lines) expect(line.getAttribute('marker-end')).toBe('url(#topo-arrow)');
-  });
-
-  it('draws straight lines from one anchor port each, with every arrow following the relationship', () => {
-    for (const [hash, artifacts, width] of [
-      ['#/artifacts/BC-X', fiveGroups, 420],
-      ['#/artifacts/BC-X', fiveGroups, 900],
-      ['#/artifacts/UC-H00', busy, 900],
-      ['#/artifacts/ACT-H', busy, 260],
-    ] as const) {
-      open(hash, [...artifacts], width);
-      const a = box(anchor());
-      const groups = chips().map((c) => ({ key: c.getAttribute('data-key'), ...box(c) }));
-      const lines = [...doc.querySelectorAll('#graph-host .canvas > svg line.edge')].map((l) => ({
-        out: l.classList.contains('out'),
-        key: l.getAttribute('data-key'),
-        port: Number(l.getAttribute('data-port')),
-        x1: Number(l.getAttribute('x1')),
-        y1: Number(l.getAttribute('y1')),
-        x2: Number(l.getAttribute('x2')),
-        y2: Number(l.getAttribute('y2')),
-        arrow: l.getAttribute('marker-end'),
-      }));
-      expect(lines.length).toBe(groups.length);
-      for (const side of [true, false]) {
-        const own = lines.filter((l) => l.out === side).sort((p, q) => p.port - q.port);
-        // One port each, spread along the anchor's edge.
-        expect(new Set(own.map((l) => l.port)).size, `${hash} at ${width}`).toBe(own.length);
-        for (const l of own) {
-          expect(l.port).toBeGreaterThanOrEqual(a.x);
-          expect(l.port).toBeLessThanOrEqual(a.x + a.w);
-        }
-        // Ports run in the order of the groups they reach, so no two lines cross.
-        const far = own.map((l) => (l.out ? l.x2 : l.x1));
-        expect(far, `${hash} at ${width}`).toEqual([...far].sort((p, q) => p - q));
-      }
-      for (const l of lines) {
-        const g = groups.find((x) => x.key === l.key)!;
-        expect(l.arrow).toBe('url(#topo-arrow)');
-        if (l.out) {
-          // Declared: from the anchor's top edge into the group's bottom edge.
-          expect([l.x1, l.y1]).toEqual([l.port, a.y - 1]);
-          expect(l.y2).toBe(g.y + g.h + 1);
-          expect(l.x2).toBeGreaterThanOrEqual(g.x);
-          expect(l.x2).toBeLessThanOrEqual(g.x + g.w);
-        } else {
-          // Referenced by: from the group's top edge into the anchor's bottom edge.
-          expect([l.x2, l.y2]).toEqual([l.port, a.y + a.h + 1]);
-          expect(l.y1).toBe(g.y - 1);
-          expect(l.x1).toBeGreaterThanOrEqual(g.x);
-          expect(l.x1).toBeLessThanOrEqual(g.x + g.w);
-        }
-      }
-    }
-  });
-
-  it('never overlaps two groups or leaves the pane, at narrow and wide panes', () => {
-    for (const width of [260, 420, 560, 900]) {
-      for (const [hash, model] of [
-        ['#/artifacts/UC-H00', busy],
-        ['#/artifacts/BC-X', fiveGroups],
-        ['#/artifacts/ACT-H', busy],
-      ] as const) {
-        open(hash, [...model], width);
-        const boxes = [anchor(), ...chips()].map(box);
-        for (const b of boxes) {
-          expect(b.x, `${hash} at ${width}`).toBeGreaterThanOrEqual(0);
-          expect(b.x + b.w, `${hash} at ${width}`).toBeLessThanOrEqual(Math.max(width, b.w + 28));
-        }
-        for (let i = 0; i < boxes.length; i += 1) {
-          for (let j = i + 1; j < boxes.length; j += 1) {
-            const p = boxes[i]!;
-            const q = boxes[j]!;
-            const apart =
-              p.x + p.w <= q.x || q.x + q.w <= p.x || p.y + p.h <= q.y || q.y + q.h <= p.y;
-            expect(apart, `${hash} at ${width}: boxes ${i} and ${j} overlap`).toBe(true);
-          }
-        }
-        // The canvas grows to hold its rows; the pane scrolls rather than squeezing them.
-        const canvas = doc.querySelector('#graph-host .canvas') as HTMLElement;
-        const bottom = Math.max(...boxes.map((b) => b.y + b.h));
-        expect(parseFloat(canvas.style.height)).toBeGreaterThan(bottom);
-      }
-    }
-  });
-
-  it('reveals members only on deliberate action, one group at a time, as a structured list', () => {
-    open('#/artifacts/BC-X', fiveGroups);
-    expect(doc.querySelector('#graph-host .members-pop')).toBeNull();
-    const before = dom.window.history.length;
-    const uc = chips().find((c) => c.getAttribute('aria-label')!.includes('Use Cases'))!;
-    click(uc);
-    let list = doc.querySelector('#graph-host .members-pop');
-    expect(list?.getAttribute('aria-label')).toBe('bounded context · Use Cases, 12 members');
-    expect(list?.querySelectorAll('li a[data-member]').length).toBe(12);
-    expect(
-      chips()
-        .find((c) => c.getAttribute('aria-label')!.includes('Use Cases'))
-        ?.getAttribute('aria-expanded'),
-    ).toBe('true');
-    // Opening another closes the first: at most one member list.
-    click(chips().find((c) => c.getAttribute('aria-label')!.includes('Domain Terms'))!);
-    list = doc.querySelector('#graph-host .members-pop');
-    expect(doc.querySelectorAll('#graph-host .members-pop').length).toBe(1);
-    expect(list?.querySelectorAll('li').length).toBe(7);
-    // Disclosure is addressed in place, never pushed onto history.
-    expect(dom.window.location.hash).toMatch(/^#\/artifacts\/BC-X\?x=\d+$/);
-    expect(dom.window.history.length).toBe(before);
-    // Escape closes it.
-    doc.body.dispatchEvent(
-      new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
-    );
-    expect(doc.querySelector('#graph-host .members-pop')).toBeNull();
-    expect(dom.window.location.hash).toBe('#/artifacts/BC-X');
-  });
-
-  it('lists exactly the members the compiled graph records, each a link that refocuses', () => {
-    const graph = compileGraph(fiveGroups);
-    open('#/artifacts/BC-X?x=0', fiveGroups);
-    const opened = chips()[0]!;
-    const members = [...doc.querySelectorAll('#graph-host .members-pop a[data-member]')].map((a) =>
-      a.getAttribute('data-member'),
-    );
-    expect(members.length).toBe(Number(opened.querySelector('.gcount')?.textContent));
-    for (const id of members) {
-      expect(graph.edges.some((e) => e.to === 'BC-X' && e.from === id)).toBe(true);
-    }
-    // A member link names its artifact without the disclosure: refocusing resets it.
-    const href = doc.querySelector('#graph-host .members-pop a')?.getAttribute('href') ?? '';
-    expect(href).toMatch(/^#\/artifacts\/[A-Z]+-X\d+$/);
-  });
-
-  it('corresponds with the Reader: each group highlights its counterpart, both ways', () => {
-    open('#/artifacts/UC-H00');
-    const chip = chips()[0]!;
-    const key = chip.getAttribute('data-key')!;
-    chip.dispatchEvent(new dom.window.MouseEvent('mouseover', { bubbles: true }));
-    const counterpart = [...doc.querySelectorAll('#detail [data-key]')].find(
-      (n) => n.getAttribute('data-key') === key,
-    );
-    expect(counterpart?.classList.contains('hl')).toBe(true);
-    doc.getElementById('graph-host')!.dispatchEvent(new dom.window.MouseEvent('mouseleave'));
-    expect(counterpart?.classList.contains('hl')).toBe(false);
-    counterpart!.dispatchEvent(new dom.window.MouseEvent('mouseover', { bubbles: true }));
-    expect(chip.classList.contains('hl')).toBe(true);
-    // Focus does what pointing does, so the correspondence is not pointer-only.
-    doc.getElementById('detail')!.dispatchEvent(new dom.window.MouseEvent('mouseleave'));
-    chips()[1]!.dispatchEvent(new dom.window.FocusEvent('focusin', { bubbles: true }));
-    expect(chips()[1]!.classList.contains('hl')).toBe(true);
-  });
-
-  it('opening a group opens its Reader counterpart when that one starts collapsed', () => {
-    open('#/artifacts/ACT-H');
-    const reader = doc.querySelector(
-      '#detail details.relgroup:not([open])',
-    ) as HTMLDetailsElement | null;
-    expect(reader).not.toBeNull();
-    const key = reader!.getAttribute('data-key');
-    const chip = chips().find((c) => c.getAttribute('data-key') === key)!;
-    click(chip);
-    const again = [...doc.querySelectorAll('#detail details.relgroup')].find(
-      (d) => d.getAttribute('data-key') === key,
-    ) as HTMLDetailsElement;
-    expect(again.open).toBe(true);
-    expect(again.querySelectorAll('ul.members li').length).toBe(12);
-  });
-
-  it('is keyboard-operable and exposes expanded state as state', () => {
-    open('#/artifacts/UC-H00');
-    for (const chip of chips()) {
-      expect(chip.tagName).toBe('BUTTON');
-      expect(chip.getAttribute('aria-expanded')).toBe('false');
-    }
-    const first = chips()[0]!;
-    first.focus();
-    click(first);
-    expect(chips()[0]!.getAttribute('aria-expanded')).toBe('true');
-    expect(doc.activeElement).toBe(chips()[0]);
-  });
-
-  it('adjusts the Reader and projection widths by keyboard, storing nothing', () => {
-    open('#/artifacts/UC-H00');
-    const split = doc.getElementById('split')!;
-    expect(split.getAttribute('role')).toBe('separator');
-    split.dispatchEvent(
-      new dom.window.KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }),
-    );
-    const wider = Number(split.getAttribute('aria-valuenow'));
-    split.dispatchEvent(
-      new dom.window.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
-    );
-    split.dispatchEvent(
-      new dom.window.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
-    );
-    expect(Number(split.getAttribute('aria-valuenow'))).toBeLessThan(wider);
-    expect((doc.querySelector('.md') as HTMLElement).style.getPropertyValue('--topo-w')).toMatch(
-      /px$/,
-    );
-    expect(dom.window.localStorage.length).toBe(0);
-    expect(dom.window.location.hash).toBe('#/artifacts/UC-H00');
-  });
-
-  it('is identical for the same model, focus, open group and width', () => {
-    open('#/artifacts/BC-X?x=2', fiveGroups, 480);
-    const first = doc.getElementById('graph-host')!.innerHTML;
-    open('#/artifacts/BC-X?x=2', fiveGroups, 480);
-    expect(doc.getElementById('graph-host')!.innerHTML).toBe(first);
-  });
-
-  it('says so plainly for an artifact with no relationships', () => {
-    open('#/artifacts/CON-A', model);
-    expect(doc.querySelector('#graph-host p.note')?.textContent).toContain(
-      'declares no relationships',
-    );
-  });
-
-  it('never draws a group or relationship absent from the compiled graph', () => {
-    const graph = compileGraph(busy);
-    for (const id of ['UC-H00', 'ACT-H', 'BC-H']) {
-      open(`#/artifacts/${id}`);
-      const drawn = chips().reduce(
-        (sum, c) => sum + Number(c.querySelector('.gcount')?.textContent),
-        0,
-      );
-      expect(drawn).toBe(graph.edges.filter((e) => e.from === id || e.to === id).length);
-    }
-  });
-});
-
 describe('the overview and the catalog (SLI-EXPLORER-001)', () => {
   let dom: JSDOM;
   let doc: Document;
@@ -1894,150 +1552,686 @@ describe('the artifact reader (SLI-EXPLORER-002)', () => {
   });
 });
 
-describe('the focused topology (SLI-EXPLORER-003)', () => {
+/**
+ * The three map views of CHG-SNAPSHOT-V2 — the Overview map, the Focus view and the Columns view —
+ * and the business lens, driven in a real DOM. The test DOM has no layout, so positions are read
+ * from the inline styles the application writes, which is exactly what the browser lays out.
+ */
+describe('the map views (CHG-SNAPSHOT-V2)', () => {
   let dom: JSDOM;
   let doc: Document;
 
-  const model = [
-    artifact('ACT-H', 'actor', { 'actor-kind': 'human' }),
-    artifact('BR-H', 'business-rule', {}),
-    ...Array.from({ length: 30 }, (_, i) =>
-      artifact(`UC-H${String(i).padStart(2, '0')}`, 'use-case', {
-        'primary-actor': 'ACT-H',
-        'governed-by': ['BR-H'],
-      }),
+  /** A small product with every kind the Columns order names, and both context relationships. */
+  const product = [
+    artifact('ACT-U', 'actor', { 'actor-kind': 'human' }, { body: '## Purpose\n\nA user.' }),
+    artifact('ACT-V', 'actor', { 'actor-kind': 'human' }, { body: '## Purpose\n\nA helper.' }),
+    artifact('JRN-U', 'journey', { 'primary-actor': 'ACT-U', steps: [{ 'use-case': 'UC-ORDER' }] }),
+    artifact(
+      'UC-ORDER',
+      'use-case',
+      {
+        title: 'Place an order',
+        'primary-actor': 'ACT-U',
+        'supporting-actors': ['ACT-V'],
+        'bounded-context': 'BC-SALES',
+        'governed-by': ['BR-PAY'],
+        'uses-terms': ['TERM-ORDER'],
+      },
+      {
+        title: 'Place an order',
+        body: '## Goal\n\nThe customer gets what they chose.\n\n## Trigger\n\nThe customer confirms the basket.\n\n## Main Flow\n\n1. Pay.',
+      },
     ),
-    artifact('FR-H', 'functional-requirement', {
-      'derived-from': ['UC-H00'],
-      verification: [{ scenario: 'holds' }],
-    }),
-    artifact('BC-T', 'bounded-context', {}),
-    artifact('ACT-T', 'actor', { 'actor-kind': 'human' }),
-    artifact('TERM-T', 'domain-term', { 'defined-in': 'BC-T' }),
-    ...Array.from({ length: 8 }, (_, i) =>
-      artifact(`UC-T${i}`, 'use-case', { 'primary-actor': 'ACT-T', 'uses-terms': ['TERM-T'] }),
+    artifact('UC-RETURN', 'use-case', { 'primary-actor': 'ACT-U', 'bounded-context': 'BC-SALES' }),
+    // No bounded context recorded: drawn in a group of its own rather than dropped.
+    artifact('UC-LOOSE', 'use-case', { 'primary-actor': 'ACT-U' }),
+    artifact(
+      'BC-SALES',
+      'bounded-context',
+      {},
+      { title: 'Sales', body: '## Responsibility\n\nSelling.' },
+    ),
+    artifact('BC-STOCK', 'bounded-context', {}, { title: 'Stock' }),
+    artifact(
+      'BR-PAY',
+      'business-rule',
+      { title: 'Payment comes first', 'applies-to': ['BC-SALES'] },
+      {
+        title: 'Payment comes first',
+        body: '## Rule\n\nNo order ships before it is paid.\n\n## Rationale\n\nCash.',
+      },
+    ),
+    artifact(
+      'TERM-ORDER',
+      'domain-term',
+      { title: 'Order', 'defined-in': 'BC-SALES' },
+      { title: 'Order' },
+    ),
+    artifact('TERM-SKU', 'domain-term', { 'defined-in': 'BC-STOCK' }),
+    artifact(
+      'FR-CHECKOUT',
+      'functional-requirement',
+      { title: 'Check out in one step', 'derived-from': ['UC-ORDER'] },
+      { title: 'Check out in one step' },
+    ),
+    artifact(
+      'QR-FAST',
+      'quality-requirement',
+      { title: 'Respond within a second', 'applies-to': ['UC-ORDER'] },
+      { title: 'Respond within a second' },
+    ),
+    artifact(
+      'CON-EU',
+      'constraint',
+      { title: 'Store data in the EU', 'applies-to': ['UC-ORDER'] },
+      { title: 'Store data in the EU' },
+    ),
+    artifact(
+      'SB-UNPAID',
+      'structured-behaviour',
+      {
+        title: 'An unpaid order is held',
+        illustrates: ['BR-PAY'],
+        given: ['An order that is not paid'],
+        when: 'Shipping is requested',
+        then: ['The order is held', 'The customer is told why'],
+      },
+      { title: 'An unpaid order is held' },
     ),
   ];
 
-  const open = (hash: string): void => {
-    dom = new JSDOM(build(model), {
+  const open = (hash: string, artifacts = product, patch?: (w: Window) => void): void => {
+    dom = new JSDOM(build(artifacts), {
       url: `https://snapshot.invalid/snapshot.html${hash}`,
       runScripts: 'dangerously',
+      beforeParse(window) {
+        if (patch) patch(window as unknown as Window);
+      },
     });
     doc = dom.window.document;
   };
-  const group = (type: string): Element => {
-    const found = [...doc.querySelectorAll('#graph-host button.tg')].find((n) =>
-      (n.getAttribute('aria-label') ?? '').includes(type),
-    );
-    if (!found) throw new Error(`no group for ${type}`);
-    return found;
-  };
-  const click = (n: Element): void => {
-    n.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
-  };
-
-  it('is one of exactly two projections: nothing banded, nothing whole-graph, aggregate intact', () => {
-    const html = build(model);
-    expect(html).not.toMatch(/bandname|gmodes|layersummary|Layered/);
-    expect(html).toContain('id="h-aggregate"');
-    open('#/graph/focus/ACT-H');
-    expect(doc.querySelectorAll('#graph-host .canvas').length).toBe(1);
-    // Bounded: groups are typed, not one node per artifact.
-    expect(doc.querySelectorAll('#graph-host button.tg').length).toBeLessThan(5);
-  });
-
-  it('resolves the withdrawn standalone routes in place, into the integrated view', () => {
-    open('#/graph');
-    expect(dom.window.location.hash).toBe('#/artifacts');
-    open('#/graph/layers');
-    expect(dom.window.location.hash).toBe('#/artifacts');
-    open('#/graph/focus/ACT-H');
-    expect(dom.window.location.hash).toBe('#/artifacts/ACT-H');
-    expect(doc.getElementById('view-artifacts')?.hidden).toBe(false);
-    expect(doc.querySelectorAll('#graph-host button.tg').length).toBeGreaterThan(0);
-  });
-
-  it('carries disclosure in the address, replacing history, and restores it from a fresh window', () => {
-    open('#/artifacts/ACT-H');
-    const before = dom.window.history.length;
-    click(group('primary-actor'));
-    expect(dom.window.location.hash).toMatch(/#\/artifacts\/ACT-H\?x=/);
-    expect(dom.window.history.length).toBe(before);
-    const address = dom.window.location.hash;
-    open(address);
-    expect(group('primary-actor').getAttribute('aria-expanded')).toBe('true');
-    // An address from an earlier snapshot naming several open groups opens its first.
-    open('#/artifacts/ACT-H?x=0.1');
-    expect(doc.querySelectorAll('#graph-host button.tg[aria-expanded="true"]').length).toBe(1);
-  });
-
-  it('toggling a group changes no selection; refocusing on a member is a navigation that resets disclosure', () => {
-    open('#/artifacts/UC-H00');
-    click(group('primary-actor'));
-    expect(doc.querySelector('#detail h3.artifact')?.textContent).toBe('UC-H00');
-    const member = doc.querySelector('#graph-host .members-pop a[data-member]');
-    expect(member).not.toBeNull();
-    const href = member?.getAttribute('href') ?? '';
-    expect(href).toBe('#/artifacts/' + member?.getAttribute('data-member'));
-    expect(href).not.toContain('x=');
-    dom.window.location.hash = href;
+  const navigate = (hash: string): void => {
+    dom.window.location.hash = hash;
     dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
-    expect(doc.querySelector('#detail h3.artifact')?.textContent).toBe(
-      member?.getAttribute('data-member'),
-    );
-    expect(doc.querySelector('#graph-host .members-pop')).toBeNull();
+  };
+  const drawn = (map: string, cls: string): HTMLElement[] =>
+    [...doc.querySelectorAll(`#map-${map} .${cls}`)] as HTMLElement[];
+  const item = (map: string, id: string): HTMLElement =>
+    doc.querySelector(`#map-${map} [data-id="${id}"]`) as HTMLElement;
+  const fire = (node: Element, type: string, init: Record<string, unknown> = {}): void => {
+    const Ctor =
+      type === 'wheel'
+        ? dom.window.WheelEvent
+        : type === 'keydown'
+          ? dom.window.KeyboardEvent
+          : type === 'focusin' || type === 'focusout'
+            ? dom.window.FocusEvent
+            : dom.window.MouseEvent;
+    node.dispatchEvent(new Ctor(type, { bubbles: true, cancelable: true, ...init }));
+  };
+  const lit = (map: string): string[] =>
+    [...doc.querySelectorAll(`#map-${map} [data-id].lit`)]
+      .map((n) => n.getAttribute('data-id')!)
+      .sort();
+  const x = (n: HTMLElement): number => parseFloat(n.style.left);
+  const neighbours = (id: string): string[] => {
+    const graph = compileGraph(product);
+    const out = new Set<string>();
+    for (const e of graph.edges) {
+      if (e.from === id) out.add(e.to);
+      if (e.to === id) out.add(e.from);
+    }
+    out.delete(id);
+    return [...out].sort();
+  };
+
+  describe('the Overview map', () => {
+    it('is drawn from the data at open: one tile per kind present, every artifact a chip', () => {
+      expect(openingDocument(build(product))).not.toContain('class="mchip');
+      open('');
+      const tiles = drawn('overview', 'tile');
+      expect(tiles.map((t) => t.className.replace('tile k-', ''))).toEqual([
+        'actor',
+        'journey',
+        'use-case',
+        'bounded-context',
+        'business-rule',
+        'domain-term',
+        'functional-requirement',
+        'quality-requirement',
+        'constraint',
+        'structured-behaviour',
+      ]);
+      const chips = drawn('overview', 'mchip')
+        .map((c) => c.getAttribute('data-id'))
+        .sort();
+      expect(chips).toEqual(product.map((a) => a.id).sort());
+      // Each tile heads its kind with the token, the name and the exact count.
+      const ucTile = tiles[2]!;
+      expect(ucTile.querySelector('.token')?.textContent).toBe('UC');
+      expect(ucTile.textContent).toContain('Use Cases');
+      expect(ucTile.querySelector('.n')?.textContent).toBe('3');
+    });
+
+    it('draws no relationship line until the reader attends to an artifact', () => {
+      open('');
+      expect(doc.querySelectorAll('#map-overview svg.edges path').length).toBe(0);
+    });
+
+    it('groups use cases and terms by their one bounded context, and degrades without one', () => {
+      open('');
+      const labels = drawn('overview', 'ctx').map((n) => n.textContent);
+      expect(labels).toEqual(['Sales', 'No single context', 'Sales', 'Stock']);
+      // The use case without a context is drawn under its own label, after the grouped ones.
+      const loose = item('overview', 'UC-LOOSE');
+      const order = item('overview', 'UC-ORDER');
+      expect(parseFloat(loose.style.top)).toBeGreaterThan(parseFloat(order.style.top));
+    });
+
+    it('lights an artifact and its direct neighbours on hover, with exactly its lines, changing nothing else', () => {
+      open('#/');
+      const before = dom.window.location.hash;
+      fire(item('overview', 'UC-ORDER'), 'mouseover');
+      expect(lit('overview')).toEqual(['UC-ORDER', ...neighbours('UC-ORDER')].sort());
+      expect(doc.getElementById('map-overview')?.hasAttribute('data-attending')).toBe(true);
+      const graph = compileGraph(product);
+      const touching = graph.edges.filter((e) => e.from === 'UC-ORDER' || e.to === 'UC-ORDER');
+      expect(doc.querySelectorAll('#map-overview svg.edges path.lit').length).toBe(touching.length);
+      expect(dom.window.location.hash).toBe(before);
+      // The card names what is attended to, without taking the pointer.
+      const card = doc.getElementById('mcard')!;
+      expect(card.hidden).toBe(false);
+      expect(card.hasAttribute('data-passive')).toBe(true);
+      expect(card.textContent).toContain('UC-ORDER');
+      fire(doc.getElementById('map-overview')!, 'mouseleave');
+      expect(lit('overview')).toEqual([]);
+      expect(card.hidden).toBe(true);
+    });
+
+    it('lights the same neighbourhood on keyboard focus, with one tab stop and arrow-key movement', () => {
+      open('#/');
+      const tabbable = doc.querySelectorAll('#map-overview [data-id][tabindex="0"]');
+      expect(tabbable.length).toBe(1);
+      const start = tabbable[0] as HTMLElement;
+      start.focus();
+      expect(lit('overview')).toContain(start.getAttribute('data-id'));
+      fire(start, 'keydown', { key: 'ArrowRight' });
+      const moved = doc.activeElement as HTMLElement;
+      expect(moved).not.toBe(start);
+      expect(moved.getAttribute('data-id')).toBeTruthy();
+      expect(x(moved)).toBeGreaterThan(x(start));
+      expect(moved.getAttribute('tabindex')).toBe('0');
+      expect(start.getAttribute('tabindex')).toBe('-1');
+      expect(lit('overview')).toContain(moved.getAttribute('data-id'));
+    });
+
+    it('opens the Focus view on click and on Enter', () => {
+      open('#/');
+      fire(item('overview', 'BR-PAY'), 'click');
+      expect(dom.window.location.hash).toBe('#/focus/BR-PAY');
+      open('#/');
+      fire(item('overview', 'UC-ORDER'), 'keydown', { key: 'Enter' });
+      expect(dom.window.location.hash).toBe('#/focus/UC-ORDER');
+    });
+
+    it('marks the selection it carries and lights its neighbourhood', () => {
+      open('#/overview/UC-ORDER');
+      expect(item('overview', 'UC-ORDER').getAttribute('aria-current')).toBe('true');
+      expect(item('overview', 'UC-ORDER').classList.contains('sel')).toBe(true);
+      expect(lit('overview')).toEqual(['UC-ORDER', ...neighbours('UC-ORDER')].sort());
+    });
+
+    it('pans and zooms by visible controls and keys, never touching the address', () => {
+      open('#/');
+      const plane = doc.querySelector('#map-overview .plane') as HTMLElement;
+      const scale = (): number => Number(/scale\(([\d.]+)\)/.exec(plane.style.transform)?.[1]);
+      const before = scale();
+      const hash = dom.window.location.hash;
+      fire(doc.querySelector('[data-zoom="in"][data-map="overview"]')!, 'click');
+      expect(scale()).toBeGreaterThan(before);
+      fire(doc.querySelector('[data-zoom="fit"][data-map="overview"]')!, 'click');
+      expect(scale()).toBeCloseTo(before, 3);
+      fire(doc.body, 'keydown', { key: '-' });
+      expect(scale()).toBeLessThan(before);
+      fire(doc.body, 'keydown', { key: '0' });
+      expect(scale()).toBeCloseTo(before, 3);
+      const view = doc.getElementById('map-overview')!;
+      const shift = (): string => plane.style.transform;
+      const was = shift();
+      fire(view, 'keydown', { key: 'ArrowLeft' });
+      expect(shift()).not.toBe(was);
+      fire(view, 'wheel', { deltaY: -200, clientX: 100, clientY: 100 });
+      expect(scale()).toBeGreaterThan(before);
+      expect(dom.window.location.hash).toBe(hash);
+    });
   });
 
-  it('presents even a very dense group as a structured list of selectable entries', () => {
-    open('#/artifacts/ACT-H?x=0');
-    const dense = group('primary-actor');
-    expect(dense.getAttribute('aria-label')).toContain('30');
-    const panel = doc.querySelector('#graph-host .members-pop');
-    expect(panel?.getAttribute('aria-label')).toBe('primary actor · Use Cases, 30 members');
-    expect(panel?.querySelectorAll('li a').length).toBe(30);
-    expect(panel?.querySelector('a')?.getAttribute('href')).toContain('#/artifacts/');
+  describe('the Focus view', () => {
+    it('centres the focus with its neighbours grouped by kind, earlier kinds on one side and later on the other', () => {
+      open('#/focus/UC-ORDER');
+      const centre = doc.querySelector('#map-focus .fbox.centre') as HTMLElement;
+      expect(centre.getAttribute('data-id')).toBe('UC-ORDER');
+      const boxes = drawn('focus', 'fbox').filter((b) => !b.classList.contains('centre'));
+      expect(boxes.map((b) => b.getAttribute('data-id')).sort()).toEqual(neighbours('UC-ORDER'));
+      for (const b of boxes) {
+        const kind = b.className.match(/k-([a-z-]+)/)![1];
+        const before = ['actor', 'journey'].includes(kind!);
+        if (before) expect(x(b)).toBeLessThan(x(centre));
+        else expect(x(b)).toBeGreaterThan(x(centre));
+      }
+      const heads = drawn('focus', 'fgroup').map((h) => [
+        h.getAttribute('data-group'),
+        h.querySelector('.n')?.textContent,
+      ]);
+      expect(heads).toEqual([
+        ['actor', '2'],
+        ['journey', '1'],
+        ['bounded-context', '1'],
+        ['business-rule', '1'],
+        ['domain-term', '1'],
+        ['functional-requirement', '1'],
+        ['quality-requirement', '1'],
+        ['constraint', '1'],
+      ]);
+    });
+
+    it('names each neighbour, its relationships with their direction, and its other neighbours', () => {
+      open('#/focus/UC-ORDER');
+      const rule = item('focus', 'BR-PAY');
+      expect(rule.querySelector('.bid')?.textContent).toBe('BR-PAY');
+      expect(rule.querySelector('.bt')?.textContent).toBe('Payment comes first');
+      // Declared by the focus (governed-by) and declared towards a context it shares: both directions as text.
+      expect(rule.querySelector('.rel')?.textContent).toBe('governed-by →');
+      expect(item('focus', 'FR-CHECKOUT').querySelector('.rel')?.textContent).toBe(
+        '← derived-from',
+      );
+      // BR-PAY also touches BC-SALES and SB-UNPAID.
+      expect(rule.querySelector('.more')?.textContent).toBe('+2');
+      // One line per neighbour, and nothing the graph lacks.
+      expect(doc.querySelectorAll('#map-focus svg.edges path').length).toBe(
+        neighbours('UC-ORDER').length,
+      );
+    });
+
+    it('keeps the rest of the model as a faded, selectable background', () => {
+      open('#/focus/UC-ORDER');
+      const dots = drawn('focus', 'dot')
+        .map((d) => d.getAttribute('data-id'))
+        .sort();
+      const expected = product
+        .map((a) => a.id as string)
+        .filter((id) => id !== 'UC-ORDER' && !neighbours('UC-ORDER').includes(id))
+        .sort();
+      expect(dots).toEqual(expected);
+      fire(item('focus', 'TERM-SKU'), 'click');
+      expect(dom.window.location.hash).toBe('#/focus/TERM-SKU');
+    });
+
+    it('starts a dense group collapsed with its count, and carries disclosure in the address in place', () => {
+      const hub = [
+        artifact('ACT-H', 'actor', { 'actor-kind': 'human' }),
+        ...Array.from({ length: 13 }, (_, i) =>
+          artifact(`UC-H${String(i).padStart(2, '0')}`, 'use-case', { 'primary-actor': 'ACT-H' }),
+        ),
+      ];
+      open('#/focus/ACT-H', hub);
+      const head = doc.querySelector('#map-focus [data-group="use-case"]') as HTMLElement;
+      expect(head.getAttribute('aria-expanded')).toBe('false');
+      expect(head.querySelector('.n')?.textContent).toBe('13');
+      expect(drawn('focus', 'fbox').length).toBe(1);
+      // Every member is still joined to the focus, through the heading.
+      expect(doc.querySelectorAll('#map-focus svg.edges path').length).toBe(13);
+      const history = dom.window.history.length;
+      fire(head, 'click');
+      expect(dom.window.location.hash).toBe('#/focus/ACT-H?x=use-case');
+      expect(dom.window.history.length).toBe(history);
+      expect(drawn('focus', 'fbox').length).toBe(14);
+      // The same address in a fresh window shows the same disclosure.
+      open('#/focus/ACT-H?x=use-case', hub);
+      expect(
+        doc.querySelector('#map-focus [data-group="use-case"]')?.getAttribute('aria-expanded'),
+      ).toBe('true');
+    });
+
+    it('refocuses instead of accumulating, keeps a breadcrumb, and resets disclosure', () => {
+      open('#/focus/UC-ORDER?x=actor');
+      fire(item('focus', 'BR-PAY'), 'click');
+      expect(dom.window.location.hash).toBe('#/focus/BR-PAY');
+      navigate('#/focus/BR-PAY');
+      expect(doc.querySelector('#map-focus .fbox.centre')?.getAttribute('data-id')).toBe('BR-PAY');
+      expect(doc.querySelectorAll('#map-focus .fbox.centre').length).toBe(1);
+      const trail = [...doc.querySelectorAll('#focus-trail li')].map((li) => li.textContent);
+      expect(trail).toEqual(['Overview', 'UC-ORDER', 'BR-PAY']);
+      expect(doc.querySelector('#focus-trail a[href="#/focus/UC-ORDER"]')).not.toBeNull();
+      expect(doc.querySelector('#focus-trail [aria-current="page"]')?.textContent).toBe('BR-PAY');
+    });
+
+    it('is one step from the Reader both ways, and Enter on the centre reads it', () => {
+      open('#/artifacts/UC-ORDER');
+      const toFocus = doc.querySelector('#detail a[data-focus]') as HTMLAnchorElement;
+      expect(toFocus.getAttribute('href')).toBe('#/focus/UC-ORDER');
+      open('#/focus/UC-ORDER');
+      fire(doc.querySelector('#map-focus .fbox.centre')!, 'keydown', { key: 'Enter' });
+      expect(dom.window.location.hash).toBe('#/artifacts/UC-ORDER');
+    });
+
+    it('takes keyboard focus on the centre when the focus moves, and keeps the shortcut f', () => {
+      open('#/artifacts/BR-PAY');
+      fire(doc.body, 'keydown', { key: 'f' });
+      expect(dom.window.location.hash).toBe('#/focus/BR-PAY');
+      navigate('#/focus/BR-PAY');
+      expect(doc.activeElement?.getAttribute('data-id')).toBe('BR-PAY');
+    });
+
+    it('resolves an earlier snapshot’s focused-projection route into the Focus view, in place', () => {
+      open('#/graph/focus/UC-ORDER');
+      expect(dom.window.location.hash).toBe('#/focus/UC-ORDER');
+      expect(dom.window.history.length).toBe(1);
+      expect(doc.getElementById('view-focus')?.hidden).toBe(false);
+    });
+
+    it('always has a focus: the selection, or the first artifact in the Columns order', () => {
+      open('#/focus');
+      expect(dom.window.location.hash).toBe('#/focus/ACT-U');
+      open('#/artifacts/TERM-SKU');
+      const tab = doc.querySelector('nav.views a[data-view="focus"]')!;
+      expect(tab.getAttribute('href')).toBe('#/focus/TERM-SKU');
+    });
+
+    it('keeps every traversal it draws available without the visual, in the Reader', () => {
+      open('#/focus/UC-ORDER');
+      const drawnNeighbours = drawn('focus', 'fbox')
+        .filter((b) => !b.classList.contains('centre'))
+        .map((b) => b.getAttribute('data-id'))
+        .sort();
+      open('#/artifacts/UC-ORDER');
+      const readerLinks = new Set(
+        [...doc.querySelectorAll('#detail .rels a[href^="#/artifacts/"]')].map(
+          (a) => (a.getAttribute('href') ?? '').replace('#/artifacts/', '').split('?')[0],
+        ),
+      );
+      for (const id of drawnNeighbours) expect(readerLinks.has(id!), id!).toBe(true);
+      expect(readerLinks.size).toBe(drawnNeighbours.length);
+    });
+
+    it('sends an unknown focus to the explicit not-found state', () => {
+      open('#/focus/UC-NOPE');
+      expect(doc.getElementById('detail')?.textContent).toContain('UC-NOPE');
+    });
   });
 
-  it('draws the projection beside the Reader, anchored on the page selection', () => {
-    open('#/artifacts/UC-H00?k=use-case');
-    // Three regions of one instrument: master, detail and the focused topology, all live at once.
-    expect(doc.querySelector('#artifact-list a[aria-current="true"]')).not.toBeNull();
-    expect(doc.querySelector('#detail h3.artifact')?.textContent).toContain('UC-H00');
-    expect(doc.querySelectorAll('#graph-host button.tg').length).toBeGreaterThan(0);
-    expect(doc.querySelector('#graph-host .canvas')?.getAttribute('aria-label')).toContain(
-      'UC-H00',
-    );
+  describe('the Columns view', () => {
+    it('draws one column per kind present, in the stated order, and every relationship once', () => {
+      open('#/columns');
+      const heads = drawn('columns', 'colhead');
+      expect(heads.map((h) => h.className.replace('colhead k-', ''))).toEqual([
+        'actor',
+        'journey',
+        'use-case',
+        'bounded-context',
+        'business-rule',
+        'domain-term',
+        'functional-requirement',
+        'quality-requirement',
+        'constraint',
+        'structured-behaviour',
+      ]);
+      for (let i = 1; i < heads.length; i += 1)
+        expect(x(heads[i]!)).toBeGreaterThan(x(heads[i - 1]!));
+      const boxes = drawn('columns', 'cbox')
+        .map((b) => b.getAttribute('data-id'))
+        .sort();
+      expect(boxes).toEqual(product.map((a) => a.id).sort());
+      expect(doc.querySelectorAll('#map-columns svg.edges path').length).toBe(
+        compileGraph(product).edges.length,
+      );
+      expect(drawn('columns', 'ctx').map((n) => n.textContent)).toEqual([
+        'Sales',
+        'No single context',
+        'Sales',
+        'Stock',
+      ]);
+    });
+
+    it('leaves out the kinds the model lacks', () => {
+      open('#/columns', [product[0]!, product[2]!]);
+      expect(drawn('columns', 'colhead').map((h) => h.className.replace('colhead k-', ''))).toEqual(
+        ['actor', 'journey'],
+      );
+    });
+
+    it('selects on click or Enter, keeps the neighbourhood lit, and clears by click, Esc or a second click', () => {
+      open('#/columns');
+      fire(item('columns', 'BR-PAY'), 'click');
+      expect(dom.window.location.hash).toBe('#/columns/BR-PAY');
+      navigate('#/columns/BR-PAY');
+      expect(lit('columns')).toEqual(['BR-PAY', ...neighbours('BR-PAY')].sort());
+      const litPaths = doc.querySelectorAll('#map-columns svg.edges path.lit').length;
+      expect(litPaths).toBe(
+        compileGraph(product).edges.filter((e) => e.from === 'BR-PAY' || e.to === 'BR-PAY').length,
+      );
+      expect(item('columns', 'BR-PAY').getAttribute('aria-current')).toBe('true');
+      const card = doc.getElementById('mcard')!;
+      expect(card.hidden).toBe(false);
+      expect(card.hasAttribute('data-passive')).toBe(false);
+      expect(card.querySelector('a[href="#/focus/BR-PAY"]')).not.toBeNull();
+      fire(item('columns', 'BR-PAY'), 'click');
+      expect(dom.window.location.hash).toBe('#/columns');
+      navigate('#/columns/UC-ORDER');
+      fire(doc.body, 'keydown', { key: 'Escape' });
+      expect(dom.window.location.hash).toBe('#/columns');
+      open('#/columns');
+      fire(item('columns', 'QR-FAST'), 'keydown', { key: 'Enter' });
+      expect(dom.window.location.hash).toBe('#/columns/QR-FAST');
+    });
+
+    it('focuses on double-click', () => {
+      open('#/columns');
+      fire(item('columns', 'CON-EU'), 'dblclick');
+      expect(dom.window.location.hash).toBe('#/focus/CON-EU');
+    });
   });
 
-  it('says plainly why the projection is empty when nothing is selected yet', () => {
-    open('#/artifacts');
-    const note = doc.querySelector('#graph-host p.note');
-    expect(note?.textContent).toContain('Nothing is selected yet');
+  describe('determinism and appearance', () => {
+    it('lays every map out identically on every open, with no clock and no unseeded randomness', () => {
+      const planes = (): string[] => {
+        const out: string[] = [];
+        for (const route of ['#/', '#/focus/UC-ORDER', '#/columns']) {
+          navigate(route);
+          out.push(
+            doc.querySelector(`#map-${route.split('/')[1] || 'overview'} .plane`)!.innerHTML,
+          );
+        }
+        return out;
+      };
+      open('#/');
+      const first = planes();
+      open('#/', product, (w) => {
+        (w as unknown as { Math: Math }).Math.random = () => {
+          throw new Error('unseeded randomness');
+        };
+        (w as unknown as { Date: { now: () => number } }).Date.now = () => {
+          throw new Error('clock');
+        };
+      });
+      expect(planes()).toEqual(first);
+    });
+
+    it('carries the chosen appearance on every map route, and tunes the highlight per appearance', () => {
+      open('#/focus/UC-ORDER?a=dark');
+      expect(doc.documentElement.getAttribute('data-appearance')).toBe('dark');
+      fire(item('focus', 'BR-PAY'), 'click');
+      expect(dom.window.location.hash).toBe('#/focus/BR-PAY?a=dark');
+      const css = styleOf(build(product));
+      for (const appearance of ['light', 'dark'] as const) {
+        const t = tokens(css, appearance);
+        for (const name of ['glow-near', 'glow-far', 'glow-line', 'dim'])
+          expect(t[name], `${appearance} ${name}`).toBeTruthy();
+      }
+      expect(tokens(css, 'light')['glow-near']).not.toBe(tokens(css, 'dark')['glow-near']);
+      // The lit state is carried by more than colour: a heavier border and the dimming of the rest.
+      expect(css).toMatch(/\.mchip\.lit \{ border-width: 2px 2px 2px 4px;/);
+      expect(css).toMatch(
+        /\.mapview\[data-attending\] \.mchip:not\(\.lit\)[^{]*\{ opacity: var\(--dim\); \}/,
+      );
+    });
+
+    it('states every map shortcut, each backed by a visible control', () => {
+      open('#/');
+      const keys = doc.getElementById('keys')?.textContent ?? '';
+      for (const phrase of ['Zoom the map', 'Focus view', 'business lens', 'nearest artifact']) {
+        expect(keys).toContain(phrase);
+      }
+      for (const map of ['overview', 'focus', 'columns']) {
+        expect(doc.querySelector(`#maphint-${map}`)?.textContent).toMatch(/Enter/);
+        for (const zoom of ['in', 'out', 'fit']) {
+          expect(
+            doc
+              .querySelector(`[data-zoom="${zoom}"][data-map="${map}"]`)
+              ?.getAttribute('aria-label'),
+          ).toBeTruthy();
+        }
+      }
+      expect(doc.getElementById('lens-toggle')?.textContent).toContain('Business lens');
+    });
   });
 
-  it('shows every group of a small neighbourhood, counted, and no member until asked', () => {
-    open('#/artifacts/TERM-T');
-    const labels = [...doc.querySelectorAll('#graph-host button.tg')].map((b) =>
-      b.getAttribute('aria-label'),
-    );
-    expect(labels).toEqual([
-      'Declares 1 Bounded Contexts through defined-in',
-      'Referenced by 8 Use Cases through uses-terms',
-    ]);
-    expect(doc.querySelector('#graph-host .members-pop')).toBeNull();
-  });
+  describe('the business lens', () => {
+    const cardText = (): string => doc.getElementById('mcard')?.textContent ?? '';
 
-  it('keeps every traversal available without the visual', () => {
-    open('#/artifacts/UC-H00');
-    const readerLinks = [...doc.querySelectorAll('#detail .rels a[href^="#/artifacts/"]')];
-    expect(readerLinks.length).toBeGreaterThan(0);
-    // The dense group itself stays readable as text: the actor's 30 edges are a counted group.
-    open('#/artifacts/ACT-H');
-    const counts = [...doc.querySelectorAll('#detail .rels .gcount')].map((n) =>
-      Number(n.textContent),
-    );
-    expect(counts).toContain(30);
+    it('is one control and one key, a presentation choice held in the address in place', () => {
+      open('#/focus/UC-ORDER');
+      const toggle = doc.getElementById('lens-toggle')!;
+      expect(toggle.getAttribute('aria-pressed')).toBe('false');
+      const history = dom.window.history.length;
+      fire(toggle, 'click');
+      expect(dom.window.location.hash).toBe('#/focus/UC-ORDER?l=b');
+      expect(dom.window.history.length).toBe(history);
+      expect(toggle.getAttribute('aria-pressed')).toBe('true');
+      fire(doc.body, 'keydown', { key: 'l' });
+      expect(dom.window.location.hash).toBe('#/focus/UC-ORDER');
+    });
+
+    it('presents a use case as goal, trigger, users, rules, proof, demands and reach, in plain words', () => {
+      open('#/focus/UC-ORDER?l=b');
+      const text = cardText();
+      for (const quoted of [
+        'The customer gets what they chose.',
+        'The customer confirms the basket.',
+        'ACT-U',
+        'ACT-V',
+        'JRN-U',
+        'No order ships before it is paid.',
+        'An unpaid order is held',
+        'An order that is not paid',
+        'Shipping is requested',
+        'The order is held; The customer is told why',
+        'Check out in one step',
+        'Respond within a second',
+        'Store data in the EU',
+      ]) {
+        expect(text, quoted).toContain(quoted);
+      }
+      for (const verb of [
+        'Used by',
+        'Part of',
+        'Must obey',
+        'Proved by',
+        'Must do',
+        'Must also be',
+        'A change here puts in question',
+      ]) {
+        expect(text).toContain(verb);
+      }
+      // Titles, never identifiers or relationship names — the artifacts above are titled by their IDs
+      // in this fixture, so the check is on the use case itself and the vocabulary.
+      expect(text).not.toContain('UC-ORDER');
+      expect(text).not.toContain('BR-PAY');
+      for (const technical of [
+        'governed-by',
+        'derived-from',
+        'applies-to',
+        'primary-actor',
+        'illustrates',
+        'bounded-context',
+      ]) {
+        expect(text).not.toContain(technical);
+      }
+      // Each named artifact is one step from becoming the focus.
+      expect(doc.querySelector('#mcard a[href="#/focus/BR-PAY"]')).not.toBeNull();
+      expect(doc.querySelector('#mcard a[href^="#/artifacts/UC-ORDER"]')).not.toBeNull();
+    });
+
+    it('states what a change would put in question, from the same rule prodshape impact applies', () => {
+      open('#/focus/UC-ORDER?l=b');
+      const graph = compileGraph(product);
+      const questioned = [...new Set(putInQuestionBy(graph, 'UC-ORDER').map((e) => e.id))].sort();
+      const reach = [...doc.querySelectorAll('#mcard .creach a')].map((a) =>
+        (a.getAttribute('href') ?? '').replace('#/focus/', ''),
+      );
+      expect(reach.sort()).toEqual(questioned);
+      expect(embeddedData(build(product)).artifacts.find((a) => a.id === 'UC-ORDER')).toMatchObject(
+        { q: questioned },
+      );
+    });
+
+    it('says so when a section has nothing, and shows nothing the snapshot does not carry', () => {
+      open('#/focus/UC-RETURN?l=b');
+      const text = cardText();
+      expect(text).toContain('Not stated in the model.');
+      expect(text).toContain('None recorded in the model.');
+      for (const absent of ['product change', 'citation'])
+        expect(text.toLowerCase()).not.toContain(absent);
+    });
+
+    it('labels the Focus view with plain verbs and titles, and restores it when turned off', () => {
+      open('#/focus/UC-ORDER?l=b');
+      const rule = item('focus', 'BR-PAY');
+      expect(rule.querySelector('.rel')?.textContent).toBe('must obey');
+      expect(rule.querySelector('.bid')).toBeNull();
+      expect(item('focus', 'ACT-U').querySelector('.rel')?.textContent).toBe('used by');
+      expect(item('focus', 'FR-CHECKOUT').querySelector('.rel')?.textContent).toBe('must do');
+      fire(doc.getElementById('lens-toggle')!, 'click');
+      expect(item('focus', 'BR-PAY').querySelector('.rel')?.textContent).toBe('governed-by →');
+      expect(item('focus', 'BR-PAY').querySelector('.bid')?.textContent).toBe('BR-PAY');
+      expect(cardText()).toContain('UC-ORDER');
+    });
+
+    it('presents other kinds by title, plain kind and first statement, and joins the Reader', () => {
+      open('#/focus/BR-PAY?l=b');
+      expect(cardText()).toContain('Business rule');
+      expect(cardText()).toContain('No order ships before it is paid.');
+      expect(cardText()).not.toContain('BR-PAY');
+      open('#/artifacts/UC-ORDER?l=b');
+      expect(doc.querySelector('#detail .lenscard')?.textContent).toContain(
+        'The customer confirms the basket.',
+      );
+      open('#/artifacts/UC-ORDER');
+      expect(doc.querySelector('#detail .lenscard')).toBeNull();
+    });
+
+    it('embeds a behaviour’s given, when and then as lines', () => {
+      const sb = embeddedData(build(product)).artifacts.find(
+        (a) => a.id === 'SB-UNPAID',
+      ) as unknown as {
+        gwt: { given: string[]; when: string[]; then: string[] };
+      };
+      expect(sb.gwt).toEqual({
+        given: ['An order that is not paid'],
+        when: ['Shipping is requested'],
+        then: ['The order is held', 'The customer is told why'],
+      });
+    });
+
+    it('never lets authored content in a quoted section become markup', () => {
+      const nasty = product.map((a) =>
+        a.id === 'UC-ORDER' ? { ...a, body: `## Goal\n\n${hostile}\n\n## Trigger\n\nNow.` } : a,
+      );
+      open('#/focus/UC-ORDER?l=b', nasty);
+      const card = doc.getElementById('mcard')!;
+      expect(card.querySelector('script, div[onload]')).toBeNull();
+      expect(card.textContent).toContain('<script>alert(1)</script>');
+    });
   });
 });
 

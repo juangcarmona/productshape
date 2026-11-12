@@ -294,9 +294,9 @@ describe('prodshape graph / inspect / impact', () => {
     expect(html).not.toContain('src=');
     expect(html).not.toContain('<link');
     expect(html).not.toContain('<form');
-    // Relationships and the whole-model graph are reachable, built on demand from that data.
+    // Relationships and the three map views are reachable, drawn on demand from that data.
     expect(html).toContain('Referenced by (derived)');
-    expect(html).toContain('id="graph-host"');
+    for (const map of ['overview', 'focus', 'columns']) expect(html).toContain(`id="map-${map}"`);
   });
 
   it('graph --format html is byte-identical across regenerations', async () => {

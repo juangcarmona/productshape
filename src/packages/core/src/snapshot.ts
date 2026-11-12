@@ -1,4 +1,5 @@
 import type { ProductGraph } from './graph.js';
+import { putInQuestionBy } from './impact.js';
 import { escapeHtml, renderMarkdown } from './markdown.js';
 import type { LoadedArtifact } from './model.js';
 
@@ -121,6 +122,10 @@ const lightTokens: Record<string, string> = {
   'edge-soft': '#8a93a5',
   scrim: 'rgba(15, 18, 24, 0.32)',
   shadow: '0 12px 32px rgba(17, 24, 39, 0.16), 0 1px 3px rgba(17, 24, 39, 0.1)',
+  'glow-near': '42%',
+  'glow-far': '16%',
+  'glow-line': '1.5px',
+  dim: '0.28',
 };
 
 const darkTokens: Record<string, string> = {
@@ -140,6 +145,10 @@ const darkTokens: Record<string, string> = {
   'edge-soft': '#5b6576',
   scrim: 'rgba(0, 0, 0, 0.55)',
   shadow: '0 14px 36px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.45)',
+  'glow-near': '72%',
+  'glow-far': '40%',
+  'glow-line': '3px',
+  dim: '0.24',
 };
 
 function tokenBlock(
@@ -175,7 +184,6 @@ ${lightBlock}
   --sans: system-ui, -apple-system, 'Segoe UI', Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, 'SF Mono', 'Cascadia Mono', Consolas, 'Liberation Mono', Menlo, monospace;
   --master-w: 18.5rem;
-  --topo-w: 27rem;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -274,6 +282,7 @@ header.site .spacer { flex: 1; }
 main { flex: 1 1 auto; min-height: 0; overflow: hidden; }
 main > section { height: 100%; min-height: 0; }
 #view-overview { overflow-y: auto; }
+#view-focus:not([hidden]), #view-columns:not([hidden]) { display: flex; flex-direction: column; }
 #view-artifacts:not([hidden]) { display: flex; flex-direction: column; }
 h2.view { margin: 0 0 0.6rem; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
 h3.block { margin: 1.5rem 0 0.55rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
@@ -354,9 +363,9 @@ table.grid td.rel { font-family: var(--mono); font-size: 0.76rem; color: var(--m
 /* ------------------------------------------------------------ artifacts */
 .md {
   flex: 1 1 auto; min-height: 0; display: grid;
-  grid-template-columns: var(--master-w) minmax(0, 1fr) 7px var(--topo-w);
+  grid-template-columns: var(--master-w) minmax(0, 1fr);
 }
-body[data-master='rail'] .md { grid-template-columns: 3.4rem minmax(0, 1fr) 7px var(--topo-w); }
+body[data-master='rail'] .md { grid-template-columns: 3.4rem minmax(0, 1fr); }
 .master {
   min-width: 0; min-height: 0; display: flex; flex-direction: column;
   border-right: 1px solid var(--line-strong); background: var(--panel);
@@ -499,55 +508,129 @@ details.relgroup.hl, .relsolo.hl { border-color: var(--accent); box-shadow: 0 0 
 .unknown { border: 1px solid var(--line-strong); border-left: 3px solid var(--muted); padding: 0.7rem 0.9rem; max-width: 60rem; }
 .unknown .aid { font-family: var(--mono); }
 
-.split { cursor: col-resize; background: var(--bg); border-left: 1px solid var(--line-strong); position: relative; touch-action: none; }
-.split::after {
-  content: ''; position: absolute; top: 50%; left: 1px; width: 3px; height: 2.2rem; margin-top: -1.1rem;
-  border-left: 1px solid var(--line-strong); border-right: 1px solid var(--line-strong);
+/* ------------------------------------------------------------ maps */
+.ovhead {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 1.2rem;
+  padding: 0.7rem 1.2rem 0.65rem; border-bottom: 1px solid var(--line);
 }
-.split:hover, .split:focus-visible, .split[data-dragging] { background: var(--accent-soft); }
-.topo { min-width: 0; min-height: 0; display: flex; flex-direction: column; background: var(--bg); }
-#graph-host { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-.topohead { flex: none; display: flex; align-items: center; gap: 0.6rem; height: 2.4rem; padding: 0 0.8rem; border-bottom: 1px solid var(--line); }
-.topohead h4 { margin: 0; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.07em; }
-.topohead .legend { margin-left: auto; font-size: 0.74rem; color: var(--muted); }
-#graph-host p.note { margin: 0.8rem; }
-.stage { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; position: relative; }
-.canvas { position: relative; }
-.canvas > svg { position: absolute; left: 0; top: 0; overflow: visible; }
-.canvas line.edge { stroke: var(--edge-soft); stroke-width: 1.5; }
-.canvas line.edge.out { stroke: var(--edge); }
-.canvas line.edge.hl { stroke: var(--accent); stroke-width: 2.4; }
-.canvas marker path { fill: var(--edge); }
-.anode {
-  position: absolute; overflow: hidden; text-align: center; background: var(--raise);
-  border: 2px solid var(--ink); border-radius: 5px; padding: 0.4rem 0.6rem; z-index: 2;
+.ovhead h2.view { margin: 0; }
+.ovhead .ident { margin: 0; }
+.ovhead .lead { flex-basis: 100%; margin: 0; font-size: 0.84rem; color: var(--muted); max-width: none; }
+.ovhead [role='search'] { flex: 1 1 18rem; max-width: 30rem; }
+.ovhead .bigfind { height: 2rem; font-size: 0.86rem; }
+.tofacts { font-size: 0.8rem; }
+.mapbar { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 1rem; min-height: 2.6rem; padding: 0.35rem 1.2rem; border-bottom: 1px solid var(--line); }
+.mapbar h2.view { margin: 0; }
+.mapbar .note { margin: 0; }
+.trail ol { list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 0.2rem; margin: 0; padding: 0; font-size: 0.8rem; }
+.trail li + li::before { content: '›'; color: var(--muted); margin-right: 0.2rem; }
+.trail [aria-current] { color: var(--ink); font-weight: 600; }
+.mapbox { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; background: var(--panel); border-bottom: 1px solid var(--line); }
+#view-overview .mapbox { flex: none; height: max(24rem, calc(100vh - 9.6rem)); }
+.mapview { position: absolute; inset: 0; overflow: hidden; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.mapview[data-dragging] { cursor: grabbing; }
+.mapview:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+.maphint {
+  position: absolute; left: 0.7rem; top: 0.5rem; z-index: 2; margin: 0; max-width: calc(100% - 12rem);
+  padding: 0.1rem 0.4rem; font-size: 0.72rem; color: var(--muted); background: var(--panel); pointer-events: none;
 }
-.anode .aid { font: 0.7rem var(--mono); color: var(--muted); }
-.anode .t { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; color: var(--ink); font-weight: 650; line-height: 1.25; margin-top: 0.2rem; font-size: 0.82rem; }
-button.tg {
-  position: absolute; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
-  border: 1px solid var(--line-strong); background: var(--raise); border-radius: 4px;
-  padding: 0.25rem 0.4rem 0.3rem; cursor: pointer; text-align: center; overflow: hidden;
+.mapctl { position: absolute; right: 0.7rem; top: 0.5rem; z-index: 3; display: flex; gap: 0.25rem; }
+.mapctl .tbtn { min-width: 1.9rem; justify-content: center; }
+.plane { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+svg.edges { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+svg.edges path { fill: none; stroke: var(--kc, var(--edge)); stroke-width: 1.3; opacity: 0.34; }
+.mapview[data-attending] svg.edges path { opacity: 0.07; }
+.mapview[data-attending] svg.edges path.lit, #map-overview svg.edges path.lit {
+  opacity: 1; stroke-width: 2.4; filter: drop-shadow(0 0 var(--glow-line) var(--kc, var(--edge)));
 }
-button.tg:hover, button.tg.hl { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-button.tg[aria-expanded='true'] { border-color: var(--accent); background: var(--accent-soft); }
-button.tg .verb { font: 0.68rem var(--mono); color: var(--muted); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
-button.tg .main { display: flex; align-items: center; gap: 0.3rem; color: var(--ink); font-size: 0.78rem; font-weight: 600; white-space: nowrap; max-width: 100%; min-width: 0; }
-button.tg .main .lbl { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-button.tg .gcount { flex: none; }
-button.tg .gcount { font: 700 0.74rem var(--mono); color: var(--kc, var(--ink)); }
-.members-pop {
-  position: absolute; z-index: 6; display: flex; flex-direction: column; max-height: 300px;
-  background: var(--raise); border: 1px solid var(--line-strong); border-radius: 5px; box-shadow: var(--shadow);
+.tile { position: absolute; border: 1px dashed var(--line-strong); border-radius: 4px; }
+.tile-h {
+  position: absolute; left: 10px; top: 6px; right: 10px; display: flex; align-items: center; gap: 0.4rem;
+  font-size: 12.5px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden;
 }
-.members-pop header { display: flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.4rem 0.35rem 0.6rem; border-bottom: 1px solid var(--line); font-size: 0.76rem; color: var(--muted); }
-.members-pop header b { color: var(--ink); }
-.members-pop header .grow { flex: 1; }
-.members-pop ul { list-style: none; margin: 0; padding: 0.2rem 0; overflow-y: auto; }
-.members-pop li a { display: block; padding: 0.22rem 0.6rem; color: var(--text); font-size: 0.82rem; }
-.members-pop li a:hover { background: var(--panel); text-decoration: none; }
-.members-pop li a .aid { display: block; font: 0.68rem var(--mono); color: var(--muted); }
-.ghint { flex: none; margin: 0; border-top: 1px solid var(--line); padding: 0.35rem 0.8rem; font-size: 0.74rem; color: var(--muted); }
+.tile-h .n, .colhead .n { font-family: var(--mono); font-weight: 500; color: var(--muted); }
+.ctx {
+  position: absolute; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted);
+}
+.colhead { position: absolute; display: flex; align-items: center; gap: 0.45rem; font-size: 14px; font-weight: 600; color: var(--ink); white-space: nowrap; }
+.mchip, .fbox, .dot { position: absolute; margin: 0; cursor: pointer; transition: opacity 0.15s, box-shadow 0.15s; }
+.mchip {
+  display: block; padding: 0 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left;
+  font: 600 11px/22px var(--mono); color: var(--kc); background: var(--bg);
+  border: 1px solid color-mix(in srgb, var(--kc) 55%, transparent); border-left: 4px solid var(--kc); border-radius: 3px;
+}
+.fbox {
+  display: grid; grid-template-columns: 20px minmax(0, 1fr); column-gap: 8px; align-content: center;
+  padding: 4px 10px; overflow: hidden; text-align: left; color: var(--text); background: var(--bg);
+  border: 1px solid color-mix(in srgb, var(--kc) 55%, transparent); border-left: 5px solid var(--kc); border-radius: 3px;
+}
+.fbox > .ic { grid-row: 1 / 4; width: 20px; height: 20px; color: var(--kc); }
+.fbox .bid, .fbox .bkind { font: 700 12px/1.35 var(--mono); color: var(--kc); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fbox .bkind { font-family: var(--sans); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; font-size: 10.5px; }
+.fbox .bt { font-size: 12.5px; line-height: 1.3; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fbox .rel { font: 11px/1.35 var(--mono); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 2.4rem; }
+.fbox .more { position: absolute; right: 8px; bottom: 4px; font: 600 11px var(--mono); color: var(--accent); }
+.fbox.centre { cursor: pointer; border-width: 2px; border-left-width: 6px; border-color: var(--kc); }
+.fbox.centre .bid { font-size: 14px; }
+.fbox.centre .bt { font-size: 15px; font-weight: 600; white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.fgroup {
+  position: absolute; display: flex; align-items: center; gap: 0.4rem; padding: 0 8px; text-align: left; cursor: pointer;
+  font-size: 12px; font-weight: 600; color: var(--ink); background: var(--panel); border: 1px dashed var(--line-strong); border-radius: 3px;
+}
+.fgroup .chev { display: inline-flex; color: var(--muted); transition: transform 0.15s; }
+.fgroup[aria-expanded='true'] .chev { transform: rotate(90deg); }
+.fgroup[aria-expanded='false'] { border-style: solid; background: var(--bg); }
+.fgroup .lbl { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.fgroup .n { margin-left: auto; font-family: var(--mono); color: var(--muted); }
+.dot {
+  padding: 0; border-radius: 2px; opacity: 0.5;
+  background: color-mix(in srgb, var(--kc) 30%, var(--panel)); border: 1px solid var(--kc);
+}
+.dot:hover, .dot:focus-visible { opacity: 1; }
+/* The neon highlight: the attended artifact, its neighbours and their lines glow in their kind
+   colour, everything else dims. The glow is tuned per appearance; the heavier border and the
+   dimming carry the same state without colour. */
+.mchip.lit, .fbox.lit, .dot.lit, .fbox.centre {
+  border-color: var(--kc); opacity: 1;
+  box-shadow: 0 0 0 1px var(--kc), 0 0 10px color-mix(in srgb, var(--kc) var(--glow-near), transparent), 0 0 26px color-mix(in srgb, var(--kc) var(--glow-far), transparent);
+}
+.mchip.lit { border-width: 2px 2px 2px 4px; line-height: 20px; }
+.mapview[data-attending] .mchip:not(.lit), .mapview[data-attending] .fbox:not(.lit):not(.centre), .mapview[data-attending] .dot:not(.lit) { opacity: var(--dim); }
+.mchip.sel, .fbox.sel { outline: 2px solid var(--ink); outline-offset: 2px; }
+.mchip:focus-visible, .fbox:focus-visible, .fgroup:focus-visible, .dot:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.lensbtn {
+  display: inline-flex; align-items: center; gap: 0.35rem; height: 1.95rem; padding: 0 0.55rem;
+  border: 1px solid var(--line-strong); border-radius: 4px; background: var(--bg); color: var(--muted); cursor: pointer; font-size: 0.82rem;
+}
+.lensbtn:hover { border-color: var(--accent); color: var(--text); }
+.lensbtn[aria-pressed='true'] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.mcard {
+  position: fixed; left: 1rem; bottom: 1rem; z-index: 8; width: min(31rem, calc(100vw - 2rem)); max-height: min(60vh, 34rem);
+  overflow-y: auto; overflow-wrap: anywhere; padding: 0.65rem 0.9rem 0.75rem; font-size: 0.84rem;
+  background: var(--raise); border: 1px solid var(--line-strong); border-top: 3px solid var(--kc, var(--accent)); border-radius: 4px; box-shadow: var(--shadow);
+}
+.mcard[data-passive] { pointer-events: none; }
+@media (min-width: 56.3rem) {
+  body[data-lens='business'] .mcard { left: auto; right: 1rem; top: 7.6rem; bottom: 1rem; width: min(26rem, 40vw); max-height: none; }
+}
+.mcard .idline { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+.mcard .aid { font: 0.8rem var(--mono); color: var(--ink); }
+.mcard h3.ctitle { margin: 0.25rem 0 0.35rem; font-size: 1.02rem; line-height: 1.3; }
+.mcard .ckind { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--kc, var(--muted)); }
+.mcard .cnote { color: var(--muted); }
+.mcard p { margin: 0.2rem 0; }
+.mcard .cfoot { margin-top: 0.5rem; padding-top: 0.4rem; border-top: 1px solid var(--line); }
+.mcard .csec { margin-top: 0.55rem; }
+.mcard .csec h4 { margin: 0 0 0.15rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+.mcard .csec ul { list-style: none; margin: 0; padding: 0; }
+.mcard .csec li { padding: 0.1rem 0; }
+.mcard .cquote { margin: 0.1rem 0 0.2rem; padding-left: 0.6rem; border-left: 2px solid var(--line-strong); color: var(--text); }
+.mcard .none { color: var(--muted); font-style: italic; }
+.mcard dl.gwt { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0 0.5rem; margin: 0.1rem 0 0.25rem 0.6rem; }
+.mcard dl.gwt dt { font-weight: 600; color: var(--muted); }
+.mcard dl.gwt dd { margin: 0; }
+.detail .lenscard { position: static; width: auto; max-height: none; margin: 0 0 1rem; box-shadow: none; z-index: auto; }
 
 /* ------------------------------------------------------------ dialogs */
 .dlg {
@@ -591,10 +674,8 @@ dl.keys dd { margin: 0; }
 .toast[data-on] { opacity: 1; }
 
 @media (max-width: 76rem) {
-  .md { grid-template-columns: var(--master-w) minmax(0, 1fr); }
-  body[data-master='rail'] .md { grid-template-columns: 3.4rem minmax(0, 1fr); }
-  .topo, .split { display: none; }
   .findbtn { min-width: 0; }
+  .lensbtn .lbl { display: none; }
   .findbtn .lbl, .findbtn kbd { display: none; }
 }
 @media (max-width: 70rem) {
@@ -625,10 +706,13 @@ dl.keys dd { margin: 0; }
     min-width: 0; max-width: none; margin: 0; overflow: hidden; font-size: 0.78rem; text-overflow: ellipsis;
   }
   header.site .spacer { display: none; }
-  header.site nav.views { grid-column: 1 / -1; grid-row: 2; min-height: 2.4rem; }
+  header.site nav.views { grid-column: 1 / 3; grid-row: 2; min-height: 2.4rem; overflow-x: auto; }
   header.site .findbtn { grid-column: 2; grid-row: 1; }
   header.site .seg { grid-column: 3; grid-row: 1; }
+  header.site .lensbtn { grid-column: 3; grid-row: 2; }
   #keys-open { display: none; }
+  .maphint { display: none; }
+  .mcard { left: 0.5rem; right: 0.5rem; bottom: 0.5rem; width: auto; max-height: 45vh; }
 }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
@@ -709,6 +793,8 @@ const script = String.raw`
     copy: '<rect x="5.3" y="5.3" width="8.4" height="8.4" rx="1.2"/><path d="M10.7 5.3V3.5a1.2 1.2 0 0 0-1.2-1.2H3.5a1.2 1.2 0 0 0-1.2 1.2v6a1.2 1.2 0 0 0 1.2 1.2h1.8"/>',
     link: '<path d="M6.7 9.3a2.9 2.9 0 0 0 4.1 0l2.3-2.3a2.9 2.9 0 0 0-4.1-4.1l-.9.9M9.3 6.7a2.9 2.9 0 0 0-4.1 0L2.9 9a2.9 2.9 0 0 0 4.1 4.1l.9-.9"/>',
     close: '<path d="M4 4l8 8M12 4l-8 8"/>',
+    focus: '<circle cx="8" cy="8" r="2.2"/><path d="M8 1.5v2.6M8 11.9v2.6M1.5 8h2.6M11.9 8h2.6"/><circle cx="8" cy="8" r="5.2"/>',
+    lens: '<path d="M1.5 8s2.4-4.6 6.5-4.6S14.5 8 14.5 8s-2.4 4.6-6.5 4.6S1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2.1"/>',
   };
   var injectSprite = function () {
     var parts = [];
@@ -757,17 +843,19 @@ const script = String.raw`
 
   /* ---------------------------------------------------------------- routing */
 
-  var views = ['overview', 'artifacts'];
+  var views = ['overview', 'focus', 'columns', 'artifacts'];
 
   /*
    * Everything the reader can share lives in the address, in a fixed serialization order so identical
    * states produce identical addresses: k = kind, s = status, c = bounded context, f = name/ID filter
-   * (inbound from earlier snapshots), q = search query while the search dialog is open, x = the open
-   * Focused Topology group, a = chosen appearance, m = collapsed master area.
+   * (inbound from earlier snapshots), q = search query while the search dialog is open, x = the Focus
+   * view groups whose disclosure the reader flipped, a = chosen appearance, m = collapsed master
+   * area, l = the business lens.
    */
-  var CAT_KEYS = ['k', 's', 'c', 'f', 'q', 'x', 'a', 'm'];
+  var CAT_KEYS = ['k', 's', 'c', 'f', 'q', 'x', 'a', 'm', 'l'];
+  var PRESENTATION = ['a', 'm', 'l'];
   var emptyCat = function () {
-    return { k: null, s: null, c: null, f: null, q: null, x: null, a: null, m: null };
+    return { k: null, s: null, c: null, f: null, q: null, x: null, a: null, m: null, l: null };
   };
   var catWith = function (base, changes) {
     var cat = emptyCat();
@@ -804,6 +892,8 @@ const script = String.raw`
     }
     if (cat.a !== 'light' && cat.a !== 'dark') cat.a = null;
     if (cat.m !== 'rail') cat.m = null;
+    if (cat.l !== 'b') cat.l = null;
+    if (cat.x && !/^[a-z-]+(,[a-z-]+)*$/.test(cat.x)) cat.x = null;
     return cat;
   };
 
@@ -816,18 +906,24 @@ const script = String.raw`
       hash = hash.slice(0, q);
     }
     if (hash === '' || hash === '/') return { view: 'overview', id: null, legacy: false, cat: cat };
-    if (/^\/artifacts\/(.+)$/.test(hash)) {
-      return { view: 'artifacts', id: decodeURIComponent(hash.replace(/^\/artifacts\//, '')), legacy: false, cat: cat };
+    var routed = /^\/(overview|focus|columns|artifacts)(?:\/(.+))?$/.exec(hash);
+    if (routed) {
+      var routedId = null;
+      try {
+        routedId = routed[2] ? decodeURIComponent(routed[2]) : null;
+      } catch (err) {
+        routedId = routed[2];
+      }
+      return { view: routed[1], id: routedId, legacy: false, cat: cat };
     }
-    if (hash === '/artifacts') return { view: 'artifacts', id: null, legacy: false, cat: cat };
+    /* Routes earlier snapshots produced for their projections resolve in place: a focused
+       projection becomes the Focus view, the others the Overview. */
     var focused = /^\/graph\/focus\/(.+)$/.exec(hash);
     if (focused) {
-      return { view: 'artifacts', id: decodeURIComponent(focused[1]), legacy: false, cat: cat, stale: true };
+      return { view: 'focus', id: decodeURIComponent(focused[1]), legacy: false, cat: cat, stale: true };
     }
-    /* Routes earlier snapshots produced for the standalone projections resolve in place: the
-       Focused Topology now lives beside the Reader on the artifacts view. */
     if (hash === '/graph' || hash === '/graph/layers' || hash === '/graph/focus') {
-      return { view: 'artifacts', id: null, legacy: false, cat: cat, stale: true };
+      return { view: 'overview', id: null, legacy: false, cat: cat, stale: true };
     }
     /* Legacy fragment produced by earlier snapshots: a bare artifact identifier. Permanent. */
     if (/^[A-Z][A-Z0-9]*(-[A-Z0-9]+)+$/.test(hash)) {
@@ -836,11 +932,20 @@ const script = String.raw`
     return { view: 'artifacts', id: null, legacy: false, bad: hash, cat: cat };
   };
 
+  /* Which address keys each view carries: the Catalog's discovery travels with the Reader and the
+     Focus view, so returning to the list resumes it; disclosure belongs to the Focus view only. */
+  var onlyKeys = function (cat, keys) {
+    var out = emptyCat();
+    for (var i = 0; i < keys.length; i += 1) out[keys[i]] = cat[keys[i]] || null;
+    return out;
+  };
   var hashFor = function (next) {
-    if (next.view === 'artifacts') {
-      return (next.id ? '#/artifacts/' + next.id : '#/artifacts') + catQuery(next.cat);
-    }
-    return '#/' + catQuery(catWith(null, { q: next.cat.q, a: next.cat.a, m: next.cat.m }));
+    var path = next.id ? '/' + next.id : '';
+    if (next.view === 'artifacts') return '#/artifacts' + path + catQuery(catWith(next.cat, { x: null }));
+    if (next.view === 'focus') return '#/focus' + path + catQuery(next.cat);
+    var shared = catQuery(onlyKeys(next.cat, ['q', 'a', 'm', 'l']));
+    if (next.view === 'columns') return '#/columns' + path + shared;
+    return (next.id ? '#/overview' + path : '#/') + shared;
   };
 
   var state = { view: 'overview', id: null, cat: emptyCat(), unknown: null };
@@ -848,7 +953,7 @@ const script = String.raw`
 
   /** The discovery an artifact link carries: the filters, never the open dialog or disclosure. */
   var linkCat = function () {
-    return catWith(state.cat, { q: null, x: null, a: null, m: null });
+    return catWith(state.cat, { q: null, x: null, a: null, m: null, l: null });
   };
   var artifactHref = function (id) {
     return '#/artifacts/' + id + catQuery(linkCat());
@@ -861,8 +966,7 @@ const script = String.raw`
   var go = function (next, mode, keepPresentation) {
     var cat = catWith(next.cat, {});
     if (keepPresentation !== false) {
-      cat.a = state.cat.a;
-      cat.m = state.cat.m;
+      for (var p = 0; p < PRESENTATION.length; p += 1) cat[PRESENTATION[p]] = state.cat[PRESENTATION[p]];
     }
     var resolved = { view: next.view, id: next.id || null, cat: cat, unknown: next.unknown || null };
     var target = hashFor(resolved);
@@ -897,11 +1001,22 @@ const script = String.raw`
     if (parsed.bad) unknown = parsed.bad;
     if ((parsed.legacy || parsed.stale) && !unknown) {
       /* Resolve, then normalize in place so no redundant history entry is created. */
-      state.cat = catWith(state.cat, { a: parsed.cat.a, m: parsed.cat.m });
-      go({ view: 'artifacts', id: parsed.id, cat: parsed.cat }, 'replace');
+      state.cat = catWith(state.cat, { a: parsed.cat.a, m: parsed.cat.m, l: parsed.cat.l });
+      go({ view: parsed.view, id: parsed.id, cat: parsed.cat }, 'replace');
       syncFind();
       return;
     }
+    if (parsed.view === 'focus' && !parsed.id && !unknown) {
+      /* The Focus view always has a focus: the current selection, or the first artifact drawn. */
+      var chosen = defaultFocusId();
+      if (chosen) {
+        state.cat = catWith(state.cat, { a: parsed.cat.a, m: parsed.cat.m, l: parsed.cat.l });
+        go({ view: 'focus', id: chosen, cat: parsed.cat }, 'replace');
+        syncFind();
+        return;
+      }
+    }
+    if (unknown) parsed.view = 'artifacts';
     state = { view: parsed.view, id: unknown ? null : parsed.id, cat: parsed.cat, unknown: unknown };
     render();
     syncFind();
@@ -912,8 +1027,8 @@ const script = String.raw`
   var withPresentation = function (href) {
     var q = href.indexOf('?');
     var path = q >= 0 ? href.slice(0, q) : href;
-    var cat = catWith(catParse(q >= 0 ? href.slice(q + 1) : ''), { a: state.cat.a, m: state.cat.m });
-    if (path === '#/' || path === '#') cat = catWith(null, { q: cat.q, a: cat.a, m: cat.m });
+    var cat = catWith(catParse(q >= 0 ? href.slice(q + 1) : ''), { a: state.cat.a, m: state.cat.m, l: state.cat.l });
+    if (path === '#/' || path === '#') cat = onlyKeys(cat, ['q', 'a', 'm', 'l']);
     return path + catQuery(cat);
   };
 
@@ -928,6 +1043,9 @@ const script = String.raw`
     for (var i = 0; i < choices.length; i += 1) {
       choices[i].setAttribute('aria-pressed', String(choices[i].getAttribute('data-appearance-set') === (a || 'auto')));
     }
+    doc.body.setAttribute('data-lens', state.cat.l === 'b' ? 'business' : 'off');
+    var lens = doc.getElementById('lens-toggle');
+    if (lens) lens.setAttribute('aria-pressed', String(state.cat.l === 'b'));
     var toggle = doc.getElementById('master-toggle');
     if (toggle) {
       var rail = state.cat.m === 'rail';
@@ -942,6 +1060,12 @@ const script = String.raw`
   };
   var toggleMaster = function () {
     setPresentation({ m: state.cat.m === 'rail' ? null : 'rail' });
+  };
+  var toggleLens = function () {
+    setPresentation({ l: state.cat.l === 'b' ? null : 'b' });
+    /* The docked card changes the room the map has. */
+    var m = maps[state.view];
+    if (m && m.plane) fitMap(m);
   };
 
   var toastTimer = null;
@@ -1454,6 +1578,14 @@ const script = String.raw`
     copyLink.appendChild(icon('link'));
     copyLink.appendChild(doc.createTextNode('Copy link'));
     bar.appendChild(copyLink);
+    var toFocus = doc.createElement('a');
+    toFocus.className = 'tbtn';
+    toFocus.href = '#/focus/' + a.id;
+    toFocus.setAttribute('data-focus', a.id);
+    toFocus.title = 'Open the Focus view on ' + a.id + ' (f)';
+    toFocus.appendChild(icon('focus'));
+    toFocus.appendChild(doc.createTextNode('Focus'));
+    bar.appendChild(toFocus);
     host.appendChild(bar);
 
     var header = doc.createElement('header');
@@ -1475,6 +1607,12 @@ const script = String.raw`
       header.appendChild(dl);
     }
     host.appendChild(header);
+    if (lensOn() && a.kind === 'use-case') {
+      var lens = el('section', 'mcard lenscard k-' + a.kind);
+      lens.setAttribute('aria-label', 'Business lens: ' + (a.title || a.id));
+      businessCard(lens, a);
+      host.appendChild(lens);
+    }
 
     var nOut = (outgoing[a.id] || []).length;
     var nIn = (incoming[a.id] || []).length;
@@ -1503,91 +1641,126 @@ const script = String.raw`
     host.appendChild(rels);
   };
 
-  /* ------------------------------------------------------- focused topology */
+  /* ------------------------------------------------------------------ the maps */
 
-  /* Layout constants of the row projection. Presentation, not product rules. */
-  var CHIP_W = 184;
-  var CHIP_H = 46;
-  var COL_GAP = 12;
-  var ROW_H = 58;
-  var LANE = 52;
-  var ANCHOR_W = 232;
-  var ANCHOR_H = 76;
-  var PAD = 14;
-  var FALLBACK_W = 560;
-  var LIST_W = 290;
+  /* The Columns order, which is also the order the methodology explains a product in. A kind the
+     model holds outside it follows, in the generator's kind order. */
+  var COLUMN_ORDER = [
+    'actor', 'journey', 'use-case', 'bounded-context', 'business-rule', 'domain-term',
+    'functional-requirement', 'quality-requirement', 'constraint', 'structured-behaviour',
+  ];
+  var COLUMNS = [];
+  for (var co = 0; co < COLUMN_ORDER.length; co += 1) if (ORDER.indexOf(COLUMN_ORDER[co]) >= 0) COLUMNS.push(COLUMN_ORDER[co]);
+  for (var ox = 0; ox < ORDER.length; ox += 1) if (COLUMN_ORDER.indexOf(ORDER[ox]) < 0) COLUMNS.push(ORDER[ox]);
+  var colOf = function (kind) {
+    return COLUMNS.indexOf(kind);
+  };
 
-  /**
-   * Row layout: declared groups above the anchor, referencing groups below, each row centred and
-   * wrapped to the pane width. A pure function of the counts and the width, so identical inputs
-   * give identical boxes and no two boxes can overlap.
+  /* Direct neighbours, distinct, in compiled edge order. */
+  var nbrs = {};
+  var nbrSeen = {};
+  for (var na = 0; na < ARTIFACTS.length; na += 1) {
+    nbrs[ARTIFACTS[na].id] = [];
+    nbrSeen[ARTIFACTS[na].id] = {};
+  }
+  var addNbr = function (from, to) {
+    if (!nbrs[from] || nbrSeen[from][to] || from === to) return;
+    nbrSeen[from][to] = true;
+    nbrs[from].push(to);
+  };
+  for (var ne = 0; ne < EDGES.length; ne += 1) {
+    if (!byId[EDGES[ne].from] || !byId[EDGES[ne].to]) continue;
+    addNbr(EDGES[ne].from, EDGES[ne].to);
+    addNbr(EDGES[ne].to, EDGES[ne].from);
+  }
+
+  /*
+   * Use cases and domain terms are grouped by the one bounded context the model records for each.
+   * An artifact recording none, or more than one, is still drawn, in a group of its own that sorts
+   * last: the grouping degrades, it never drops an artifact.
    */
-  var layoutRows = function (nOut, nIn, width) {
-    var usable = Math.max(CHIP_W, width - 2 * PAD);
-    var per = Math.max(1, Math.floor((usable + COL_GAP) / (CHIP_W + COL_GAP)));
-    var rowsOut = Math.ceil(nOut / per);
-    var rowsIn = Math.ceil(nIn / per);
-    var anchorTop = PAD + (rowsOut > 0 ? (rowsOut - 1) * ROW_H + CHIP_H + LANE : 0);
-    var anchorBottom = anchorTop + ANCHOR_H;
-    var cx = width / 2;
-    var place = function (n, direction) {
-      var boxes = [];
-      for (var i = 0; i < n; i += 1) {
-        var r = Math.floor(i / per);
-        var inRow = Math.min(per, n - r * per);
-        var j = i - r * per;
-        var span = inRow * CHIP_W + (inRow - 1) * COL_GAP;
-        var x = Math.round(cx - span / 2 + j * (CHIP_W + COL_GAP));
-        var y = direction === 'out' ? anchorTop - LANE - CHIP_H - r * ROW_H : anchorBottom + LANE + r * ROW_H;
-        boxes.push({ x: x, y: y, w: CHIP_W, h: CHIP_H, row: r });
-      }
-      return boxes;
-    };
-    var height = anchorBottom + (rowsIn > 0 ? LANE + (rowsIn - 1) * ROW_H + CHIP_H : 0) + PAD;
-    return {
-      width: width,
-      height: height,
-      anchor: { x: Math.round(cx - ANCHOR_W / 2), y: anchorTop, w: ANCHOR_W, h: ANCHOR_H },
-      out: place(nOut, 'out'),
-      inc: place(nIn, 'in'),
-    };
+  var CONTEXT_REL = { 'use-case': 'bounded-context', 'domain-term': 'defined-in' };
+  var NO_CONTEXT = '￿none';
+  var contextOf = {};
+  for (var ca = 0; ca < ARTIFACTS.length; ca += 1) {
+    var cart = ARTIFACTS[ca];
+    if (!hasOwn(CONTEXT_REL, cart.kind)) continue;
+    var found = [];
+    var outs = outgoing[cart.id] || [];
+    for (var ce = 0; ce < outs.length; ce += 1) {
+      if (outs[ce].kind === CONTEXT_REL[cart.kind] && byId[outs[ce].to] && found.indexOf(outs[ce].to) < 0) found.push(outs[ce].to);
+    }
+    contextOf[cart.id] = found.length === 1 ? found[0] : NO_CONTEXT;
+  }
+  var groupKey = function (a) {
+    return hasOwn(CONTEXT_REL, a.kind) ? contextOf[a.id] : '';
+  };
+  var contextLabel = function (key) {
+    if (key === NO_CONTEXT) return 'No single context';
+    return byId[key] && byId[key].title ? byId[key].title : key;
   };
 
-  var openGroupIndex = function (count) {
-    if (!state.cat.x || state.cat.x === '-') return -1;
-    var index = parseInt(String(state.cat.x).split('.')[0], 10);
-    return isNaN(index) || index < 0 || index >= count ? -1 : index;
-  };
-  var setOpenGroup = function (index) {
-    catalogChanged({ x: index < 0 ? null : String(index) });
-  };
-
-  var highlight = function (key) {
-    var lit = doc.querySelectorAll('.hl[data-key]');
-    for (var i = 0; i < lit.length; i += 1) lit[i].classList.remove('hl');
-    if (!key) return;
-    var matches = doc.querySelectorAll('[data-key]');
-    for (var m = 0; m < matches.length; m += 1) {
-      if (matches[m].getAttribute('data-key') === key) matches[m].classList.add('hl');
+  /*
+   * Order inside each kind: by context group, then by the mean position of the artifact's
+   * neighbours in the other columns, swept a fixed number of times in alternating directions, ties
+   * broken by identifier. Pure arithmetic on the compiled graph: no clock, no randomness.
+   */
+  var orderByKind = {};
+  (function () {
+    var cmpGroup = function (a, b) {
+      var x = groupKey(a);
+      var y = groupKey(b);
+      return x < y ? -1 : x > y ? 1 : 0;
+    };
+    var byIdCmp = function (a, b) {
+      return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+    };
+    for (var k = 0; k < COLUMNS.length; k += 1) {
+      var list = [];
+      for (var i = 0; i < ARTIFACTS.length; i += 1) if (ARTIFACTS[i].kind === COLUMNS[k]) list.push(ARTIFACTS[i]);
+      list.sort(function (a, b) {
+        return cmpGroup(a, b) || byIdCmp(a, b);
+      });
+      orderByKind[COLUMNS[k]] = list;
     }
-  };
-  /** Scroll the Reader so its group of the given key is in view, opening it if collapsed. */
-  var revealInReader = function (key) {
-    var detail = doc.getElementById('detail');
-    if (!detail) return;
-    var nodes = detail.querySelectorAll('[data-key]');
-    for (var i = 0; i < nodes.length; i += 1) {
-      if (nodes[i].getAttribute('data-key') !== key) continue;
-      if (nodes[i].tagName === 'DETAILS' && !nodes[i].open) {
-        nodes[i].open = true;
-        nodes[i].dispatchEvent(new Event('toggle'));
+    for (var pass = 0; pass < 8; pass += 1) {
+      var row = {};
+      for (var c = 0; c < COLUMNS.length; c += 1) {
+        var members = orderByKind[COLUMNS[c]];
+        for (var r = 0; r < members.length; r += 1) row[members[r].id] = (r + 0.5) / members.length;
       }
-      var top = nodes[i].offsetTop;
-      if (top < detail.scrollTop || top + nodes[i].offsetHeight > detail.scrollTop + detail.clientHeight) {
-        detail.scrollTop = Math.max(0, top - 24);
+      for (var s = 0; s < COLUMNS.length; s += 1) {
+        var col = pass % 2 ? COLUMNS.length - 1 - s : s;
+        var key = {};
+        var current = orderByKind[COLUMNS[col]];
+        for (var m = 0; m < current.length; m += 1) {
+          var near = nbrs[current[m].id];
+          var sum = 0;
+          var count = 0;
+          for (var q = 0; q < near.length; q += 1) {
+            if (colOf(byId[near[q]].kind) === col) continue;
+            sum += row[near[q]];
+            count += 1;
+          }
+          key[current[m].id] = count > 0 ? sum / count : row[current[m].id];
+        }
+        current.sort(function (a, b) {
+          return cmpGroup(a, b) || key[a.id] - key[b.id] || byIdCmp(a, b);
+        });
       }
-      return;
     }
+  })();
+  /** Consecutive artifacts of one kind that share a context group (one block when ungrouped). */
+  var blocksOf = function (kind) {
+    var out = [];
+    var list = orderByKind[kind] || [];
+    for (var i = 0; i < list.length; i += 1) {
+      var g = groupKey(list[i]);
+      var last = out[out.length - 1];
+      if (last && last.key === g) last.list.push(list[i]);
+      else out.push({ key: g, list: [list[i]] });
+    }
+    return out;
   };
 
   var svgEl = function (tag, attrs) {
@@ -1597,242 +1770,1125 @@ const script = String.raw`
     }
     return node;
   };
-
-  var lastTopoKey = null;
-  var buildFocus = function (force) {
-    var host = doc.getElementById('graph-host');
-    if (!host) return;
-    var anchorId = state.id;
-    var width = host.clientWidth || FALLBACK_W;
-    var key = (anchorId || '') + '|' + (state.cat.x || '') + '|' + width;
-    if (!force && key === lastTopoKey) return;
-    lastTopoKey = key;
-    clear(host);
-
-    var head = el('div', 'topohead');
-    head.appendChild(el('h4', null, 'Neighbourhood'));
-    head.appendChild(el('span', 'legend', '↑ declares · ↓ referenced by'));
-    host.appendChild(head);
-
-    var anchor = byId[anchorId];
-    if (!anchor) {
-      host.appendChild(el('p', 'note', 'The neighbourhood of the selected artifact is drawn here. Nothing is selected yet.'));
-      return;
-    }
-    var out = groupEdges(outgoing[anchorId] || [], 'out');
-    var inc = groupEdges(incoming[anchorId] || [], 'in');
-    var total = (outgoing[anchorId] || []).length + (incoming[anchorId] || []).length;
-    if (total === 0) {
-      host.appendChild(el('p', 'note', 'This artifact declares no relationships and is referenced by none.'));
-      return;
-    }
-    var all = out.concat(inc);
-    var open = openGroupIndex(all.length);
-    var layout = layoutRows(out.length, inc.length, width);
-    var boxes = layout.out.concat(layout.inc);
-
-    var stage = el('div', 'stage');
-    var canvas = el('div', 'canvas');
-    canvas.setAttribute('role', 'group');
-    canvas.setAttribute(
-      'aria-label',
-      'Neighbourhood of ' + anchorId + ': ' + total + ' relationships in ' + all.length + ' groups',
-    );
-    var height = layout.height;
-    var popBox = null;
-    if (open >= 0) {
-      var ob = boxes[open];
-      var listH = Math.min(300, 40 + all[open].edges.length * 36);
-      var listW = Math.min(LIST_W, width - 16);
-      popBox = {
-        x: Math.round(Math.max(8, Math.min(width - listW - 8, ob.x + ob.w / 2 - listW / 2))),
-        y: ob.y + ob.h + 6,
-        w: listW,
-        h: listH,
-      };
-      height = Math.max(height, popBox.y + popBox.h + PAD);
-    }
-    canvas.style.height = height + 'px';
-
-    var svg = svgEl('svg', { width: width, height: height, viewBox: '0 0 ' + width + ' ' + height, 'aria-hidden': 'true', focusable: 'false' });
-    var defs = svgEl('defs', {});
-    var marker = svgEl('marker', { id: 'topo-arrow', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' });
-    marker.appendChild(svgEl('path', { d: 'M 0 0 L 10 5 L 0 10 z' }));
-    defs.appendChild(marker);
-    svg.appendChild(defs);
-    var A = layout.anchor;
-    /*
-     * Straight lines, one anchor port each: ports are spread along the anchor's edge in the order of
-     * the groups they reach, so lines fan out instead of converging on one point and never cross.
-     * The group end attaches at the point of the group nearest its port. Every arrow follows the
-     * relationship: into the group it declares, and into the anchor from each group referencing it.
-     */
-    var clamp = function (v, lo, hi) {
-      return Math.max(lo, Math.min(hi, v));
+  /** A horizontal S-curve between the facing sides of two boxes; a loop when they share a column. */
+  var curve = function (a, b) {
+    var from = a.x <= b.x ? a : b;
+    var to = a.x <= b.x ? b : a;
+    var x1 = from.x + from.w;
+    var y1 = from.y + from.h / 2;
+    var x2 = to.x;
+    var y2 = to.y + to.h / 2;
+    if (from.x === to.x) return 'M' + x1 + ' ' + y1 + ' C' + (x1 + 70) + ' ' + y1 + ', ' + (x1 + 70) + ' ' + y2 + ', ' + x1 + ' ' + y2;
+    var mid = (x1 + x2) / 2;
+    return 'M' + x1 + ' ' + y1 + ' C' + mid + ' ' + y1 + ', ' + mid + ' ' + y2 + ', ' + x2 + ' ' + y2;
+  };
+  /** Seeded generator (mulberry32): the Focus view's background is arranged identically every time. */
+  var seeded = function (seed) {
+    return function () {
+      seed |= 0;
+      seed = (seed + 0x6d2b79f5) | 0;
+      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
-    var connect = function (from, count) {
-      var order = [];
-      for (var p = 0; p < count; p += 1) order.push(from + p);
-      order.sort(function (x, y) {
-        return boxes[x].x - boxes[y].x || boxes[x].row - boxes[y].row || x - y;
-      });
-      var margin = 22;
-      var span = A.w - 2 * margin;
-      for (var q = 0; q < order.length; q += 1) {
-        var index = order[q];
-        var b = boxes[index];
-        var outward = all[index].direction === 'out';
-        var port = Math.round(
-          order.length === 1 ? A.x + A.w / 2 : A.x + margin + (span * (q + 0.5)) / order.length,
-        );
-        var attach = Math.round(clamp(port, b.x + 18, b.x + b.w - 18));
-        var anchorY = outward ? A.y - 1 : A.y + A.h + 1;
-        var groupY = outward ? b.y + b.h + 1 : b.y - 1;
-        svg.appendChild(
-          svgEl('line', {
-            class: 'edge ' + (outward ? 'out' : 'in'),
-            'data-key': all[index].key,
-            'data-port': port,
-            x1: outward ? port : attach,
-            y1: outward ? anchorY : groupY,
-            x2: outward ? attach : port,
-            y2: outward ? groupY : anchorY,
-            'marker-end': 'url(#topo-arrow)',
-          }),
-        );
-      }
-    };
-    connect(0, out.length);
-    connect(out.length, inc.length);
-    canvas.appendChild(svg);
-
-    var node = el('div', 'anode');
-    node.style.left = A.x + 'px';
-    node.style.top = A.y + 'px';
-    node.style.width = A.w + 'px';
-    node.style.height = A.h + 'px';
-    node.appendChild(tokenFor(anchor.kind));
-    node.appendChild(doc.createTextNode(' '));
-    node.appendChild(el('span', 'aid', anchor.id));
-    node.appendChild(el('span', 't', anchor.title || anchor.id));
-    node.title = (anchor.title || anchor.id) + ' — ' + anchor.id;
-    canvas.appendChild(node);
-
-    for (var t = 0; t < all.length; t += 1) {
-      var group = all[t];
-      var box = boxes[t];
-      var chip = el('button', 'tg k-' + group.kind);
-      chip.type = 'button';
-      chip.setAttribute('data-group', String(t));
-      chip.setAttribute('data-key', group.key);
-      chip.setAttribute('aria-expanded', String(t === open));
-      chip.style.left = box.x + 'px';
-      chip.style.top = box.y + 'px';
-      chip.style.width = box.w + 'px';
-      chip.style.height = box.h + 'px';
-      var described =
-        (group.direction === 'out' ? 'Declares ' : 'Referenced by ') + group.edges.length + ' ' +
-        (LABELS[group.kind] || group.kind) + ' through ' + group.relKind;
-      chip.setAttribute('aria-label', described);
-      chip.title = described;
-      chip.appendChild(el('span', 'verb', (group.direction === 'out' ? '↑ ' : '↓ ') + verbOf(group.relKind)));
-      var main = el('span', 'main');
-      main.appendChild(tokenFor(group.kind));
-      main.appendChild(el('span', 'lbl', LABELS[group.kind] || group.kind));
-      main.appendChild(el('span', 'gcount', group.edges.length));
-      chip.appendChild(main);
-      canvas.appendChild(chip);
-    }
-
-    if (open >= 0) {
-      var opened = all[open];
-      var pop = el('div', 'members-pop');
-      pop.setAttribute('role', 'region');
-      pop.setAttribute('data-members', opened.key);
-      pop.setAttribute(
-        'aria-label',
-        verbOf(opened.relKind) + ' · ' + (LABELS[opened.kind] || opened.kind) + ', ' + opened.edges.length + ' members',
-      );
-      pop.style.left = popBox.x + 'px';
-      pop.style.top = popBox.y + 'px';
-      pop.style.width = popBox.w + 'px';
-      var ph = doc.createElement('header');
-      ph.appendChild(el('b', null, verbOf(opened.relKind)));
-      ph.appendChild(el('span', 'grow', (LABELS[opened.kind] || opened.kind) + ' (' + opened.edges.length + ')'));
-      var closeBtn = el('button', 'iconbtn');
-      closeBtn.type = 'button';
-      closeBtn.setAttribute('data-close', '');
-      closeBtn.setAttribute('aria-label', 'Close the member list (Esc)');
-      closeBtn.appendChild(icon('close'));
-      ph.appendChild(closeBtn);
-      pop.appendChild(ph);
-      var ul = el('ul');
-      for (var mm = 0; mm < opened.edges.length; mm += 1) {
-        var memberId = otherEnd(opened.edges[mm], opened.direction);
-        var member = byId[memberId];
-        var li = el('li');
-        var link = doc.createElement('a');
-        link.href = artifactHref(memberId);
-        link.setAttribute('data-member', memberId);
-        link.appendChild(el('span', 'name', member && member.title ? member.title : memberId));
-        link.appendChild(el('span', 'aid', memberId));
-        li.appendChild(link);
-        ul.appendChild(li);
-      }
-      pop.appendChild(ul);
-      canvas.appendChild(pop);
-    }
-
-    stage.appendChild(canvas);
-    host.appendChild(stage);
-    host.appendChild(el('p', 'ghint', 'Select a group to list its members · a member to focus it · Esc closes'));
-    if (open >= 0) revealInReader(all[open].key);
   };
 
-  /* --------------------------------------------------------------- the split */
+  var maps = {};
+  ['overview', 'focus', 'columns'].forEach(function (name) {
+    maps[name] = { name: name, view: doc.getElementById('map-' + name), plane: null, svg: null, cam: { x: 0, y: 0, k: 1 }, w: 0, h: 0, rects: {}, els: {}, edges: [], key: null, att: null, roving: null, dragged: false };
+  });
+  var resetPlane = function (m, w, h) {
+    clear(m.view);
+    m.plane = el('div', 'plane');
+    m.plane.style.width = w + 'px';
+    m.plane.style.height = h + 'px';
+    m.svg = svgEl('svg', { class: 'edges', width: w, height: h, 'aria-hidden': 'true', focusable: 'false' });
+    m.plane.appendChild(m.svg);
+    m.view.appendChild(m.plane);
+    m.w = w;
+    m.h = h;
+    m.rects = {};
+    m.els = {};
+    m.edges = [];
+    m.att = null;
+    m.roving = null;
+    m.fit = { x: 0, y: 0, w: w, h: h };
+  };
+  var applyCam = function (m) {
+    if (m.plane) m.plane.style.transform = 'translate(' + Math.round(m.cam.x) + 'px, ' + Math.round(m.cam.y) + 'px) scale(' + Math.round(m.cam.k * 1000) / 1000 + ')';
+  };
+  /* With the business lens on, the card docks to the right of a wide viewport; the camera fits
+     the drawing into the room it leaves. */
+  var viewSize = function (m) {
+    var w = m.view.clientWidth || 1200;
+    var docked = state.cat.l === 'b' && w > 900 ? Math.min(416, Math.round(w * 0.4)) + 16 : 0;
+    return { w: w - docked, h: m.view.clientHeight || 700 };
+  };
+  /* Fit the drawing to the viewport. The Columns view fits its width and starts at the top, so its
+     boxes stay readable however tall the columns grow. */
+  var fitMap = function (m) {
+    if (!m.plane) return;
+    var size = viewSize(m);
+    var pad = 24;
+    var f = m.fit;
+    var kx = (size.w - 2 * pad) / Math.max(1, f.w);
+    var ky = (size.h - 2 * pad - 28) / Math.max(1, f.h);
+    var k;
+    if (m.name === 'columns') {
+      k = Math.max(0.45, Math.min(1, kx));
+      m.cam = { x: Math.max(pad, (size.w - f.w * k) / 2) - f.x * k, y: pad + 18 - f.y * k, k: k };
+    } else {
+      k = Math.max(0.2, Math.min(m.name === 'focus' ? 1.25 : 1.8, kx, ky));
+      m.cam = { x: (size.w - f.w * k) / 2 - f.x * k, y: pad + 22 + Math.max(0, (size.h - 2 * pad - 28 - f.h * k) / 2) - f.y * k, k: k };
+    }
+    applyCam(m);
+  };
+  var zoomAt = function (m, px, py, factor) {
+    var k = Math.max(0.12, Math.min(4, m.cam.k * factor));
+    var wx = (px - m.cam.x) / m.cam.k;
+    var wy = (py - m.cam.y) / m.cam.k;
+    m.cam.k = k;
+    m.cam.x = px - wx * k;
+    m.cam.y = py - wy * k;
+    applyCam(m);
+  };
+  var zoomCentre = function (m, factor) {
+    var size = viewSize(m);
+    zoomAt(m, size.w / 2, size.h / 2, factor);
+  };
+  /** Pan just enough to bring a drawn rectangle into the viewport. */
+  var ensureVisible = function (m, rect) {
+    var size = viewSize(m);
+    var margin = 32;
+    var left = m.cam.x + rect.x * m.cam.k;
+    var top = m.cam.y + rect.y * m.cam.k;
+    var right = left + rect.w * m.cam.k;
+    var bottom = top + rect.h * m.cam.k;
+    var dx = 0;
+    var dy = 0;
+    if (left < margin) dx = margin - left;
+    else if (right > size.w - margin) dx = size.w - margin - right;
+    if (top < margin) dy = margin - top;
+    else if (bottom > size.h - margin) dy = size.h - margin - bottom;
+    if (dx || dy) {
+      m.cam.x += dx;
+      m.cam.y += dy;
+      applyCam(m);
+    }
+  };
 
-  var wireSplit = function () {
-    var split = doc.getElementById('split');
-    var md = doc.querySelector('.md');
-    var topo = doc.querySelector('.topo');
-    if (!split || !md || !topo) return;
-    var currentWidth = function () {
-      var measured = topo.getBoundingClientRect().width;
-      if (measured > 0) return measured;
-      var declared = parseInt(md.style.getPropertyValue('--topo-w'), 10);
-      return isNaN(declared) ? 432 : declared;
-    };
-    var setWidth = function (px) {
-      var total = md.clientWidth || 1200;
-      var max = Math.max(300, Math.round(total * 0.6));
-      var w = Math.round(Math.max(260, Math.min(max, px)));
-      md.style.setProperty('--topo-w', w + 'px');
-      split.setAttribute('aria-valuenow', String(w));
-      split.setAttribute('aria-valuemax', String(max));
-      split.setAttribute('aria-valuetext', 'Neighbourhood ' + w + ' pixels wide');
-      buildFocus(false);
-    };
-    var dragging = false;
-    split.addEventListener('pointerdown', function (ev) {
-      dragging = true;
-      split.setAttribute('data-dragging', '');
-      if (split.setPointerCapture) split.setPointerCapture(ev.pointerId);
+  /** One drawn, selectable artifact: a button placed on the plane, named for assistive technology. */
+  var placeButton = function (m, cls, id, rect, kind) {
+    var b = el('button', cls + ' k-' + kind);
+    b.type = 'button';
+    b.setAttribute('data-id', id);
+    b.setAttribute('tabindex', '-1');
+    b.style.left = rect.x + 'px';
+    b.style.top = rect.y + 'px';
+    b.style.width = rect.w + 'px';
+    b.style.height = rect.h + 'px';
+    var a = byId[id];
+    var name = id + ' — ' + (a.title || id) + ' (' + (LABELS[a.kind] || a.kind) + ')';
+    b.setAttribute('aria-label', name);
+    b.title = name;
+    m.plane.appendChild(b);
+    m.rects[id] = rect;
+    m.els[id] = b;
+    return b;
+  };
+  var setRoving = function (m, id) {
+    if (m.roving && m.els[m.roving]) m.els[m.roving].setAttribute('tabindex', '-1');
+    m.roving = id && m.els[id] ? id : null;
+    if (m.roving) m.els[m.roving].setAttribute('tabindex', '0');
+  };
+  /** The tab stop of a map: the selected artifact when it is drawn, otherwise the first one drawn. */
+  var defaultRoving = function (m) {
+    if (state.id && m.els[state.id]) return state.id;
+    for (var k = 0; k < COLUMNS.length; k += 1) {
+      var list = orderByKind[COLUMNS[k]];
+      for (var i = 0; i < list.length; i += 1) if (m.els[list[i].id]) return list[i].id;
+    }
+    return null;
+  };
+  var focusChip = function (m, id) {
+    if (!m.els[id]) return;
+    setRoving(m, id);
+    m.els[id].focus();
+    ensureVisible(m, m.rects[id]);
+  };
+  /** Arrow keys move to the nearest drawn artifact in that direction. */
+  var moveFocus = function (m, fromId, key) {
+    var r = m.rects[fromId];
+    if (!r) return;
+    var cx = r.x + r.w / 2;
+    var cy = r.y + r.h / 2;
+    var best = null;
+    var bestScore = Infinity;
+    for (var id in m.rects) {
+      if (!hasOwn(m.rects, id) || id === fromId || !m.els[id]) continue;
+      var o = m.rects[id];
+      var dx = o.x + o.w / 2 - cx;
+      var dy = o.y + o.h / 2 - cy;
+      var primary = key === 'ArrowRight' ? dx : key === 'ArrowLeft' ? -dx : key === 'ArrowDown' ? dy : -dy;
+      var secondary = key === 'ArrowRight' || key === 'ArrowLeft' ? dy : dx;
+      if (primary <= 1) continue;
+      var score = primary + 2 * Math.abs(secondary);
+      if (score < bestScore || (score === bestScore && id < best)) {
+        best = id;
+        bestScore = score;
+      }
+    }
+    if (best) focusChip(m, best);
+  };
+
+  /* ---------------------------------------------------- plain-language verbs */
+
+  var PLAIN_KIND = {
+    actor: 'actor', journey: 'journey', 'use-case': 'use case', 'bounded-context': 'context',
+    'business-rule': 'business rule', 'domain-term': 'term', 'functional-requirement': 'requirement',
+    'quality-requirement': 'quality requirement', constraint: 'constraint', 'structured-behaviour': 'behaviour',
+  };
+  var plainKind = function (kind) {
+    return PLAIN_KIND[kind] || (LABELS[kind] || kind).toLowerCase();
+  };
+  /** What the neighbour is to the focus, in the reader's words rather than the model's. */
+  var plainVerb = function (relKind, direction, otherKind) {
+    var out = direction === 'out';
+    switch (relKind) {
+      case 'primary-actor':
+        return out ? 'used by' : 'uses this';
+      case 'supporting-actors':
+        return out ? 'also used by' : 'also uses this';
+      case 'steps[].use-case':
+        return out ? 'includes' : 'part of';
+      case 'governed-by':
+        return out ? 'must obey' : 'obeyed by';
+      case 'applies-to':
+        if (out) return 'applies to';
+        return otherKind === 'business-rule' ? 'must obey' : 'must also be';
+      case 'uses-terms':
+        return out ? 'speaks of' : 'spoken of in';
+      case 'bounded-context':
+      case 'defined-in':
+        return out ? 'part of' : 'contains';
+      case 'derived-from':
+        return out ? 'comes from' : 'must do';
+      case 'illustrates':
+        return out ? 'proves' : 'proved by';
+      case 'verification[].scenario-ref':
+        return out ? 'proved by' : 'proves';
+      default:
+        return relKind.replace('[].', ' ').replace(/-/g, ' ');
+    }
+  };
+  var lensOn = function () {
+    return state.cat.l === 'b';
+  };
+
+  /* --------------------------------------------------------------- the cards */
+
+  /* The sections of one rendered body, by heading, as text. The body is the generator's escaped
+     Markdown, parsed in an inert template, never attached to the document. */
+  var sectionsCache = {};
+  var sectionsOf = function (a) {
+    if (sectionsCache[a.id]) return sectionsCache[a.id];
+    var holder = doc.createElement('template');
+    holder.innerHTML = a.body || '';
+    var out = { first: null, by: {} };
+    var current = null;
+    var nodes = holder.content ? holder.content.childNodes : [];
+    for (var i = 0; i < nodes.length; i += 1) {
+      var node = nodes[i];
+      if (node.nodeType !== 1) continue;
+      var tag = node.tagName;
+      var text = (node.textContent || '').replace(/\s+/g, ' ').trim();
+      if (/^H[1-6]$/.test(tag)) {
+        current = text;
+        out.by[current] = out.by[current] || [];
+        continue;
+      }
+      if (!text) continue;
+      if (tag === 'UL' || tag === 'OL') {
+        var items = node.querySelectorAll('li');
+        for (var li = 0; li < items.length; li += 1) {
+          var t = (items[li].textContent || '').replace(/\s+/g, ' ').trim();
+          if (t && current) out.by[current].push('• ' + t);
+        }
+      } else if (current) {
+        out.by[current].push(text);
+      }
+      if (!out.first && tag === 'P') out.first = text;
+    }
+    sectionsCache[a.id] = out;
+    return out;
+  };
+  var statementOf = function (a) {
+    var s = sectionsOf(a);
+    var named = s.by.Rule || s.by.Statement || s.by.Definition || s.by.Requirement || s.by.Constraint || s.by.Intent || s.by.Purpose;
+    return named && named.length > 0 ? named[0] : s.first;
+  };
+
+  var cardEl = doc.getElementById('mcard');
+  var cardLink = function (id, text, action) {
+    var link = doc.createElement('a');
+    link.href = action === 'read' ? artifactHref(id) : '#/focus/' + id;
+    link.textContent = text;
+    if (action !== 'read') link.title = 'Focus on ' + (byId[id].title || id);
+    return link;
+  };
+  var cardSection = function (host, label, ids, describe, empty) {
+    var section = el('section', 'csec');
+    section.appendChild(el('h4', null, label));
+    if (ids.length === 0) {
+      section.appendChild(el('p', 'none', empty || 'None recorded in the model.'));
+      host.appendChild(section);
+      return;
+    }
+    var list = el('ul');
+    for (var i = 0; i < ids.length; i += 1) {
+      var li = el('li');
+      li.appendChild(cardLink(ids[i], byId[ids[i]].title || ids[i]));
+      if (describe) describe(li, byId[ids[i]]);
+      list.appendChild(li);
+    }
+    section.appendChild(list);
+    host.appendChild(section);
+  };
+  /** Distinct artifacts at the other end of a relationship, filtered by kind, in title order. */
+  var related = function (id, relKinds, direction, kinds) {
+    var edges = direction === 'out' ? outgoing[id] || [] : incoming[id] || [];
+    var out = [];
+    for (var i = 0; i < edges.length; i += 1) {
+      if (relKinds.indexOf(edges[i].kind) < 0) continue;
+      var other = direction === 'out' ? edges[i].to : edges[i].from;
+      if (!byId[other] || out.indexOf(other) >= 0) continue;
+      if (kinds && kinds.indexOf(byId[other].kind) < 0) continue;
+      out.push(other);
+    }
+    return out.sort(function (x, y) {
+      var a = (byId[x].title || x).toLowerCase();
+      var b = (byId[y].title || y).toLowerCase();
+      return a < b ? -1 : a > b ? 1 : x < y ? -1 : 1;
     });
-    split.addEventListener('pointermove', function (ev) {
-      if (dragging) setWidth(md.getBoundingClientRect().right - ev.clientX);
-    });
-    var stop = function () {
-      dragging = false;
-      split.removeAttribute('data-dragging');
+  };
+  var union = function (a, b) {
+    var out = a.slice();
+    for (var i = 0; i < b.length; i += 1) if (out.indexOf(b[i]) < 0) out.push(b[i]);
+    return out;
+  };
+
+  /**
+   * The business card of a use case. Every sentence is quoted from the embedded data or is a list
+   * of titles derived from the compiled graph; nothing is summarised, ranked or invented.
+   */
+  var businessCard = function (host, a) {
+    var head = el('header', 'chead');
+    head.appendChild(el('span', 'ckind', 'Use case'));
+    head.appendChild(el('h3', 'ctitle', a.title || a.id));
+    host.appendChild(head);
+    var s = sectionsOf(a);
+    var quoted = function (label, lines) {
+      var section = el('section', 'csec');
+      section.appendChild(el('h4', null, label));
+      if (!lines || lines.length === 0) section.appendChild(el('p', 'none', 'Not stated in the model.'));
+      for (var i = 0; i < (lines || []).length; i += 1) section.appendChild(el('p', null, lines[i]));
+      host.appendChild(section);
     };
-    split.addEventListener('pointerup', stop);
-    split.addEventListener('pointercancel', stop);
-    split.addEventListener('keydown', function (ev) {
-      if (ev.key === 'ArrowLeft') setWidth(currentWidth() + 24);
-      else if (ev.key === 'ArrowRight') setWidth(currentWidth() - 24);
-      else return;
-      ev.preventDefault();
+    quoted('Goal', s.by.Goal);
+    quoted('Trigger', s.by.Trigger);
+    var actors = related(a.id, ['primary-actor'], 'out');
+    var helpers = related(a.id, ['supporting-actors'], 'out');
+    cardSection(host, 'Used by', union(actors, helpers), function (li, other) {
+      if (helpers.indexOf(other.id) >= 0 && actors.indexOf(other.id) < 0) li.appendChild(el('span', 'cnote', ' (also)'));
     });
+    cardSection(host, 'Part of', related(a.id, ['steps[].use-case'], 'in'), null, 'Not a step of any journey.');
+    var rules = union(related(a.id, ['governed-by'], 'out', ['business-rule']), related(a.id, ['applies-to'], 'in', ['business-rule']));
+    cardSection(host, 'Must obey', rules, function (li, rule) {
+      var statement = statementOf(rule);
+      if (statement) li.appendChild(el('p', 'cquote', statement));
+    });
+    var requirements = related(a.id, ['derived-from'], 'in', ['functional-requirement']);
+    var behaviours = related(a.id, ['illustrates'], 'in', ['structured-behaviour']);
+    for (var r = 0; r < rules.length; r += 1) behaviours = union(behaviours, related(rules[r], ['illustrates'], 'in', ['structured-behaviour']));
+    for (var q = 0; q < requirements.length; q += 1) {
+      behaviours = union(behaviours, related(requirements[q], ['verification[].scenario-ref'], 'out', ['structured-behaviour']));
+    }
+    cardSection(host, 'Proved by', behaviours, function (li, sb) {
+      var steps = sb.gwt || {};
+      var words = [['Given', steps.given], ['When', steps.when], ['Then', steps.then]];
+      var dl = el('dl', 'gwt');
+      for (var w = 0; w < words.length; w += 1) {
+        if (!words[w][1] || words[w][1].length === 0) continue;
+        dl.appendChild(el('dt', null, words[w][0]));
+        dl.appendChild(el('dd', null, words[w][1].join('; ')));
+      }
+      if (dl.firstChild) li.appendChild(dl);
+    });
+    cardSection(host, 'Must do', requirements);
+    cardSection(host, 'Must also be', union(related(a.id, ['applies-to'], 'in', ['quality-requirement']), related(a.id, ['applies-to'], 'in', ['constraint'])), function (li, other) {
+      li.appendChild(el('span', 'cnote', ' (' + plainKind(other.kind) + ')'));
+    });
+    /* The one-hop impact the generator computed with the same rule prodshape impact applies. */
+    var reach = (a.q || []).filter(function (id) {
+      return byId[id];
+    });
+    var section = el('section', 'csec');
+    section.appendChild(el('h4', null, 'A change here puts in question'));
+    if (reach.length === 0) section.appendChild(el('p', 'none', 'Nothing else in the model.'));
+    var byKind = {};
+    for (var i = 0; i < reach.length; i += 1) (byKind[byId[reach[i]].kind] = byKind[byId[reach[i]].kind] || []).push(reach[i]);
+    for (var k = 0; k < COLUMNS.length; k += 1) {
+      var ids = byKind[COLUMNS[k]];
+      if (!ids) continue;
+      var p = el('p', 'creach');
+      p.appendChild(el('span', 'cnote', ids.length + ' ' + plainKind(COLUMNS[k]) + (ids.length === 1 ? '' : 's') + ': '));
+      for (var j = 0; j < ids.length; j += 1) {
+        if (j > 0) p.appendChild(doc.createTextNode(', '));
+        p.appendChild(cardLink(ids[j], byId[ids[j]].title || ids[j]));
+      }
+      section.appendChild(p);
+    }
+    host.appendChild(section);
+    var foot = el('p', 'cfoot');
+    foot.appendChild(cardLink(a.id, 'Read the full use case', 'read'));
+    host.appendChild(foot);
+  };
+  /** Any other artifact through the lens: title, plain kind and its first authored statement. */
+  var plainCard = function (host, a) {
+    var head = el('header', 'chead');
+    var kind = plainKind(a.kind);
+    head.appendChild(el('span', 'ckind', kind.charAt(0).toUpperCase() + kind.slice(1)));
+    head.appendChild(el('h3', 'ctitle', a.title || a.id));
+    host.appendChild(head);
+    var statement = statementOf(a);
+    if (statement) host.appendChild(el('p', 'cquote', statement));
+    var foot = el('p', 'cfoot');
+    foot.appendChild(cardLink(a.id, 'Focus', 'focus'));
+    foot.appendChild(doc.createTextNode(' · '));
+    foot.appendChild(cardLink(a.id, 'Read', 'read'));
+    host.appendChild(foot);
+  };
+  /** The engineering summary: identity, status, relationship counts and the two next steps. */
+  var summaryCard = function (host, a, interactive) {
+    var idline = el('div', 'idline');
+    idline.appendChild(tokenFor(a.kind));
+    idline.appendChild(el('span', 'aid', a.id));
+    idline.appendChild(badgeFor(a.status));
+    host.appendChild(idline);
+    host.appendChild(el('h3', 'ctitle', a.title || a.id));
+    var nOut = (outgoing[a.id] || []).length;
+    var nIn = (incoming[a.id] || []).length;
+    host.appendChild(el('p', 'cnote', 'Declares ' + nOut + ' · referenced by ' + nIn + ' · ' + nbrs[a.id].length + ' direct neighbours'));
+    if (interactive) {
+      var foot = el('p', 'cfoot');
+      foot.appendChild(cardLink(a.id, 'Focus', 'focus'));
+      foot.appendChild(doc.createTextNode(' · '));
+      foot.appendChild(cardLink(a.id, 'Read', 'read'));
+      host.appendChild(foot);
+    }
+  };
+  var fillCard = function (host, a, interactive) {
+    clear(host);
+    host.className = host.className.replace(/\bk-\S+/g, '').trim() + ' k-' + a.kind;
+    if (lensOn() && a.kind === 'use-case') businessCard(host, a);
+    else if (lensOn()) plainCard(host, a);
+    else summaryCard(host, a, interactive);
+  };
+  /* The card follows the reader's attention, and falls back to the selection the map shows. */
+  var showCard = function (m) {
+    if (!cardEl) return;
+    var id = m.att || (state.id && (m.els[state.id] || m.name === 'focus') ? state.id : null);
+    if (!id || !byId[id] || state.view !== m.name) {
+      cardEl.hidden = true;
+      return;
+    }
+    var passive = Boolean(m.att) && m.att !== state.id;
+    var key = id + '|' + passive + '|' + (state.cat.l || '');
+    cardEl.hidden = false;
+    if (passive) cardEl.setAttribute('data-passive', '');
+    else cardEl.removeAttribute('data-passive');
+    if (cardEl.getAttribute('data-key') === key) return;
+    cardEl.setAttribute('data-key', key);
+    cardEl.setAttribute('aria-label', (byId[id].title || id) + ' — summary');
+    fillCard(cardEl, byId[id], !passive);
+  };
+
+  /* --------------------------------------------------------------- lighting */
+
+  var lightMap = function (m) {
+    if (!m.plane) return;
+    var focusMode = m.name === 'focus';
+    var id = m.att || (!focusMode && state.id && m.els[state.id] ? state.id : null);
+    var near = null;
+    if (id) {
+      near = {};
+      near[id] = true;
+      if (focusMode) near[state.id] = true;
+      else for (var n = 0; n < nbrs[id].length; n += 1) near[nbrs[id][n]] = true;
+    }
+    if (near) m.view.setAttribute('data-attending', '');
+    else m.view.removeAttribute('data-attending');
+    for (var key in m.els) {
+      if (!hasOwn(m.els, key)) continue;
+      var lit = Boolean(near && near[key]);
+      m.els[key].classList.toggle('lit', lit);
+      if (key === state.id) m.els[key].setAttribute('aria-current', 'true');
+      else m.els[key].removeAttribute('aria-current');
+      m.els[key].classList.toggle('sel', key === state.id && !focusMode);
+    }
+    if (m.name === 'overview') {
+      /* The Overview draws relationship lines only for the artifact the reader attends to. */
+      while (m.svg.firstChild) m.svg.removeChild(m.svg.firstChild);
+      if (id) {
+        var touching = (outgoing[id] || []).concat(incoming[id] || []);
+        for (var t = 0; t < touching.length; t += 1) {
+          var ra = m.rects[touching[t].from];
+          var rb = m.rects[touching[t].to];
+          if (!ra || !rb) continue;
+          m.svg.appendChild(svgEl('path', { d: curve(ra, rb), class: 'lit k-' + byId[touching[t].from].kind }));
+        }
+      }
+    } else {
+      for (var e = 0; e < m.edges.length; e += 1) {
+        var edge = m.edges[e];
+        var on = Boolean(id) && (focusMode ? edge.id === id : edge.from === id || edge.to === id);
+        edge.path.classList.toggle('lit', on);
+      }
+    }
+    showCard(m);
+  };
+  var setAttention = function (m, id) {
+    if (m.att === id) return;
+    m.att = id;
+    lightMap(m);
+  };
+
+  /* --------------------------------------------------------------- overview */
+
+  var CHIP_W = 132;
+  var CHIP_H = 26;
+  var CHIP_PX = 138;
+  var CHIP_PY = 32;
+  var CTX_H = 18;
+  var TILE_PAD = 10;
+  var TILE_HEAD = 32;
+  var TILE_GAP = 16;
+
+  var buildOverviewMap = function () {
+    var m = maps.overview;
+    if (!m.view || m.key === 'built') return false;
+    m.key = 'built';
+    var tiles = [];
+    var area = 0;
+    for (var k = 0; k < COLUMNS.length; k += 1) {
+      var kind = COLUMNS[k];
+      var n = orderByKind[kind].length;
+      var cols = Math.max(1, Math.min(8, Math.round(Math.sqrt(n))));
+      var blocks = blocksOf(kind);
+      var grouped = hasOwn(CONTEXT_REL, kind);
+      var h = TILE_HEAD;
+      for (var b = 0; b < blocks.length; b += 1) h += (grouped ? CTX_H : 0) + Math.ceil(blocks[b].list.length / cols) * CHIP_PY;
+      h += 6;
+      var w = cols * CHIP_PX - (CHIP_PX - CHIP_W) + 2 * TILE_PAD;
+      w = Math.max(w, 200);
+      tiles.push({ kind: kind, cols: cols, blocks: blocks, grouped: grouped, w: w, h: h });
+      area += (w + TILE_GAP) * (h + TILE_GAP);
+    }
+    /* Tiles flow in Columns order into rows of a width chosen from their total area alone, so the
+       arrangement does not depend on the viewport; the camera fits it to whatever screen it meets. */
+    var widest = 0;
+    for (var t0 = 0; t0 < tiles.length; t0 += 1) widest = Math.max(widest, tiles[t0].w);
+    var target = Math.max(widest, Math.sqrt(area * 3.2));
+    var x = 0;
+    var y = 0;
+    var rowH = 0;
+    var width = 0;
+    for (var t = 0; t < tiles.length; t += 1) {
+      if (x > 0 && x + tiles[t].w > target) {
+        x = 0;
+        y += rowH + TILE_GAP;
+        rowH = 0;
+      }
+      tiles[t].x = x;
+      tiles[t].y = y;
+      x += tiles[t].w + TILE_GAP;
+      width = Math.max(width, x - TILE_GAP);
+      rowH = Math.max(rowH, tiles[t].h);
+    }
+    var height = y + rowH;
+    /* Tiles in one row share its height, so the grid reads as one surface. */
+    for (var s = 0; s < tiles.length; s += 1) {
+      var rowBottom = 0;
+      for (var u = 0; u < tiles.length; u += 1) if (tiles[u].y === tiles[s].y) rowBottom = Math.max(rowBottom, tiles[u].h);
+      tiles[s].h = rowBottom;
+    }
+    resetPlane(m, width, height);
+    for (var i = 0; i < tiles.length; i += 1) {
+      var tile = tiles[i];
+      var box = el('div', 'tile k-' + tile.kind);
+      box.setAttribute('role', 'group');
+      box.setAttribute('aria-label', (LABELS[tile.kind] || tile.kind) + ', ' + orderByKind[tile.kind].length);
+      box.style.left = tile.x + 'px';
+      box.style.top = tile.y + 'px';
+      box.style.width = tile.w + 'px';
+      box.style.height = tile.h + 'px';
+      var head = el('div', 'tile-h');
+      head.appendChild(tokenFor(tile.kind));
+      head.appendChild(el('span', null, LABELS[tile.kind] || tile.kind));
+      head.appendChild(el('span', 'n', orderByKind[tile.kind].length));
+      box.appendChild(head);
+      m.plane.appendChild(box);
+      var cy = tile.y + TILE_HEAD;
+      for (var bl = 0; bl < tile.blocks.length; bl += 1) {
+        var block = tile.blocks[bl];
+        if (tile.grouped) {
+          var ctx = el('div', 'ctx', contextLabel(block.key));
+          ctx.style.left = tile.x + TILE_PAD + 'px';
+          ctx.style.top = cy + 'px';
+          ctx.style.width = tile.w - 2 * TILE_PAD + 'px';
+          m.plane.appendChild(ctx);
+          cy += CTX_H;
+        }
+        for (var c = 0; c < block.list.length; c += 1) {
+          var a = block.list[c];
+          var rect = { x: tile.x + TILE_PAD + (c % tile.cols) * CHIP_PX, y: cy + Math.floor(c / tile.cols) * CHIP_PY, w: CHIP_W, h: CHIP_H };
+          var chip = placeButton(m, 'mchip', a.id, rect, a.kind);
+          chip.textContent = a.id.replace(/^[A-Z][A-Z0-9]*-/, '');
+        }
+        cy += Math.ceil(block.list.length / tile.cols) * CHIP_PY;
+      }
+    }
+    return true;
+  };
+
+  /* ------------------------------------------------------------- focus view */
+
+  var FBOX_W = 244;
+  var FBOX_H = 64;
+  var FBOX_GAP = 8;
+  var FHEAD = 26;
+  var FGROUP_GAP = 16;
+  var CENTRE_W = 288;
+  var CENTRE_H = 104;
+  var SIDE_GAP = 150;
+  var DENSE = 12;
+  var DOT_W = 22;
+  var DOT_H = 12;
+  var focusTrail = [];
+
+  /** The kinds whose disclosure the reader flipped, as the address carries them. */
+  var toggledKinds = function () {
+    return state.cat.x ? String(state.cat.x).split(',') : [];
+  };
+  var groupCollapsed = function (kind, size) {
+    var flipped = toggledKinds().indexOf(kind) >= 0;
+    var dense = size > DENSE;
+    return flipped ? !dense : dense;
+  };
+  var toggleGroup = function (kind) {
+    var list = toggledKinds();
+    var at = list.indexOf(kind);
+    if (at >= 0) list.splice(at, 1);
+    else list.push(kind);
+    list.sort();
+    catalogChanged({ x: list.length > 0 ? list.join(',') : null });
+  };
+
+  /** The focus's neighbours, one entry per artifact, carrying every relationship that joins them. */
+  var relationsOf = function (id) {
+    var by = {};
+    var order = [];
+    var add = function (edge, direction) {
+      var other = direction === 'out' ? edge.to : edge.from;
+      if (!byId[other] || other === id) return;
+      if (!by[other]) {
+        by[other] = { id: other, links: [] };
+        order.push(other);
+      }
+      by[other].links.push({ relKind: edge.kind, direction: direction });
+    };
+    var outs = outgoing[id] || [];
+    var ins = incoming[id] || [];
+    for (var i = 0; i < outs.length; i += 1) add(outs[i], 'out');
+    for (var j = 0; j < ins.length; j += 1) add(ins[j], 'in');
+    order.sort();
+    return order.map(function (other) {
+      return by[other];
+    });
+  };
+  var relationLabel = function (rel) {
+    var seen = [];
+    for (var i = 0; i < rel.links.length; i += 1) {
+      var link = rel.links[i];
+      var text = lensOn()
+        ? plainVerb(link.relKind, link.direction, byId[rel.id].kind)
+        : link.direction === 'out'
+          ? link.relKind + ' →'
+          : '← ' + link.relKind;
+      if (seen.indexOf(text) < 0) seen.push(text);
+    }
+    return seen.join(', ');
+  };
+  var boxContent = function (b, a, relText) {
+    b.appendChild(icon(a.kind));
+    if (!lensOn()) b.appendChild(el('span', 'bid', a.id));
+    else b.appendChild(el('span', 'bkind', plainKind(a.kind)));
+    b.appendChild(el('span', 'bt', a.title || a.id));
+    if (relText) b.appendChild(el('span', 'rel', relText));
+  };
+
+  var buildFocusView = function () {
+    var m = maps.focus;
+    var id = state.id;
+    var centre = byId[id];
+    if (!m.view || !centre) return false;
+    var key = id + '|' + (state.cat.x || '') + '|' + (state.cat.l || '');
+    if (m.key === key) return false;
+    var refocused = !m.key || m.key.split('|')[0] !== id;
+    m.key = key;
+    if (focusTrail[focusTrail.length - 1] !== id) focusTrail.push(id);
+    if (focusTrail.length > 8) focusTrail.shift();
+
+    var rels = relationsOf(id);
+    var cc = colOf(centre.kind);
+    var sides = { left: [], right: [] };
+    for (var k = 0; k < COLUMNS.length; k += 1) {
+      var kind = COLUMNS[k];
+      var members = rels.filter(function (r) {
+        return byId[r.id].kind === kind;
+      });
+      if (members.length === 0) continue;
+      (k < cc ? sides.left : sides.right).push({ kind: kind, list: members, collapsed: groupCollapsed(kind, members.length) });
+    }
+    var heightOf = function (groups) {
+      var h = 0;
+      for (var g = 0; g < groups.length; g += 1) h += FHEAD + 6 + (groups[g].collapsed ? 0 : groups[g].list.length * (FBOX_H + FBOX_GAP)) + FGROUP_GAP;
+      return groups.length > 0 ? h - FGROUP_GAP : 0;
+    };
+    var H = Math.max(heightOf(sides.left), heightOf(sides.right), CENTRE_H + 40);
+    var LX = 0;
+    var CX = FBOX_W + SIDE_GAP;
+    var RX = CX + CENTRE_W + SIDE_GAP;
+    var W = RX + FBOX_W;
+
+    /* The rest of the model sits in a ring of slots around the content, assigned in a seeded
+       shuffle: every other artifact is placed, and placed identically every time. */
+    var around = { };
+    around[id] = true;
+    for (var r0 = 0; r0 < rels.length; r0 += 1) around[rels[r0].id] = true;
+    var rest = [];
+    for (var ra = 0; ra < COLUMNS.length; ra += 1) {
+      var ofKind = orderByKind[COLUMNS[ra]];
+      for (var rb = 0; rb < ofKind.length; rb += 1) if (!around[ofKind[rb].id]) rest.push(ofKind[rb]);
+    }
+    var margin = 120;
+    var slots = [];
+    var cellW = DOT_W + 14;
+    var cellH = DOT_H + 14;
+    while (true) {
+      slots = [];
+      for (var sy = -margin; sy + DOT_H <= H + margin; sy += cellH) {
+        for (var sx = -margin; sx + DOT_W <= W + margin; sx += cellW) {
+          if (sx > -40 && sx < W + 40 - DOT_W && sy > -36 && sy < H + 36 - DOT_H) continue;
+          slots.push({ x: sx, y: sy });
+        }
+      }
+      if (slots.length >= rest.length * 2 || margin > 4000) break;
+      margin += 80;
+    }
+    var rnd = seeded(7);
+    for (var sh = slots.length - 1; sh > 0; sh -= 1) {
+      var pick = Math.floor(rnd() * (sh + 1));
+      var tmp = slots[sh];
+      slots[sh] = slots[pick];
+      slots[pick] = tmp;
+    }
+
+    resetPlane(m, W + 2 * margin, H + 2 * margin);
+    var ox = margin;
+    var oy = margin;
+    /* The camera fits the focus and its neighbours; the background spills past the edges. */
+    m.fit = { x: ox - 40, y: oy - 20, w: W + 80, h: H + 40 };
+    for (var d = 0; d < rest.length && d < slots.length; d += 1) {
+      placeButton(m, 'dot', rest[d].id, { x: ox + slots[d].x, y: oy + slots[d].y, w: DOT_W, h: DOT_H }, rest[d].kind);
+    }
+
+    var cRect = { x: ox + CX, y: oy + (H - CENTRE_H) / 2, w: CENTRE_W, h: CENTRE_H };
+    var placed = [];
+    var sideList = [['left', sides.left, ox + LX], ['right', sides.right, ox + RX]];
+    for (var sd = 0; sd < sideList.length; sd += 1) {
+      var groups = sideList[sd][1];
+      var gx = sideList[sd][2];
+      var gy = oy + (H - heightOf(groups)) / 2;
+      for (var g = 0; g < groups.length; g += 1) {
+        var group = groups[g];
+        var hr = { x: gx, y: gy, w: FBOX_W, h: FHEAD };
+        var head = el('button', 'fgroup k-' + group.kind);
+        head.type = 'button';
+        head.setAttribute('data-group', group.kind);
+        head.setAttribute('aria-expanded', String(!group.collapsed));
+        head.setAttribute('aria-label', (group.collapsed ? 'Expand ' : 'Collapse ') + (LABELS[group.kind] || group.kind) + ', ' + group.list.length);
+        head.style.left = hr.x + 'px';
+        head.style.top = hr.y + 'px';
+        head.style.width = hr.w + 'px';
+        head.style.height = hr.h + 'px';
+        var chev = el('span', 'chev');
+        chev.appendChild(icon('chev'));
+        head.appendChild(chev);
+        head.appendChild(tokenFor(group.kind));
+        head.appendChild(el('span', 'lbl', LABELS[group.kind] || group.kind));
+        head.appendChild(el('span', 'n', group.list.length));
+        m.plane.appendChild(head);
+        gy += FHEAD + 6;
+        for (var gm = 0; gm < group.list.length; gm += 1) {
+          if (group.collapsed) {
+            placed.push({ rel: group.list[gm], rect: hr, box: false });
+            continue;
+          }
+          placed.push({ rel: group.list[gm], rect: { x: gx, y: gy, w: FBOX_W, h: FBOX_H }, box: true });
+          gy += FBOX_H + FBOX_GAP;
+        }
+        gy += FGROUP_GAP;
+      }
+    }
+    /* Lines first, so the boxes sit on top. A collapsed group draws one line per member to its
+       heading, so the count of lines always equals the count of neighbours. */
+    for (var p = 0; p < placed.length; p += 1) {
+      var other = byId[placed[p].rel.id];
+      var path = svgEl('path', { d: curve(placed[p].rect, cRect), class: 'k-' + other.kind });
+      m.svg.appendChild(path);
+      m.edges.push({ id: other.id, path: path });
+    }
+    for (var q = 0; q < placed.length; q += 1) {
+      if (!placed[q].box) continue;
+      var rel = placed[q].rel;
+      var na = byId[rel.id];
+      var b = placeButton(m, 'fbox', rel.id, placed[q].rect, na.kind);
+      var relText = relationLabel(rel);
+      boxContent(b, na, relText);
+      var more = nbrs[rel.id].length - 1;
+      if (more > 0) {
+        var mo = el('span', 'more', '+' + more);
+        mo.title = more + ' other direct neighbour' + (more === 1 ? '' : 's');
+        b.appendChild(mo);
+      }
+      b.setAttribute('aria-label', (lensOn() ? '' : na.id + ' — ') + (na.title || na.id) + ' (' + (LABELS[na.kind] || na.kind) + '), ' + relText + (more > 0 ? ', ' + more + ' other neighbours' : ''));
+    }
+    var cb = placeButton(m, 'fbox centre', id, cRect, centre.kind);
+    boxContent(cb, centre, null);
+    cb.setAttribute('aria-label', (lensOn() ? '' : id + ' — ') + (centre.title || id) + ' (' + (LABELS[centre.kind] || centre.kind) + '), the focus, ' + rels.length + ' direct neighbours. Enter opens it in the Reader.');
+    renderTrail();
+    return refocused;
+  };
+
+  var renderTrail = function () {
+    var host = doc.getElementById('focus-trail');
+    if (!host) return;
+    clear(host);
+    var list = el('ol');
+    var home = el('li');
+    var toOverview = doc.createElement('a');
+    toOverview.href = '#/overview/' + state.id;
+    toOverview.textContent = 'Overview';
+    home.appendChild(toOverview);
+    list.appendChild(home);
+    var shownTrail = focusTrail.slice(-6);
+    for (var i = 0; i < shownTrail.length; i += 1) {
+      var tid = shownTrail[i];
+      var li = el('li');
+      var label = lensOn() ? byId[tid].title || tid : tid;
+      if (i === shownTrail.length - 1) {
+        var here = el('span', lensOn() ? null : 'mono', label);
+        here.setAttribute('aria-current', 'page');
+        li.appendChild(here);
+      } else {
+        var link = doc.createElement('a');
+        link.href = '#/focus/' + tid;
+        link.textContent = label;
+        if (!lensOn()) link.className = 'mono';
+        li.appendChild(link);
+      }
+      list.appendChild(li);
+    }
+    host.appendChild(list);
+  };
+
+  /* ----------------------------------------------------------- columns view */
+
+  var CBOX_W = 262;
+  var CBOX_H = 48;
+  var CPITCH = 58;
+  var COL_PITCH = 322;
+  var CTOP = 44;
+
+  var buildColumnsView = function () {
+    var m = maps.columns;
+    var key = 'built|' + (state.cat.l || '');
+    if (!m.view || m.key === key) return false;
+    m.key = key;
+    var placedAt = [];
+    var labels = [];
+    var height = 0;
+    for (var c = 0; c < COLUMNS.length; c += 1) {
+      var kind = COLUMNS[c];
+      var x = c * COL_PITCH;
+      var y = CTOP;
+      var blocks = blocksOf(kind);
+      var grouped = hasOwn(CONTEXT_REL, kind);
+      for (var b = 0; b < blocks.length; b += 1) {
+        if (grouped) {
+          labels.push({ x: x, y: y, text: contextLabel(blocks[b].key) });
+          y += CTX_H + 2;
+        }
+        for (var i = 0; i < blocks[b].list.length; i += 1) {
+          placedAt.push({ a: blocks[b].list[i], rect: { x: x, y: y, w: CBOX_W, h: CBOX_H } });
+          y += CPITCH;
+        }
+        if (grouped) y += 8;
+      }
+      height = Math.max(height, y);
+    }
+    resetPlane(m, Math.max(CBOX_W, (COLUMNS.length - 1) * COL_PITCH + CBOX_W), height);
+    for (var h = 0; h < COLUMNS.length; h += 1) {
+      var head = el('div', 'colhead k-' + COLUMNS[h]);
+      head.style.left = h * COL_PITCH + 'px';
+      head.style.top = '0px';
+      head.style.width = CBOX_W + 'px';
+      head.appendChild(tokenFor(COLUMNS[h]));
+      head.appendChild(el('span', null, LABELS[COLUMNS[h]] || COLUMNS[h]));
+      head.appendChild(el('span', 'n', orderByKind[COLUMNS[h]].length));
+      m.plane.appendChild(head);
+    }
+    for (var l = 0; l < labels.length; l += 1) {
+      var ctx = el('div', 'ctx', labels[l].text);
+      ctx.style.left = labels[l].x + 'px';
+      ctx.style.top = labels[l].y + 'px';
+      ctx.style.width = CBOX_W + 'px';
+      m.plane.appendChild(ctx);
+    }
+    var rects = {};
+    for (var p = 0; p < placedAt.length; p += 1) rects[placedAt[p].a.id] = placedAt[p].rect;
+    for (var e = 0; e < EDGES.length; e += 1) {
+      var ra = rects[EDGES[e].from];
+      var rb = rects[EDGES[e].to];
+      if (!ra || !rb) continue;
+      var path = svgEl('path', { d: curve(ra, rb), class: 'k-' + byId[EDGES[e].from].kind });
+      m.svg.appendChild(path);
+      m.edges.push({ from: EDGES[e].from, to: EDGES[e].to, path: path });
+    }
+    for (var q = 0; q < placedAt.length; q += 1) {
+      var a = placedAt[q].a;
+      var box = placeButton(m, 'fbox cbox', a.id, placedAt[q].rect, a.kind);
+      boxContent(box, a, null);
+    }
+    return true;
+  };
+
+  /* -------------------------------------------------------------- map events */
+
+  var activeMap = function () {
+    return maps[state.view] || null;
+  };
+  /* The selection, or else the first artifact by identifier of the first kind in the Columns order. */
+  var defaultFocusId = function () {
+    if (state.id && byId[state.id]) return state.id;
+    for (var k = 0; k < COLUMNS.length; k += 1) {
+      for (var i = 0; i < ARTIFACTS.length; i += 1) if (ARTIFACTS[i].kind === COLUMNS[k]) return ARTIFACTS[i].id;
+    }
+    return null;
+  };
+  var focusOn = function (id) {
+    if (byId[id]) go({ view: 'focus', id: id, cat: catWith(state.cat, { x: null }) });
+  };
+  var readArtifact = function (id) {
+    if (byId[id]) go({ view: 'artifacts', id: id, cat: linkCat() });
+  };
+  var selectInColumns = function (id) {
+    go({ view: 'columns', id: id && id !== state.id ? id : null, cat: state.cat });
+  };
+  /** What choosing an artifact does on each map: the Overview and the Focus view focus it; the
+      Columns view selects it; the Focus view's centre opens the Reader. */
+  var activate = function (m, id) {
+    if (m.name === 'columns') selectInColumns(id);
+    else if (m.name === 'focus' && id === state.id) readArtifact(id);
+    else focusOn(id);
+  };
+
+  var wireMap = function (m) {
+    var view = m.view;
+    if (!view) return;
+    var pointers = {};
+    var count = 0;
+    var start = null;
+    var last = null;
+    var pinch = null;
+    var spread = function () {
+      var ids = Object.keys(pointers);
+      if (ids.length < 2) return null;
+      var a = pointers[ids[0]];
+      var b = pointers[ids[1]];
+      return { d: Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+    };
+    var move = function (ev) {
+      if (!hasOwn(pointers, String(ev.pointerId))) return;
+      pointers[ev.pointerId] = { x: ev.clientX, y: ev.clientY };
+      var box = view.getBoundingClientRect();
+      if (count >= 2) {
+        var now = spread();
+        if (pinch && now) {
+          zoomAt(m, now.x - box.left, now.y - box.top, now.d / pinch.d);
+          m.cam.x += now.x - pinch.x;
+          m.cam.y += now.y - pinch.y;
+          applyCam(m);
+        }
+        pinch = now;
+        m.dragged = true;
+        return;
+      }
+      if (!m.dragged && Math.hypot(ev.clientX - start.x, ev.clientY - start.y) < 5) return;
+      if (!m.dragged) view.setAttribute('data-dragging', '');
+      m.dragged = true;
+      m.cam.x += ev.clientX - last.x;
+      m.cam.y += ev.clientY - last.y;
+      last = { x: ev.clientX, y: ev.clientY };
+      applyCam(m);
+    };
+    var up = function (ev) {
+      if (!hasOwn(pointers, String(ev.pointerId))) return;
+      delete pointers[ev.pointerId];
+      count -= 1;
+      pinch = count >= 2 ? spread() : null;
+      if (count > 0) return;
+      view.removeAttribute('data-dragging');
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+      window.setTimeout(function () {
+        m.dragged = false;
+      }, 0);
+    };
+    view.addEventListener('pointerdown', function (ev) {
+      if (ev.pointerType === 'mouse' && ev.button !== 0) return;
+      pointers[ev.pointerId] = { x: ev.clientX, y: ev.clientY };
+      count += 1;
+      if (count === 1) {
+        start = { x: ev.clientX, y: ev.clientY };
+        last = start;
+        m.dragged = false;
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', up);
+        window.addEventListener('pointercancel', up);
+      } else {
+        pinch = spread();
+      }
+    });
+    view.addEventListener(
+      'wheel',
+      function (ev) {
+        ev.preventDefault();
+        var box = view.getBoundingClientRect();
+        zoomAt(m, ev.clientX - box.left, ev.clientY - box.top, Math.exp(-ev.deltaY * 0.0015));
+      },
+      { passive: false },
+    );
+    var idAt = function (target) {
+      var hit = target instanceof Element ? target.closest('[data-id]') : null;
+      return hit && view.contains(hit) ? hit.getAttribute('data-id') : null;
+    };
+    view.addEventListener('mouseover', function (ev) {
+      if (count === 0) setAttention(m, idAt(ev.target));
+    });
+    view.addEventListener('mouseleave', function () {
+      if (!view.contains(doc.activeElement) || doc.activeElement === view) setAttention(m, null);
+    });
+    view.addEventListener('focusin', function (ev) {
+      var id = idAt(ev.target);
+      if (id) setRoving(m, id);
+      setAttention(m, id);
+    });
+    view.addEventListener('focusout', function (ev) {
+      if (!ev.relatedTarget || !view.contains(ev.relatedTarget)) setAttention(m, null);
+    });
+    view.addEventListener('click', function (ev) {
+      if (m.dragged) return;
+      var target = ev.target instanceof Element ? ev.target : null;
+      var group = target ? target.closest('[data-group]') : null;
+      if (group) {
+        var kind = group.getAttribute('data-group');
+        toggleGroup(kind);
+        var again = view.querySelector('[data-group="' + kind + '"]');
+        if (again) again.focus();
+        return;
+      }
+      var id = idAt(target);
+      if (id) activate(m, id);
+      else if (m.name === 'columns' && state.id) selectInColumns(null);
+    });
+    view.addEventListener('dblclick', function (ev) {
+      var id = idAt(ev.target);
+      if (id && m.name === 'columns' && !m.dragged) focusOn(id);
+    });
+    view.addEventListener('keydown', function (ev) {
+      if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+      var id = idAt(ev.target);
+      var arrow = ev.key === 'ArrowLeft' || ev.key === 'ArrowRight' || ev.key === 'ArrowUp' || ev.key === 'ArrowDown';
+      if (ev.target === view) {
+        if (arrow) {
+          var step = 60;
+          m.cam.x += ev.key === 'ArrowLeft' ? step : ev.key === 'ArrowRight' ? -step : 0;
+          m.cam.y += ev.key === 'ArrowUp' ? step : ev.key === 'ArrowDown' ? -step : 0;
+          applyCam(m);
+          ev.preventDefault();
+        } else if (ev.key === 'Enter') {
+          var first = m.roving || defaultRoving(m);
+          if (first) focusChip(m, first);
+          ev.preventDefault();
+        }
+        return;
+      }
+      if (arrow && id) {
+        moveFocus(m, id, ev.key);
+        ev.preventDefault();
+      } else if (ev.key === 'Enter' && id) {
+        ev.preventDefault();
+        activate(m, id);
+      }
+    });
+  };
+  var wireMapControls = function () {
+    var controls = doc.querySelectorAll('[data-zoom]');
+    for (var i = 0; i < controls.length; i += 1) {
+      controls[i].addEventListener('click', function (ev) {
+        var which = ev.currentTarget.getAttribute('data-zoom');
+        var m = maps[ev.currentTarget.getAttribute('data-map')];
+        if (!m) return;
+        if (which === 'in') zoomCentre(m, 1.25);
+        else if (which === 'out') zoomCentre(m, 0.8);
+        else fitMap(m);
+      });
+    }
+  };
+
+  /** Bring the active map up to date with the page state; returns whether it was rebuilt. */
+  var syncMap = function (changedView, changedId) {
+    var m = activeMap();
+    if (!m) {
+      if (cardEl) cardEl.hidden = true;
+      return;
+    }
+    var rebuilt = false;
+    if (m.name === 'overview') rebuilt = buildOverviewMap();
+    else if (m.name === 'focus') rebuilt = buildFocusView();
+    else rebuilt = buildColumnsView();
+    if (rebuilt || changedView) {
+      fitMap(m);
+      setRoving(m, defaultRoving(m));
+    } else if (changedId && state.id && m.els[state.id]) {
+      setRoving(m, state.id);
+      ensureVisible(m, m.rects[state.id]);
+    }
+    if (m.name === 'focus' && cardEl) cardEl.removeAttribute('data-key');
+    lightMap(m);
   };
 
   /* ----------------------------------------------------------- ranked search */
@@ -2288,8 +3344,12 @@ const script = String.raw`
     }
     var links = doc.querySelectorAll('nav.views a[data-view]');
     for (var l = 0; l < links.length; l += 1) {
-      if (links[l].getAttribute('data-view') === state.view) links[l].setAttribute('aria-current', 'page');
+      var target = links[l].getAttribute('data-view');
+      if (target === state.view) links[l].setAttribute('aria-current', 'page');
       else links[l].removeAttribute('aria-current');
+      /* Every view tab carries the one selection, so switching views never loses it. */
+      var carried = target === 'focus' ? defaultFocusId() : state.id;
+      links[l].setAttribute('href', hashFor({ view: target, id: carried, cat: target === 'artifacts' || target === 'focus' ? linkCat() : emptyCat() }));
     }
     doc.body.setAttribute('data-pane', state.view === 'artifacts' && (state.id || state.unknown) ? 'detail' : 'master');
 
@@ -2300,17 +3360,16 @@ const script = String.raw`
       renderChips();
       syncList(changedId || changedView);
       renderRail();
-      var key = (state.id || '') + '|' + (state.unknown || '') + '|' + catQuery(linkCat());
+      var key = (state.id || '') + '|' + (state.unknown || '') + '|' + catQuery(linkCat()) + '|' + (state.cat.l || '');
       if (key !== detailKey) {
         renderDetail();
         detailKey = key;
       }
-      /* The Focused Topology sits beside the Reader and follows the same selection: the third
-         region of one instrument, never a separate place. */
-      buildFocus(changedId || changedView);
     }
+    syncMap(changedView, changedId);
 
     var current = state.id ? byId[state.id] : null;
+    var viewName = { focus: 'Focus', columns: 'Columns', overview: 'Overview' }[state.view];
     doc.title =
       state.view === 'artifacts' && current
         ? current.id + ' ' + (current.title || '') + ' · ' + snapshotTitle
@@ -2318,7 +3377,11 @@ const script = String.raw`
           ? state.unknown + ' not found · ' + snapshotTitle
           : state.view === 'artifacts'
             ? 'Artifacts · ' + snapshotTitle
-            : snapshotTitle;
+            : state.view === 'focus' && current
+              ? 'Focus · ' + current.id + ' ' + (current.title || '') + ' · ' + snapshotTitle
+              : state.view !== 'overview' && viewName
+                ? viewName + ' · ' + snapshotTitle
+                : snapshotTitle;
     if (state.view === 'artifacts' && (changedView || changedId)) revealCurrent();
 
     /* Focus lands somewhere meaningful after a view or selection change, never lost. */
@@ -2326,12 +3389,17 @@ const script = String.raw`
       var focusTarget = null;
       if (state.view === 'artifacts' && (state.id || state.unknown)) {
         focusTarget = doc.querySelector('#detail h3.artifact');
+      } else if (state.view === 'focus' && maps.focus.els[state.id]) {
+        /* Refocusing keeps the keyboard on the map: the new centre takes focus. */
+        focusTarget = maps.focus.els[state.id];
+      } else if (state.view === 'columns' && !changedView) {
+        focusTarget = null;
       } else {
         var shownSection = doc.getElementById('view-' + state.view);
         focusTarget = shownSection ? shownSection.querySelector('h2') : null;
       }
       if (focusTarget && lastView !== null) {
-        focusTarget.setAttribute('tabindex', '-1');
+        if (!focusTarget.hasAttribute('data-id')) focusTarget.setAttribute('tabindex', '-1');
         focusTarget.focus();
       }
     }
@@ -2421,51 +3489,20 @@ const script = String.raw`
         if (heading) detailHost.scrollTop = Math.max(0, heading.offsetTop - 12);
       }
     });
-    detailHost.addEventListener('mouseover', function (ev) {
-      var target = ev.target instanceof Element ? ev.target.closest('[data-key]') : null;
-      highlight(target ? target.getAttribute('data-key') : null);
-    });
-    detailHost.addEventListener('mouseleave', function () {
-      highlight(null);
-    });
   }
 
-  var graphHost = doc.getElementById('graph-host');
-  if (graphHost) {
-    graphHost.addEventListener('click', function (ev) {
-      var target = ev.target instanceof Element ? ev.target : null;
-      if (!target) return;
-      if (target.closest('[data-close]')) {
-        var openIndex = openGroupIndex(1000000);
-        setOpenGroup(-1);
-        var chipBack = graphHost.querySelector('button.tg[data-group="' + openIndex + '"]');
-        if (chipBack) chipBack.focus();
-        return;
-      }
-      var chip = target.closest('button.tg');
-      if (chip) {
-        var index = Number(chip.getAttribute('data-group'));
-        var wasOpen = chip.getAttribute('aria-expanded') === 'true';
-        setOpenGroup(wasOpen ? -1 : index);
-        var again = graphHost.querySelector('button.tg[data-group="' + index + '"]');
-        if (again) again.focus();
-      }
+  for (var mapName in maps) if (hasOwn(maps, mapName)) wireMap(maps[mapName]);
+  wireMapControls();
+  if (cardEl) {
+    cardEl.addEventListener('mouseenter', function () {
+      var m = activeMap();
+      if (m && m.att && cardEl.hasAttribute('data-passive')) setAttention(m, null);
     });
-    var hover = function (ev) {
-      var target = ev.target instanceof Element ? ev.target.closest('[data-key]') : null;
-      highlight(target ? target.getAttribute('data-key') : null);
-    };
-    graphHost.addEventListener('mouseover', hover);
-    graphHost.addEventListener('focusin', hover);
-    graphHost.addEventListener('mouseleave', function () {
-      highlight(null);
-    });
-    if (typeof window.ResizeObserver === 'function') {
-      new window.ResizeObserver(function () {
-        if (state.view === 'artifacts') buildFocus(false);
-      }).observe(graphHost);
-    }
   }
+  window.addEventListener('resize', function () {
+    var m = activeMap();
+    if (m && m.plane) fitMap(m);
+  });
 
   var appearance = doc.querySelectorAll('[data-appearance-set]');
   for (var ap = 0; ap < appearance.length; ap += 1) {
@@ -2481,6 +3518,8 @@ const script = String.raw`
   }
   var keysOpen = doc.getElementById('keys-open');
   if (keysOpen) keysOpen.addEventListener('click', openKeys);
+  var lensToggle = doc.getElementById('lens-toggle');
+  if (lensToggle) lensToggle.addEventListener('click', toggleLens);
   if (keysEl) {
     keysEl.addEventListener('click', function (ev) {
       var target = ev.target instanceof Element ? ev.target : null;
@@ -2520,14 +3559,26 @@ const script = String.raw`
     } else if (ev.key === '?') {
       ev.preventDefault();
       openKeys();
-    } else if (ev.key === 'Escape' && state.view === 'artifacts' && state.cat.x) {
-      setOpenGroup(-1);
     } else if ((ev.key === 'j' || ev.key === 'k') && state.view === 'artifacts' && state.id) {
       stepTo(ev.key === 'j' ? 1 : -1);
+    } else if (ev.key === 'l' || ev.key === 'L') {
+      ev.preventDefault();
+      toggleLens();
+    } else if (ev.key === 'f' || ev.key === 'F') {
+      var attended = activeMap() && activeMap().att ? activeMap().att : state.id;
+      if (attended) {
+        ev.preventDefault();
+        focusOn(attended);
+      }
+    } else if (activeMap() && (ev.key === '+' || ev.key === '=' || ev.key === '-' || ev.key === '0')) {
+      ev.preventDefault();
+      if (ev.key === '0') fitMap(activeMap());
+      else zoomCentre(activeMap(), ev.key === '-' ? 0.8 : 1.25);
+    } else if (ev.key === 'Escape' && state.view === 'columns' && state.id) {
+      selectInColumns(null);
     }
   });
 
-  wireSplit();
   wireFind();
   warmIndex();
 
@@ -2598,14 +3649,28 @@ function shiftHeadings(html: string): string {
   });
 }
 
+/** A frontmatter value as a list of text lines: a string is one line, an array one line per item. */
+function textLines(value: unknown): string[] {
+  if (value === undefined || value === null) return [];
+  if (Array.isArray(value))
+    return value.map((item) => metaValue(item)).filter((line) => line !== '');
+  const line = metaValue(value);
+  return line === '' ? [] : [line];
+}
+
 /**
  * The inert data region: every artifact's rendered body, metadata and status, plus every
  * relationship. `<` is escaped so the JSON can never terminate its containing script element.
+ *
+ * Two derived fields serve the business lens without the page re-deriving model rules: a structured
+ * behaviour's given / when / then as lists of lines, and `q`, the artifacts a change to this one
+ * puts in question — the same one-hop rule `prodshape impact` applies.
  */
 function snapshotDataJson(graph: ProductGraph, groups: Map<string, LoadedArtifact[]>): string {
   const artifacts: Record<string, unknown>[] = [];
   for (const [kind, members] of groups) {
     for (const a of members) {
+      const questioned = [...new Set(putInQuestionBy(graph, a.id as string).map((e) => e.id))];
       artifacts.push({
         id: a.id as string,
         kind,
@@ -2618,6 +3683,16 @@ function snapshotDataJson(graph: ProductGraph, groups: Map<string, LoadedArtifac
             : null,
         meta: metaPairs(a.frontmatter),
         body: shiftHeadings(renderMarkdown(a.body.trim())),
+        ...(kind === 'structured-behaviour'
+          ? {
+              gwt: {
+                given: textLines(a.frontmatter['given']),
+                when: textLines(a.frontmatter['when']),
+                then: textLines(a.frontmatter['then']),
+              },
+            }
+          : {}),
+        q: questioned,
       });
     }
   }
@@ -2717,6 +3792,24 @@ function kindGrid(rows: AggregateRow[], kinds: string[]): string {
   ].join('\n');
 }
 
+/**
+ * The frame of one map view: an empty, focusable viewport the application draws into, its zoom
+ * controls and a line stating its gestures. Bounded markup: the drawing itself comes from the data.
+ */
+function mapBox(name: string, label: string, hint: string): string {
+  return [
+    '<div class="mapbox">',
+    `<div class="mapview" id="map-${name}" tabindex="0" role="group" aria-roledescription="map" aria-label="${escapeHtml(label)}" aria-describedby="maphint-${name}"></div>`,
+    `<p class="maphint" id="maphint-${name}">${escapeHtml(hint)}</p>`,
+    `<div class="mapctl" role="group" aria-label="${escapeHtml(label)} zoom">`,
+    `<button type="button" class="tbtn" data-zoom="in" data-map="${name}" aria-label="Zoom in (+)" title="Zoom in (+)">+</button>`,
+    `<button type="button" class="tbtn" data-zoom="out" data-map="${name}" aria-label="Zoom out (-)" title="Zoom out (-)">−</button>`,
+    `<button type="button" class="tbtn" data-zoom="fit" data-map="${name}" aria-label="Fit the map to the view (0)" title="Fit the map to the view (0)">Fit</button>`,
+    '</div>',
+    '</div>',
+  ].join('\n');
+}
+
 export interface SnapshotOptions {
   /** Adds a project-specific possessive before “Product Snapshot”, e.g. “Lyceum’s Product Snapshot”. */
   productName?: string;
@@ -2772,7 +3865,18 @@ export function buildSnapshotHtml(
     ['<kbd>/</kbd> or <kbd>Ctrl</kbd> <kbd>K</kbd>', 'Search the product'],
     ['<kbd>Ctrl</kbd> <kbd>B</kbd>', 'Collapse or expand the artifact list'],
     ['<kbd>j</kbd> / <kbd>k</kbd>', 'Next or previous artifact in the list'],
-    ['<kbd>Esc</kbd>', 'Close search, this list, or an open neighbourhood group'],
+    [
+      '<kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd>',
+      'On a map: move to the nearest artifact, or pan when the map itself has focus',
+    ],
+    [
+      '<kbd>Enter</kbd>',
+      'On a map: focus the artifact (Columns: select it; the Focus centre: read it)',
+    ],
+    ['<kbd>f</kbd>', 'Open the Focus view on the artifact you are on'],
+    ['<kbd>+</kbd> / <kbd>-</kbd> / <kbd>0</kbd>', 'Zoom the map in, out, or fit it to the view'],
+    ['<kbd>l</kbd>', 'Turn the business lens on or off'],
+    ['<kbd>Esc</kbd>', 'Close search or this list; clear the Columns selection'],
     ['<kbd>?</kbd>', 'Show these shortcuts'],
   ]
     .map(([keys, what]) => `<dt>${keys}</dt><dd>${what}</dd>`)
@@ -2795,10 +3899,13 @@ export function buildSnapshotHtml(
     revisionShort,
     '<nav class="views" aria-label="Snapshot views">',
     '<a href="#/" data-view="overview" aria-current="page">Overview</a>',
+    '<a href="#/focus" data-view="focus">Focus</a>',
+    '<a href="#/columns" data-view="columns">Columns</a>',
     '<a href="#/artifacts" data-view="artifacts">Artifacts</a>',
     '</nav>',
     '<span class="spacer"></span>',
     '<button type="button" class="findbtn" id="find-open" aria-haspopup="dialog" aria-keyshortcuts="/ Control+K" data-icon="search"><span class="lbl">Search the product</span><kbd>/</kbd></button>',
+    '<button type="button" class="lensbtn" id="lens-toggle" aria-pressed="false" aria-keyshortcuts="L" title="Business lens: read use cases in business language (l)" data-icon="lens"><span class="lbl">Business lens</span></button>',
     '<div class="seg" role="group" aria-label="Appearance">',
     '<button type="button" data-appearance-set="light" aria-pressed="false" aria-label="Light appearance" title="Light appearance" data-icon="sun"></button>',
     '<button type="button" data-appearance-set="dark" aria-pressed="false" aria-label="Dark appearance" title="Dark appearance" data-icon="moon"></button>',
@@ -2808,21 +3915,31 @@ export function buildSnapshotHtml(
     '</header>',
     '<main id="main">',
 
-    // ---- Overview: the opening view. No artifact body, no artifact-level graph.
+    // ---- Overview: the opening view. Orientation, then the map the application draws from the
+    // data (every artifact as a chip, no authored content), then the aggregate below it.
     '<section id="view-overview" aria-labelledby="h-overview">',
+    '<div class="ovhead">',
+    '<h2 class="view" id="h-overview">Overview</h2>',
+    `<p class="ident">${graph.nodes.length} artifact${graph.nodes.length === 1 ? '' : 's'} · ${graph.edges.length} relationship${graph.edges.length === 1 ? '' : 's'} · ${groups.size} kind${groups.size === 1 ? '' : 's'} · ${revisionText}</p>`,
+    '<p class="lead">This page is a generated, read-only projection of a product model at the',
+    'revision stamped here. It is regenerated from the authored files at any time and is never',
+    'authoritative. Nothing here can be edited, and nothing you do is stored.</p>',
+    '<div role="search"><button type="button" class="bigfind" id="ov-find" aria-haspopup="dialog" data-icon="search"><span class="lbl">Search by identifier, title or phrase</span><kbd>/</kbd></button></div>',
+    '<a class="tofacts" href="#h-facts">Counts and the kind-level aggregate ↓</a>',
+    '</div>',
+    mapBox(
+      'overview',
+      'Overview map: every artifact, by kind',
+      'Drag to pan · wheel or pinch to zoom · hover or Tab onto an artifact to light its neighbours · click or Enter to focus it · arrow keys move between artifacts',
+    ),
     '<div class="ovwrap">',
     '<div class="ovcol">',
-    '<h2 class="view" id="h-overview">Overview</h2>',
-    '<p class="lead">This page is a generated, read-only projection of a product model at the',
-    'revision stamped below. It is regenerated from the authored files at any time and is never',
-    'authoritative. Nothing here can be edited, and nothing you do is stored.</p>',
-    `<p class="ident">${graph.nodes.length} artifact${graph.nodes.length === 1 ? '' : 's'} · ${graph.edges.length} relationship${graph.edges.length === 1 ? '' : 's'} · ${revisionText}</p>`,
+    '<h3 class="block" id="h-facts">The model in numbers</h3>',
     '<dl class="metrics">',
     `<div><dt>Artifacts</dt><dd>${graph.nodes.length}</dd></div>`,
     `<div><dt>Relationships</dt><dd>${graph.edges.length}</dd></div>`,
     `<div><dt>Artifact kinds</dt><dd>${groups.size}</dd></div>`,
     '</dl>',
-    '<div role="search"><button type="button" class="bigfind" id="ov-find" aria-haspopup="dialog" data-icon="search"><span class="lbl">Search by identifier, title or phrase</span><kbd>/</kbd></button></div>',
     '<h3 class="block" id="h-composition">Composition</h3>',
     '<ul class="kinds" aria-labelledby="h-composition">',
     ...kindRows,
@@ -2862,7 +3979,33 @@ export function buildSnapshotHtml(
     '</div>',
     '</section>',
 
-    // ---- Artifacts: master, Reader, split and Focused Topology, rendered on demand.
+    // ---- Focus view: one artifact among its neighbours, drawn from the data on demand.
+    '<section id="view-focus" aria-labelledby="h-focus" hidden>',
+    '<div class="mapbar">',
+    '<h2 class="view" id="h-focus">Focus</h2>',
+    '<nav class="trail" id="focus-trail" aria-label="Recently focused"></nav>',
+    '</div>',
+    mapBox(
+      'focus',
+      'Focus view: the selected artifact and its direct neighbours',
+      'Hover or Tab onto a neighbour to light its relationship · click or Enter to focus it · Enter on the centre reads it · a group heading collapses or expands its kind',
+    ),
+    '</section>',
+
+    // ---- Columns view: one column per kind, every relationship drawn, on demand.
+    '<section id="view-columns" aria-labelledby="h-columns" hidden>',
+    '<div class="mapbar">',
+    '<h2 class="view" id="h-columns">Columns</h2>',
+    '<p class="note">One column per kind; use cases and domain terms grouped by bounded context.</p>',
+    '</div>',
+    mapBox(
+      'columns',
+      'Columns view: every artifact in one column per kind',
+      'Hover or Tab onto an artifact to light its neighbours · click or Enter selects it · double-click or f focuses it · Esc clears',
+    ),
+    '</section>',
+
+    // ---- Artifacts: master and Reader, rendered on demand.
     '<section id="view-artifacts" aria-labelledby="h-artifacts" hidden>',
     '<h2 class="view sr-only" id="h-artifacts">Artifacts</h2>',
     '<div class="md">',
@@ -2878,12 +4021,9 @@ export function buildSnapshotHtml(
     `<a class="master-credit" href="${escapeHtml(parsedProductUrl.href)}" target="_blank" rel="noopener noreferrer" aria-label="Build with ProductShape v${escapeHtml(options.productVersion ?? 'unknown')}" title="Build with ProductShape v${escapeHtml(options.productVersion ?? 'unknown')}"><span class="info" aria-hidden="true">i</span><span class="label">Build with ProductShape v${escapeHtml(options.productVersion ?? 'unknown')}</span></a>`,
     '</aside>',
     '<article class="detail" id="detail"></article>',
-    '<div class="split" id="split" role="separator" tabindex="0" aria-orientation="vertical" aria-controls="graph-host" aria-label="Resize the neighbourhood" aria-valuemin="260"></div>',
-    '<aside class="topo" aria-label="Focused topology of the selected artifact">',
-    '<div id="graph-host"></div>',
-    '</aside>',
     '</div>',
     '</section>',
+    '<aside class="mcard" id="mcard" aria-label="Artifact summary" hidden></aside>',
     '<p id="needs-script" class="note">This page needs JavaScript to render artifact content, which',
     'it holds entirely within this file — no network access is involved.</p>',
     '</main>',

@@ -126,6 +126,7 @@ const expectedIds: Record<string, string[]> = {
     'FR-SNAPSHOT-ADDRESSING',
     'FR-SNAPSHOT-CATALOG',
     'FR-SNAPSHOT-TOPOLOGY',
+    'FR-SNAPSHOT-BUSINESS-LENS',
     // Added by CHG-RECOVERY-SESSIONS (deterministic brownfield recovery).
     'FR-RECOVER',
     // Added by CHG-RELEASE-CONTRACT-001 (executable release contract).

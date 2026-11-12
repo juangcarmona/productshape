@@ -1,49 +1,50 @@
 ---
 id: FR-SNAPSHOT-TOPOLOGY
 type: functional-requirement
-title: Traverse relationships through the Focused Topology
+title: Traverse relationships through the Focus view
 status: active
 derived-from:
   - UC-SNAPSHOT-EXPLORE
   - BR-RELATIONSHIPS
 verification:
-  - scenario: The projection is anchored on the selected artifact and shows its immediate canonical relationships, grouped by relationship meaning and, where useful, by artifact type
-  - scenario: Every collapsed group exposes its complete count, so nothing collapsed is silently omitted
-  - scenario: Detail appears only through deliberate reader action — expanding a group or following a path
-  - scenario: Selecting another artifact produces a newly focused projection; expansions do not accumulate indefinitely
-  - scenario: A dense relationship set falls back to a structured list or another legible representation rather than a denser drawing
-  - scenario: Every related artifact shown or counted is also reachable through the Reader, the Catalog, search and deep links
-  - scenario: The projection is deterministic for the same model, the same focus and the same explicit reader state
-  - scenario: No visual device implies lifecycle, maturity, importance, sequence, causality or dependency absent from the canonical relationships
-  - scenario: The projection draws no node, relationship or direction the compiled graph does not contain
+  - scenario: The Focus view centres the selected artifact and places its direct neighbours around it, grouped by artifact kind, kinds earlier in the Columns order on one side and later kinds on the other
+  - scenario: Each neighbour shows its kind, identifier, title, the relationship types connecting it to the focus with their direction, and the count of its own other relationships
+  - scenario: Each kind group is headed by its name and complete count and can be collapsed and expanded; a group too large to draw legibly starts collapsed, and nothing collapsed is silently omitted
+  - scenario: The rest of the model appears as a faded background in which every other artifact remains individually selectable
+  - scenario: Choosing a neighbour or a background artifact refocuses the view on it; the view never accumulates the traversal
+  - scenario: A breadcrumb shows the artifacts recently focused in this visit, each one step from becoming the focus again, and browser Back returns to the previous focus
+  - scenario: The focus is addressable, so opening the address of a Focus view opens that view on that artifact
+  - scenario: The Focus view is one step from the Reader, and the Reader is one step from the Focus view, on the same artifact
+  - scenario: Every neighbour shown or counted is also reachable through the Reader, the Catalog, search and deep links
+  - scenario: The view is deterministic for the same model, focus, viewport and disclosure state
+  - scenario: The view draws no node, relationship or direction the compiled graph does not contain
 ---
 
 ## Requirement
 
-The Product Explorer MUST provide a Focused Topology: a visual relationship projection that is local, bounded and progressive.
+The Product Explorer MUST provide a **Focus view**: one selected artifact, its direct canonical neighbours around it, and the rest of the model behind them.
 
-The selected artifact MUST be the focus. The projection MUST present the focus's immediate canonical relationships grouped by relationship meaning and, where it aids comprehension, by artifact type. Incoming and outgoing relationships MUST be distinguished where direction matters, by means other than colour alone. Every collapsed group MUST expose its complete count: collapsed content is never silently omitted.
+The focus MUST be the page's selected artifact, drawn at the centre. Its direct neighbours MUST be drawn around it, grouped by artifact kind: kinds that come before the focus's kind in the Columns order defined by FR-SNAPSHOT-PROJECTIONS on one side, and the focus's own kind and the kinds after it on the other, so the position of a group is a stable consequence of its kind. Each neighbour MUST show its kind, its stable identifier and its title, the relationship types that connect it to the focus with their direction stated as text, and the count of its own relationships to artifacts other than the focus. A line MUST join each drawn neighbour to the focus.
 
-Detail MUST appear only through deliberate reader action — expanding a group, or following a path to a related artifact. Selecting another artifact MUST produce a newly focused projection on that artifact; the projection MUST NOT accumulate the whole traversal indefinitely. Where a relationship set is too dense for a legible drawing, the projection MUST fall back to a structured list or another legible representation rather than drawing more at once.
+Each kind group MUST be headed by the kind's name and the complete count of its members, and MUST be collapsible and expandable by the reader. A group too large to draw legibly MUST start collapsed, showing its count; collapsed content is never silently omitted, and expanding a group changes nothing else. The reader's explicit expansions and collapses are disclosure state, carried in the address as FR-SNAPSHOT-ADDRESSING defines.
 
-Every related artifact the projection shows or counts MUST remain reachable through expansion, the Artifact Reader, the Catalog, search and deep links — the projection is an accelerator, never the only route.
+Every artifact that is neither the focus nor one of its neighbours MUST appear as a faded background mark that names its artifact to assistive technology and on hover, and that the reader can select. Choosing a neighbour or a background mark MUST make that artifact the new focus; the view MUST NOT accumulate the traversal. A breadcrumb MUST show the artifacts recently focused during this visit, each one step from becoming the focus again, and browser Back MUST return to the previous focus. The breadcrumb is reader state for the open page and is not persisted.
 
-For the same model content, the same focus and the same explicit reader state, the projection MUST be identical. It MUST draw only nodes, relationships and directions the compiled graph contains, and no visual device — position, size, colour, ordering or animation — MAY invent lifecycle, maturity, importance, sequence, causality or dependency that is absent from the canonical relationships.
+The Focus view MUST be one step from the Reader on the same artifact, and the Reader MUST offer a Focus action that opens the Focus view on the artifact it shows. Every neighbour the view shows or counts MUST remain reachable through the Reader, the Catalog, search and deep links.
+
+For the same model content, focus, viewport and disclosure state, the Focus view MUST be identical. It MUST draw only nodes, relationships and directions the compiled graph contains, and no visual device MAY invent lifecycle, maturity, importance, sequence, causality or dependency absent from the canonical relationships.
 
 ## Rationale
 
-A visual neighbourhood earns its place when it answers "what does this artifact touch, and through what" faster than prose can — and it forfeits that place the moment it grows past one focus. Both rejected directions failed on exactly that boundary: an arrangement asked to carry the whole product stops being readable precisely where reading matters. Locality is not a limitation of this projection; it is its definition.
+The Focused Topology answered "what does this artifact touch" with groups of counts that had to be opened one at a time, beside a Reader that already listed the same groups as text. Readers asked for the opposite trade: see the neighbours themselves, by name, around the thing they selected, and keep a sense of the whole model around it. Grouping by kind and placing the groups by the same fixed order the Columns view uses gives every Focus view the same orientation, so a reader learns once where rules, terms or requirements will be.
 
-The newly-focused rule — refocusing replaces rather than accumulates — is what keeps a traversal legible at any depth. The reader's continuity lives in the shared selection state, the browser's history and the Reader, not in an ever-growing picture. Complete counts on collapsed groups keep the boundedness honest: the reader always knows exactly what they are choosing not to look at.
-
-The fallback to structured lists concedes openly what dense graphs prove: past some density, a list communicates more than a drawing. Since the Reader already carries every relationship as text, the projection can afford to be strictly legible or absent — it never has to be complete.
+Counts on collapsed groups and on each neighbour keep the boundedness honest: the reader always knows how much lies one step further. Refocusing replaces rather than accumulates, and the breadcrumb together with browser Back carries the continuity the old projection left to the history alone.
 
 ## Acceptance Scenarios
 
-- A reader focuses a use case: its governing rules, its actors, its terms and the requirements derived from it appear as grouped, counted, directed relationships around it.
-- The most connected artifact in the model is focused: large groups start collapsed with their complete counts, nothing expands unbidden, and expanding one group changes nothing else silently.
-- The reader follows a path to a related artifact: the projection refocuses on it; the previous focus is one Back-press away, not a residue on the canvas.
-- A relationship set too dense to draw legibly is presented as a structured list; every entry remains selectable.
-- With the projection unavailable, every relationship it would show is read in the Artifact Reader and reached through the Catalog and deep links.
-- The same model, focus and reader state produce the identical projection in two fresh windows.
-- The projection is compared against the compiled graph: nothing drawn or counted is absent from it, and no visual device implies an order, importance or dependency the graph does not record.
+- A reader focuses a use case: its actors and journeys sit on one side; its bounded context, governing rules, terms, the requirements deriving from it and the behaviours on the other, each grouped under its kind with a count, each neighbour naming the relationship that connects it.
+- The most connected artifact is focused: its largest groups start collapsed with their complete counts, and expanding one changes nothing else.
+- The reader chooses a neighbour, then a faded background artifact: each becomes the focus in turn, the breadcrumb lists both, and Back returns through them.
+- From the Reader the reader chooses Focus, and from the Focus view returns to the Reader, on the same artifact both ways.
+- With the view unavailable, every relationship it would show is read in the Reader and reached through the Catalog and deep links.
+- The same address opened in two windows of the same size draws the identical view; compared with the compiled graph, nothing drawn or counted is absent from it.
