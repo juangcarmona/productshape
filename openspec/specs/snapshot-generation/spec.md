@@ -136,34 +136,116 @@ On an artifact's rendered view, every reference to another artifact SHALL be a l
 - **WHEN** a reader views a use case from which a functional requirement derives
 - **THEN** the requirement appears in a "referenced by" view as a link, although no authored file states that edge on the use case
 
-### Requirement: Graph visualization with node-selection highlighting
+### Requirement: Three map views over the whole model
 
-The page SHALL provide exactly two graph projections — the kind-level aggregate and the Focused Topology — and SHALL NOT provide a drawing of the whole graph or any arrangement in which artifact kind determines position. No projection SHALL be rendered in the opening view. Selecting a member in the projection SHALL make that artifact the page's single selected artifact.
+The page SHALL provide the kind-level aggregate and exactly three map views — the Overview map, the Focus view and the Columns view — and no other graph projection. Use cases and domain terms SHALL be grouped, in the Overview map and the Columns view, by the one bounded context the model records for each (`bounded-context` and `defined-in` respectively); an artifact recording none or more than one SHALL be drawn in a group labelled as having no single context, sorted after the others. Within a kind or group, artifacts SHALL be ordered by a fixed number of neighbour-position sweeps over the compiled graph, ties broken by identifier, so the layout uses no clock and no randomness.
 
-The Focused Topology SHALL be local, bounded and progressive: anchored on the selected artifact, its immediate canonical relationships grouped by relationship meaning and artifact type with complete counts, direction distinguished other than by colour alone, and members revealed only on deliberate action. Its disclosure SHALL be carried in the address and SHALL replace the history entry on toggle; refocusing on a member SHALL be a navigation to a newly focused projection with disclosure reset — the traversal never accumulates. An opened group SHALL present its members as a structured list attached to that group, named by its relationship type and kind, with every entry selectable, whatever the group's size.
+Every map SHALL be pannable by dragging and zoomable by wheel and pinch, and SHALL also offer zoom-in, zoom-out and fit controls and the `+`, `-` and `0` keys; arrow keys SHALL move between drawn artifacts, or pan when the map itself has focus. Each map SHALL expose one tab stop: the selected artifact when drawn, otherwise the first one drawn. Hovering or keyboard-focusing an artifact SHALL light it, its direct neighbours and their lines with a neon glow tuned per appearance, dim everything else, and show a summary card, without changing the address or the selection. Clicking or pressing Enter on an artifact SHALL open the Focus view on it in the Overview map and the Focus view; in the Columns view click and Enter SHALL select it and double-click or `f` SHALL focus it. The camera SHALL NOT be part of the address.
 
-<!-- pdac:cite id="FR-SNAPSHOT-PROJECTIONS" digest="sha256:ada79535a2e73f049b6407744641f22d27f87de99927400a2fbbc3ef76e3fad2" -->
-<!-- pdac:cite id="FR-SNAPSHOT-TOPOLOGY" digest="sha256:70b3a9ea0257ce57744bdc25a0c49cc8eee84f85a85542df0a898b121a7d1a12" -->
+<!-- pdac:cite id="FR-SNAPSHOT-PROJECTIONS" digest="sha256:7ab7050a644bbe3f1fd7dc38bda0c2037d5ae01348dad95fcf67bea914bfe137" -->
+<!-- pdac:cite id="TERM-PRODUCT-EXPLORER" digest="sha256:c1d1e70f923702a1863ad63d70127ea844a531aa6d153e5750989d4a9b02b60f" -->
+<!-- pdac:cite id="QR-ACCESSIBILITY" digest="sha256:5aaf32bd1141581f505558a4379ff7d6498a2cc3e959512523333767716ae8a6" -->
 
-#### Scenario: Exactly two projections
+#### Scenario: Exactly the aggregate and three maps
 
 - **WHEN** the generated page is inspected and every control exercised
-- **THEN** only the kind-level aggregate and the Focused Topology exist, and the withdrawn map routes resolve in place to the Focused Topology
+- **THEN** the kind-level aggregate, the Overview map, the Focus view and the Columns view exist, and no other projection
 
-#### Scenario: Disclosure is addressable, not history
+#### Scenario: Context grouping degrades rather than drops
 
-- **WHEN** a group is opened and the resulting address is opened in a fresh window
-- **THEN** the same group is open, and opening it never grew the browser history
+- **WHEN** a use case records no bounded context
+- **THEN** it is drawn in a group labelled as having no single context, after the grouped ones
 
-#### Scenario: Refocus resets
+#### Scenario: Attention lights a neighbourhood without navigating
 
-- **WHEN** a member is selected from an opened group
-- **THEN** a newly focused projection appears with no group open, and Back returns to the previous focus with its disclosure intact
+- **WHEN** the reader hovers or tabs onto an artifact on any map
+- **THEN** that artifact and exactly its direct neighbours are lit, the rest dimmed, and the address and selection are unchanged
 
-#### Scenario: Dense sets stay legible
+#### Scenario: Layout is deterministic
 
-- **WHEN** a group of any size is opened
-- **THEN** its members are presented as a structured list attached to it, the list is named by the group's relationship type and kind, and every entry remains selectable
+- **WHEN** a map is drawn twice from the same file, once with the clock and `Math.random` made unavailable
+- **THEN** both drawings are identical
+
+#### Scenario: Pan and zoom by every means
+
+- **WHEN** the reader drags, wheels, uses the zoom controls and the `+`, `-`, `0` and arrow keys
+- **THEN** the map pans and zooms accordingly and the address never changes
+
+### Requirement: The Overview map shows every artifact by kind
+
+The orientation view SHALL draw the Overview map from the embedded data at open: one tile per artifact kind present, in the Columns order, headed by the kind's token, name and exact count, holding every artifact of that kind as a chip carrying its identifier, with use cases and domain terms grouped under their bounded context's title. Tiles SHALL flow into rows of a width derived from their total area alone. The map SHALL draw no relationship line until the reader attends to an artifact, and then only that artifact's lines.
+
+<!-- pdac:cite id="FR-SNAPSHOT-ORIENTATION" digest="sha256:dce92611dfcfcd595f7d67297eb2e74903165595d9f72b309f5560fb04219479" -->
+<!-- pdac:cite id="FR-SNAPSHOT-PROJECTIONS" digest="sha256:7ab7050a644bbe3f1fd7dc38bda0c2037d5ae01348dad95fcf67bea914bfe137" -->
+
+#### Scenario: Every artifact is a chip
+
+- **WHEN** the snapshot opens
+- **THEN** the Overview map holds one chip per artifact in the model, in its kind's tile, and no relationship line
+
+#### Scenario: Choosing a chip focuses it
+
+- **WHEN** the reader clicks a chip or presses Enter on it
+- **THEN** the Focus view opens on that artifact
+
+### Requirement: The Focus view centres the selection among its neighbours
+
+The Focus view SHALL draw the selected artifact at the centre and each direct neighbour as a box naming its kind, identifier, title, the relationship types joining it to the focus with their direction as text (`governed-by →`, `← derived-from`), and the count of its other neighbours. Neighbours SHALL be grouped by kind under a collapsible heading stating the exact count; kinds before the focus's kind in the Columns order SHALL sit on the left and the focus's kind and later kinds on the right. A group of more than twelve SHALL start collapsed; the kinds whose disclosure the reader flipped SHALL be carried in the address (`x`), replacing the history entry. Every other artifact SHALL be drawn as a faded, selectable background mark placed by a seeded shuffle of a ring of slots. Choosing a neighbour or mark SHALL refocus; the focus SHALL take keyboard focus; a breadcrumb SHALL list the artifacts focused in this visit. Enter on the centre SHALL open it in the Reader, and the Reader SHALL offer a Focus action. Routes earlier snapshots produced for a focused projection (`#/graph/focus/ID`) SHALL resolve to the Focus view in place.
+
+<!-- pdac:cite id="FR-SNAPSHOT-TOPOLOGY" digest="sha256:9680d19b034f9502cac05ca24f027c8d31bb4bd0ee7a91ab773915e89becd574" -->
+<!-- pdac:cite id="TERM-FOCUSED-TOPOLOGY" digest="sha256:d897b290de2106f0d388c73aec2f12155e9e126dd53198f835eab6f155d69d1f" -->
+
+#### Scenario: Neighbours grouped by kind on fixed sides
+
+- **WHEN** the reader focuses a use case
+- **THEN** its actors and journeys sit left of it and its context, rules, terms, requirements and constraints right of it, each group headed by its exact count
+
+#### Scenario: Dense groups collapse, disclosure is addressed in place
+
+- **WHEN** an artifact with thirteen neighbours of one kind is focused and the reader expands that group
+- **THEN** the group starts collapsed with its count, expanding it adds `x=<kind>` to the address without a new history entry, and the address reopens it expanded
+
+#### Scenario: Refocus and retrace
+
+- **WHEN** the reader chooses a neighbour, then a background mark
+- **THEN** each becomes the single centre in turn and the breadcrumb lists them
+
+#### Scenario: Reader and Focus view are one step apart
+
+- **WHEN** the reader chooses Focus in the Reader, and Enter on the Focus view's centre
+- **THEN** each opens the other on the same artifact
+
+### Requirement: The Columns view lays out every artifact by kind
+
+The Columns view SHALL draw one column per kind present, in the order actors, journeys, use cases, bounded contexts, business rules, domain terms, functional requirements, quality requirements, constraints, structured behaviours, followed by any other kind; every artifact as a box and every relationship of the compiled graph as one line. Selecting an artifact SHALL keep it and its neighbourhood lit and show an interactive summary card; selecting it again, clicking empty space or pressing Escape SHALL clear the selection.
+
+<!-- pdac:cite id="FR-SNAPSHOT-PROJECTIONS" digest="sha256:7ab7050a644bbe3f1fd7dc38bda0c2037d5ae01348dad95fcf67bea914bfe137" -->
+
+#### Scenario: Columns and lines are complete
+
+- **WHEN** the Columns view is opened
+- **THEN** its columns follow the stated order for the kinds present, and it draws exactly one line per relationship
+
+#### Scenario: Select, clear, focus
+
+- **WHEN** the reader clicks an artifact, clicks it again, presses Escape after selecting another, and double-clicks a third
+- **THEN** the first is selected and then cleared, the second cleared by Escape, and the third opens in the Focus view
+
+### Requirement: The business lens presents a use case in business language
+
+One header control and the `l` key SHALL toggle the business lens, carried in the address as `l=b` and changed in place. With the lens on, the summary card — docked beside wide maps, and in the Reader above the body — SHALL present a use case as: its Goal and Trigger sections quoted; its primary and supporting actors; the journeys it is a step of; each governing business rule with its Rule statement quoted; each structured behaviour illustrating one of those rules, illustrating the use case or verified by one of its requirements, with given, when and then; its functional requirements, quality requirements and constraints one line each; and the artifacts a change to it puts in question, from the same one-hop rule `prodshape impact` applies, grouped by kind. It SHALL name artifacts by title, show no identifier and no relationship type name, say so when a section has nothing, and link each named artifact to the Focus view. Other kinds SHALL show title, plain kind and first statement. With the lens on, the Focus view SHALL label relationships with plain verbs and name neighbours by title. The snapshot embeds no Product Changes and no citation status, so the lens shows neither.
+
+<!-- pdac:cite id="FR-SNAPSHOT-BUSINESS-LENS" digest="sha256:17d95ec61b7315ddcaa84ff9bffb1c1fccc7d360501ab2d8d49f7cbd83b29fd3" -->
+
+#### Scenario: A use case reads in business language
+
+- **WHEN** the lens is on and a use case with goal, trigger, actors, journey, rule, behaviour, requirement, quality requirement and constraint is focused
+- **THEN** the card quotes the goal, trigger and rule statement, lists the others by title with given, when and then for the behaviour, states what a change puts in question, and shows no identifier or relationship type name
+
+#### Scenario: Off restores the engineering presentation
+
+- **WHEN** the lens is turned off
+- **THEN** the Focus view shows identifiers and relationship types again and the address changed in place
 
 ### Requirement: Offline client-side search
 
@@ -263,7 +345,7 @@ The embedded script and data serving navigation, visualization and search SHALL 
 
 ### Requirement: The snapshot opens in an orientation view
 
-The page SHALL open in an orientation view whose purpose is to convey the shape of the product, and which SHALL render no artifact's authored content and no artifact-level graph. It SHALL expose the product's identity and the source revision, the total number of artifacts and of relationships, the number of artifacts of each kind present with an entry point into each kind, a plain-language statement that the page is a generated read-only projection that is never authoritative, and a kind-level aggregate of the relationships by relationship type.
+The page SHALL open in an orientation view whose purpose is to convey the shape of the product, and which SHALL render no artifact's authored content. It SHALL expose the product's identity and the source revision, the total number of artifacts and of relationships, the number of artifacts of each kind present with an entry point into each kind, a plain-language statement that the page is a generated read-only projection that is never authoritative, the Overview map, and a kind-level aggregate of the relationships by relationship type.
 
 The orientation view SHALL additionally present the kind-level aggregate as a grid of source kind against target kind, each cell stating the number of relationships in that combination and each non-empty cell an entry point into the catalog narrowed to the source kind. It SHALL offer derived entry points, each labelled by the fact it reports: each journey with the use cases its steps reference, in the recorded step order; each bounded context with the number of artifacts that reference it; and the artifacts holding the most relationships, ordered by that count with the count shown beside each, under a label that states the criterion.
 
@@ -271,12 +353,12 @@ The orientation view MAY report the artifacts that hold no relationships, statin
 
 Everything displayed SHALL be derived from the compiled model. A derived ordering SHALL state its criterion where it is shown and SHALL NOT be worded as importance, priority or a recommended reading order. The orientation view SHALL NOT assert importance, centrality, health, completeness, quality, ownership, ranking, ordering or lifecycle progression that the model does not record. It SHALL describe only the artifact kinds the model actually contains.
 
-<!-- pdac:cite id="FR-SNAPSHOT-ORIENTATION" digest="sha256:a937594055f4ccbd0e22b9be943b12a2511ff160d8da1e5e77f1670c63063950" -->
+<!-- pdac:cite id="FR-SNAPSHOT-ORIENTATION" digest="sha256:dce92611dfcfcd595f7d67297eb2e74903165595d9f72b309f5560fb04219479" -->
 
 #### Scenario: Oriented before reading anything
 
 - **WHEN** a reader opens the snapshot for the first time
-- **THEN** the product identity, source revision, artifact and relationship totals, counts by kind with entry points, and the generated read-only statement are present, and no artifact body and no artifact-level graph is rendered
+- **THEN** the product identity, source revision, artifact and relationship totals, the generated read-only statement and the Overview map are present, and no artifact body is rendered
 
 #### Scenario: Counts match the compiled graph
 
@@ -295,7 +377,7 @@ Everything displayed SHALL be derived from the compiled model. A derived orderin
 
 #### Scenario: No fabricated conclusions
 
-- **WHEN** the orientation view is inspected for claims beyond identity, revision, counts, entry points, the projection statement and the kind-level aggregate
+- **WHEN** the orientation view is inspected for claims beyond identity, revision, counts, entry points, the projection statement, the map and the kind-level aggregate
 - **THEN** no artifact is described as important, central, healthy, complete, owned, ranked or ordered by anything the model does not record
 
 #### Scenario: Only the kinds present are described
@@ -307,7 +389,7 @@ Everything displayed SHALL be derived from the compiled model. A derived orderin
 
 The page SHALL provide a kind-level aggregate projection: the model's artifacts and relationships grouped by artifact kind and relationship type, with exact counts, communicating composition and traceability without rendering individual artifacts. It SHALL display nothing absent from the compiled graph, SHALL imply no importance, health, ownership or ordering, and SHALL be arranged identically for identical model content.
 
-{pdac:cite id="FR-SNAPSHOT-PROJECTIONS" digest="sha256:ada79535a2e73f049b6407744641f22d27f87de99927400a2fbbc3ef76e3fad2"}
+{pdac:cite id="FR-SNAPSHOT-PROJECTIONS" digest="sha256:7ab7050a644bbe3f1fd7dc38bda0c2037d5ae01348dad95fcf67bea914bfe137"}
 
 #### Scenario: Composition and traceability without artifacts
 
@@ -326,13 +408,13 @@ The page SHALL provide a kind-level aggregate projection: the model's artifacts 
 
 ### Requirement: One selected artifact addressed by the URL fragment
 
-The page SHALL hold exactly one selected artifact at a time, shared by every part of the page, and exactly one navigation mechanism SHALL own state transitions. No part of the page may change the selected artifact or the active view without that mechanism, and the address SHALL always reflect the state the page is in. The addressable state SHALL represent at least the active view, the selected artifact's identifier, and the presentation choices the reader made — the chosen appearance and whether the master area is collapsed — using the URL fragment so it behaves identically from `file://` and from ordinary static hosting, with no server-side routing and no request at navigation time.
+The page SHALL hold exactly one selected artifact at a time, shared by every part of the page, and exactly one navigation mechanism SHALL own state transitions. No part of the page may change the selected artifact or the active view without that mechanism, and the address SHALL always reflect the state the page is in. The addressable state SHALL represent at least the active view — Overview, Focus, Columns or Artifacts — the selected artifact's identifier, the Focus view's flipped disclosure, and the presentation choices the reader made — the chosen appearance, whether the master area is collapsed, and whether the business lens is on — using the URL fragment so it behaves identically from `file://` and from ordinary static hosting, with no server-side routing and no request at navigation time.
 
-Changing a presentation choice SHALL update the address in place, replacing the current history entry, and SHALL NOT change the selected artifact or the active view. An address carrying no presentation choice SHALL open with the environment's preferred appearance and the master area open. Presentation choices SHALL survive navigation between artifacts and views.
+Changing a presentation choice SHALL update the address in place, replacing the current history entry, and SHALL NOT change the selected artifact or the active view. An address carrying no presentation choice SHALL open with the environment's preferred appearance, the master area open and the lens off. Presentation choices SHALL survive navigation between artifacts and views. Every view tab SHALL carry the selection. The pan and zoom of a map SHALL NOT be addressed.
 
 Opening the page at an address naming an artifact SHALL open on that artifact. Browser Back and Forward SHALL restore previously visited views and selections. An address naming an artifact the snapshot does not contain SHALL produce an explicit state naming the identifier it could not resolve and offering a way to continue exploring.
 
-<!-- pdac:cite id="FR-SNAPSHOT-ADDRESSING" digest="sha256:0909cf9944d132e540621f984a03ec6cc1a66dd415c2d3e2bab2dad7deb7148d" -->
+<!-- pdac:cite id="FR-SNAPSHOT-ADDRESSING" digest="sha256:1ae12988f863368b278b6a9d2f0413389a092f7f2d043ae6f1fad7d4da3b52e7" -->
 
 #### Scenario: Selection is shared and addressable
 
@@ -401,7 +483,7 @@ Authored content SHALL NOT be able to become executable or structural, on either
 
 ### Requirement: The delivered surfaces are keyboard-operable and accessible
 
-Every capability of the delivered surfaces SHALL be reachable and operable by keyboard alone — the orientation view, the search dialog, the artifact list and its groups, the collapsible master area, the artifact detail, the Focused Topology and the view navigation — with no trapped focus and no pointer-only control. The focused element SHALL always be visibly identifiable, including the groups and members of the Focused Topology, and focus SHALL land on a meaningful element after every view and selection change. Every keyboard shortcut SHALL be stated on the page, and every action a shortcut performs SHALL also be reachable through a visible, focusable control. The search dialog SHALL take focus when it opens, SHALL be dismissible from the keyboard, and SHALL return focus when it closes.
+Every capability of the delivered surfaces SHALL be reachable and operable by keyboard alone — the orientation view, the search dialog, the artifact list and its groups, the collapsible master area, the artifact detail, the three map views and the view navigation — with no trapped focus and no pointer-only control. The focused element SHALL always be visibly identifiable, including the artifacts and group headings drawn on the maps, and focus SHALL land on a meaningful element after every view and selection change. Every keyboard shortcut SHALL be stated on the page, and every action a shortcut performs SHALL also be reachable through a visible, focusable control. The search dialog SHALL take focus when it opens, SHALL be dismissible from the keyboard, and SHALL return focus when it closes.
 
 The page SHALL expose semantic landmarks for its regions and a heading hierarchy without skipped levels. The selected artifact SHALL be reported as current with `aria-current` in the list, the active view SHALL be reported as current in the page navigation, and expanded state — of kind groups, relationship groups, projection groups and the master area — SHALL be exposed as state. Every icon-only control SHALL carry an accessible name stating what it does. All text SHALL meet WCAG 2.1 AA contrast in every appearance. No information a reader needs SHALL require hover or pointer proximity to reveal. Where the reader's environment expresses a reduced-motion preference, no non-essential animation or transition SHALL run.
 
@@ -429,16 +511,16 @@ The page SHALL expose semantic landmarks for its regions and a heading hierarchy
 
 ### Requirement: The opening document is bounded and interaction is measured
 
-The document rendered when the snapshot opens SHALL NOT grow in proportion to the number of artifacts in the model: its size SHALL be bounded by the artifact kinds present and the kind-level aggregate over them. Artifact content and relationship structure SHALL be carried in the file as data the page renders on demand. Generated file size SHALL grow no worse than linearly with authored content, and generation time no worse than linearly with artifact count.
+The markup the file carries outside its embedded data SHALL NOT grow in proportion to the number of artifacts in the model: its size SHALL be bounded by the artifact kinds present and the kind-level aggregate over them. Artifact content and relationship structure SHALL be carried in the file as data, and every map SHALL be drawn from that data; the Overview map SHALL draw one chip per artifact and no relationship line at open. Generated file size SHALL grow no worse than linearly with authored content, and generation time no worse than linearly with artifact count.
 
-Artifact-selection latency SHALL be measured on an identified reference environment — named hardware, operating system and browser version — across representative models, and the figures SHALL be recorded. A concrete artifact-selection budget SHALL be established from those recorded figures. No numeric interaction budget SHALL be asserted without a measurement supporting it. Artifacts that are hardest at scale — the longest-titled and longest-bodied — SHALL remain readable at every measured scale.
+Artifact-selection latency, Overview map drawing, neighbourhood lighting and opening the Focus and Columns views SHALL be measured on an identified reference environment — named hardware, operating system and browser version — across representative models, and the figures SHALL be recorded. A concrete artifact-selection budget SHALL be established from those recorded figures. No numeric interaction budget SHALL be asserted without a measurement supporting it. Artifacts that are hardest at scale — the longest-titled and longest-bodied — SHALL remain readable at every measured scale.
 
-{pdac:cite id="QR-SCALABILITY" digest="sha256:071ed61458c77f0f9652f64777066e45cc3c6c658466a9bfa87ef77845e9db6d"}
+{pdac:cite id="QR-SCALABILITY" digest="sha256:9da28eea667bea855b3fc7726c0b9d67ec338041332cf3f23a6059b4591a1050"}
 
 #### Scenario: Opening document does not scale with the model
 
 - **WHEN** the opening document is measured for a small and a materially larger model
-- **THEN** it contains no artifact body and no artifact-level graph, and its size does not grow in proportion to artifact count
+- **THEN** its static markup contains no artifact body and does not grow in proportion to artifact count, and the Overview map draws exactly one chip per artifact and no line
 
 #### Scenario: Size and generation time stay linear
 
@@ -543,7 +625,7 @@ Every active filter SHALL be shown beside the list as a named chip, each removab
 
 Each artifact kind on the orientation view SHALL be an entry point into the catalog narrowed to that family, and the orientation view SHALL present a control on its first screen that opens the search dialog.
 
-<!-- pdac:cite id="FR-SNAPSHOT-ORIENTATION" digest="sha256:a937594055f4ccbd0e22b9be943b12a2511ff160d8da1e5e77f1670c63063950" -->
+<!-- pdac:cite id="FR-SNAPSHOT-ORIENTATION" digest="sha256:dce92611dfcfcd595f7d67297eb2e74903165595d9f72b309f5560fb04219479" -->
 <!-- pdac:cite id="FR-SNAPSHOT-SEARCH" digest="sha256:d924ae0adf5ab9304030acf7c64642db30b1862562a21197ad176b3fce90b353" -->
 
 #### Scenario: Family entry
@@ -588,11 +670,11 @@ Every identifier of an artifact the model contains, where it appears in the sele
 
 The generated page SHALL render in a light and a dark appearance. By default it SHALL follow the reader's environment preference; one appearance control SHALL offer light, dark and the environment's preference, and a choice SHALL be held only in the address. Every colour the page uses — text, surfaces, lines, accent, kind colours, status indicators and projection strokes — SHALL have a value designed for each appearance.
 
-Body and interface text SHALL use the reader's system sans-serif stack, and artifact identifiers and revision values SHALL render monospaced. Text contrast SHALL be strong in both appearances; structure SHALL be carried by thin borders, deliberate alignment and consistent spacing rather than elevation or enclosure, with elevation reserved for transient overlays such as the search dialog and a projection's member list; controls SHALL be square or low-radius. Colour use SHALL be restrained to one accent per appearance plus a per-artifact-kind palette that, within an appearance, does not change between artifacts, views or regenerations, with kinds distinguishable from one another; colour SHALL NOT be the sole carrier of any meaning.
+Body and interface text SHALL use the reader's system sans-serif stack, and artifact identifiers and revision values SHALL render monospaced. Text contrast SHALL be strong in both appearances; structure SHALL be carried by thin borders, deliberate alignment and consistent spacing rather than elevation or enclosure, with elevation reserved for transient overlays such as the search dialog and a map's summary card; controls SHALL be square or low-radius. Colour use SHALL be restrained to one accent per appearance plus a per-artifact-kind palette that, within an appearance, does not change between artifacts, views or regenerations, with kinds distinguishable from one another; colour SHALL NOT be the sole carrier of any meaning.
 
-Every artifact kind SHALL have one stable icon, defined within the file, shown beside that kind's text token wherever a kind is shown and never in place of it. The interface SHALL be compact. The page SHALL NOT use gradients, glass or blur effects, decorative illustration, oversized hero typography, or a rounded-card dashboard treatment of its content.
+Every artifact kind SHALL have one stable icon, defined within the file, shown beside that kind's text token wherever a kind is shown and never in place of it. The interface SHALL be compact. On the map views, the artifact under attention, its direct neighbours and their lines MAY glow in their kind colours while the rest dims, with the glow tuned per appearance and the lit state also carried by border weight and dimming. Apart from that highlight, the page SHALL NOT use gradients, glass or blur effects, decorative illustration, oversized hero typography, or a rounded-card dashboard treatment of its content.
 
-<!-- pdac:cite id="QR-PRESENTATION" digest="sha256:4f97ecbb30cc068257d98e1d4de29a1dc7ecac8137f12cfbdf8bee5bafdb1881" -->
+<!-- pdac:cite id="QR-PRESENTATION" digest="sha256:7656c1278f5e0ba93b2051df3163321697a5064d2f7e3bdad634be1589a18784" -->
 <!-- pdac:cite id="CON-NO-WEB-UI" digest="sha256:467b7a87238629673c45dac7b72e85e4cb17a969cbcdbf6f4bf5d1711209ddbf" -->
 
 #### Scenario: The environment preference is followed
@@ -623,68 +705,13 @@ Every artifact kind SHALL have one stable icon, defined within the file, shown b
 #### Scenario: No decorative treatments
 
 - **WHEN** the rendered page is inspected for gradients, glass or blur effects, decorative illustration, hero-scale typography and rounded-card dashboard treatment
-- **THEN** none is present, and only the search dialog and a projection's member list are elevated
-
-### Requirement: The focused neighbourhood lays relationship groups out in rows around the selected artifact
-
-The focused neighbourhood SHALL anchor on the page's selected artifact and show one hop. What surrounds the anchor SHALL be the artifact's relationship groups rather than its individual artifacts: each group SHALL state its relationship type, the artifact kind at the other end and the exact number of relationships it represents. Groups the artifact declares SHALL be laid out in rows above the anchor and groups referencing it in rows below, each connected to the anchor by a directed line, so direction is carried by position and by the line and remains determinable with colour removed.
-
-Rows SHALL wrap to the width of the pane, so no group overlaps another at any pane width; when the rows need more height than the pane offers, the pane SHALL scroll rather than shrink or overlap them. Nothing SHALL be placed outside the pane's width.
-
-Activating a group SHALL open or close its member list and SHALL NOT change the selected artifact; at most one group SHALL be open at a time. Activating a member SHALL select that artifact. Both SHALL be operable by keyboard, Escape SHALL close an open member list, and expanded state SHALL be exposed to assistive technology as state. Pointing at or focusing a group SHALL highlight the Reader's relationship group of the same direction, type and kind, and the reverse; opening a group SHALL bring its Reader counterpart into view. The relative width of the Reader and the projection SHALL be adjustable by pointer and by keyboard; that width is reader state and SHALL NOT be persisted anywhere.
-
-A group SHALL state its identity in visible text, so nothing needed is available only to a pointer. The equivalent relationship list SHALL remain available whether or not this projection is used.
-
-Placement SHALL remain a pure function of the model, the pane width and which group is open: identical model content, width and open group SHALL produce an identical arrangement.
-
-<!-- pdac:cite id="FR-SNAPSHOT-TOPOLOGY" digest="sha256:70b3a9ea0257ce57744bdc25a0c49cc8eee84f85a85542df0a898b121a7d1a12" -->
-<!-- pdac:cite id="TERM-FOCUSED-TOPOLOGY" digest="sha256:0078e5754fc215a6bdde6b601ac543c391491356666cc36265c26e83fa134595" -->
-
-#### Scenario: Groups surround the anchor, not artifacts
-
-- **WHEN** the reader views the focused neighbourhood for an artifact with several relationship types
-- **THEN** one group appears per direction, relationship type and other-end kind, each stating its type, kind and exact count
-
-#### Scenario: Direction is positional
-
-- **WHEN** an artifact has both incoming and outgoing relationships, and the projection is viewed with colour removed
-- **THEN** declared groups sit above the anchor and referencing groups below it, each joined to the anchor by a directed line
-
-#### Scenario: Rows never overlap
-
-- **WHEN** the most connected artifact in the model is focused at the narrowest and the widest pane widths the layout allows
-- **THEN** no two groups overlap, nothing extends beyond the pane's width, and rows that exceed the pane's height are reachable by scrolling the pane
-
-#### Scenario: The two gestures do different things
-
-- **WHEN** the reader activates a group, and then activates one of its members
-- **THEN** the group's member list opens without changing the selected artifact, and the member becomes the selected artifact
-
-#### Scenario: One open group, closed by Escape
-
-- **WHEN** the reader opens one group and then another, and then presses Escape
-- **THEN** only the second group's member list is open until Escape closes it
-
-#### Scenario: Projection and Reader correspond
-
-- **WHEN** the reader points at or focuses a group in the projection, and then points at a relationship group in the Reader
-- **THEN** the counterpart of each is highlighted, and opening a projection group brings its Reader counterpart into view
-
-#### Scenario: The split is adjustable
-
-- **WHEN** the reader drags the divider between the Reader and the projection, and then moves it with the arrow keys
-- **THEN** both panes resize by either means, and nothing about the width is stored
-
-#### Scenario: The hardest artifact stays legible
-
-- **WHEN** the reader views the focused neighbourhood for the most connected artifact in the model
-- **THEN** the projection shows one group per relationship type and kind rather than one node per relationship, and its size tracks the number of groups rather than the artifact's degree
+- **THEN** none is present apart from the neon highlight on attended map artifacts, and only the search dialog and a map's summary card are elevated
 
 ### Requirement: The master area keeps the reader's place
 
 The artifact list SHALL group artifacts by kind in groups the reader can open and close, each stating its kind, its icon and the number of artifacts it holds. The group holding the selected artifact SHALL be open, SHALL be marked as holding the selection by a visible rule and a text marker in addition to colour, and SHALL keep the selected entry within the list's visible area whenever the selection changes. A kind heading SHALL stay visible while its group is scrolled.
 
-The reader SHALL be able to collapse the master area to a rail of the artifact kinds — each an icon with its text token — through a visible control and a stated shortcut, and to restore it the same ways. The rail SHALL mark the selected artifact's kind by more than colour, and activating a kind on the rail SHALL restore the master area with that kind's group open and in view. While collapsed, the Reader and the projection SHALL take the freed width.
+The reader SHALL be able to collapse the master area to a rail of the artifact kinds — each an icon with its text token — through a visible control and a stated shortcut, and to restore it the same ways. The rail SHALL mark the selected artifact's kind by more than colour, and activating a kind on the rail SHALL restore the master area with that kind's group open and in view. While collapsed, the Reader SHALL take the freed width.
 
 <!-- pdac:cite id="FR-SNAPSHOT-READER" digest="sha256:755cdb9d6221a00c6b2670a5547c32719b4f24ef628b8aaf1c79d8aa11afc654" -->
 <!-- pdac:cite id="QR-ACCESSIBILITY" digest="sha256:5aaf32bd1141581f505558a4379ff7d6498a2cc3e959512523333767716ae8a6" -->
@@ -702,4 +729,4 @@ The reader SHALL be able to collapse the master area to a rail of the artifact k
 #### Scenario: Collapse to a rail and back
 
 - **WHEN** the reader collapses the master area with its control, then with the shortcut restores it, and collapses it again and activates a kind on the rail
-- **THEN** the rail marks the selected artifact's kind, the Reader and the projection widen, and activating a kind restores the master area with that kind's group open and in view
+- **THEN** the rail marks the selected artifact's kind, the Reader widens, and activating a kind restores the master area with that kind's group open and in view
