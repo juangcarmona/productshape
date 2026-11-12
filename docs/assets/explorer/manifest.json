@@ -218,6 +218,30 @@
       "caption": "On a phone the map summary folds to its title so it does not hide the map."
     },
     {
+      "name": "39-phone-overview",
+      "route": "#/",
+      "viewport": "390x844",
+      "caption": "The Overview map on a phone: kind regions stacked in one column at full label size."
+    },
+    {
+      "name": "40-phone-focus",
+      "route": "#/focus/UC-EXPLORER-BROWSE",
+      "viewport": "390x844",
+      "caption": "The Focus view on a phone: the focus on top, its groups stacked beneath, one line per neighbour."
+    },
+    {
+      "name": "41-phone-columns",
+      "route": "#/columns/BR-CANONICAL",
+      "viewport": "390x844",
+      "caption": "The Columns view on a phone opens on the selection’s column across the width."
+    },
+    {
+      "name": "42-phone-reader-scrolled",
+      "route": "#/artifacts/UC-EXPLORER-BROWSE",
+      "viewport": "390x844",
+      "caption": "The Reader on a phone, scrolled: back, previous and next stay within reach."
+    },
+    {
       "name": "35-map-no-colour",
       "route": "#/columns/BR-CANONICAL",
       "viewport": "1440x900",

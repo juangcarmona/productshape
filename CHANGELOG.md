@@ -8,6 +8,18 @@ The supported published CLI baseline is `@prodshape/cli@0.25.0`. Every stable pu
 
 ## [Unreleased]
 
+### Added
+
+- The Product Explorer's maps and Reader are readable on a phone (`CHG-EXPLORER-PHONE`). At 40rem wide or narrower:
+  - the Overview map stacks its kind regions in one column at full label size;
+  - the Columns view opens on the selected artifact's column, across the width;
+  - the Focus view stacks its groups beneath the focus without the faded background;
+  - the fit control fits the width;
+  - boxes in the Focus view and in the Reader's metadata name an artifact by its kind and title, without repeating its identifier;
+  - the Reader keeps back, previous and next at the top while the artifact scrolls, and a horizontal swipe steps through the list.
+
+  `FR-EXPLORER-PROJECTIONS`, `FR-EXPLORER-TOPOLOGY`, `FR-EXPLORER-READER` and `QR-PRESENTATION` now state this behaviour. Wider viewports are unchanged.
+
 ### Fixed
 
 - The Product Explorer is usable on a phone, as QR-PRESENTATION and FR-EXPLORER-READER already required. Below 40rem the header keeps the title, search and a menu button, and the views, business lens and appearance open beneath it. Text and controls grow to a comfortable size. A page opened on a phone without an address starts on the artifact catalog, and the map summary card folds to its title.
