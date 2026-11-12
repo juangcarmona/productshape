@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildWorkspaceCli } from './example-snapshot.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const args = process.argv.slice(2);
@@ -48,6 +49,8 @@ function forwardedArgs() {
 }
 
 try {
+  // The public profile generates the example Product Snapshot; make sure the CLI it uses is current.
+  if (profile === 'public') buildWorkspaceCli(root);
   const legacy = spawnSync(
     process.execPath,
     [

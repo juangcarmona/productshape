@@ -45,6 +45,8 @@
     "principleText": "ProductShape can find broken references and changed definitions. It cannot decide whether an idea is true, whether a change is right, or whether implementation is complete.",
     "explorerTitle": "See the ProductShape model, not a sales demo.",
     "explorerText": "This repository defines itself with the same product model it asks teams to create. Browse real artifacts and their relationships in a generated, read-only snapshot.",
+    "exampleText": "Prefer a smaller model? This example shop is generated from its own Markdown on every build.",
+    "exampleAction": "Explore an example product",
     "architectureTitle": "Built to stay understandable.",
     "architectureText": "Explore the twelve arc42 views of the implementation, from package boundaries to publishing and quality evidence.",
     "closingTitle": "Start with one product decision.",

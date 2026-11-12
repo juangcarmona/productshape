@@ -26,7 +26,7 @@ if (!basePath.startsWith('/') || !basePath.endsWith('/')) throw new Error('Inval
 
 const routes =
   profile === 'public'
-    ? ['/', '/en/', '/es/', '/diagrams/mermaid/', '/diagrams/archify/']
+    ? ['/', '/en/', '/es/', '/en/explore/', '/diagrams/mermaid/', '/diagrams/archify/']
     : [
         '/productshape/',
         '/productshape/en/',
@@ -94,6 +94,12 @@ const browser = await puppeteer.launch({
   args: ['--no-sandbox', '--disable-setuid-sandbox'],
 });
 const page = await browser.newPage();
+// The example Product Snapshot must work offline: record any request that leaves the local server.
+const externalRequests = [];
+page.on('request', (request) => {
+  const url = request.url();
+  if (!url.startsWith(origin) && !/^(?:data|blob|about):/u.test(url)) externalRequests.push(url);
+});
 page.setDefaultTimeout(15000);
 page.setDefaultNavigationTimeout(15000);
 await mkdir(evidenceDirectory, { recursive: true });
@@ -152,6 +158,20 @@ try {
     if (route.endsWith('/archify/') && details.renderer !== 'archify') {
       throw new Error(`${route}: Archify renderer marker is missing.`);
     }
+    if (route.endsWith('/explore/')) {
+      const snapshot = await page.evaluate(() => ({
+        title: document.title,
+        mentionsRule: document.documentElement.outerHTML.includes('BR-REFUND-001'),
+      }));
+      if (!snapshot.title.endsWith('Product Snapshot') || !snapshot.mentionsRule) {
+        throw new Error(`${route}: the example Product Snapshot did not render.`);
+      }
+      if (externalRequests.length > 0) {
+        throw new Error(`${route}: requested resources outside the site: ${externalRequests}`);
+      }
+      evidence.checks.exampleSnapshotOffline = true;
+    }
+    externalRequests.length = 0;
     evidence.routes.push({ route, status: response.status(), ...details });
   }
 
@@ -200,7 +220,9 @@ try {
     throw new Error('Keyboard focus did not move to an interactive control.');
   evidence.checks.focus = true;
 
-  for (const route of [routes[0], routes.at(-1)]) {
+  const screenshotRoutes = [routes[0], routes.at(-1)];
+  if (profile === 'public') screenshotRoutes.push('/en/explore/');
+  for (const route of screenshotRoutes) {
     await page.goto(`${origin}${route}`, { waitUntil: 'networkidle0' });
     const fileName = `${profile}-${route.replaceAll('/', '_') || 'root'}desktop.png`;
     const file = join(evidenceDirectory, fileName);

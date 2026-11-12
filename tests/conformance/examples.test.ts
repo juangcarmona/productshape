@@ -15,6 +15,18 @@ describe('examples', () => {
     }
   });
 
+  it('every artifact in examples/shop validates without diagnostics', async () => {
+    const files = await listFilesRecursive(
+      join(repoRoot, 'examples', 'shop', 'docs', 'product', 'model'),
+      '.md',
+    );
+    expect(files).toHaveLength(39);
+    for (const file of files) {
+      const result = await validateMarkdownDocument(file);
+      expect.soft(result.diagnostics, result.file).toEqual([]);
+    }
+  });
+
   it.each([
     ['actor-wrong-prefix.md', 'PRODUCT004'],
     ['bounded-context-owns-terms.md', 'PRODUCT002'],

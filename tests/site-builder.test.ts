@@ -9,13 +9,30 @@ const repoRoot = process.cwd();
 const validator = join(repoRoot, 'src/scripts/validate-public-site.mjs');
 const legacyBuilder = join(repoRoot, 'src/scripts/build-legacy-public-content.mjs');
 
-async function build(args: string[], root = repoRoot, env = process.env) {
+// The public build generates the example Product Snapshot with a ProductShape CLI. Tests name the
+// workspace CLI built by `pnpm build` instead of letting the builder rebuild it, which would
+// replace dist/ under other test files that read it concurrently.
+const cli = join(repoRoot, 'src/packages/cli/dist/bin.js');
+
+async function build(args: string[], root = repoRoot, env: NodeJS.ProcessEnv = process.env) {
   return spawnSync(process.execPath, [join(root, 'src/scripts/build-public-site.mjs'), ...args], {
     cwd: root,
-    env,
+    env: { PRODUCTSHAPE_CLI: cli, ...env },
     encoding: 'utf8',
   });
 }
+
+// What an isolated public build needs from the repository: no architecture, no self-model.
+const publicBuildInputs = [
+  'src/scripts/build-public-site.mjs',
+  'src/scripts/build-legacy-public-content.mjs',
+  'src/scripts/example-snapshot.mjs',
+  'src/public-site',
+  'docs/adoption',
+  'docs/assets/snapshot/01-overview-desktop.png',
+  'src/packages/cli/package.json',
+  'examples/shop',
+];
 
 describe('static site publication profiles', () => {
   it('keeps representative page HTML byte-identical through the Astro shell', async () => {
@@ -36,7 +53,7 @@ describe('static site publication profiles', () => {
           '--site-origin',
           'https://productshape.dev',
         ],
-        { cwd: repoRoot, encoding: 'utf8' },
+        { cwd: repoRoot, env: { ...process.env, PRODUCTSHAPE_CLI: cli }, encoding: 'utf8' },
       );
       expect(legacyResult.status, legacyResult.stderr).toBe(0);
       const astroResult = await build([
@@ -69,14 +86,7 @@ describe('static site publication profiles', () => {
   it('adds a locale through configuration and falls back to English copy', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'productshape-locale-extension-'));
     try {
-      for (const path of [
-        'src/scripts/build-public-site.mjs',
-        'src/scripts/build-legacy-public-content.mjs',
-        'src/public-site',
-        'docs/adoption',
-        'docs/assets/snapshot/01-overview-desktop.png',
-        'src/packages/cli/package.json',
-      ]) {
+      for (const path of publicBuildInputs) {
         await mkdir(join(directory, path, '..'), { recursive: true });
         await cp(join(repoRoot, path), join(directory, path), { recursive: true });
       }
@@ -156,6 +166,14 @@ describe('static site publication profiles', () => {
       expect(archifyPage).toContain('data-renderer="archify"');
       expect(archifyPage).toContain('245de1fd5d10faaeb2b30f401853fcb805eca00b');
       expect(sitemap).toContain('https://productshape.dev/en/');
+      expect(sitemap).toContain('https://productshape.dev/en/explore/');
+      expect(index).toContain('href="/en/explore/"');
+      expect(spanish).toContain('href="/en/explore/"');
+      const example = await readFile(join(output, 'en/explore/index.html'), 'utf8');
+      expect(example).toContain('<title>Example shop’s Product Snapshot</title>');
+      expect(example).toContain('BR-REFUND-001');
+      expect(example).toContain('href="https://productshape.dev/"');
+      expect(example).not.toContain('ProductShape model, not a sales demo');
       expect(sitemap).not.toContain('/engineering/');
       expect(sitemap).not.toContain('/model/');
       expect(robots).toContain('Sitemap: https://productshape.dev/sitemap.xml');
@@ -393,14 +411,7 @@ describe('static site publication profiles', () => {
   it('builds public output without architecture or generated engineering inputs', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'productshape-public-independent-'));
     try {
-      for (const path of [
-        'src/scripts/build-public-site.mjs',
-        'src/scripts/build-legacy-public-content.mjs',
-        'src/public-site',
-        'docs/adoption',
-        'docs/assets/snapshot/01-overview-desktop.png',
-        'src/packages/cli/package.json',
-      ]) {
+      for (const path of publicBuildInputs) {
         await mkdir(join(directory, path, '..'), { recursive: true });
         await cp(join(repoRoot, path), join(directory, path), { recursive: true });
       }
@@ -413,6 +424,10 @@ describe('static site publication profiles', () => {
       await expect(
         readFile(join(directory, 'docs/architecture/01-introduction-and-goals.md')),
       ).rejects.toThrow();
+      await expect(readFile(join(directory, 'docs/product/model/index.md'))).rejects.toThrow();
+      expect(await readFile(join(output, 'en/explore/index.html'), 'utf8')).toContain(
+        'Example shop’s Product Snapshot',
+      );
       const metadata = JSON.parse(await readFile(join(output, 'publication.json'), 'utf8'));
       expect(metadata.sourceRevision).toBeNull();
       expect(metadata.dirty).toBe(true);
@@ -508,6 +523,16 @@ describe('static site publication profiles', () => {
         '<title>Leaked architecture</title>',
       );
       expect(runValidation().stderr).toContain('Engineering route leaked');
+      await rm(join(output, 'en/engineering'), { recursive: true, force: true });
+      const examplePath = join(output, 'en/explore/index.html');
+      const example = await readFile(examplePath, 'utf8');
+      await writeFile(
+        examplePath,
+        example.replace('</head>', '<script src="https://cdn.example/x.js"></script></head>'),
+      );
+      expect(runValidation().stderr).toContain('loads an external resource');
+      await rm(examplePath);
+      expect(runValidation().stderr).toContain('Missing output: en/explore/index.html');
     } finally {
       await rm(directory, { recursive: true, force: true });
     }

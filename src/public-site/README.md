@@ -22,7 +22,7 @@ node src/scripts/check-public-site-browser.mjs --dir dist/public-site --profile 
 node src/scripts/check-public-site-browser.mjs --dir _site --profile engineering --base-path /productshape/ --evidence-dir engineering-browser-evidence
 ```
 
-`publication.json` records the profile, base path, origin, CLI version, full source revision and dirty state. A local uncommitted build is explicitly marked dirty. The public builder needs no generated engineering output or architecture input. The engineering output copies the generated standalone Snapshot byte-for-byte; its attribution URL is selected at generation time with the existing option shown above.
+`publication.json` records the profile, base path, origin, CLI version, full source revision and dirty state. A local uncommitted build is explicitly marked dirty. The public builder needs no generated engineering output or architecture input; it builds the workspace CLI and generates the example Snapshot from `examples/shop/` itself (see `src/scripts/example-snapshot.mjs`). The engineering output copies the generated standalone Snapshot byte-for-byte; its attribution URL is selected at generation time with the existing option shown above.
 
 The browser check serves a built directory locally, verifies representative routes in both profiles, checks renderer markers and source surfaces, exercises dark/system appearance, narrow navigation and keyboard focus, and captures route screenshots plus a JSON manifest. When given `--baseline-dir`, it also compares the representative Astro shell HTML byte-for-byte with the legacy compatibility output. These files are local review evidence; they do not represent a production deployment.
 
@@ -39,7 +39,7 @@ python3 -m http.server 4174 --directory _site
 
 The engineering preview requires its generated Product Snapshot first. The source manifest is optional locally; CI supplies it as shown in the deployment workflow. To preview its `/productshape/` base path, serve a parent directory containing a `productshape` folder, or rebuild locally with `--base-path /` and validate with the same base. Python serves ordinary files; use local Wrangler Pages development to check Cloudflare-specific 404 routing.
 
-The public site contains the localized product pages, adoption guides and static Archify diagrams. It links to the Product Snapshot and engineering portal on GitHub Pages; it does not include the model explorer or architecture routes in its output or sitemap.
+The public site contains the localized product pages, adoption guides, static Archify diagrams and, at `/en/explore/`, a Product Snapshot of the example product in `examples/shop/`, generated on every build. It links to ProductShape's own Product Snapshot and the engineering portal on GitHub Pages; it does not include ProductShape's own model explorer or architecture routes in its output or sitemap.
 
 The engineering portal contains the generated Product Snapshot and the current twelve-section ProductShape architecture documentation. It does not contain the public product pages. E2E reports are optional and are listed only when a pipeline supplies the manifest and report files described in [`docs/operations/public-site-deployment.md`](../docs/operations/public-site-deployment.md).
 

@@ -8,7 +8,7 @@ When diagnosing a failed Cloudflare build, inspect the complete build log, inclu
 
 ## Build and review locally
 
-Public generation and validation use Node 22 or newer and the workspace dependencies for the Astro shell; no generated Product Snapshot or architecture input is needed:
+Public generation and validation use Node 22 or newer and the workspace dependencies for the Astro shell. No generated engineering Product Snapshot, self-model or architecture input is needed. The build does generate one Product Snapshot of its own: the example product in `examples/shop/`, written to `/en/explore/`. `pnpm run build:public-site` builds the workspace CLI first (`pnpm --filter @prodshape/cli run build`, a few seconds) and runs `prodshape graph --format html` inside the example, so the page carries the revision of the checkout that produced it. Set `PRODUCTSHAPE_CLI` to a built `bin.js` to use another CLI and skip that build; the tests do this so they never rebuild `dist/` under each other.
 
 ```bash
 pnpm install --frozen-lockfile
@@ -18,9 +18,9 @@ node src/scripts/check-public-site-browser.mjs --dir dist/public-site --profile 
 python3 -m http.server 4173 --directory dist/public-site
 ```
 
-Open `http://localhost:4173/`, `/en/`, `/es/`, a product/adoption deep link and `404.html`; inspect light/dark/system appearance and mobile navigation. Python's server is a file preview, not proof of Cloudflare routing. To test Pages routing locally without an account or upload:
+Open `http://localhost:4173/`, `/en/`, `/es/`, `/en/explore/`, a product/adoption deep link and `404.html`; inspect light/dark/system appearance and mobile navigation. Python's server is a file preview, not proof of Cloudflare routing. To test Pages routing locally without an account or upload:
 
-The browser check above is the repeatable runtime evidence path. It also captures desktop screenshots for the public home and Archify routes and compares the representative Astro shell HTML against a freshly built legacy compatibility baseline. The engineering workflow runs the check against its `/productshape/` base path and uploads a separate evidence artifact. Both checks require Chromium; a local environment without it must record the limitation rather than claim visual verification.
+The browser check above is the repeatable runtime evidence path. It loads the example Product Snapshot at `/en/explore/` and fails if that page requests anything outside the served directory. It also captures desktop screenshots for the public home, example Snapshot and Archify routes and compares the representative Astro shell HTML against a freshly built legacy compatibility baseline. The engineering workflow runs the check against its `/productshape/` base path and uploads a separate evidence artifact. Both checks require Chromium; a local environment without it must record the limitation rather than claim visual verification.
 
 ```bash
 npx wrangler@4.151.2 pages dev dist/public-site --port 8788
