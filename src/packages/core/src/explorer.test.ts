@@ -375,7 +375,7 @@ describe('buildExplorerHtml — accessibility of the opening document', () => {
   it('exposes landmarks and a heading outline with no skipped levels', () => {
     const opening = openingDocument(build());
     expect(opening).toContain('<header class="site">');
-    expect(opening).toContain('<nav class="views" aria-label="Explorer views">');
+    expect(opening).toContain('<nav class="views" id="site-views" aria-label="Explorer views">');
     expect(opening).toContain('<main id="main">');
     expect(opening).toContain('class="skip"');
     const levels = [...opening.matchAll(/<h([1-6])[ >]/g)].map((m) => Number(m[1]));
@@ -722,6 +722,62 @@ describe('the embedded application', () => {
     expect(dom.window.localStorage.length).toBe(0);
     expect(dom.window.sessionStorage.length).toBe(0);
     expect(doc.cookie).toBe('');
+  });
+
+  it('opens the views menu on request and closes it once the reader moves', () => {
+    const toggle = doc.getElementById('menu-toggle') as HTMLButtonElement;
+    expect(toggle.getAttribute('aria-controls')).toBe('site-views');
+    expect(doc.getElementById('site-views')).not.toBeNull();
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    toggle.click();
+    expect(doc.body.getAttribute('data-menu')).toBe('open');
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    navigate('#/artifacts');
+    expect(doc.body.hasAttribute('data-menu')).toBe(false);
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    toggle.click();
+    doc.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(doc.body.hasAttribute('data-menu')).toBe(false);
+  });
+
+  const loadPhone = (hash = ''): void => {
+    dom = new JSDOM(build(model), {
+      url: `https://explorer.invalid/explorer.html${hash}`,
+      runScripts: 'dangerously',
+      beforeParse(window) {
+        Object.defineProperty(window, 'matchMedia', {
+          value: (query: string) => ({ matches: query.includes('max-width'), media: query }),
+        });
+      },
+    });
+    doc = dom.window.document;
+  };
+
+  it('opens on the artifact catalog on a phone when the address names nothing', () => {
+    loadPhone();
+    expect(dom.window.location.hash).toBe('#/artifacts');
+    expect(visible('artifacts')).toBe(true);
+    expect(visible('overview')).toBe(false);
+  });
+
+  it('honours an address on a phone, including the Overview', () => {
+    loadPhone('#/');
+    expect(visible('overview')).toBe(true);
+    loadPhone('#/artifacts/UC-A');
+    expect(doc.body.getAttribute('data-pane')).toBe('detail');
+  });
+
+  it('folds the map summary to its title and back', () => {
+    navigate('#/focus/UC-A');
+    const card = doc.getElementById('mcard') as HTMLElement;
+    expect(card.hidden).toBe(false);
+    const fold = card.querySelector('.cardfold') as HTMLButtonElement;
+    expect(fold.getAttribute('aria-expanded')).toBe('true');
+    fold.click();
+    expect(card.hasAttribute('data-folded')).toBe(true);
+    expect(fold.getAttribute('aria-expanded')).toBe('false');
+    fold.click();
+    expect(card.hasAttribute('data-folded')).toBe(false);
   });
 
   it('switches the narrow-viewport pane with the selection', () => {

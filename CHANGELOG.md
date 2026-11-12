@@ -8,6 +8,10 @@ The supported published CLI baseline is `@prodshape/cli@0.25.0`. Every stable pu
 
 ## [Unreleased]
 
+### Fixed
+
+- The Product Explorer is usable on a phone, as QR-PRESENTATION and FR-EXPLORER-READER already required. Below 40rem the header keeps the title, search and a menu button, and the views, business lens and appearance open beneath it. Text and controls grow to a comfortable size. A page opened on a phone without an address starts on the artifact catalog, and the map summary card folds to its title.
+
 ## [0.25.0]
 
 ### Changed
