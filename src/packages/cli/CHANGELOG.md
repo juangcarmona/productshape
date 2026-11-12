@@ -1,5 +1,31 @@
 # @prodshape/cli
 
+## 0.25.0
+
+### Minor Changes
+
+- 650f752: **BREAKING: the Product Snapshot is now the Product Explorer** (CHG-PRODUCT-EXPLORER).
+
+  - `prodshape graph --format html` is unchanged. It now writes `.product/generated/explorer.html` instead of `snapshot.html`, removes a `snapshot.html` an earlier release left there, and reports `Product Explorer written to …`.
+  - The page title is `Product Explorer` (`--product-name Lyceum` gives “Lyceum’s Product Explorer”), and its embedded data block is `#explorer-data`.
+  - `@prodshape/core` exports `buildExplorerHtml` and `ExplorerOptions` in place of `buildSnapshotHtml` and `SnapshotOptions`.
+  - `prodshape doctor` reports a leftover `snapshot.html` as informational, naming the new file.
+  - The `recover-product` skill names the real command for the review preview instead of a `prodshape snapshot` command that does not exist.
+
+  Migration: regenerate with `prodshape graph --format html`, and point any pipeline, script or link that reads `.product/generated/snapshot.html` at `.product/generated/explorer.html`. Library callers rename `buildSnapshotHtml` to `buildExplorerHtml`.
+
+- cd75be6: The Product Explorer gains three map views (CHG-SNAPSHOT-V2):
+
+  - **Overview map.** It opens on every artifact as a chip, grouped by kind, with use cases and domain terms gathered under their bounded context.
+  - **Focus view** (`#/focus/ID`). It centres one artifact with its neighbours grouped by kind around it and the rest of the model faded behind, with a breadcrumb.
+  - **Columns view** (`#/columns`). It shows one column per kind with every relationship drawn.
+
+  Every map pans, zooms (wheel, pinch, controls, `+ - 0`) and is operable by keyboard. Hovering or focusing an artifact lights its neighbourhood in a neon glow in both appearances.
+
+  A **business lens** (header toggle or `l`) presents a use case in business language. It shows the goal and trigger, who uses it, the rules it must obey, how they are proved, what else it must be, and what a change would put in question, with no identifiers.
+
+  The Focused Topology pane beside the Reader is replaced by the Focus view and a Focus action in the Reader. Addresses from earlier Product Explorer pages keep working: `#/graph/focus/ID` now opens the Focus view.
+
 ## 0.24.0
 
 ### Minor Changes
