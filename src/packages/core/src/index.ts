@@ -272,3 +272,20 @@ export { verifyEvidence, loadEvidence } from './verification-evidence.js';
 export type { EvidenceEvaluation } from './verification-evidence.js';
 export { accountImpact, unresolvedImpactDiagnostics } from './impact-accounting.js';
 export type { ImpactCause, ImpactAccounting } from './impact-accounting.js';
+export {
+  applyIdSuffixMigration,
+  computeIdRenames,
+  countSuffixedIds,
+  hasNumericSuffix,
+  planIdSuffixMigration,
+  rewriteIds,
+  stripNumericSuffix,
+} from './id-migration.js';
+export type {
+  IdCollision,
+  IdFileMove,
+  IdMigrationOptions,
+  IdMigrationPlan,
+  IdMigrationResult,
+  IdRename,
+} from './id-migration.js';

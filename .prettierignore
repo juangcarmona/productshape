@@ -23,3 +23,5 @@ openspec/config.yaml
 .github/skills/
 .github/prompts/
 .github/hooks/
+# A template exactly as an earlier release shipped it; its digest must stay byte-exact.
+tests/fixtures/shipped-templates/

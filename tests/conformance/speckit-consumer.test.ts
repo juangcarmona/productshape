@@ -108,7 +108,7 @@ async function driveCitationLifecycle(dir: string): Promise<void> {
     : null;
 
   // Author one feature: a cited spec, an exempt plan, an exempt tasks file.
-  const inspect = await run(['inspect', 'FR-SHORTEN-001', '--format', 'json'], dir);
+  const inspect = await run(['inspect', 'FR-SHORTEN', '--format', 'json'], dir);
   expect(inspect.code, inspect.err).toBe(0);
   const digest = (JSON.parse(inspect.out) as { digest: string }).digest;
 
@@ -116,7 +116,7 @@ async function driveCitationLifecycle(dir: string): Promise<void> {
   await mkdir(featureDir, { recursive: true });
   await writeFile(
     join(featureDir, 'spec.md'),
-    `<!-- pdac-scope: cited -->\n\n# Feature: shorten a URL\n\nThe system issues a resolving short link for every accepted URL.\n{pdac:cite id="FR-SHORTEN-001" digest="${digest}"}\n`,
+    `<!-- pdac-scope: cited -->\n\n# Feature: shorten a URL\n\nThe system issues a resolving short link for every accepted URL.\n{pdac:cite id="FR-SHORTEN" digest="${digest}"}\n`,
     'utf8',
   );
   await writeFile(
@@ -154,7 +154,7 @@ async function driveCitationLifecycle(dir: string): Promise<void> {
     'model',
     'requirements',
     'functional',
-    'fr-shorten-001.md',
+    'fr-shorten.md',
   );
   const artifact = await readFile(artifactPath, 'utf8');
   await writeFile(

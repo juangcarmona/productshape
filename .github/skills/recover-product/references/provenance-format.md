@@ -49,7 +49,7 @@ Provenance lives on the artifact, but the reasoning — which claim is observed,
 
 ```yaml
 ---
-id: BR-ORDERS-014
+id: BR-ORDERS
 type: business-rule
 status: draft
 provenance:

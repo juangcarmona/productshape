@@ -9,6 +9,7 @@ uses-terms: []
 ---
 
 <!--
+ID: PREFIX-NAME, named after the thing it identifies, with no sequence number. Append a plain number only to break a tie with another ID (e.g. UC-IMPACT-2).
 Domain term: establishes shared meaning inside a bounded context.
 defined-in is the canonical ownership direction; bounded contexts never author owns-terms.
 uses-terms (optional): TERM ids this definition depends on; term-to-term dependencies are permitted.

@@ -7,6 +7,7 @@ actor-kind: human
 ---
 
 <!--
+ID: PREFIX-NAME, named after the thing it identifies, with no sequence number. Append a plain number only to break a tie with another ID (e.g. UC-IMPACT-2).
 Actor: who or what interacts with the product to achieve a meaningful outcome.
 actor-kind: human | external-system | scheduled-process | product
 Actors are not personas: do not model demographics or fictional details.

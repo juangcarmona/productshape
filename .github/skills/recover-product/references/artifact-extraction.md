@@ -45,7 +45,7 @@ The change document describes the recovery itself: the problem (no product defin
 
 ## Naming and identity
 
-- IDs are uppercase with the kind's prefix (`ACT-`, `JRN-`, `UC-`, `BR-`, `TERM-`, `BC-`, `FR-`, `QR-`, `CON-`, `SB-`) followed by a stable, meaningful slug. Use the current vocabulary from the brief's `synonyms`, not the obsolete names found in old evidence.
+- IDs are uppercase with the kind's prefix (`ACT-`, `JRN-`, `UC-`, `BR-`, `TERM-`, `BC-`, `FR-`, `QR-`, `CON-`, `SB-`) followed by a stable, meaningful name (`PREFIX-NAME`, no sequence number such as `-001`; add a plain number such as `-2` only to break a tie between two otherwise equal IDs, and prefer a more distinguishing name). Use the current vocabulary from the brief's `synonyms`, not the obsolete names found in old evidence.
 - One candidate per concept. Two names for the same thing is a reconciliation case, not two candidates; one name for two things is two candidates and usually a domain term clarifying the split.
 
 ## Relationships

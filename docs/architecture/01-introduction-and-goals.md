@@ -22,9 +22,9 @@ The architecture supports a repository-first workflow. The model is authored as 
 | 4 | Provider integrations do not change product semantics | Separate renderers consume canonical assets through explicit adapters |
 | 5 | People can inspect the model without installing the CLI | A generated, self-contained, read-only Product Snapshot |
 
-<!-- pdac:cite id="QR-DETERMINISM-001" digest="sha256:222606693286667f7974e3dd8b88e6248ca29ce75cb54c9285cc7aaef2c08da3" -->
+<!-- pdac:cite id="QR-DETERMINISM" digest="sha256:222606693286667f7974e3dd8b88e6248ca29ce75cb54c9285cc7aaef2c08da3" -->
 
-<!-- pdac:cite id="QR-PORTABILITY-001" digest="sha256:7dd2a8b7c3eb916792a45dc166bff66be2d6371955a1d4b4863de170465d847f" -->
+<!-- pdac:cite id="QR-PORTABILITY" digest="sha256:7dd2a8b7c3eb916792a45dc166bff66be2d6371955a1d4b4863de170465d847f" -->
 
 ## Stakeholders
 

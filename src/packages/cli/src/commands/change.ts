@@ -142,7 +142,7 @@ export async function runChangeCreate(
 ): Promise<number> {
   if (!changeIdPattern.test(id)) {
     io.err(
-      `error: invalid change ID '${id}': expected CHG- followed by uppercase A-Z/0-9 words separated by hyphens (e.g. CHG-ADD-CITE-001)`,
+      `error: invalid change ID '${id}': expected CHG- followed by uppercase A-Z/0-9 words separated by hyphens (e.g. CHG-ADD-CITE)`,
     );
     return exitCodes.invalidInvocation;
   }

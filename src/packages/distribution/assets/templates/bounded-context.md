@@ -6,6 +6,7 @@ status: draft
 ---
 
 <!--
+ID: PREFIX-NAME, named after the thing it identifies, with no sequence number. Append a plain number only to break a tie with another ID (e.g. UC-IMPACT-2).
 Bounded context: a product-language boundary. It delimits where a set of domain terms
 carries a specific meaning. It does not imply implementation modules or DDD aggregates.
 Owned terms are derived from each Domain Term's defined-in field; do not list them here.

@@ -6,7 +6,7 @@ status: proposed
 base-revision: a85b8b7
 operations:
   add:
-    - FR-PDAC-030
+    - FR-PDAC
   modify: []
   remove: []
 ---

@@ -36,7 +36,7 @@ Brownfield: if the product has no definition yet, recover one from the existing 
 ## The loop, feature by feature
 
 1. Identify the product artifacts the feature implements (compare intent with the model, widen with `prodshape impact <ID>`).
-2. `prodshape context BR-REFUND-001 FR-CHECKOUT-002` and feed the projection into your specify run. The canonical text arrives with ready citations; keep them next to the text derived from them.
+2. `prodshape context BR-REFUND FR-CHECKOUT` and feed the projection into your specify run. The canonical text arrives with ready citations; keep them next to the text derived from them.
 3. Specify, plan and task natively with Spec Kit.
 4. Verify: `npx prodshape citations verify --provider speckit`.
 

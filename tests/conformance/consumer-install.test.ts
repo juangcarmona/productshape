@@ -918,12 +918,12 @@ describe.skipIf(!hasOpenspec)('OpenSpec citation enforcement (packed binary)', (
     // 2. A current change with an unclassified document fails before anything is declared.
     const changeDir = join(dir, 'openspec', 'changes', 'add-shortening');
     await mkdir(changeDir, { recursive: true });
-    const inspect = await prodshape(['inspect', 'FR-SHORTEN-001', '--format', 'json']);
+    const inspect = await prodshape(['inspect', 'FR-SHORTEN', '--format', 'json']);
     expect(inspect.code, inspect.stderr).toBe(0);
     const digest = (JSON.parse(inspect.stdout) as { digest: string }).digest;
     await writeFile(
       join(changeDir, 'proposal.md'),
-      `<!-- pdac-scope: cited -->\n\n## Why\n\nImplements link shortening.\n\n{pdac:cite id="FR-SHORTEN-001" digest="${digest}"}\n`,
+      `<!-- pdac-scope: cited -->\n\n## Why\n\nImplements link shortening.\n\n{pdac:cite id="FR-SHORTEN" digest="${digest}"}\n`,
       'utf8',
     );
     await writeFile(join(changeDir, 'tasks.md'), '## Tasks\n\n- [ ] Implement\n', 'utf8');
@@ -963,7 +963,7 @@ describe.skipIf(!hasOpenspec)('OpenSpec citation enforcement (packed binary)', (
       'model',
       'requirements',
       'functional',
-      'fr-shorten-001.md',
+      'fr-shorten.md',
     );
     await writeFile(
       artifact,
@@ -986,11 +986,11 @@ describe.skipIf(!hasOpenspec)('OpenSpec citation enforcement (packed binary)', (
 
     // 6. The review loop: the definition remains correct, so the consumer's citation is
     //    renewed deliberately against the current digest, and the gate goes green again.
-    const renewed = await prodshape(['inspect', 'FR-SHORTEN-001', '--format', 'json']);
+    const renewed = await prodshape(['inspect', 'FR-SHORTEN', '--format', 'json']);
     const renewedDigest = (JSON.parse(renewed.stdout) as { digest: string }).digest;
     await writeFile(
       join(changeDir, 'proposal.md'),
-      `<!-- pdac-scope: cited -->\n\n## Why\n\nImplements link shortening.\n\n{pdac:cite id="FR-SHORTEN-001" digest="${renewedDigest}"}\n`,
+      `<!-- pdac-scope: cited -->\n\n## Why\n\nImplements link shortening.\n\n{pdac:cite id="FR-SHORTEN" digest="${renewedDigest}"}\n`,
       'utf8',
     );
     const recovered = await prodshape(['citations', 'verify', '--provider', 'openspec']);

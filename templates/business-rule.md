@@ -1,5 +1,5 @@
 ---
-id: BR-EXAMPLE-001
+id: BR-EXAMPLE
 type: business-rule
 title: Example Business Rule
 status: draft
@@ -8,6 +8,7 @@ uses-terms: []
 ---
 
 <!--
+ID: PREFIX-NAME, named after the thing it identifies, with no sequence number. Append a plain number only to break a tie with another ID (e.g. UC-IMPACT-2).
 Business rule: durable product knowledge that governs behaviour. A rule used by multiple
 use cases or requirements must be independently identifiable, not hidden in stories,
 acceptance criteria, UI validation, code or tests.

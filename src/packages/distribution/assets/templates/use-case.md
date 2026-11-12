@@ -1,5 +1,5 @@
 ---
-id: UC-EXAMPLE-001
+id: UC-EXAMPLE
 type: use-case
 title: Example Use Case
 status: draft
@@ -10,6 +10,7 @@ uses-terms: []
 ---
 
 <!--
+ID: PREFIX-NAME, named after the thing it identifies, with no sequence number. Append a plain number only to break a tie with another ID (e.g. UC-IMPACT-2).
 Use case: a concrete interaction through which an actor obtains a product outcome.
 Optional frontmatter: bounded-context (BC id), supporting-actors, governed-by (BR ids),
 uses-terms (TERM ids). Describe observable behaviour, never implementation design.

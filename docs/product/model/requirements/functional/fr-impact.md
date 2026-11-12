@@ -1,0 +1,27 @@
+---
+id: FR-IMPACT
+type: functional-requirement
+title: Analyze structural impact deterministically
+status: active
+derived-from:
+  - UC-IMPACT
+  - BR-RELATIONSHIPS
+verification:
+  - scenario: Impact distinguishes direct from transitive reachability and traversal direction
+  - scenario: A depth limit bounds the traversal and is reflected in the result
+  - scenario: Repeated analysis over identical graph content produces identical ordered output
+---
+
+## Requirement
+
+The product MUST answer, for any artifact ID, which product artifacts are structurally reachable from it through the product graph. The result MUST distinguish direct neighbours from transitively reached artifacts, MUST distinguish incoming from outgoing traversal direction, and MUST honour a user-supplied depth limit. The analysis MUST be deterministic, and it MUST present itself as structural reachability only — the product MUST NOT claim that reachable artifacts are semantically affected or that unreachable ones are safe.
+
+## Rationale
+
+Before changing an artifact, an author needs to know what depends on it inside the product graph. Structural reachability answers that question cheaply and repeatably. The distinctions matter: direct versus transitive tells the author how immediate the coupling is, direction tells them whether they are looking at what the artifact needs or what needs the artifact, and a depth limit keeps large models tractable. The honesty clause is equally part of the obligation: reachability is a structural fact, not a semantic judgement, and a tool that overstated its certainty would invite teams to skip the human reading that semantic impact requires.
+
+## Acceptance Scenarios
+
+- Impact is requested for a use case. Requirements deriving from it appear as direct incoming neighbours; a journey reached through connected artifacts appears as transitive, and each entry states its direction and distance.
+- Impact is requested with a depth limit of one. Only direct neighbours are returned, and the output records that the traversal was bounded.
+- Running the same analysis twice over identical graph content produces identical, identically ordered output, and the report describes its findings as structural reachability.

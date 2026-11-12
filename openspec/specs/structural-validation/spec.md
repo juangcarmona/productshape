@@ -12,9 +12,9 @@ Deterministic graph-level validation of the product model with stable diagnostic
 
 `product-definition validate` SHALL validate the whole baseline model: duplicate IDs (PRODUCT005), references to unknown IDs (PRODUCT006), relationships targeting disallowed artifact types (PRODUCT007) and active artifacts referencing retired artifacts (PRODUCT008), in addition to the per-document checks (PRODUCT001–004, PRODUCT009).
 
-{pdac:cite id="FR-VALIDATE-001" digest="sha256:b626fc20fdf1c833a8415d90d7052b85368305be170d5082f41e94400ae61587"}
+{pdac:cite id="FR-VALIDATE-REFERENCES" digest="sha256:55144f7295619052b4f4c64649b42fc31eabbb4c8fa5d552cde74fe1ccfc6357"}
 
-{pdac:cite id="BR-AI-001" digest="sha256:85b53e3987fd5facad05c0ae49a8901c806c8c9a18e49f554d6cc9b28b11ff4c"}
+{pdac:cite id="BR-AI" digest="sha256:29ec262e08613707d1a4176e4a3b14cf1cb4cd767da45ad68d9fb61810f9948c"}
 
 #### Scenario: Unknown reference
 
@@ -35,7 +35,7 @@ Deterministic graph-level validation of the product model with stable diagnostic
 
 Validation SHALL report the warnings PRODUCT101 (file-name misalignment), PRODUCT103 (requirement unreachable from any actor), PRODUCT104 (active references deprecated), PRODUCT105 (business rule with no consumers), PRODUCT106 (domain term with no usage) and PRODUCT107 (bounded context owning no terms), and SHALL exit 0 when only warnings exist unless `validation.warnings-as-errors` is set. The `validation.warnings-as-errors` escalation SHALL apply uniformly to every validating command — baseline `validate`, `change validate`, Product Change apply and graph generation — so a repository that opts in cannot validate strictly at the baseline while applying a change whose overlay carries warnings.
 
-{pdac:cite id="FR-VALIDATE-002" digest="sha256:a9e15d3c013ca4534d4e7c94df7a70de582b590b6eed52799172ce3c00eb1e5d"}
+{pdac:cite id="FR-VALIDATE-DIAGNOSTICS" digest="sha256:d04c61218dbd36fb658a4b4509c84f124c5df60b00a1092c303b5c78e5ccba60"}
 
 #### Scenario: Warnings do not fail the build
 
@@ -56,7 +56,7 @@ Validation SHALL report the warnings PRODUCT101 (file-name misalignment), PRODUC
 
 Diagnostics SHALL be ordered by file, then line and entry (absent before present, compared numerically), then code, field, target, artifact and change; `--format json` SHALL emit them as JSON with the fields severity, code, message, file and, when applicable, artifact, change, field, target, line and entry. A Product Change ID SHALL appear in change and a cited ID in target, never artifact. Identical repository content SHALL produce byte-identical diagnostic output on every platform.
 
-{pdac:cite id="QR-DETERMINISM-001" digest="sha256:222606693286667f7974e3dd8b88e6248ca29ce75cb54c9285cc7aaef2c08da3"}
+{pdac:cite id="QR-DETERMINISM" digest="sha256:3f52f1051dbd065f0bcdfa951ffb2fdcf3b16265f3080c325931e83cbf9f86f2"}
 
 #### Scenario: JSON output
 

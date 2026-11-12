@@ -12,9 +12,9 @@ Compilation of the typed product graph from Markdown artifacts, with derived rev
 
 The graph compiler SHALL build nodes (id, type, title, status, path, content digest) and typed directed edges from artifact frontmatter alone, derive incoming indexes for every canonical relationship (including a bounded context's owned terms from `defined-in`), sort nodes and edges deterministically, and rebuild from scratch on every run.
 
-{pdac:cite id="FR-GRAPH-001" digest="sha256:514a51d7137e1c069bdc7cffdc1b497dcf188abf0b481850426a551fa90e92ad"}
+{pdac:cite id="FR-GRAPH" digest="sha256:10923dd52d4516418f26c2edef6f367e3b06b945adbcc9b4423cbbe403320a9d"}
 
-{pdac:cite id="BR-RELATIONSHIPS-001" digest="sha256:a6f9d40c2c1ac926149fe171660e5715b66b4e82ce8129f128eab0e6c1c7de8c"}
+{pdac:cite id="BR-RELATIONSHIPS" digest="sha256:948608d2a917204d7aab5042dcfe4a4731b805163d54d546a6d1ee38c6954102"}
 
 #### Scenario: Determinism across runs
 
@@ -30,7 +30,7 @@ The graph compiler SHALL build nodes (id, type, title, status, path, content dig
 
 `product-definition graph` SHALL write `product-graph.json` (carrying a versioned schema identifier), `product-index.json`, `traceability.json` and `product-graph.mmd` under the configured generated root, and these files SHALL be reproducible and never required as input.
 
-{pdac:cite id="BR-CANONICAL-001" digest="sha256:7ed6dc7c588e0b79da8e6036548cf2fd2c6a1b02a9393f467f50cb0cb02475d6"}
+{pdac:cite id="BR-CANONICAL" digest="sha256:efd03de6c8d94b59bf2843d3ce20cde9446c36050b7d34cc16b42ce548ed8084"}
 
 #### Scenario: Rebuild after deletion
 

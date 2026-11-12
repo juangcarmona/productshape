@@ -54,6 +54,7 @@ Run these FIRST and treat their output as the authoritative structural baseline:
    - Missing failure behaviour: use cases whose `## Failure Conditions` or `## Alternative Flows` are empty, trivial or ignore failures the main flow implies.
    - Weak traceability: requirements whose `derived-from` is formally present but thin; one tenuous source for a broad obligation, or derivation that does not actually support the requirement's content.
    - Unvalidated recovered knowledge: artifacts carrying `provenance` that no human has confirmed; a draft with low confidence (PRODUCT111), or an active artifact whose provenance records inference rather than observation. Recovered claims are candidates until validated, so these are QUESTIONs for a reviewer, not defects.
+   - Legacy numeric ID suffixes: IDs ending in `-001`-style numbers, which the ID convention retired in 0.24. Report them as an OBSERVATION and point to `references/id-suffix-migration.md`; never rename them yourself.
 4. Classify every finding as exactly one of ERROR, OBSERVATION or QUESTION, per `references/finding-classification.md`.
 5. For each finding record: classification, artifact ID(s), file path, evidence (diagnostic code or quoted text), and whether it is graph-derived fact or AI interpretation.
 6. Assemble the report (see Expected outputs) and present it to the human. Recommend follow-ups but change nothing; the only mechanical remedy you may recommend running directly is named in `references/diagnostic-codes.md`.
@@ -65,8 +66,9 @@ Run these FIRST and treat their output as the authoritative structural baseline:
 
 ## Forbidden actions
 
+- Running `prodshape fix --id-suffixes --apply-id-migration` or answering its prompt yourself: the migration rewrites IDs, which are otherwise immutable, and only the adopter consents to it (see `references/id-suffix-migration.md`).
 - Rewriting, "fixing" or reformatting any artifact: the audit reports, humans decide, and fixes after the baseline go through Product Changes.
-- Re-deriving structural facts by reading files when `validate` already reports them, or contradicting the CLI's structural output with your own reading (BR-AI-001).
+- Re-deriving structural facts by reading files when `validate` already reports them, or contradicting the CLI's structural output with your own reading (BR-AI).
 - Presenting an interpretation as a fact: every semantic finding is labeled as interpretation.
 - Deciding QUESTION findings yourself: contradictions and orphan-intent calls are product decisions.
 - Marking artifacts `active`, or merging/pushing changes.
@@ -74,6 +76,7 @@ Run these FIRST and treat their output as the authoritative structural baseline:
 ## Human approval points
 
 - Confirm scope with the engineer if it is not the whole model and was not stated.
+- When the model carries numeric ID suffixes, or `prodshape integration update` or `doctor` reports them while upgrading, show the migration plan and ask the adopter whether to apply it. Stop until they answer.
 - Deliver the report and stop. Every ERROR fix, every QUESTION resolution, and any follow-up Product Change is a human decision; offer to draft a change only if the engineer asks.
 
 ## Expected outputs

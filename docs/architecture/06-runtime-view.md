@@ -29,6 +29,6 @@ Invalid schemas, unresolved relationships, stale bases, or unsafe paths produce 
 
 Provider-aware verification checks the expected consumer population for supported workspaces. Missing or invalid coverage is surfaced as a failure or diagnostic rather than treated as a successful empty scan.
 
-<!-- pdac:cite id="UC-CHANGE-001" digest="sha256:43d756bd7c45a2357142fe8c8f310401684822a39c5a95f6dcbe48469dd5c64a" -->
+<!-- pdac:cite id="UC-CHANGE" digest="sha256:43d756bd7c45a2357142fe8c8f310401684822a39c5a95f6dcbe48469dd5c64a" -->
 
-<!-- pdac:cite id="UC-CITATIONS-VERIFY-001" digest="sha256:315ec462a95c687154018b5247b89765e29f2d1f07f015658483ac8b47757cfa" -->
+<!-- pdac:cite id="UC-CITATIONS-VERIFY" digest="sha256:315ec462a95c687154018b5247b89765e29f2d1f07f015658483ac8b47757cfa" -->

@@ -21,7 +21,7 @@ const sectionGuidance: Record<string, string> = {
     'What this change explicitly does not touch, including delivery, technical design and implementation.',
 };
 
-/** 'CHG-ADD-CITE-001' -> 'Add cite 001'. */
+/** 'CHG-ADD-CITE' -> 'Add cite' (a trailing tie-breaker number, as in 'CHG-ADD-CITE-2', stays a word). */
 export function defaultChangeTitle(id: string): string {
   const words = id
     .split('-')

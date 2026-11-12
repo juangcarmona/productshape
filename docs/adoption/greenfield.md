@@ -92,8 +92,8 @@ Once the model compiles cleanly, explore it:
 
 ```bash
 prodshape graph --format mermaid   # render the product graph
-prodshape inspect UC-EXAMPLE-001   # one artifact with its derived relationships
-prodshape impact BR-EXAMPLE-001    # structural impact of a change to this rule
+prodshape inspect UC-EXAMPLE   # one artifact with its derived relationships
+prodshape impact BR-EXAMPLE    # structural impact of a change to this rule
 ```
 
 ## 5. Make your first product change
@@ -101,9 +101,9 @@ prodshape impact BR-EXAMPLE-001    # structural impact of a change to this rule
 From now on, evolution is explicit. To change the product:
 
 1. Create `docs/product/changes/active/<chg-id>/` with a `change.md` (problem, intended outcome, rationale, operations, `base-revision`) and complete proposed future-state artifacts under `proposed/`. The `analyze-product-change` skill helps draft this; the contract is [Product Changes](https://github.com/product-definition-as-code/spec/blob/main/spec/product-changes.md).
-2. Validate the change as an overlay on the baseline: `prodshape change validate CHG-EXAMPLE-001`. Nothing in the baseline is touched, so elaborate until the overlay is clean and the open questions are answered.
+2. Validate the change as an overlay on the baseline: `prodshape change validate CHG-EXAMPLE`. Nothing in the baseline is touched, so elaborate until the overlay is clean and the open questions are answered.
 3. A human sets `status: approved`. No tool takes this step.
-4. Apply it: `prodshape change apply CHG-EXAMPLE-001 --dry-run`, then without `--dry-run`. Apply writes the operations into the model, reports the product diff and archives the change under `changes/completed/`. It creates no commit and is never triggered implicitly.
+4. Apply it: `prodshape change apply CHG-EXAMPLE --dry-run`, then without `--dry-run`. Apply writes the operations into the model, reports the product diff and archives the change under `changes/completed/`. It creates no commit and is never triggered implicitly.
 5. Open a pull request with the result. The merge accepts the resulting baseline, not the Product Change as a delivery state.
 
 Product-definition work and implementation work have independent cadence. They may share this pull request, or implementation may follow later, but the Product Change remains semantic intent and neither apply nor merge proves implementation, verification, release or deployment.

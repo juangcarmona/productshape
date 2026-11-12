@@ -6,6 +6,7 @@ import {
   InstallConflictError,
   planProvider,
   planProviderRemoval,
+  refreshTemplates,
   rendererFor,
   updateIntegrations,
 } from '@prodshape/distribution';
@@ -34,6 +35,7 @@ import {
   resolveRepository,
   type CliIo,
 } from '../context.js';
+import { runIdSuffixMigration } from './id-migration.js';
 
 /**
  * An installation lock that exists but cannot be trusted is a refusal, not a crash: every
@@ -186,7 +188,7 @@ export async function runIntegrationAdd(
 
 export async function runIntegrationUpdate(
   io: CliIo,
-  options: { check?: boolean; force?: boolean },
+  options: { check?: boolean; force?: boolean; applyIdMigration?: boolean },
 ): Promise<number> {
   const repo = await resolveRepository(io);
 
@@ -214,6 +216,28 @@ export async function runIntegrationUpdate(
       );
       for (const path of result.removed) io.out(`  ${path}`);
     }
+  }
+
+  // Installed authoring templates are not managed files, so the provider update never reaches
+  // them. Refresh the untouched copies of earlier releases; keep anything an adopter edited.
+  let templates;
+  try {
+    templates = await refreshTemplates(repo.root, { force: options.force });
+  } catch (error) {
+    throw asCliError(error);
+  }
+  if (templates.written.length > 0) {
+    io.out(
+      `Refreshed ${templates.written.length} authoring template(s) to the current bundled version:`,
+    );
+    for (const path of templates.written) io.out(`  ${path}`);
+  }
+  const keptTemplates = options.force ? [] : templates.customized;
+  if (keptTemplates.length > 0) {
+    io.out(
+      `Kept ${keptTemplates.length} customized authoring template(s); compare with \`prodshape template <kind>\`, or re-run with --force to replace them:`,
+    );
+    for (const path of keptTemplates) io.out(`  ${path}`);
   }
 
   // Update OpenSpec integration if installed.
@@ -262,9 +286,14 @@ export async function runIntegrationUpdate(
 
   if (results.length === 0 && !openspecInstalled && !speckitInstalled) {
     io.out('No integrations installed; add one with: prodshape integration add <provider>');
-    return exitCodes.success;
   }
-  return exitCodes.success;
+
+  // Upgrade step: IDs ending in a numeric suffix (breaking change in 0.24). Shown on every
+  // update, applied only with consent: asked in a terminal, otherwise only with the explicit flag.
+  return runIdSuffixMigration(io, repo, {
+    apply: options.applyIdMigration,
+    quietWhenNone: true,
+  });
 }
 
 export async function runIntegrationCheck(io: CliIo): Promise<number> {

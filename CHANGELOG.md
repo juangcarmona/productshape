@@ -8,6 +8,35 @@ The supported published CLI baseline is `@prodshape/cli@0.23.0`. Every stable pu
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING: artifact IDs no longer carry a numeric suffix.** An ID is `PREFIX-NAME` (`UC-IMPACT`, `FR-CITE`, `BR-IDENTITY`); a number is appended only to break a tie between two IDs that would otherwise be equal, as a plain integer without padding (`FR-ORDERS-CONFIRM-2`). The suffix (`-001`) was a habit inherited from the alpha templates; the identifier grammar never required it and still accepts it, so existing models keep validating. The bundled templates, skills and examples, and the ID guidance given to AI assistants, follow the new convention. Product Change `CHG-ID-NOSUFFIX` records the decision (`BR-ID-FORM`, `UC-ID-MIGRATE`, `FR-ID-MIGRATION`, and a one-time exception noted in `BR-IDENTITY`). Released as a minor bump while the project is 0.x: CLI 0.24.0, core 0.26.0, distribution 0.18.0.
+- ProductShape's own model was migrated in one pass: 68 IDs lost their suffix (67 in the baseline model and `FR-PDAC-030` in the live change `CHG-PDAC-030`), with file names, relationships, prose, OpenSpec citations and their digests updated together. The fourteen requirements that would have collided each took a name from their title (for example `FR-CHANGE-001` and `FR-CHANGE-002` became `FR-CHANGE-VALIDATE` and `FR-CHANGE-APPLY`, and `FR-SNAPSHOT-001` to `FR-SNAPSHOT-009` became `FR-SNAPSHOT-PAGE`, `-READER`, `-ORIENTATION`, `-SEARCH`, `-PROJECTIONS`, `-ADDRESSING`, `-CATALOG` and `-TOPOLOGY`). The complete map is in `docs/product/changes/completed/chg-id-nosuffix/rename-map.md`. Historical entries below, completed Product Changes and archived specs keep the IDs they were written with.
+
+### Added
+
+- `prodshape integration update` now also refreshes installed authoring templates under `.product/templates/`: a copy that is identical to a template an earlier release shipped is replaced with the current one (suffix-free example IDs and the ID guidance line), a copy you edited is kept and reported, and `--force` replaces it too. Templates are not installed where there were none. `prodshape doctor` reports outdated templates as informational.
+- `prodshape fix --id-suffixes` and a step of `prodshape integration update` migrate an existing model to suffix-free IDs. They detect IDs ending in a numeric suffix, never rename into a collision (those IDs are reported and left as they are), show the plan (old to new, files renamed, references and citation digests updated) and change nothing without explicit consent: a terminal asks, scripts and CI default to a dry run unless `--apply-id-migration` is passed, and `--dry-run` reports only and exits 1 while a migration is pending. Applying updates frontmatter, relationships, file names, prose references, citations, sidecars and live Product Change overlays as one unit, re-pins only citations that were current, and rolls everything back if validation would get worse. `prodshape doctor` mentions suffixed IDs as informational. The `audit-product-model` skill makes an AI assistant show the plan and ask before applying it.
+
+### Migration
+
+**What changed.** The ID convention (above). Nothing is forced: IDs with a numeric suffix are still valid.
+
+**Why.** The number encodes nothing, makes IDs harder to read in lists and citations, and invites gaps and renumbering. IDs are otherwise immutable, so the rename is a one-time, consent-based exception.
+
+**How to run it.**
+
+```bash
+prodshape integration update            # refresh managed files; prints the plan and asks in a terminal
+prodshape fix --id-suffixes --dry-run   # report only; exits 1 while a migration is pending
+prodshape fix --id-suffixes --apply-id-migration   # apply without being asked (scripts, CI)
+prodshape validate && prodshape citations verify
+```
+
+Commit the result in its own change. IDs that would collide when the suffix is removed (`FR-INIT-001` and `FR-INIT-002`) are left as they are; rename them by hand if you want names, through a Product Change. Anything outside the model that names an old ID (scripts, documents, other repositories, a talk) is yours to update; completed Product Changes and archived specs are deliberately not rewritten.
+
+**How to opt out.** Decline the prompt, or never pass `--apply-id-migration`: a non-interactive run changes nothing. `prodshape doctor` keeps reporting the suffixes as informational and never fails on them.
+
 ## [0.23.0]
 
 ### Changed

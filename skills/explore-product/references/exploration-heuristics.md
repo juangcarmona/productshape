@@ -28,8 +28,8 @@ Each gap is a question waiting to be asked:
 
 A grounded question names something specific in the model, or a specific hole in it. A generic question outsources the thinking back to the engineer.
 
-- Grounded: "There's no use case covering bulk export, but JRN-REPORTING-002 ends at 'the operator downloads the results'; is your idea filling that gap?"
-- Grounded: "BR-DISCOUNT-002 caps discounts at 20%; would your campaign idea need an exception, or a change to the rule?"
+- Grounded: "There's no use case covering bulk export, but JRN-REPORTING ends at 'the operator downloads the results'; is your idea filling that gap?"
+- Grounded: "BR-DISCOUNT caps discounts at 20%; would your campaign idea need an exception, or a change to the rule?"
 - Generic (avoid): "What actors are involved?"
 - Generic (avoid): "Can you tell me more about your idea?"
 

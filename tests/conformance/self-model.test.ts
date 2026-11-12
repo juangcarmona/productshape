@@ -16,47 +16,51 @@ const expectedIds: Record<string, string[]> = {
     'ACT-PUBLIC-READER',
   ],
   journey: [
-    'JRN-ADOPT-001',
+    'JRN-ADOPT',
     // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
-    'JRN-SNAPSHOT-001',
+    'JRN-SNAPSHOT',
   ],
   'use-case': [
-    'UC-INIT-001',
-    'UC-DEFINE-001',
-    'UC-VALIDATE-001',
-    'UC-INSPECT-001',
-    'UC-IMPACT-001',
+    'UC-INIT',
+    'UC-DEFINE',
+    'UC-VALIDATE',
+    'UC-INSPECT',
+    'UC-IMPACT',
     // Added by RFC #4 (citation contract).
-    'UC-CITE-001',
-    'UC-CITATIONS-VERIFY-001',
+    'UC-CITE',
+    'UC-CITATIONS-VERIFY',
     // Recovered: Product Change elaboration.
-    'UC-CHANGE-001',
+    'UC-CHANGE',
     // Added by CHG-CLI-POLISH-001 (adoption improvements).
-    'UC-SCHEMA-001',
-    'UC-FIX-001',
+    'UC-SCHEMA',
+    'UC-FIX',
+    // Added by CHG-ID-NOSUFFIX (ID-suffix migration).
+    'UC-ID-MIGRATE',
     // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
-    'UC-SNAPSHOT-001',
+    'UC-SNAPSHOT',
     // Added by CHG-SPECKIT-001 (Spec Kit bridge and cited context projection).
-    'UC-CONTEXT-001',
-    'UC-SNAPSHOT-EXPLORE-001',
+    'UC-CONTEXT',
+    'UC-SNAPSHOT-EXPLORE',
     // Added by CHG-EXPLORE-001 (ps:explore thinking partner).
-    'UC-EXPLORE-001',
+    'UC-EXPLORE',
     // Added by CHG-RECOVERY-SESSIONS (deterministic brownfield recovery).
-    'UC-RECOVER-001',
+    'UC-RECOVER',
     // Added by CHG-ARC42-SNAPSHOT-001 (publication surfaces).
-    'UC-ENGINEERING-PORTAL-001',
-    'UC-PUBLIC-SITE-001',
+    'UC-ENGINEERING-PORTAL',
+    'UC-PUBLIC-SITE',
   ],
   'business-rule': [
-    'BR-CANONICAL-001',
-    'BR-IDENTITY-001',
-    'BR-RELATIONSHIPS-001',
-    'BR-CHANGE-001',
-    'BR-SDD-001',
-    'BR-AI-001',
+    'BR-CANONICAL',
+    'BR-IDENTITY',
+    // Added by CHG-ID-NOSUFFIX (ID form).
+    'BR-ID-FORM',
+    'BR-RELATIONSHIPS',
+    'BR-CHANGE',
+    'BR-SDD',
+    'BR-AI',
     // Added by CHG-MUTATION-SAFETY-001 (repository mutation is contained, planned, drift-safe
     // and fails closed).
-    'BR-MUTATION-001',
+    'BR-MUTATION',
   ],
   'domain-term': [
     'TERM-PRODUCT-ARTIFACT',
@@ -82,70 +86,72 @@ const expectedIds: Record<string, string[]> = {
     'BC-PUBLICATION',
   ],
   'functional-requirement': [
-    'FR-INIT-001',
+    'FR-INIT-PRESERVE',
     // Added by CHG-INIT-SDD-001 (SDD-aware initialization).
-    'FR-INIT-002',
-    'FR-PARSE-001',
-    'FR-VALIDATE-001',
-    'FR-VALIDATE-002',
-    'FR-GRAPH-001',
-    'FR-INSPECT-001',
-    'FR-IMPACT-001',
+    'FR-INIT-SDD',
+    'FR-PARSE',
+    'FR-VALIDATE-REFERENCES',
+    'FR-VALIDATE-DIAGNOSTICS',
+    'FR-GRAPH',
+    'FR-INSPECT',
+    'FR-IMPACT',
     // Added by RFC #4 (citation contract).
-    'FR-CITE-001',
-    'FR-CITATIONS-VERIFY-001',
+    'FR-CITE',
+    'FR-CITATIONS-VERIFY',
     // Recovered: Product Change elaboration.
-    'FR-CHANGE-001',
-    // Apply materializes an approved change without accepting it (BR-CHANGE-001).
-    'FR-CHANGE-002',
-    'FR-DISTRIBUTION-001',
-    'FR-OPENSPEC-001',
+    'FR-CHANGE-VALIDATE',
+    // Apply materializes an approved change without accepting it (BR-CHANGE).
+    'FR-CHANGE-APPLY',
+    'FR-DISTRIBUTION',
+    'FR-OPENSPEC',
     // Added by CHG-SPECKIT-001 (Spec Kit bridge and cited context projection).
-    'FR-SPECKIT-001',
-    'FR-CONTEXT-001',
+    'FR-SPECKIT',
+    'FR-CONTEXT',
     // Added by CHG-CLI-POLISH-001 (adoption improvements).
-    'FR-SCHEMA-001',
-    'FR-FIX-001',
+    'FR-SCHEMA',
+    'FR-FIX',
+    // Added by CHG-ID-NOSUFFIX (ID-suffix migration).
+    'FR-ID-MIGRATION',
     // Added by CHG-MODEL-TRUEUP-001 (baseline corrected against shipped behaviour).
-    'FR-DOCTOR-001',
+    'FR-DOCTOR',
     // Added by CHG-SNAPSHOT-001 (Product Snapshot page).
-    'FR-SNAPSHOT-001',
-    'FR-SNAPSHOT-002',
+    'FR-SNAPSHOT-PAGE',
+    'FR-SNAPSHOT-READER',
     // Added by CHG-EXPLORE-001 (ps:explore thinking partner).
-    'FR-EXPLORE-001',
+    'FR-EXPLORE',
     // Added by CHG-SNAPSHOT-002 (progressive-disclosure Product Snapshot Explorer).
-    'FR-SNAPSHOT-003',
-    'FR-SNAPSHOT-004',
-    'FR-SNAPSHOT-005',
-    'FR-SNAPSHOT-006',
-    'FR-SNAPSHOT-008',
-    'FR-SNAPSHOT-009',
+    'FR-SNAPSHOT-ORIENTATION',
+    'FR-SNAPSHOT-SEARCH',
+    'FR-SNAPSHOT-PROJECTIONS',
+    'FR-SNAPSHOT-ADDRESSING',
+    'FR-SNAPSHOT-CATALOG',
+    'FR-SNAPSHOT-TOPOLOGY',
     // Added by CHG-RECOVERY-SESSIONS (deterministic brownfield recovery).
-    'FR-RECOVER-001',
+    'FR-RECOVER',
     // Added by CHG-RELEASE-CONTRACT-001 (executable release contract).
-    'FR-RELEASE-001',
+    'FR-RELEASE',
     // Added by CHG-ARC42-SNAPSHOT-001 (publication surfaces).
-    'FR-ENGINEERING-PORTAL-001',
-    'FR-PUBLIC-SITE-001',
+    'FR-ENGINEERING-PORTAL',
+    'FR-PUBLIC-SITE',
   ],
   'quality-requirement': [
-    'QR-PORTABILITY-001',
-    'QR-DETERMINISM-001',
-    'QR-EXPLAINABILITY-001',
-    'QR-EXTENSIBILITY-001',
+    'QR-PORTABILITY',
+    'QR-DETERMINISM',
+    'QR-EXPLAINABILITY',
+    'QR-EXTENSIBILITY',
     // Added by CHG-SNAPSHOT-002 (progressive-disclosure Product Snapshot Explorer).
-    'QR-ACCESSIBILITY-001',
-    'QR-PRESENTATION-001',
-    'QR-SCALABILITY-001',
+    'QR-ACCESSIBILITY',
+    'QR-PRESENTATION',
+    'QR-SCALABILITY',
   ],
   constraint: [
-    'CON-MARKDOWN-001',
+    'CON-MARKDOWN',
     'CON-NO-GRAPH-DATABASE',
     'CON-NO-WEB-UI',
     'CON-SDD-AGNOSTIC',
     'CON-PUBLIC-GENERIC',
     // Added by CHG-BRAND-001 (ProductShape brand adoption).
-    'CON-BRAND-001',
+    'CON-BRAND',
   ],
   'structured-behaviour': [
     // Added by CHG-SB-ADOPT-001 (Structured Behaviour adoption).

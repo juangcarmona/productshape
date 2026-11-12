@@ -270,7 +270,7 @@ describe('Spec Kit PRODUCT adapter', () => {
         rationale: 'The clarified outcome is testable and bounded.',
         openQuestions: ['Which actor owns the final decision?'],
         outOfScope: ['Implementation details'],
-        checkedArtifactIds: ['UC-SHORTEN-001'],
+        checkedArtifactIds: ['UC-SHORTEN'],
         excludedArtifactIds: ['ACT-VISITOR-001'],
       });
       expect(await readFile(result.proposal, 'utf8')).toContain('Human clarification');
@@ -283,7 +283,7 @@ describe('Spec Kit PRODUCT adapter', () => {
         checked: string[];
         excluded: string[];
       };
-      expect(impact.checked).toEqual(['UC-SHORTEN-001']);
+      expect(impact.checked).toEqual(['UC-SHORTEN']);
       expect(impact.excluded).toEqual(['ACT-VISITOR-001']);
       expect(result.change.body).toContain('Which actor owns the final decision?');
       expect(result.change.body).toContain('Implementation details');
@@ -300,8 +300,8 @@ describe('Spec Kit PRODUCT adapter', () => {
 
       const refreshed = await refineSpecKitProductChange(root, 'in-place');
       expect(refreshed.written).toEqual(['.specify/productshape/changes/in-place/impact.json']);
-      expect(refreshed.impact.checked).toEqual(['BR-VALID-URL-001']);
-      expect(Object.keys(refreshed.impact.impacts)).toEqual(['BR-VALID-URL-001']);
+      expect(refreshed.impact.checked).toEqual(['BR-VALID-URL']);
+      expect(Object.keys(refreshed.impact.impacts)).toEqual(['BR-VALID-URL']);
       expect(existsSync(refreshed.proposal)).toBe(false);
 
       await refineSpecKitProductChange(root, 'in-place', {
@@ -352,7 +352,7 @@ describe('Spec Kit PRODUCT adapter', () => {
       await mkdir(join(dir, 'proposed', 'requirements', 'functional'), { recursive: true });
       await writeFile(
         join(dir, 'proposed', 'requirements', 'functional', 'fr-added-001.md'),
-        `---\nid: FR-ADDED-001\ntype: functional-requirement\ntitle: Added outcome\nstatus: active\nderived-from:\n  - UC-SHORTEN-001\nverification:\n  - scenario: The added outcome is observable\n---\n\n## Requirement\n\nThe product delivers the added outcome.\n\n## Rationale\n\nIt is needed.\n\n## Acceptance Scenarios\n\nThe outcome is observable.\n`,
+        `---\nid: FR-ADDED-001\ntype: functional-requirement\ntitle: Added outcome\nstatus: active\nderived-from:\n  - UC-SHORTEN\nverification:\n  - scenario: The added outcome is observable\n---\n\n## Requirement\n\nThe product delivers the added outcome.\n\n## Rationale\n\nIt is needed.\n\n## Acceptance Scenarios\n\nThe outcome is observable.\n`,
         'utf8',
       );
       const applied = await applySpecKitProductChange(root, 'add-outcome');
@@ -391,20 +391,20 @@ describe('Spec Kit PRODUCT adapter', () => {
     }
   });
 
-  /** Point a hosted change at BR-VALID-URL-001 with an unchanged proposed copy of the rule. */
+  /** Point a hosted change at BR-VALID-URL with an unchanged proposed copy of the rule. */
   async function touchValidUrlRule(root: string, name: string): Promise<string> {
     const dir = join(root, '.specify', 'productshape', 'changes', name);
     const changeFile = join(dir, 'change.md');
     const manifest = await readFile(changeFile, 'utf8');
     await writeFile(
       changeFile,
-      manifest.replace('  modify: []', '  modify:\n    - BR-VALID-URL-001'),
+      manifest.replace('  modify: []', '  modify:\n    - BR-VALID-URL'),
       'utf8',
     );
     await mkdir(join(dir, 'proposed', 'business-rules'), { recursive: true });
     await cp(
-      join(root, 'docs', 'product', 'model', 'business-rules', 'br-valid-url-001.md'),
-      join(dir, 'proposed', 'business-rules', 'br-valid-url-001.md'),
+      join(root, 'docs', 'product', 'model', 'business-rules', 'br-valid-url.md'),
+      join(dir, 'proposed', 'business-rules', 'br-valid-url.md'),
     );
     return changeFile;
   }
@@ -435,17 +435,10 @@ describe('Spec Kit PRODUCT adapter', () => {
   it('apply reports the citations the change affects, skipping its own container and the archive', async () => {
     const root = await workspace();
     try {
-      const rulePath = join(
-        root,
-        'docs',
-        'product',
-        'model',
-        'business-rules',
-        'br-valid-url-001.md',
-      );
+      const rulePath = join(root, 'docs', 'product', 'model', 'business-rules', 'br-valid-url.md');
       const digest = contentDigest(await readFile(rulePath, 'utf8'));
       const citing = (title: string) =>
-        `<!-- pdac-scope: cited -->\n\n# ${title}\n\nOnly well-formed URLs are shortened.\n<!-- pdac:cite id="BR-VALID-URL-001" digest="${digest}" -->\n`;
+        `<!-- pdac-scope: cited -->\n\n# ${title}\n\nOnly well-formed URLs are shortened.\n<!-- pdac:cite id="BR-VALID-URL" digest="${digest}" -->\n`;
       await mkdir(join(root, 'specs', '001-shorten'), { recursive: true });
       await writeFile(join(root, 'specs', '001-shorten', 'spec.md'), citing('Shorten'), 'utf8');
       const archived = join(root, '.specify', 'productshape', 'archive', 'older');
@@ -480,7 +473,7 @@ describe('Spec Kit PRODUCT adapter', () => {
         'tighten-rule',
         'proposed',
         'business-rules',
-        'br-valid-url-001.md',
+        'br-valid-url.md',
       );
       await writeFile(
         proposed,
@@ -504,9 +497,9 @@ describe('Spec Kit PRODUCT adapter', () => {
           citation.source,
           prospectiveStatus,
         ]),
-      ).toEqual([['BR-VALID-URL-001', 'specs/001-shorten/spec.md', 'stale']]);
+      ).toEqual([['BR-VALID-URL', 'specs/001-shorten/spec.md', 'stale']]);
       expect(result.resultingModel!.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
-      expect(result.resultingModel!.artifacts.map((a) => a.id)).toContain('BR-VALID-URL-001');
+      expect(result.resultingModel!.artifacts.map((a) => a.id)).toContain('BR-VALID-URL');
     } finally {
       await rm(root, { recursive: true, force: true });
     }
@@ -521,12 +514,12 @@ describe('Spec Kit PRODUCT adapter', () => {
       await mkdir(join(nativeDir, 'proposed', 'business-rules'), { recursive: true });
       await writeFile(
         join(nativeDir, 'change.md'),
-        `---\nid: CHG-NATIVE-TOUCH-001\ntype: product-change\ntitle: Native change touching the same rule\nstatus: draft\nbase-revision: '0000000'\noperations:\n  add: []\n  modify:\n    - BR-VALID-URL-001\n  remove: []\n---\n\n## Problem\n\nNative.\n\n## Intended Product Outcome\n\nNative.\n\n## Rationale\n\nNative.\n\n## Affected Product Areas\n\nBR-VALID-URL-001.\n\n## Open Questions\n\nNone.\n\n## Product Acceptance\n\nNone.\n\n## Out of Scope\n\nNone.\n`,
+        `---\nid: CHG-NATIVE-TOUCH-001\ntype: product-change\ntitle: Native change touching the same rule\nstatus: draft\nbase-revision: '0000000'\noperations:\n  add: []\n  modify:\n    - BR-VALID-URL\n  remove: []\n---\n\n## Problem\n\nNative.\n\n## Intended Product Outcome\n\nNative.\n\n## Rationale\n\nNative.\n\n## Affected Product Areas\n\nBR-VALID-URL.\n\n## Open Questions\n\nNone.\n\n## Product Acceptance\n\nNone.\n\n## Out of Scope\n\nNone.\n`,
         'utf8',
       );
       await cp(
-        join(root, 'docs', 'product', 'model', 'business-rules', 'br-valid-url-001.md'),
-        join(nativeDir, 'proposed', 'business-rules', 'br-valid-url-001.md'),
+        join(root, 'docs', 'product', 'model', 'business-rules', 'br-valid-url.md'),
+        join(nativeDir, 'proposed', 'business-rules', 'br-valid-url.md'),
       );
       const result = await validateSpecKitProductChange(root, 'hosted-touch');
       const overlaps = result.diagnostics.filter((d) => d.code === 'PRODUCT025');

@@ -9,7 +9,7 @@
     },
     {
       "name": "02-artifact-detail-desktop",
-      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE-001",
+      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE",
       "viewport": "1440x900",
       "caption": "One active artifact: grouped list with the selection’s kind open, linked metadata, and its neighbourhood beside the Reader."
     },
@@ -27,7 +27,7 @@
     },
     {
       "name": "05-artifact-detail-narrow",
-      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE-001",
+      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE",
       "viewport": "430x900",
       "caption": "Narrow viewport: the detail is its own state, reached from the list."
     },
@@ -51,7 +51,7 @@
     },
     {
       "name": "10-focus-visible",
-      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE-001",
+      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE",
       "viewport": "1440x900",
       "caption": "Keyboard focus is visible: the focus ring on the selected list entry."
     },
@@ -93,7 +93,7 @@
     },
     {
       "name": "17-focus-typical",
-      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE-001",
+      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE",
       "viewport": "1440x900",
       "caption": "Focused neighbourhood of a typical artifact: declared groups in rows above the anchor, referencing groups below."
     },
@@ -123,25 +123,25 @@
     },
     {
       "name": "22-artifact-dark",
-      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE-001?a=dark",
+      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE?a=dark",
       "viewport": "1440x900",
       "caption": "The Reader and neighbourhood in the dark appearance."
     },
     {
       "name": "23-master-rail",
-      "route": "#/artifacts/FR-SNAPSHOT-002?m=rail",
+      "route": "#/artifacts/FR-SNAPSHOT-READER?m=rail",
       "viewport": "1440x900",
       "caption": "The master area collapsed to its kind rail: the selected kind stays marked while the Reader takes the room."
     },
     {
       "name": "24-search-narrowed",
-      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE-001?k=functional-requirement&q=search",
+      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE?k=functional-requirement&q=search",
       "viewport": "1440x900",
       "caption": "Search narrowed to one kind where the query is typed; the same narrowing is named beside the list."
     },
     {
       "name": "25-shortcuts",
-      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE-001",
+      "route": "#/artifacts/UC-SNAPSHOT-EXPLORE",
       "viewport": "1440x900",
       "caption": "Every shortcut is stated on the page, and each has a visible control."
     }

@@ -13,12 +13,12 @@ The finding breaks a MUST in the spec, structurally or semantically.
 
 The model is valid but weaker than it should be; fixing it needs no new product decision.
 
-- FR-ORDERS-004 and FR-ORDERS-011 state near-identical obligations in different words; they should likely be merged.
-- UC-CHECKOUT-002 lists only "payment fails" under Failure Conditions although its main flow involves inventory reservation and address validation.
+- FR-ORDERS-CONFIRM and FR-ORDERS-CONFIRM-2 state near-identical obligations in different words; they should likely be merged.
+- UC-CHECKOUT lists only "payment fails" under Failure Conditions although its main flow involves inventory reservation and address validation.
 
 ## QUESTION — needs a product decision
 
 Only a human with product authority can resolve it; the audit phrases it as a question.
 
-- BR-DISCOUNT-002 caps discounts at 20% while BR-CAMPAIGN-005 allows 30% during campaigns: which rule is intended to win, or is the campaign an explicit exception?
-- UC-EXPORT-003 is no longer referenced by any journey: is bulk export still a product outcome, or should it be deprecated?
+- BR-DISCOUNT caps discounts at 20% while BR-CAMPAIGN allows 30% during campaigns: which rule is intended to win, or is the campaign an explicit exception?
+- UC-EXPORT is no longer referenced by any journey: is bulk export still a product outcome, or should it be deprecated?

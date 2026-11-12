@@ -178,7 +178,7 @@ describe('change validate', () => {
       dir,
       'business-rules',
       'BR-PROBE-001',
-      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN-001'),
+      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN'),
     );
     const result = await run(['change', 'validate']);
     expect(result.out.join('\n')).toContain('0 error(s)');
@@ -187,12 +187,12 @@ describe('change validate', () => {
   });
 
   it('reports an addition that already exists as PRODUCT020', async () => {
-    const dir = await writeChange({ add: ['BR-VALID-URL-001'] });
+    const dir = await writeChange({ add: ['BR-VALID-URL'] });
     await proposeArtifact(
       dir,
       'business-rules',
-      'BR-VALID-URL-001',
-      businessRule('BR-VALID-URL-001', 'Duplicated', 'UC-SHORTEN-001'),
+      'BR-VALID-URL',
+      businessRule('BR-VALID-URL', 'Duplicated', 'UC-SHORTEN'),
     );
     const result = await run(['change', 'validate']);
     expect(result.code).toBe(1);
@@ -205,7 +205,7 @@ describe('change validate', () => {
       dir,
       'business-rules',
       'BR-GHOST-001',
-      businessRule('BR-GHOST-001', 'A ghost', 'UC-SHORTEN-001'),
+      businessRule('BR-GHOST-001', 'A ghost', 'UC-SHORTEN'),
     );
     const result = await run(['change', 'validate']);
     expect(result.code).toBe(1);
@@ -226,13 +226,13 @@ describe('change validate', () => {
       dir,
       'business-rules',
       'BR-PROBE-001',
-      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN-001'),
+      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN'),
     );
     await proposeArtifact(
       dir,
       'business-rules',
       'BR-PROBE-001-COPY',
-      businessRule('BR-PROBE-001', 'The same ID again', 'UC-SHORTEN-001'),
+      businessRule('BR-PROBE-001', 'The same ID again', 'UC-SHORTEN'),
     );
     const result = await run(['change', 'validate']);
     expect(result.code).toBe(1);
@@ -240,27 +240,27 @@ describe('change validate', () => {
   });
 
   it('reports a removal that strands a reference as PRODUCT024', async () => {
-    // UC-SHORTEN-001 is the primary actor's use case and BR-VALID-URL-001 applies to it.
-    await writeChange({ remove: ['UC-SHORTEN-001'] });
+    // UC-SHORTEN is the primary actor's use case and BR-VALID-URL applies to it.
+    await writeChange({ remove: ['UC-SHORTEN'] });
     const result = await run(['change', 'validate']);
     expect(result.code).toBe(1);
     expect(result.out.join('\n')).toContain('PRODUCT024');
   });
 
   it('reports overlapping concurrent changes as PRODUCT025', async () => {
-    const first = await writeChange({ id: 'CHG-FIRST-001', modify: ['BR-VALID-URL-001'] });
+    const first = await writeChange({ id: 'CHG-FIRST-001', modify: ['BR-VALID-URL'] });
     await proposeArtifact(
       first,
       'business-rules',
-      'BR-VALID-URL-001',
-      businessRule('BR-VALID-URL-001', 'Changed by the first change', 'UC-SHORTEN-001'),
+      'BR-VALID-URL',
+      businessRule('BR-VALID-URL', 'Changed by the first change', 'UC-SHORTEN'),
     );
-    const second = await writeChange({ id: 'CHG-SECOND-001', modify: ['BR-VALID-URL-001'] });
+    const second = await writeChange({ id: 'CHG-SECOND-001', modify: ['BR-VALID-URL'] });
     await proposeArtifact(
       second,
       'business-rules',
-      'BR-VALID-URL-001',
-      businessRule('BR-VALID-URL-001', 'Changed by the second change', 'UC-SHORTEN-001'),
+      'BR-VALID-URL',
+      businessRule('BR-VALID-URL', 'Changed by the second change', 'UC-SHORTEN'),
     );
     const result = await run(['change', 'validate']);
     expect(result.code).toBe(1);
@@ -274,12 +274,12 @@ describe('change validate', () => {
     const first = await writeChange({
       id: undefined,
       dir: 'chg-first',
-      modify: ['BR-VALID-URL-001'],
+      modify: ['BR-VALID-URL'],
     });
     const second = await writeChange({
       id: undefined,
       dir: 'chg-second',
-      modify: ['BR-VALID-URL-001'],
+      modify: ['BR-VALID-URL'],
     });
     for (const dir of [first, second]) {
       const changePath = join(workDir, 'docs', 'product', 'changes', 'active', dir, 'change.md');
@@ -289,8 +289,8 @@ describe('change validate', () => {
       await proposeArtifact(
         dir,
         'business-rules',
-        'BR-VALID-URL-001',
-        businessRule('BR-VALID-URL-001', `Changed by ${dir}`, 'UC-SHORTEN-001'),
+        'BR-VALID-URL',
+        businessRule('BR-VALID-URL', `Changed by ${dir}`, 'UC-SHORTEN'),
       );
     }
 
@@ -312,7 +312,7 @@ describe('change validate', () => {
       dir,
       'business-rules',
       'BR-PROBE-001',
-      businessRule('BR-PROBE-001', 'Unclaimed', 'UC-SHORTEN-001'),
+      businessRule('BR-PROBE-001', 'Unclaimed', 'UC-SHORTEN'),
     );
     const result = await run(['change', 'validate']);
     expect(result.code).toBe(1);
@@ -333,7 +333,7 @@ describe('change validate', () => {
       dir,
       'business-rules',
       'BR-PROBE-001',
-      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN-001'),
+      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN'),
     );
     return run(['change', 'validate']);
   }
@@ -391,7 +391,7 @@ describe('change validate', () => {
       dir,
       'business-rules',
       'BR-PROBE-001',
-      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN-001'),
+      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN'),
     );
     const changePath = join(workDir, 'docs', 'product', 'changes', 'active', dir, 'change.md');
     const document = await readFile(changePath, 'utf8');
@@ -428,8 +428,8 @@ describe('change validate', () => {
     // orphaned rule's PRODUCT105 must still count exactly once in the validate verdict.
     await writeFile(
       join(workDir, 'docs', 'product', 'model', 'business-rules', 'br-orphan-001.md'),
-      businessRule('BR-ORPHAN-001', 'Nobody consumes this', 'UC-SHORTEN-001').replace(
-        'applies-to:\n  - UC-SHORTEN-001\n',
+      businessRule('BR-ORPHAN-001', 'Nobody consumes this', 'UC-SHORTEN').replace(
+        'applies-to:\n  - UC-SHORTEN\n',
         '',
       ),
       'utf8',
@@ -439,7 +439,7 @@ describe('change validate', () => {
       dir,
       'business-rules',
       'BR-PROBE-001',
-      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN-001'),
+      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN'),
     );
     const result = await run(['validate', '--format', 'json']);
     const parsed = JSON.parse(result.out.join('\n')) as {
@@ -474,23 +474,23 @@ describe('change apply', () => {
     const dir = await writeChange({
       status: 'approved',
       add: ['BR-PROBE-001'],
-      modify: ['BR-VALID-URL-001'],
+      modify: ['BR-VALID-URL'],
       remove: ['CON-NO-TRACKING'],
     });
     await proposeArtifact(
       dir,
       'business-rules',
       'BR-PROBE-001',
-      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN-001'),
+      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN'),
     );
     await proposeArtifact(
       dir,
       'business-rules',
-      'BR-VALID-URL-001',
+      'BR-VALID-URL',
       businessRule(
-        'BR-VALID-URL-001',
+        'BR-VALID-URL',
         'Only well-formed absolute URLs are shortened, restated',
-        'UC-SHORTEN-001',
+        'UC-SHORTEN',
       ),
     );
     return dir;
@@ -503,7 +503,7 @@ describe('change apply', () => {
       dir,
       'business-rules',
       'BR-PROBE-001',
-      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN-001'),
+      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN'),
     );
   }
 
@@ -528,7 +528,7 @@ describe('change apply', () => {
       [
         '# Shortening',
         '',
-        `{pdac:cite id="BR-VALID-URL-001" digest="${await modelDigest('business-rules/br-valid-url-001.md')}"}`,
+        `{pdac:cite id="BR-VALID-URL" digest="${await modelDigest('business-rules/br-valid-url.md')}"}`,
         `{pdac:cite id="CON-NO-TRACKING" digest="${await modelDigest('requirements/constraints/con-no-tracking.md')}"}`,
         '',
       ].join('\n'),
@@ -571,7 +571,7 @@ describe('change apply', () => {
       dir,
       'business-rules',
       'BR-PROBE-001',
-      businessRule('BR-PROBE-001', 'An unclaimed proposal', 'UC-SHORTEN-001'),
+      businessRule('BR-PROBE-001', 'An unclaimed proposal', 'UC-SHORTEN'),
     );
     const before = await git('status', '--porcelain');
 
@@ -649,7 +649,7 @@ describe('change apply', () => {
     expect(await readFile(join(model, 'business-rules', 'br-probe-001.md'), 'utf8')).toContain(
       'BR-PROBE-001',
     );
-    expect(await readFile(join(model, 'business-rules', 'br-valid-url-001.md'), 'utf8')).toContain(
+    expect(await readFile(join(model, 'business-rules', 'br-valid-url.md'), 'utf8')).toContain(
       'restated',
     );
     await expect(
@@ -678,10 +678,10 @@ describe('change apply', () => {
   });
 
   it('leaves a change that removes a referenced artifact unapplied', async () => {
-    // CON-NO-TRACKING is removed above without stranding anything; UC-SHORTEN-001 is referenced.
+    // CON-NO-TRACKING is removed above without stranding anything; UC-SHORTEN is referenced.
     const dir = await writeChange({
       status: 'approved',
-      remove: ['UC-SHORTEN-001'],
+      remove: ['UC-SHORTEN'],
       dir: 'chg-probe-001',
     });
     expect(dir).toBe('chg-probe-001');
@@ -689,7 +689,7 @@ describe('change apply', () => {
     expect(result.code).toBe(1);
     expect(result.err.join('\n')).toContain('PRODUCT024');
     await expect(
-      stat(join(workDir, 'docs', 'product', 'model', 'use-cases', 'uc-shorten-001.md')),
+      stat(join(workDir, 'docs', 'product', 'model', 'use-cases', 'uc-shorten.md')),
     ).resolves.toBeDefined();
   });
 
@@ -698,14 +698,7 @@ describe('change apply', () => {
     // The baseline drifts: an artifact the change modifies is edited and committed after the
     // change recorded its base-revision. base-revision itself still resolves fine here, so this
     // must be reported as an actual content difference, not an unresolvable revision.
-    const target = join(
-      workDir,
-      'docs',
-      'product',
-      'model',
-      'business-rules',
-      'br-valid-url-001.md',
-    );
+    const target = join(workDir, 'docs', 'product', 'model', 'business-rules', 'br-valid-url.md');
     const current = await readFile(target, 'utf8');
     await writeFile(
       target,
@@ -733,18 +726,14 @@ describe('change apply', () => {
     // instead of asserting a content change that was never checked.
     const dir = await writeChange({
       status: 'approved',
-      modify: ['BR-VALID-URL-001'],
+      modify: ['BR-VALID-URL'],
       baseRevision: 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
     });
     await proposeArtifact(
       dir,
       'business-rules',
-      'BR-VALID-URL-001',
-      businessRule(
-        'BR-VALID-URL-001',
-        'Only well-formed absolute URLs are shortened',
-        'UC-SHORTEN-001',
-      ),
+      'BR-VALID-URL',
+      businessRule('BR-VALID-URL', 'Only well-formed absolute URLs are shortened', 'UC-SHORTEN'),
     );
 
     const result = await run(['change', 'apply', 'CHG-PROBE-001']);
@@ -769,7 +758,7 @@ describe('change apply', () => {
       dir,
       'business-rules',
       'BR-PROBE-001',
-      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN-001'),
+      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN'),
     );
 
     const result = await run(['change', 'apply', 'CHG-INITIAL', '--dry-run']);
@@ -788,7 +777,7 @@ describe('change apply', () => {
       dir,
       'business-rules',
       'BR-PROBE-001',
-      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN-001'),
+      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN'),
     );
 
     const result = await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run']);
@@ -800,24 +789,17 @@ describe('change apply', () => {
   it('orders PRODUCT027 before later-file overlay diagnostics on a dry-run refusal', async () => {
     const dir = await writeChange({
       status: 'approved',
-      modify: ['BR-VALID-URL-001'],
+      modify: ['BR-VALID-URL'],
       remove: ['ACT-VISITOR'],
     });
     await proposeArtifact(
       dir,
       'business-rules',
-      'BR-VALID-URL-001',
-      businessRule('BR-VALID-URL-001', 'Only valid absolute URLs are shortened', 'UC-SHORTEN-001'),
+      'BR-VALID-URL',
+      businessRule('BR-VALID-URL', 'Only valid absolute URLs are shortened', 'UC-SHORTEN'),
     );
 
-    const target = join(
-      workDir,
-      'docs',
-      'product',
-      'model',
-      'business-rules',
-      'br-valid-url-001.md',
-    );
+    const target = join(workDir, 'docs', 'product', 'model', 'business-rules', 'br-valid-url.md');
     const current = await readFile(target, 'utf8');
     await writeFile(
       target,
@@ -840,15 +822,15 @@ describe('change apply', () => {
       {
         file: 'docs/product/changes/active/chg-probe-001/change.md',
         code: 'PRODUCT027',
-        target: 'BR-VALID-URL-001',
+        target: 'BR-VALID-URL',
       },
       {
-        file: 'docs/product/model/journeys/jrn-share-001.md',
+        file: 'docs/product/model/journeys/jrn-share.md',
         code: 'PRODUCT024',
         target: 'ACT-VISITOR',
       },
       {
-        file: 'docs/product/model/use-cases/uc-shorten-001.md',
+        file: 'docs/product/model/use-cases/uc-shorten.md',
         code: 'PRODUCT024',
         target: 'ACT-VISITOR',
       },
@@ -866,7 +848,7 @@ describe('change apply', () => {
       dir,
       'business-rules',
       'BR-PROBE-001',
-      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN-001'),
+      businessRule('BR-PROBE-001', 'A probe rule', 'UC-SHORTEN'),
     );
     const untouched = join(
       workDir,
@@ -874,7 +856,7 @@ describe('change apply', () => {
       'product',
       'model',
       'business-rules',
-      'br-valid-url-001.md',
+      'br-valid-url.md',
     );
     const current = await readFile(untouched, 'utf8');
     await writeFile(
@@ -894,14 +876,7 @@ describe('change apply', () => {
     await approvedChange();
     // Digests normalize CRLF and CR to LF, so rewriting a baseline artifact with CRLF endings and
     // committing it moves the file in Git without changing its normalized content.
-    const target = join(
-      workDir,
-      'docs',
-      'product',
-      'model',
-      'business-rules',
-      'br-valid-url-001.md',
-    );
+    const target = join(workDir, 'docs', 'product', 'model', 'business-rules', 'br-valid-url.md');
     const current = await readFile(target, 'utf8');
     await writeFile(target, current.replace(/\r?\n/g, '\r\n'), 'utf8');
     await git('add', '-A');
@@ -936,12 +911,12 @@ describe('change apply', () => {
   it('reports a declared modification that changes nothing as no diff entry', async () => {
     // Intent and effective change may legitimately disagree: a modification whose proposed text
     // is byte-identical to the baseline changes nothing, and must not send citations stale.
-    const dir = await writeChange({ status: 'approved', modify: ['BR-VALID-URL-001'] });
+    const dir = await writeChange({ status: 'approved', modify: ['BR-VALID-URL'] });
     const unchanged = await readFile(
-      join(workDir, 'docs', 'product', 'model', 'business-rules', 'br-valid-url-001.md'),
+      join(workDir, 'docs', 'product', 'model', 'business-rules', 'br-valid-url.md'),
       'utf8',
     );
-    await proposeArtifact(dir, 'business-rules', 'BR-VALID-URL-001', unchanged);
+    await proposeArtifact(dir, 'business-rules', 'BR-VALID-URL', unchanged);
     const result = await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run']);
     expect(result.code).toBe(0);
     expect(result.out.join('\n')).toContain('Product diff: 0 added, 0 modified, 0 removed');
@@ -957,7 +932,7 @@ describe('change apply', () => {
     const text = result.out.join('\n');
     expect(text).toContain('Affected citations: 2');
     // A citation of a modified artifact forecasts stale; of a removed artifact, unresolved.
-    expect(text).toContain('specs/shortening.md:3\tBR-VALID-URL-001\tstale');
+    expect(text).toContain('specs/shortening.md:3\tBR-VALID-URL\tstale');
     expect(text).toContain('specs/shortening.md:4\tCON-NO-TRACKING\tunresolved');
     // The report is recomputed output: reporting it writes nothing (RFC 0048).
     expect(await git('status', '--porcelain')).toBe(before);
@@ -980,7 +955,7 @@ describe('change apply', () => {
     };
     expect(payload.affectedCitations).toEqual([
       {
-        id: 'BR-VALID-URL-001',
+        id: 'BR-VALID-URL',
         source: 'specs/shortening.md',
         line: 3,
         form: 'inline',
@@ -1029,15 +1004,15 @@ describe('change apply', () => {
   it('does not affect citations of a declared modification that changes nothing', async () => {
     // Impact derives from the effective change: a byte-identical modify is absent from the diff,
     // so a current citation of the declared target must not be reported as affected.
-    const dir = await writeChange({ status: 'approved', modify: ['BR-VALID-URL-001'] });
+    const dir = await writeChange({ status: 'approved', modify: ['BR-VALID-URL'] });
     const unchanged = await readFile(
-      join(workDir, 'docs', 'product', 'model', 'business-rules', 'br-valid-url-001.md'),
+      join(workDir, 'docs', 'product', 'model', 'business-rules', 'br-valid-url.md'),
       'utf8',
     );
-    await proposeArtifact(dir, 'business-rules', 'BR-VALID-URL-001', unchanged);
+    await proposeArtifact(dir, 'business-rules', 'BR-VALID-URL', unchanged);
     await writeConsumer(
       'specs/still-current.md',
-      `{pdac:cite id="BR-VALID-URL-001" digest="${await modelDigest('business-rules/br-valid-url-001.md')}"}\n`,
+      `{pdac:cite id="BR-VALID-URL" digest="${await modelDigest('business-rules/br-valid-url.md')}"}\n`,
     );
 
     const result = await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run']);
@@ -1047,18 +1022,15 @@ describe('change apply', () => {
 
   it('orders affected citations deterministically across consumers and forms', async () => {
     await approvedChange();
-    const digest = await modelDigest('business-rules/br-valid-url-001.md');
+    const digest = await modelDigest('business-rules/br-valid-url.md');
     // Written in reverse of the expected order, so the order below is sorted, not incidental.
     await writeConsumer('specs/ledger.md', '# Ledger consumer\n');
-    await writeConsumer(
-      'specs/ledger.citations.yaml',
-      `- id: BR-VALID-URL-001\n  digest: ${digest}\n`,
-    );
+    await writeConsumer('specs/ledger.citations.yaml', `- id: BR-VALID-URL\n  digest: ${digest}\n`);
     await writeConsumer(
       'specs/b.md',
-      `{pdac:cite id="BR-VALID-URL-001" digest="${digest}"}\n\n{pdac:cite id="BR-VALID-URL-001" digest="${digest}"}\n`,
+      `{pdac:cite id="BR-VALID-URL" digest="${digest}"}\n\n{pdac:cite id="BR-VALID-URL" digest="${digest}"}\n`,
     );
-    await writeConsumer('specs/a.md', `{pdac:cite id="BR-VALID-URL-001" digest="${digest}"}\n`);
+    await writeConsumer('specs/a.md', `{pdac:cite id="BR-VALID-URL" digest="${digest}"}\n`);
 
     const result = await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run', '--format', 'json']);
     expect(result.code).toBe(0);
@@ -1076,7 +1048,7 @@ describe('change apply', () => {
 
     // The sidecar's point of use is its ledger entry, not a file line.
     const text = (await run(['change', 'apply', 'CHG-PROBE-001', '--dry-run'])).out.join('\n');
-    expect(text).toContain('specs/ledger.citations.yaml entry 1\tBR-VALID-URL-001\tstale');
+    expect(text).toContain('specs/ledger.citations.yaml entry 1\tBR-VALID-URL\tstale');
   });
 });
 
@@ -1155,7 +1127,7 @@ describe('change create', () => {
 
 describe('change list and archive', () => {
   it('lists live changes with their operation counts', async () => {
-    await writeChange({ add: ['BR-PROBE-001'], modify: ['BR-VALID-URL-001'] });
+    await writeChange({ add: ['BR-PROBE-001'], modify: ['BR-VALID-URL'] });
     const result = await run(['change', 'list']);
     expect(result.code).toBe(0);
     expect(result.out.join('\n')).toMatch(/active\s+draft\s+CHG-PROBE-001\s+\+1 ~1 -0/);
@@ -1212,10 +1184,7 @@ describe('change list and archive', () => {
     await mkdir(dir, { recursive: true });
     await writeFile(
       join(dir, 'change.md'),
-      changeDocument(
-        { id: 'CHG-OLD-001', status: 'applied', add: ['BR-VALID-URL-001'] },
-        '0000000',
-      ),
+      changeDocument({ id: 'CHG-OLD-001', status: 'applied', add: ['BR-VALID-URL'] }, '0000000'),
       'utf8',
     );
     const result = await run(['change', 'validate']);

@@ -27,6 +27,6 @@ ProductShape reads and writes product-definition files in the adopter's reposito
 
 The CLI is the local interface for authoring support, validation, citation checks, and derived views. Git review is the acceptance boundary for repository changes. The public site contains no write path to the product model.
 
-<!-- pdac:cite id="CON-MARKDOWN-001" digest="sha256:e1d4c39d7e5fc5f1a1573dbb6433986a26248289c9a97c11bb039db7af0f5c17" -->
+<!-- pdac:cite id="CON-MARKDOWN" digest="sha256:e1d4c39d7e5fc5f1a1573dbb6433986a26248289c9a97c11bb039db7af0f5c17" -->
 
-<!-- pdac:cite id="UC-INIT-001" digest="sha256:82f4a1b7f382d5f60b2c02257213e35c9e9e7ebb4f438123d2bd5f0e31a6f86c" -->
+<!-- pdac:cite id="UC-INIT" digest="sha256:82f4a1b7f382d5f60b2c02257213e35c9e9e7ebb4f438123d2bd5f0e31a6f86c" -->

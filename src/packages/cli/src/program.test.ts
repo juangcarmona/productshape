@@ -325,15 +325,15 @@ describe('prodshape graph / inspect / impact', () => {
   });
 
   it('impact distinguishes direct from transitive', async () => {
-    const result = await run(['impact', 'BR-VALID-URL-001', '--direction', 'incoming'], workDir);
+    const result = await run(['impact', 'BR-VALID-URL', '--direction', 'incoming'], workDir);
     expect(result.code).toBe(0);
     const text = result.out.join('\n');
-    expect(text).toMatch(/direct \(\d+\):[\s\S]*UC-SHORTEN-001/);
-    expect(text).toMatch(/transitive \(\d+\):[\s\S]*JRN-SHARE-001/);
+    expect(text).toMatch(/direct \(\d+\):[\s\S]*UC-SHORTEN/);
+    expect(text).toMatch(/transitive \(\d+\):[\s\S]*JRN-SHARE/);
   });
 
   it('impact rejects an invalid direction with exit 2', async () => {
-    const result = await run(['impact', 'BR-VALID-URL-001', '--direction', 'sideways'], workDir);
+    const result = await run(['impact', 'BR-VALID-URL', '--direction', 'sideways'], workDir);
     expect(result.code).toBe(2);
   });
 
@@ -379,7 +379,7 @@ describe('prodshape fix --filenames', () => {
 
   it('renames a misnamed file and clears the PRODUCT101 warning', async () => {
     const model = join(fixDir, 'docs', 'product', 'model', 'use-cases');
-    await rename(join(model, 'uc-shorten-001.md'), join(model, 'renamed-by-hand.md'));
+    await rename(join(model, 'uc-shorten.md'), join(model, 'renamed-by-hand.md'));
 
     const before = await run(['validate'], fixDir);
     expect(before.out.join('\n')).toContain('PRODUCT101');
@@ -409,7 +409,7 @@ describe('prodshape fix --filenames', () => {
     // Regression: recovery used to run before the dry-run check, so asking what would happen
     // renamed the file and then printed "Dry run: nothing was changed."
     const model = join(fixDir, 'docs', 'product', 'model', 'use-cases');
-    const destination = join(model, 'uc-shorten-001.md');
+    const destination = join(model, 'uc-shorten.md');
     const leftover = `${destination}.prodshape-fix-tmp`;
     await rename(destination, leftover);
 
@@ -426,7 +426,7 @@ describe('prodshape fix --filenames', () => {
     const applied = await run(['fix', '--filenames'], fixDir);
     expect(applied.code).toBe(0);
     expect(applied.out.join('\n')).toContain(
-      'recovered docs/product/model/use-cases/uc-shorten-001.md',
+      'recovered docs/product/model/use-cases/uc-shorten.md',
     );
     await access(destination);
     await expect(access(leftover)).rejects.toThrow();
@@ -434,16 +434,14 @@ describe('prodshape fix --filenames', () => {
 
   it('completes a rename interrupted between its two steps', async () => {
     const model = join(fixDir, 'docs', 'product', 'model', 'use-cases');
-    const destination = join(model, 'uc-shorten-001.md');
+    const destination = join(model, 'uc-shorten.md');
     // Simulate a crash after the first rename: the file sits at its temporary name, which encodes
     // where it was going. Discovery globs *.md, so the artifact is currently missing.
     await rename(destination, `${destination}.prodshape-fix-tmp`);
 
     const result = await run(['fix', '--filenames'], fixDir);
     expect(result.code).toBe(0);
-    expect(result.out.join('\n')).toContain(
-      'recovered docs/product/model/use-cases/uc-shorten-001.md',
-    );
+    expect(result.out.join('\n')).toContain('recovered docs/product/model/use-cases/uc-shorten.md');
 
     const validate = await run(['validate'], fixDir);
     expect(validate.code).toBe(0);

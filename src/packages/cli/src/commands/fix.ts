@@ -9,19 +9,36 @@ import {
   type FilenameFix,
 } from '@prodshape/core';
 import { CliError, exitCodes, resolveRepository, type CliIo } from '../context.js';
+import { runIdSuffixMigration } from './id-migration.js';
 
 export const fixPlanSchemaId = 'product-definition-as-code/fix-plan/v1alpha1';
 
 export interface FixOptions {
   filenames?: boolean;
+  idSuffixes?: boolean;
+  applyIdMigration?: boolean;
   dryRun?: boolean;
   format?: 'text' | 'json';
 }
 
 /** Available fixers, named so an invocation with none can say what it expected. */
-const fixers = ['--filenames'];
+const fixers = ['--filenames', '--id-suffixes'];
 
 export async function runFix(io: CliIo, options: FixOptions): Promise<number> {
+  if (options.idSuffixes && options.filenames) {
+    throw new CliError(
+      'Choose one fixer at a time: --filenames or --id-suffixes',
+      exitCodes.invalidInvocation,
+    );
+  }
+  if (options.idSuffixes) {
+    const repo = await resolveRepository(io, undefined, options.format);
+    return runIdSuffixMigration(io, repo, {
+      apply: options.applyIdMigration,
+      dryRun: options.dryRun,
+      format: options.format,
+    });
+  }
   if (!options.filenames) {
     // Never implicit: this repository's posture is that mutating commands are asked for by name.
     throw new CliError(

@@ -12,7 +12,7 @@ The prodshape command-line surface: commands, options, exit codes and output con
 
 The `product-definition` binary SHALL provide `validate`, `graph`, `inspect <ID>` and `impact <ID>` with the documented options, resolving the repository root and configuration from the working directory.
 
-{pdac:cite id="UC-VALIDATE-001" digest="sha256:4b4c1c37376d3faf2c84d130866083c1f33ef7f4990495da15b9d15570f94368"}
+{pdac:cite id="UC-VALIDATE" digest="sha256:d9736ee43f10bc474ff476c2000b0a53938fd5eab1e4fc2d42ef798189899607"}
 
 #### Scenario: Running from a subdirectory
 
@@ -104,3 +104,29 @@ The command SHALL apply nothing when any rename is blocked — a target occupied
 
 - **WHEN** `fix` runs with no fixer flag
 - **THEN** it exits 2 and names the available fixers
+
+### Requirement: Numeric ID suffixes are migrated only with consent
+
+`prodshape fix --id-suffixes` and the ID-suffix step of `prodshape integration update` SHALL plan the removal of numeric suffixes from artifact IDs, report collisions without renaming into them, and change the repository only with explicit consent: an interactive run asks, and a run that cannot ask changes nothing unless `--apply-id-migration` is passed. Applying SHALL update frontmatter, relationships, file names, citations and sidecars and live Product Change overlays together, or roll everything back.
+
+{pdac:cite id="FR-ID-MIGRATION" digest="sha256:5f924fe6ead9447c9c201891cc924d75a7aa1803dcaaaa0b006598c5f0912ca1"}
+
+#### Scenario: Not interactive and no consent flag
+
+- **WHEN** `fix --id-suffixes` runs without a terminal and without `--apply-id-migration`
+- **THEN** the plan is reported, nothing is changed and the command exits 0
+
+#### Scenario: Dry run gates a pending migration
+
+- **WHEN** `fix --id-suffixes --dry-run` runs on a model with numeric suffixes
+- **THEN** the plan is reported, nothing is changed and the command exits 1
+
+#### Scenario: Colliding IDs keep their numbers
+
+- **WHEN** two IDs would become the same ID without their suffix
+- **THEN** both are reported and left as they are, and the remaining IDs are migrated
+
+#### Scenario: Idempotent
+
+- **WHEN** the migration runs on a model without suffixes
+- **THEN** it changes nothing and says so

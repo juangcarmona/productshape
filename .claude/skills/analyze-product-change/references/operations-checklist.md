@@ -7,7 +7,7 @@
 
 - [ ] `prodshape validate` passes on the baseline (zero errors).
 - [ ] The change request is understood: restate it in one sentence.
-- [ ] A `CHG-` identifier has been chosen (e.g. `CHG-ADD-CITE-001`).
+- [ ] A `CHG-` identifier has been chosen (e.g. `CHG-ADD-CITE`).
 - [ ] The current baseline commit is recorded, to become `base-revision`.
 
 ## During drafting

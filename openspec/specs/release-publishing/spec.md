@@ -12,7 +12,7 @@ The npm release pipeline for the `@prodshape/*` packages: CI-only publishing, Ch
 
 The workspace's public npm packages SHALL be published exclusively from a GitHub Actions workflow. No release step SHALL depend on a developer's local machine or local credentials, and the documented release process SHALL contain no manual `npm publish` from a workstation for steady-state releases.
 
-{pdac:cite id="FR-RELEASE-001" digest="sha256:ea80cc6a1a1b2610bf715c75226e1a5e0d904719f03d8f0ec3df30cf6675a0f1"}
+{pdac:cite id="FR-RELEASE" digest="sha256:d42c6a7c2d71e0a1c945e2ff69260203205494828bbff0a0ff89a91317f12d7c"}
 
 #### Scenario: Release from CI
 

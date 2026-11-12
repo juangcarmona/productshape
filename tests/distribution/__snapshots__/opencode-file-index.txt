@@ -11,6 +11,7 @@
 .opencode/skills/analyze-product-change/SKILL.md
 .opencode/skills/audit-product-model/references/diagnostic-codes.md
 .opencode/skills/audit-product-model/references/finding-classification.md
+.opencode/skills/audit-product-model/references/id-suffix-migration.md
 .opencode/skills/audit-product-model/SKILL.md
 .opencode/skills/bind-consumers/references/openspec.md
 .opencode/skills/bind-consumers/references/speckit.md

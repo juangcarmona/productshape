@@ -4,7 +4,7 @@ type: structured-behaviour
 title: A retired ID is never reused for a different artifact
 status: active
 illustrates:
-  - BR-IDENTITY-001
+  - BR-IDENTITY
 given:
   - An artifact ID was assigned and its artifact was later retired
 when: A new, unrelated artifact claims the retired ID

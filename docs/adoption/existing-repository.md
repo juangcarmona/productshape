@@ -116,6 +116,10 @@ An invalid configuration (malformed YAML, a missing or unsupported `version`, an
 - Never edit it by hand. `integration update` rewrites it; `integration update --check` verifies it (`PRODUCT051` for a hand-edited file, `PRODUCT052` for a missing one) and is the right CI gate.
 - If it is deleted, validation and graph compilation still work — they do not read it — but the tool no longer knows which files it owns. Recover with `integration add <provider> --force`.
 
+## Upgrading to 0.24: IDs without a numeric suffix
+
+From 0.24 an artifact ID is `PREFIX-NAME` (`UC-IMPACT`), not `UC-IMPACT-001`; a number appears only to break a tie. Nothing is forced: IDs with a numeric suffix stay valid, and `prodshape doctor` reports them as informational. To migrate, run `prodshape integration update` (it prints the plan and, in a terminal, asks) or `prodshape fix --id-suffixes`. Use `--dry-run` to see the plan only (exit code 1 while a migration is pending) and `--apply-id-migration` to consent in a script. The migration renames files, updates relationships, citations, sidecars and live Product Changes together, leaves IDs that would collide as they are, and rolls back if validation would get worse. Completed Product Changes are not rewritten. The same `integration update` also refreshes the templates under `.product/templates/` that you never edited, so new artifacts start without a numeric suffix; edited templates are kept and listed, and `--force` replaces them. If an AI assistant drives your upgrade, the `audit-product-model` skill makes it show the plan and ask you first.
+
 ## Choose what to commit
 
 Only two things under `.product/` are regenerable. Everything else in it is how each clone verifies the installation, so it belongs in version control:

@@ -16,7 +16,7 @@
 Product Definition as Code keeps the agreed product definition in versioned Markdown that delivery work cites instead of restating.
 
 <p align="center">
-  <a href="https://pdac.dev/#watch-the-drift"><img src="https://pdac.dev/pdac-demo.gif" alt="Terminal recording: grep shows three specs paraphrasing one refund rule; the rule is defined once as BR-REFUND-001; each spec cites it by ID and content digest; verification reports three current citations; the rule changes, and verification reports three stale citations with PRODUCT061 warnings, naming each file and line." width="720" /></a>
+  <a href="https://pdac.dev/#watch-the-drift"><img src="https://pdac.dev/pdac-demo.gif" alt="Terminal recording: grep shows three specs paraphrasing one refund rule; the rule is defined once as BR-REFUND; each spec cites it by ID and content digest; verification reports three current citations; the rule changes, and verification reports three stale citations with PRODUCT061 warnings, naming each file and line." width="720" /></a>
 </p>
 
 <p align="center"><em>Three specs restate one rule; a change flags every recorded citation. Real output. The end card names the recorded CLI version. <a href="https://pdac.dev/">Watch on pdac.dev</a>.</em></p>
@@ -77,9 +77,9 @@ npm init -y && npm install --save-dev --save-exact @prodshape/cli@0.23.0
 npx --no-install prodshape init
 
 mkdir -p docs/product/model/business-rules
-cat > docs/product/model/business-rules/br-refund-001.md <<'EOF'
+cat > docs/product/model/business-rules/br-refund.md <<'EOF'
 ---
-id: BR-REFUND-001
+id: BR-REFUND
 type: business-rule
 title: Refund window
 status: active
@@ -128,9 +128,9 @@ npx --no-install prodshape init
 npx --no-install prodshape validate
 
 mkdir -p docs/product/model/business-rules openspec
-cat > docs/product/model/business-rules/br-refund-001.md <<'EOF'
+cat > docs/product/model/business-rules/br-refund.md <<'EOF'
 ---
-id: BR-REFUND-001
+id: BR-REFUND
 type: business-rule
 title: Refund window
 status: active
@@ -155,8 +155,8 @@ EOF
 
 printf '# Refund delivery specification\n' > openspec/refund.md
 npx --no-install prodshape cite \
-  --id BR-REFUND-001 \
-  --file docs/product/model/business-rules/br-refund-001.md \
+  --id BR-REFUND \
+  --file docs/product/model/business-rules/br-refund.md \
   --form sidecar-ledger > openspec/refund.citations.yml
 npx --no-install prodshape citations verify
 
@@ -167,7 +167,7 @@ node --input-type=module -e "
 "
 node --input-type=module -e "
   import { readFileSync, writeFileSync } from 'node:fs';
-  const path = 'docs/product/model/business-rules/br-refund-001.md';
+  const path = 'docs/product/model/business-rules/br-refund.md';
   writeFileSync(path, readFileSync(path, 'utf8').replace('30 days', '14 days'));
 "
 
