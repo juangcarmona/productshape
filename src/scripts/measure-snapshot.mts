@@ -58,6 +58,17 @@ interface Measurement {
    */
   selectionMs: { hardest: string; samples: number; p50: number; p95: number; max: number };
   /**
+   * The map views of CHG-SNAPSHOT-V2, measured in jsdom like the figures above: the chips and lines
+   * the Overview map draws at open (QR-SCALABILITY: one chip per artifact, no line), the time to
+   * draw it in a fresh document, to light the busiest artifact's neighbourhood, and to open the
+   * Columns view.
+   */
+  overviewChipsAtOpen: number;
+  overviewLinesAtOpen: number;
+  overviewOpenMs: number;
+  hoverMs: { samples: number; p50: number; p95: number; max: number };
+  columnsOpenMs: number;
+  /**
    * Search latency: elapsed time from the query changing to results being displayed, for a query
    * matching one artifact, roughly a tenth of the model, and every artifact. Measured in jsdom, so
    * like the selection figure it excludes layout and paint.
@@ -378,7 +389,7 @@ async function measure(label: string, modelRoot: string): Promise<Measurement> {
     for (const anchor of focusAnchors) {
       dom.window.location.hash = '#/artifacts';
       dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
-      dom.window.location.hash = `#/graph/focus/${anchor}`;
+      dom.window.location.hash = `#/focus/${anchor}`;
       const started = performance.now();
       dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
       const elapsed = performance.now() - started;
@@ -407,15 +418,14 @@ async function measure(label: string, modelRoot: string): Promise<Measurement> {
   /* Group expansion on the hardest focus: toggle the largest group of the busiest artifact. */
   const expandTimings: number[] = [];
   if (busiest?.[0]) {
-    dom.window.location.hash = `#/graph/focus/${busiest[0]}`;
+    dom.window.location.hash = `#/focus/${busiest[0]}`;
     dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
     const focusDoc = dom.window.document;
-    /* The projection is rebuilt on every toggle, so the group is found afresh each round. */
+    /* The view is rebuilt on every toggle, so the group is found afresh each round. */
     const largest = (): Element | undefined =>
-      [...focusDoc.querySelectorAll('#graph-host button.tg')].sort(
+      [...focusDoc.querySelectorAll('#map-focus .fgroup')].sort(
         (a, b) =>
-          Number(b.querySelector('.gcount')?.textContent) -
-          Number(a.querySelector('.gcount')?.textContent),
+          Number(b.querySelector('.n')?.textContent) - Number(a.querySelector('.n')?.textContent),
       )[0];
     if (largest()) {
       for (let r = 0; r < 10 + 3; r += 1) {
@@ -427,6 +437,44 @@ async function measure(label: string, modelRoot: string): Promise<Measurement> {
       }
     }
   }
+
+  /* The map views: a fresh document opened on the Overview, then hover and the Columns view. */
+  let overviewOpenMs = 0;
+  let overviewChipsAtOpen = 0;
+  let overviewLinesAtOpen = 0;
+  let columnsOpenMs = 0;
+  const hoverTimings: number[] = [];
+  {
+    const started = performance.now();
+    const fresh = new JSDOM(html, {
+      url: 'https://snapshot.invalid/snapshot.html#/',
+      runScripts: 'dangerously',
+    });
+    overviewOpenMs = round(performance.now() - started, 2);
+    const fdoc = fresh.window.document;
+    overviewChipsAtOpen = fdoc.querySelectorAll('#map-overview .mchip').length;
+    overviewLinesAtOpen = fdoc.querySelectorAll('#map-overview svg.edges path').length;
+    const chip = busiest?.[0]
+      ? fdoc.querySelector(`#map-overview [data-id="${busiest[0]}"]`)
+      : null;
+    if (chip) {
+      for (let r = 0; r < 10 + 3; r += 1) {
+        const startedHover = performance.now();
+        chip.dispatchEvent(new fresh.window.MouseEvent('mouseover', { bubbles: true }));
+        const elapsed = performance.now() - startedHover;
+        fdoc
+          .getElementById('map-overview')
+          ?.dispatchEvent(new fresh.window.MouseEvent('mouseleave', { bubbles: false }));
+        if (r >= 3) hoverTimings.push(elapsed);
+      }
+    }
+    fresh.window.location.hash = '#/columns';
+    const startedColumns = performance.now();
+    fresh.window.dispatchEvent(new fresh.window.HashChangeEvent('hashchange'));
+    columnsOpenMs = round(performance.now() - startedColumns, 2);
+    fresh.window.close();
+  }
+  hoverTimings.sort((a, b) => a - b);
 
   dom.window.close();
   timings.sort((a, b) => a - b);
@@ -462,6 +510,16 @@ async function measure(label: string, modelRoot: string): Promise<Measurement> {
       max: round(timings.at(-1) ?? 0, 2),
     },
     firstSearchMs,
+    overviewChipsAtOpen,
+    overviewLinesAtOpen,
+    overviewOpenMs,
+    hoverMs: {
+      samples: hoverTimings.length,
+      p50: atOf(hoverTimings, 0.5),
+      p95: atOf(hoverTimings, 0.95),
+      max: round(hoverTimings.at(-1) ?? 0, 2),
+    },
+    columnsOpenMs,
     focusMs: {
       anchors: focusAnchors,
       samples: focusTimings.length,
@@ -538,11 +596,11 @@ for (const [k, v] of Object.entries(environment)) {
 }
 process.stdout.write(`\n`);
 process.stdout.write(
-  `${pad('model', 24)}${pad('artifacts', 11)}${pad('rels', 7)}${pad('file B', 12)}${pad('opening B', 12)}${pad('share', 8)}${pad('nodes/edges', 13)}${pad('gen ms', 14)}${pad('B/authored', 11)}${pad('select p95', 11)}${pad('search p95', 11)}${pad('focus p95', 11)}${pad('expand p95', 11)}${pad('filter p95', 11)}\n`,
+  `${pad('model', 24)}${pad('artifacts', 11)}${pad('rels', 7)}${pad('file B', 12)}${pad('opening B', 12)}${pad('share', 8)}${pad('nodes/edges', 13)}${pad('gen ms', 14)}${pad('B/authored', 11)}${pad('select p95', 11)}${pad('search p95', 11)}${pad('focus p95', 11)}${pad('expand p95', 11)}${pad('filter p95', 11)}${pad('chips/lines', 13)}${pad('map open', 10)}${pad('hover p95', 11)}${pad('columns', 9)}\n`,
 );
 for (const r of results) {
   process.stdout.write(
-    `${pad(r.model, 24)}${pad(num(r.artifacts), 11)}${pad(num(r.relationships), 7)}${pad(num(r.fileBytes), 12)}${pad(num(r.openingMarkupBytes), 12)}${pad(`${Math.round(r.openingMarkupShare * 100)}%`, 8)}${pad(`${r.artifactLevelNodes}/${r.artifactLevelEdges}`, 13)}${pad(`${r.generationMs.min}-${r.generationMs.max}`, 14)}${pad(String(r.bytesPerAuthoredByte), 11)}${pad(String(r.selectionMs.p95), 11)}${pad(String(r.searchMs.p95), 11)}${pad(String(r.focusMs.p95), 11)}${pad(String(r.expandMs.p95), 11)}${pad(String(r.filterMs.p95), 11)}\n`,
+    `${pad(r.model, 24)}${pad(num(r.artifacts), 11)}${pad(num(r.relationships), 7)}${pad(num(r.fileBytes), 12)}${pad(num(r.openingMarkupBytes), 12)}${pad(`${Math.round(r.openingMarkupShare * 100)}%`, 8)}${pad(`${r.artifactLevelNodes}/${r.artifactLevelEdges}`, 13)}${pad(`${r.generationMs.min}-${r.generationMs.max}`, 14)}${pad(String(r.bytesPerAuthoredByte), 11)}${pad(String(r.selectionMs.p95), 11)}${pad(String(r.searchMs.p95), 11)}${pad(String(r.focusMs.p95), 11)}${pad(String(r.expandMs.p95), 11)}${pad(String(r.filterMs.p95), 11)}${pad(`${r.overviewChipsAtOpen}/${r.overviewLinesAtOpen}`, 13)}${pad(String(r.overviewOpenMs), 10)}${pad(String(r.hoverMs.p95), 11)}${pad(String(r.columnsOpenMs), 9)}\n`,
   );
 }
 const first = results[0];

@@ -54,14 +54,14 @@ const shots: Shot[] = [
     route: '#/',
     ...DESKTOP,
     caption:
-      'Opening view: identity, totals, composition, derived entry points and the kind-by-kind grid — no artifact body, no artifact-level graph.',
+      'Opening view: identity, totals and the Overview map with every artifact as a chip by kind and context — no artifact body.',
   },
   {
     name: '02-artifact-detail-desktop',
     route: '#/artifacts/UC-SNAPSHOT-EXPLORE',
     ...DESKTOP,
     caption:
-      'One active artifact: grouped list with the selection’s kind open, linked metadata, and its neighbourhood beside the Reader.',
+      'One active artifact: grouped list with the selection’s kind open, linked metadata, and the Focus action.',
   },
   {
     name: '03-relationship-groups-collapsed',
@@ -151,42 +151,43 @@ const shots: Shot[] = [
   },
   {
     name: '17-focus-typical',
-    route: '#/artifacts/UC-SNAPSHOT-EXPLORE',
+    route: '#/focus/UC-SNAPSHOT-EXPLORE',
     ...DESKTOP,
     caption:
-      'Focused neighbourhood of a typical artifact: declared groups in rows above the anchor, referencing groups below.',
+      'The Focus view on a use case: its neighbours grouped by kind, earlier kinds on the left and later ones on the right, the rest of the model faded behind.',
   },
   {
     name: '18-focus-hardest',
-    route: '#/artifacts/BC-PRODUCT-DEFINITION',
+    route: '#/focus/BC-PRODUCT-DEFINITION',
     ...DESKTOP,
     caption:
-      'The hardest artifact in the model: one counted group per relationship type and kind, never one node per relationship.',
+      'The most connected artifact: dense kind groups start collapsed with their complete counts.',
   },
   {
     name: '19-focus-expanded',
-    route: '#/artifacts/BC-PRODUCT-DEFINITION?x=4',
+    route: '#/focus/BC-PRODUCT-DEFINITION?x=use-case',
     ...DESKTOP,
-    caption:
-      'One group opened: its members listed beside it, its Reader counterpart opened and in view.',
+    caption: 'The same focus with one dense group expanded; the disclosure is in the address.',
   },
   {
-    name: '20-focus-isolated',
-    route: '#/artifacts/CON-NO-WEB-UI',
+    name: '20-focus-hover',
+    route: '#/focus/UC-SNAPSHOT-EXPLORE',
     ...DESKTOP,
-    caption: 'An artifact with no relationships says so rather than drawing an empty diagram.',
+    caption: 'Hovering a neighbour lights it, the focus and the line between them.',
+    prepare: `document.querySelector('#map-focus [data-id="BR-CANONICAL"]').dispatchEvent(new MouseEvent('mouseover',{bubbles:true}))`,
   },
   {
     name: '21-overview-dark',
     route: '#/?a=dark',
     ...DESKTOP,
-    caption: 'The dark appearance, chosen in the address: every colour from its own token set.',
+    caption:
+      'The Overview in the dark appearance, chosen in the address: every colour from its own token set.',
   },
   {
     name: '22-artifact-dark',
     route: '#/artifacts/UC-SNAPSHOT-EXPLORE?a=dark',
     ...DESKTOP,
-    caption: 'The Reader and neighbourhood in the dark appearance.',
+    caption: 'The Reader in the dark appearance.',
   },
   {
     name: '23-master-rail',
@@ -208,6 +209,73 @@ const shots: Shot[] = [
     ...DESKTOP,
     caption: 'Every shortcut is stated on the page, and each has a visible control.',
     prepare: `document.getElementById('keys-open').click()`,
+  },
+  {
+    name: '26-overview-hover-light',
+    route: '#/',
+    ...DESKTOP,
+    caption:
+      'The Overview map, light: every artifact as a chip by kind and context; hovering a use case lights its neighbours and lines in neon.',
+    prepare: `document.querySelector('#map-overview [data-id="UC-SNAPSHOT-EXPLORE"]').dispatchEvent(new MouseEvent('mouseover',{bubbles:true}))`,
+  },
+  {
+    name: '27-overview-hover-dark',
+    route: '#/?a=dark',
+    ...DESKTOP,
+    caption: 'The same hover in the dark appearance.',
+    prepare: `document.querySelector('#map-overview [data-id="UC-SNAPSHOT-EXPLORE"]').dispatchEvent(new MouseEvent('mouseover',{bubbles:true}))`,
+  },
+  {
+    name: '28-focus-dark',
+    route: '#/focus/UC-SNAPSHOT-EXPLORE?a=dark',
+    ...DESKTOP,
+    caption: 'The Focus view in the dark appearance.',
+  },
+  {
+    name: '29-columns-light',
+    route: '#/columns/UC-SNAPSHOT-EXPLORE',
+    ...DESKTOP,
+    caption:
+      'The Columns view, light: one column per kind in the stated order, a selected use case and its neighbourhood lit.',
+  },
+  {
+    name: '30-columns-dark',
+    route: '#/columns/UC-SNAPSHOT-EXPLORE?a=dark',
+    ...DESKTOP,
+    caption: 'The Columns view in the dark appearance.',
+  },
+  {
+    name: '31-lens-focus-light',
+    route: '#/focus/UC-SNAPSHOT-EXPLORE?l=b',
+    ...DESKTOP,
+    caption:
+      'The business lens on a use case: goal, trigger, users, the rules it must obey, how they are proved, and what a change would put in question, with no identifiers.',
+  },
+  {
+    name: '32-lens-focus-dark',
+    route: '#/focus/UC-CHANGE?a=dark&l=b',
+    ...DESKTOP,
+    caption: 'The business lens in the dark appearance, on another use case.',
+  },
+  {
+    name: '33-lens-reader',
+    route: '#/artifacts/UC-SNAPSHOT-EXPLORE?l=b',
+    ...DESKTOP,
+    caption: 'The business card joins the Reader when the lens is on.',
+  },
+  {
+    name: '34-overview-narrow',
+    route: '#/',
+    ...NARROW,
+    caption: 'The Overview map at a phone width: the map fits, pans and pinches.',
+  },
+  {
+    name: '35-map-no-colour',
+    route: '#/columns/BR-CANONICAL',
+    ...DESKTOP,
+    caption:
+      'Without colour: kind by column heading and icon, the selection by outline, the lit neighbourhood by border weight and dimming.',
+    prepare: `document.documentElement.style.filter = 'grayscale(1)'`,
   },
 ];
 
