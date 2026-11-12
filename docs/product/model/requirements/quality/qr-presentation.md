@@ -17,7 +17,8 @@ verification:
   - scenario: On the map views, the artifact under the reader's attention and its direct neighbours, and the relationship lines between them, may be lit with a neon glow in their kind colours while the rest dims, in both appearances; the glow is a transient state and never the only signal of it
   - scenario: Artifact kind, relationship direction, status and selection are each conveyed by text, shape or position and never by colour alone
   - scenario: Information density is high enough that orientation, the artifact list and one artifact's identity and relationships are legible together on an ordinary desktop viewport without decorative whitespace displacing content
-  - scenario: Every property above is confirmed by inspecting the rendered page in a browser, in both appearances, and recorded as screenshots at desktop and narrow viewports
+  - scenario: On a phone-width viewport the header fits in one row with the views and display options one tap away, text and controls are of a size read and touched without zooming, maps open with their labels at full size, and nothing scrolls sideways
+  - scenario: Every property above is confirmed by inspecting the rendered page in a browser, in both appearances, and recorded as screenshots at desktop, narrow and phone viewports
 ---
 
 ## Requirement
@@ -36,6 +37,8 @@ The generated Product Explorer MUST present itself as a precise, calm engineerin
 
 **Density.** The interface MUST be compact. Orientation, the artifact list, and the selected artifact's identity and relationships MUST be legible together on an ordinary desktop viewport without decorative whitespace displacing content that the reader needs.
 
+**Phone.** On a viewport as narrow as a phone, the page MUST be read without zooming. The header MUST fit in one row, keeping the title and search visible and putting the views and display options one tap away. Text and controls MUST be of a size a reader reads and touches comfortably. Maps MUST open with their labels at full size, as FR-EXPLORER-PROJECTIONS and FR-EXPLORER-TOPOLOGY require, and no view MAY scroll sideways.
+
 **Neon highlight.** On the map views FR-EXPLORER-PROJECTIONS defines, the artifact the reader is hovering, has keyboard focus on or has selected, together with its direct neighbours and the relationship lines between them, MAY be lit with a neon glow drawn in each artifact's kind colour, while everything else dims. The highlight MUST be designed for each appearance — luminous on the dark surface, and crisp rather than washed out on the light one — and MUST keep every lit text at the contrast QR-ACCESSIBILITY requires. It is a transient state of attention, not decoration: it MUST NOT appear on content no one is attending to, and it MUST NOT be the only signal of what is lit, which is also conveyed by an outline or border weight and by the dimming of everything else.
 
 **Prohibited treatments.** Apart from the neon highlight above, the page MUST NOT use gradients, glass or blur effects, decorative illustration, oversized hero typography, or a generic rounded-card dashboard treatment of its content.
@@ -44,7 +47,7 @@ These properties are product obligations about the reading experience, not a sty
 
 ## Measurement
 
-Measured by inspecting the rendered page in a browser, at a desktop viewport and at a narrow viewport, in each appearance, for a Product Explorer generated from the current ProductShape model and for one generated from a materially larger model containing high-degree artifacts, isolated artifacts and long titles and bodies. Each measure below is a count with a target of zero, and the inspection is recorded as screenshots so a later regression is comparable against the same evidence.
+Measured by inspecting the rendered page in a browser, at a desktop viewport, at a narrow viewport and at a phone viewport 390 CSS pixels wide, in each appearance, for a Product Explorer generated from the current ProductShape model and for one generated from a materially larger model containing high-degree artifacts, isolated artifacts and long titles and bodies. Each measure below is a count with a target of zero, and the inspection is recorded as screenshots so a later regression is comparable against the same evidence.
 
 - **Appearance.** Open the page with the reader's environment expressing a light preference and again expressing a dark preference, with no choice in the address; then choose each option of the appearance control. Measure: the count of openings that do not render the preferred appearance, the count of choices that do not render the chosen appearance, the count of appearance controls beyond one, and the count of elements whose colour belongs to the other appearance.
 - **Persistence.** After choosing an appearance, inspect browser storage and cookies and reopen the page without the address. Measure: the count of places the choice was remembered outside the address.
@@ -55,6 +58,7 @@ Measured by inspecting the rendered page in a browser, at a desktop viewport and
 - **Kind icons.** Enumerate every place a kind is shown. Measure: the count without its icon, the count where an icon stands without its text token, and the count of kinds whose icon differs between places.
 - **Colour independence.** Render with colour removed. Measure: the count of the four meanings — kind, relationship direction, status, selection — no longer determinable. Shares its procedure with QR-ACCESSIBILITY.
 - **Density.** At an ordinary desktop viewport, record whether orientation, the artifact list, and the selected artifact's identity and relationships are legible together without scrolling past decorative space. Measure: the count of those three that are not.
+- **Phone.** At the phone viewport, with no zoom gesture, open every view. Measure: the count of header controls cut off or wrapped beyond one row while the menu is closed, plus the count of interface text runs rendered smaller than 11 CSS pixels outside the maps, plus the count of controls smaller than 40 CSS pixels in their shorter dimension, plus the count of maps whose artifact labels open drawn below their full size, plus the count of views that scroll sideways.
 - **Neon highlight.** On each map view, in each appearance, light an artifact by hover, by keyboard focus and by selection. Measure: the count of lit states whose lit text fails AA contrast, plus the count of glows present on artifacts no one is attending to, plus the count of lit states not also conveyed by an outline or border weight and by dimming.
 - **Prohibited treatments.** Inspect the rendered page for gradients, glass or blur effects other than the neon highlight, decorative illustration, hero-scale typography, and content enclosed in rounded cards in a dashboard arrangement. Measure: the count of occurrences.
 
@@ -70,4 +74,5 @@ Measured by inspecting the rendered page in a browser, at a desktop viewport and
 - At a desktop viewport, orientation, the artifact list and the selected artifact's identity and relationships are all legible without decorative space displacing them; at a narrow viewport the layout adapts as FR-EXPLORER-READER requires and remains compact rather than sparse.
 - Each map view is inspected in both appearances with an artifact lit: the glow reads as intended on each surface, lit text keeps AA contrast, and the lit state is also visible with colour removed.
 - The rendered page is searched for gradients, glass or blur effects other than the neon highlight, decorative illustration, hero-scale typography and rounded-card dashboard treatment. None is present.
-- Screenshots at both viewports, in both appearances, for both representative models, are recorded alongside the measures, so the presentation this requirement describes is evidenced rather than asserted.
+- At a phone viewport every view is opened without zooming: the header is one row with the views one tap away, text and controls are comfortable, maps open at full label size, and nothing scrolls sideways.
+- Screenshots at desktop, narrow and phone viewports, in both appearances, for both representative models, are recorded alongside the measures, so the presentation this requirement describes is evidenced rather than asserted.

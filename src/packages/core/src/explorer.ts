@@ -750,6 +750,14 @@ dl.keys dd { margin: 0; }
   .mcard { left: 0.5rem; right: 0.5rem; bottom: 0.5rem; width: auto; max-height: 40vh; padding: 0.55rem 0.8rem 0.65rem; }
   #mcard { padding-right: 2.9rem; }
   .mcard .cardfold { display: inline-flex; }
+  /* The Reader's bar stays in reach while the artifact scrolls; its tools become icons. */
+  .detail { padding-top: 0; }
+  .rbar {
+    position: sticky; top: 0; z-index: 4; margin: 0 -1rem 0.85rem; padding: 0.45rem 1rem;
+    background: var(--bg);
+  }
+  .rbar .tbtn { min-width: 2.6rem; justify-content: center; }
+  .rbar .tbtn .lbl { display: none; }
   .mcard[data-folded] { max-height: none; }
   .mcard[data-folded] > :not(.idline):not(.chead):not(.ctitle):not(.cardfold) { display: none; }
   .mcard[data-folded] h3.ctitle { margin-bottom: 0; }
@@ -1598,7 +1606,8 @@ const script = String.raw`
       b.type = 'button';
       b.setAttribute('data-step', String(delta));
       if (glyph === 'prev') b.appendChild(icon('prev'));
-      b.appendChild(doc.createTextNode(label));
+      b.appendChild(el('span', 'lbl', label));
+      b.setAttribute('aria-label', label);
       if (glyph === 'next') b.appendChild(icon('chev'));
       if (target) b.title = label + ': ' + (target.title || target.id) + (delta < 0 ? ' (k)' : ' (j)');
       else b.disabled = true;
@@ -1611,13 +1620,15 @@ const script = String.raw`
     copyId.type = 'button';
     copyId.setAttribute('data-copy', 'id');
     copyId.appendChild(icon('copy'));
-    copyId.appendChild(doc.createTextNode('Copy ID'));
+    copyId.appendChild(el('span', 'lbl', 'Copy ID'));
+    copyId.setAttribute('aria-label', 'Copy ID');
     bar.appendChild(copyId);
     var copyLink = el('button', 'tbtn');
     copyLink.type = 'button';
     copyLink.setAttribute('data-copy', 'link');
     copyLink.appendChild(icon('link'));
-    copyLink.appendChild(doc.createTextNode('Copy link'));
+    copyLink.appendChild(el('span', 'lbl', 'Copy link'));
+    copyLink.setAttribute('aria-label', 'Copy link');
     bar.appendChild(copyLink);
     var toFocus = doc.createElement('a');
     toFocus.className = 'tbtn';
@@ -1625,7 +1636,8 @@ const script = String.raw`
     toFocus.setAttribute('data-focus', a.id);
     toFocus.title = 'Open the Focus view on ' + a.id + ' (f)';
     toFocus.appendChild(icon('focus'));
-    toFocus.appendChild(doc.createTextNode('Focus'));
+    toFocus.appendChild(el('span', 'lbl', 'Focus'));
+    toFocus.setAttribute('aria-label', 'Focus');
     bar.appendChild(toFocus);
     host.appendChild(bar);
 
@@ -1838,6 +1850,11 @@ const script = String.raw`
   ['overview', 'focus', 'columns'].forEach(function (name) {
     maps[name] = { name: name, view: doc.getElementById('map-' + name), plane: null, svg: null, cam: { x: 0, y: 0, k: 1 }, w: 0, h: 0, rects: {}, els: {}, edges: [], key: null, att: null, roving: null, dragged: false };
   });
+  /* A phone: maps lay themselves out for the width there, at full label size (FR-EXPLORER-PROJECTIONS). */
+  var PHONE_QUERY = '(max-width: 40rem)';
+  var isPhone = function () {
+    return typeof window.matchMedia === 'function' && window.matchMedia(PHONE_QUERY).matches;
+  };
   var resetPlane = function (m, w, h) {
     clear(m.view);
     m.plane = el('div', 'plane');
@@ -1875,7 +1892,28 @@ const script = String.raw`
     var kx = (size.w - 2 * pad) / Math.max(1, f.w);
     var ky = (size.h - 2 * pad - 28) / Math.max(1, f.h);
     var k;
-    if (m.name === 'columns') {
+    var box = m.view.parentNode;
+    if (m.name === 'overview' && box && box.style) {
+      box.style.height = '';
+      m.view.style.touchAction = '';
+    }
+    if (isPhone() && m.name === 'columns') {
+      /* One column across the width, at the selection's column, otherwise the first. */
+      k = Math.max(0.6, Math.min(1.15, (size.w - 2 * pad) / CBOX_W));
+      var at = state.id && m.rects[state.id] ? m.rects[state.id].x : f.x;
+      m.cam = { x: pad - at * k, y: pad + 18 - f.y * k, k: k };
+    } else if (isPhone()) {
+      /* Fit the width at no more than full size, from the top; the reader pans down. */
+      k = Math.max(0.6, Math.min(1, kx));
+      /* Below the zoom controls, so they never cover the first box. */
+      m.cam = { x: Math.max(pad, (size.w - f.w * k) / 2) - f.x * k, y: pad + 34 - f.y * k, k: k };
+      if (m.name === 'overview') {
+        /* The stacked Overview is as tall as its drawing, so the page scrolls past it naturally;
+           a vertical swipe scrolls, a sideways drag still pans. */
+        if (box && box.style) box.style.height = Math.ceil(pad + 34 + f.h * k + pad) + 'px';
+        m.view.style.touchAction = 'pan-y';
+      }
+    } else if (m.name === 'columns') {
       k = Math.max(0.45, Math.min(1, kx));
       m.cam = { x: Math.max(pad, (size.w - f.w * k) / 2) - f.x * k, y: pad + 18 - f.y * k, k: k };
     } else {
@@ -2334,14 +2372,16 @@ const script = String.raw`
 
   var buildOverviewMap = function () {
     var m = maps.overview;
-    if (!m.view || m.key === 'built') return false;
-    m.key = 'built';
+    var phone = isPhone();
+    var builtKey = 'built|' + (phone ? 'phone' : 'wide');
+    if (!m.view || m.key === builtKey) return false;
+    m.key = builtKey;
     var tiles = [];
     var area = 0;
     for (var k = 0; k < COLUMNS.length; k += 1) {
       var kind = COLUMNS[k];
       var n = orderByKind[kind].length;
-      var cols = Math.max(1, Math.min(8, Math.round(Math.sqrt(n))));
+      var cols = Math.max(1, Math.min(phone ? 2 : 8, Math.round(Math.sqrt(n))));
       var blocks = blocksOf(kind);
       var grouped = hasOwn(CONTEXT_REL, kind);
       var h = TILE_HEAD;
@@ -2356,7 +2396,8 @@ const script = String.raw`
        arrangement does not depend on the viewport; the camera fits it to whatever screen it meets. */
     var widest = 0;
     for (var t0 = 0; t0 < tiles.length; t0 += 1) widest = Math.max(widest, tiles[t0].w);
-    var target = Math.max(widest, Math.sqrt(area * 3.2));
+    /* On a phone the row target is the widest tile, so the tiles stack in one column. */
+    var target = phone ? widest : Math.max(widest, Math.sqrt(area * 3.2));
     var x = 0;
     var y = 0;
     var rowH = 0;
@@ -2495,12 +2536,89 @@ const script = String.raw`
     if (relText) b.appendChild(el('span', 'rel', relText));
   };
 
+  var focusGroupHead = function (m, group, hr) {
+    var head = el('button', 'fgroup k-' + group.kind);
+    head.type = 'button';
+    head.setAttribute('data-group', group.kind);
+    head.setAttribute('aria-expanded', String(!group.collapsed));
+    head.setAttribute('aria-label', (group.collapsed ? 'Expand ' : 'Collapse ') + (LABELS[group.kind] || group.kind) + ', ' + group.list.length);
+    head.style.left = hr.x + 'px';
+    head.style.top = hr.y + 'px';
+    head.style.width = hr.w + 'px';
+    head.style.height = hr.h + 'px';
+    var chev = el('span', 'chev');
+    chev.appendChild(icon('chev'));
+    head.appendChild(chev);
+    head.appendChild(tokenFor(group.kind));
+    head.appendChild(el('span', 'lbl', LABELS[group.kind] || group.kind));
+    head.appendChild(el('span', 'n', group.list.length));
+    m.plane.appendChild(head);
+  };
+  var focusNeighbourBox = function (m, rel, rect) {
+    var na = byId[rel.id];
+    var b = placeButton(m, 'fbox', rel.id, rect, na.kind);
+    var relText = relationLabel(rel);
+    boxContent(b, na, relText);
+    var more = nbrs[rel.id].length - 1;
+    if (more > 0) {
+      var mo = el('span', 'more', '+' + more);
+      mo.title = more + ' other direct neighbour' + (more === 1 ? '' : 's');
+      b.appendChild(mo);
+    }
+    b.setAttribute('aria-label', (lensOn() ? '' : na.id + ' — ') + (na.title || na.id) + ' (' + (LABELS[na.kind] || na.kind) + '), ' + relText + (more > 0 ? ', ' + more + ' other neighbours' : ''));
+  };
+  var focusCentreBox = function (m, id, centre, rect, count) {
+    var cb = placeButton(m, 'fbox centre', id, rect, centre.kind);
+    boxContent(cb, centre, null);
+    cb.setAttribute('aria-label', (lensOn() ? '' : id + ' — ') + (centre.title || id) + ' (' + (LABELS[centre.kind] || centre.kind) + '), the focus, ' + count + ' direct neighbours. Enter opens it in the Reader.');
+  };
+  var PHONE_W = 300;
+  var SPINE = 14;
+  var drawPhoneFocus = function (m, id, centre, rels, groups, heightOf) {
+    var H = CENTRE_H + 28 + heightOf(groups);
+    var ox = SPINE + 8;
+    resetPlane(m, ox + PHONE_W + 8, H + 8);
+    m.fit = { x: 0, y: 0, w: ox + PHONE_W + 8, h: H + 8 };
+    var cRect = { x: ox, y: 0, w: PHONE_W, h: CENTRE_H };
+    var placed = [];
+    var gy = CENTRE_H + 28;
+    for (var g = 0; g < groups.length; g += 1) {
+      var group = groups[g];
+      var hr = { x: ox, y: gy, w: PHONE_W, h: FHEAD };
+      focusGroupHead(m, group, hr);
+      gy += FHEAD + 6;
+      for (var gm = 0; gm < group.list.length; gm += 1) {
+        if (group.collapsed) {
+          placed.push({ rel: group.list[gm], rect: hr, box: false });
+          continue;
+        }
+        placed.push({ rel: group.list[gm], rect: { x: ox, y: gy, w: PHONE_W, h: FBOX_H }, box: true });
+        gy += FBOX_H + FBOX_GAP;
+      }
+      gy += FGROUP_GAP;
+    }
+    var sx = ox - SPINE;
+    var from = cRect.y + cRect.h / 2;
+    for (var p = 0; p < placed.length; p += 1) {
+      var other = byId[placed[p].rel.id];
+      var r = placed[p].rect;
+      var d = 'M ' + ox + ' ' + from + ' H ' + sx + ' V ' + (r.y + r.h / 2) + ' H ' + r.x;
+      var path = svgEl('path', { d: d, class: 'k-' + other.kind });
+      m.svg.appendChild(path);
+      m.edges.push({ id: other.id, path: path });
+    }
+    for (var q = 0; q < placed.length; q += 1) if (placed[q].box) focusNeighbourBox(m, placed[q].rel, placed[q].rect);
+    focusCentreBox(m, id, centre, cRect, rels.length);
+    renderTrail();
+  };
+
   var buildFocusView = function () {
     var m = maps.focus;
     var id = state.id;
     var centre = byId[id];
     if (!m.view || !centre) return false;
-    var key = id + '|' + (state.cat.x || '') + '|' + (state.cat.l || '');
+    var phone = isPhone();
+    var key = id + '|' + (state.cat.x || '') + '|' + (state.cat.l || '') + '|' + (phone ? 'phone' : 'wide');
     if (m.key === key) return false;
     var refocused = !m.key || m.key.split('|')[0] !== id;
     m.key = key;
@@ -2518,11 +2636,20 @@ const script = String.raw`
       if (members.length === 0) continue;
       (k < cc ? sides.left : sides.right).push({ kind: kind, list: members, collapsed: groupCollapsed(kind, members.length) });
     }
+    if (phone) {
+      /* One column: the focus on top, its groups beneath it in the Columns order, every neighbour
+         joined to it by an elbow from a spine at the left. No background marks. */
+      sides = { left: [], right: sides.left.concat(sides.right) };
+    }
     var heightOf = function (groups) {
       var h = 0;
       for (var g = 0; g < groups.length; g += 1) h += FHEAD + 6 + (groups[g].collapsed ? 0 : groups[g].list.length * (FBOX_H + FBOX_GAP)) + FGROUP_GAP;
       return groups.length > 0 ? h - FGROUP_GAP : 0;
     };
+    if (phone) {
+      drawPhoneFocus(m, id, centre, rels, sides.right, heightOf);
+      return refocused;
+    }
     var H = Math.max(heightOf(sides.left), heightOf(sides.right), CENTRE_H + 40);
     var LX = 0;
     var CX = FBOX_W + SIDE_GAP;
@@ -2581,22 +2708,7 @@ const script = String.raw`
       for (var g = 0; g < groups.length; g += 1) {
         var group = groups[g];
         var hr = { x: gx, y: gy, w: FBOX_W, h: FHEAD };
-        var head = el('button', 'fgroup k-' + group.kind);
-        head.type = 'button';
-        head.setAttribute('data-group', group.kind);
-        head.setAttribute('aria-expanded', String(!group.collapsed));
-        head.setAttribute('aria-label', (group.collapsed ? 'Expand ' : 'Collapse ') + (LABELS[group.kind] || group.kind) + ', ' + group.list.length);
-        head.style.left = hr.x + 'px';
-        head.style.top = hr.y + 'px';
-        head.style.width = hr.w + 'px';
-        head.style.height = hr.h + 'px';
-        var chev = el('span', 'chev');
-        chev.appendChild(icon('chev'));
-        head.appendChild(chev);
-        head.appendChild(tokenFor(group.kind));
-        head.appendChild(el('span', 'lbl', LABELS[group.kind] || group.kind));
-        head.appendChild(el('span', 'n', group.list.length));
-        m.plane.appendChild(head);
+        focusGroupHead(m, group, hr);
         gy += FHEAD + 6;
         for (var gm = 0; gm < group.list.length; gm += 1) {
           if (group.collapsed) {
@@ -2617,24 +2729,8 @@ const script = String.raw`
       m.svg.appendChild(path);
       m.edges.push({ id: other.id, path: path });
     }
-    for (var q = 0; q < placed.length; q += 1) {
-      if (!placed[q].box) continue;
-      var rel = placed[q].rel;
-      var na = byId[rel.id];
-      var b = placeButton(m, 'fbox', rel.id, placed[q].rect, na.kind);
-      var relText = relationLabel(rel);
-      boxContent(b, na, relText);
-      var more = nbrs[rel.id].length - 1;
-      if (more > 0) {
-        var mo = el('span', 'more', '+' + more);
-        mo.title = more + ' other direct neighbour' + (more === 1 ? '' : 's');
-        b.appendChild(mo);
-      }
-      b.setAttribute('aria-label', (lensOn() ? '' : na.id + ' — ') + (na.title || na.id) + ' (' + (LABELS[na.kind] || na.kind) + '), ' + relText + (more > 0 ? ', ' + more + ' other neighbours' : ''));
-    }
-    var cb = placeButton(m, 'fbox centre', id, cRect, centre.kind);
-    boxContent(cb, centre, null);
-    cb.setAttribute('aria-label', (lensOn() ? '' : id + ' — ') + (centre.title || id) + ' (' + (LABELS[centre.kind] || centre.kind) + '), the focus, ' + rels.length + ' direct neighbours. Enter opens it in the Reader.');
+    for (var q = 0; q < placed.length; q += 1) if (placed[q].box) focusNeighbourBox(m, placed[q].rel, placed[q].rect);
+    focusCentreBox(m, id, centre, cRect, rels.length);
     renderTrail();
     return refocused;
   };
@@ -2681,7 +2777,7 @@ const script = String.raw`
 
   var buildColumnsView = function () {
     var m = maps.columns;
-    var key = 'built|' + (state.cat.l || '');
+    var key = 'built|' + (state.cat.l || '') + '|' + (isPhone() ? 'phone' : 'wide');
     if (!m.view || m.key === key) return false;
     m.key = key;
     var placedAt = [];
@@ -3547,6 +3643,35 @@ const script = String.raw`
         if (heading) detailHost.scrollTop = Math.max(0, heading.offsetTop - 12);
       }
     });
+
+    /* On a phone a horizontal swipe across the artifact steps through the list, as the buttons do.
+       A vertical scroll, a slow drag or a swipe that starts in sideways-scrolling content does not. */
+    var swipe = null;
+    var scrollsSideways = function (node) {
+      for (var n = node; n && n !== detailHost; n = n.parentElement) {
+        if (n.scrollWidth > n.clientWidth + 1) return true;
+      }
+      return false;
+    };
+    detailHost.addEventListener(
+      'touchstart',
+      function (ev) {
+        swipe = null;
+        if (!isPhone() || state.view !== 'artifacts' || !state.id || ev.touches.length !== 1) return;
+        var target = ev.target instanceof Element ? ev.target : null;
+        if (target && scrollsSideways(target)) return;
+        swipe = { x: ev.touches[0].clientX, y: ev.touches[0].clientY, t: Date.now() };
+      },
+      { passive: true },
+    );
+    detailHost.addEventListener('touchend', function (ev) {
+      if (!swipe || ev.changedTouches.length < 1) return;
+      var dx = ev.changedTouches[0].clientX - swipe.x;
+      var dy = ev.changedTouches[0].clientY - swipe.y;
+      var quick = Date.now() - swipe.t < 600;
+      swipe = null;
+      if (quick && Math.abs(dx) > 60 && Math.abs(dx) > 2 * Math.abs(dy)) stepTo(dx < 0 ? 1 : -1);
+    });
   }
 
   for (var mapName in maps) if (hasOwn(maps, mapName)) wireMap(maps[mapName]);
@@ -3559,7 +3684,11 @@ const script = String.raw`
   }
   window.addEventListener('resize', function () {
     var m = activeMap();
-    if (m && m.plane) fitMap(m);
+    if (!m || !m.plane) return;
+    /* Crossing the phone boundary changes the layout; the build key notices and redraws once. */
+    var before = m.key;
+    syncMap(true);
+    if (m.key === before) fitMap(m);
   });
 
   var appearance = doc.querySelectorAll('[data-appearance-set]');

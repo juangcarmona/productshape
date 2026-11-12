@@ -11,6 +11,7 @@ verification:
   - scenario: Each neighbour shows its kind, identifier, title, the relationship types connecting it to the focus with their direction, and the count of its own other relationships
   - scenario: Each kind group is headed by its name and complete count and can be collapsed and expanded; a group too large to draw legibly starts collapsed, and nothing collapsed is silently omitted
   - scenario: The rest of the model appears as a faded background in which every other artifact remains individually selectable
+  - scenario: On a phone-width viewport the focus sits at the top with its kind groups stacked beneath it in the Columns order, every drawn neighbour still joined to it by a line, the labels at their full size, and the faded background left out
   - scenario: Choosing a neighbour or a background artifact refocuses the view on it; the view never accumulates the traversal
   - scenario: A breadcrumb shows the artifacts recently focused in this visit, each one step from becoming the focus again, and browser Back returns to the previous focus
   - scenario: The focus is addressable, so opening the address of a Focus view opens that view on that artifact
@@ -29,6 +30,8 @@ The focus MUST be the page's selected artifact, drawn at the centre. Its direct 
 Each kind group MUST be headed by the kind's name and the complete count of its members, and MUST be collapsible and expandable by the reader. A group too large to draw legibly MUST start collapsed, showing its count; collapsed content is never silently omitted, and expanding a group changes nothing else. The reader's explicit expansions and collapses are disclosure state, carried in the address as FR-EXPLORER-ADDRESSING defines.
 
 Every artifact that is neither the focus nor one of its neighbours MUST appear as a faded background mark that names its artifact to assistive technology and on hover, and that the reader can select. Choosing a neighbour or a background mark MUST make that artifact the new focus; the view MUST NOT accumulate the traversal. A breadcrumb MUST show the artifacts recently focused during this visit, each one step from becoming the focus again, and browser Back MUST return to the previous focus. The breadcrumb is reader state for the open page and is not persisted.
+
+On a viewport as narrow as a phone, the two sides do not fit beside the focus at a legible size. There the focus MUST be drawn at the top, its kind groups MUST be stacked beneath it in the Columns order, each drawn neighbour MUST still be joined to the focus by a line, and labels MUST be drawn at their full size. The faded background MUST NOT be drawn on such a viewport, because its marks are too small to read or select there; every artifact it would show remains reachable through the Overview map, the Catalog, search and deep links.
 
 The Focus view MUST be one step from the Reader on the same artifact, and the Reader MUST offer a Focus action that opens the Focus view on the artifact it shows. Every neighbour the view shows or counts MUST remain reachable through the Reader, the Catalog, search and deep links.
 

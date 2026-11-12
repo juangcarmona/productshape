@@ -293,6 +293,33 @@ const shots: Shot[] = [
     prepare: `document.querySelector('#mcard .cardfold').click()`,
   },
   {
+    name: '39-phone-overview',
+    route: '#/',
+    ...PHONE,
+    caption: 'The Overview map on a phone: kind regions stacked in one column at full label size.',
+    prepare: `document.getElementById('view-overview').scrollTop = 400`,
+  },
+  {
+    name: '40-phone-focus',
+    route: '#/focus/UC-EXPLORER-BROWSE',
+    ...PHONE,
+    caption:
+      'The Focus view on a phone: the focus on top, its groups stacked beneath, one line per neighbour.',
+  },
+  {
+    name: '41-phone-columns',
+    route: '#/columns/BR-CANONICAL',
+    ...PHONE,
+    caption: 'The Columns view on a phone opens on the selection’s column across the width.',
+  },
+  {
+    name: '42-phone-reader-scrolled',
+    route: '#/artifacts/UC-EXPLORER-BROWSE',
+    ...PHONE,
+    caption: 'The Reader on a phone, scrolled: back, previous and next stay within reach.',
+    prepare: `document.getElementById('detail').scrollTop = 700`,
+  },
+  {
     name: '35-map-no-colour',
     route: '#/columns/BR-CANONICAL',
     ...DESKTOP,

@@ -776,6 +776,73 @@ describe('the embedded application', () => {
     expect(doc.body.getAttribute('data-pane')).toBe('detail');
   });
 
+  it('stacks the Focus view on a phone: focus on top, one line per neighbour, no background', () => {
+    loadPhone('#/focus/UC-A');
+    const plane = doc.querySelector('#map-focus .plane') as HTMLElement;
+    const top = (node: Element) => parseFloat((node as HTMLElement).style.top);
+    const left = (node: Element) => parseFloat((node as HTMLElement).style.left);
+    const centre = plane.querySelector('.fbox.centre') as HTMLElement;
+    const boxes = [...plane.querySelectorAll('.fbox:not(.centre)')];
+    const heads = [...plane.querySelectorAll('.fgroup')];
+    expect(boxes.length).toBeGreaterThan(0);
+    for (const node of [...boxes, ...heads]) {
+      expect(top(node)).toBeGreaterThan(top(centre));
+      expect(left(node)).toBe(left(centre));
+    }
+    const groupTops = heads.map(top);
+    expect([...groupTops].sort((a, b) => a - b)).toEqual(groupTops);
+    expect(plane.querySelectorAll('.dot').length).toBe(0);
+    // Every drawn neighbour has exactly one line; UC-A has no collapsed group here.
+    expect(plane.querySelectorAll('svg.edges path').length).toBe(boxes.length);
+  });
+
+  it('keeps the wide Focus view, with its background, off a phone', () => {
+    navigate('#/focus/UC-A');
+    expect(doc.querySelectorAll('#map-focus .dot').length).toBeGreaterThan(0);
+  });
+
+  it('stacks the Overview regions in one column on a phone, at most two chips wide', () => {
+    loadPhone('#/');
+    const tiles = [...doc.querySelectorAll('#map-overview .tile')] as HTMLElement[];
+    expect(tiles.length).toBeGreaterThan(1);
+    for (const tile of tiles) expect(parseFloat(tile.style.left)).toBe(0);
+    const tops = tiles.map((tile) => parseFloat(tile.style.top));
+    expect(new Set(tops).size).toBe(tiles.length);
+    const chipLefts = new Set(
+      [...doc.querySelectorAll('#map-overview .mchip')].map((c) => (c as HTMLElement).style.left),
+    );
+    expect(chipLefts.size).toBeLessThanOrEqual(2);
+  });
+
+  const touch = (type: string, x: number, y: number): void => {
+    const host = doc.getElementById('detail') as HTMLElement;
+    const ev = new dom.window.Event(type, { bubbles: true });
+    const point = [{ clientX: x, clientY: y }];
+    Object.defineProperty(ev, 'touches', { value: type === 'touchstart' ? point : [] });
+    Object.defineProperty(ev, 'changedTouches', { value: point });
+    host.dispatchEvent(ev);
+  };
+
+  it('steps through the list on a horizontal swipe on a phone, and not on a vertical one', () => {
+    loadPhone('#/artifacts/UC-A');
+    const start = dom.window.location.hash;
+    touch('touchstart', 300, 400);
+    touch('touchend', 290, 200);
+    expect(dom.window.location.hash).toBe(start);
+    touch('touchstart', 300, 400);
+    touch('touchend', 120, 410);
+    expect(dom.window.location.hash).not.toBe(start);
+    expect(dom.window.location.hash.startsWith('#/artifacts/')).toBe(true);
+  });
+
+  it('does not step on a swipe off a phone', () => {
+    navigate('#/artifacts/UC-A');
+    const start = dom.window.location.hash;
+    touch('touchstart', 300, 400);
+    touch('touchend', 120, 410);
+    expect(dom.window.location.hash).toBe(start);
+  });
+
   it('folds the map summary to its title and back', () => {
     navigate('#/focus/UC-A');
     const card = doc.getElementById('mcard') as HTMLElement;
