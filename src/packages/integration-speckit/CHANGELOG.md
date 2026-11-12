@@ -1,5 +1,13 @@
 # @prodshape/integration-speckit
 
+## 0.4.8
+
+### Patch Changes
+
+- Updated dependencies [8bd18c9]
+- Updated dependencies [6976836]
+  - @prodshape/core@0.28.0
+
 ## 0.4.7
 
 ### Patch Changes
