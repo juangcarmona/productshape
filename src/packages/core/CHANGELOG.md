@@ -1,5 +1,24 @@
 # @prodshape/core
 
+## 0.28.0
+
+### Minor Changes
+
+- 6976836: The Product Explorer's maps and Reader are readable on a phone (CHG-EXPLORER-PHONE). At 40rem wide or narrower:
+
+  - **Overview map:** stacks its kind regions in one column at full label size, and the page scrolls past it.
+  - **Columns view:** opens on the selected artifact's column, across the width.
+  - **Focus view:** stacks its groups beneath the focus, each neighbour joined by one line, without the faded background.
+  - **Fit control:** fits the width.
+  - **Boxes:** in the Focus view and the Reader's metadata, boxes name an artifact by its kind and title without repeating its identifier. The identifier stays in the accessible name, the summary card and the Reader's heading.
+  - **Reader:** keeps back, previous and next in a bar that stays at the top while the artifact scrolls, and a horizontal swipe steps to the next or previous artifact.
+
+  Wider viewports are unchanged.
+
+### Patch Changes
+
+- 8bd18c9: The Product Explorer is usable on a phone. Below 40rem the header keeps the title, search and a menu button, and the views, business lens and appearance open beneath it on request. Text and controls grow to a comfortable reading and touch size, and the maps keep their pixel scale. A page opened on a phone without an address starts on the artifact catalog, and every address, including `#/` for the Overview, is honoured. The map summary card can be folded to its title so it does not hide the map.
+
 ## 0.27.0
 
 ### Minor Changes
