@@ -53,7 +53,7 @@ The single generated file SHALL contain every product artifact — its frontmatt
 
 Completeness is a property of the file, not of the display: all artifacts are embedded, and none but the selected one is rendered.
 
-<!-- pdac:cite id="FR-EXPLORER-READER" digest="sha256:5ff243cfe4df8145c5d35226a2dc361c7ca7aa637917f2ecc9aee44a91b75c04" -->
+<!-- pdac:cite id="FR-EXPLORER-READER" digest="sha256:32c1e6cfffebf8fefb15994e1b61b25f877f1ad5dbf19f569b25c1e31c8c1e41" -->
 
 #### Scenario: Browse by kind and select one artifact
 
@@ -197,7 +197,7 @@ The orientation view SHALL draw the Overview map from the embedded data at open:
 
 The Focus view SHALL draw the selected artifact at the centre and each direct neighbour as a box naming its kind, identifier, title, the relationship types joining it to the focus with their direction as text (`governed-by →`, `← derived-from`), and the count of its other neighbours. Neighbours SHALL be grouped by kind under a collapsible heading stating the exact count; kinds before the focus's kind in the Columns order SHALL sit on the left and the focus's kind and later kinds on the right. A group of more than twelve SHALL start collapsed; the kinds whose disclosure the reader flipped SHALL be carried in the address (`x`), replacing the history entry. Every other artifact SHALL be drawn as a faded, selectable background mark placed by a seeded shuffle of a ring of slots. Choosing a neighbour or mark SHALL refocus; the focus SHALL take keyboard focus; a breadcrumb SHALL list the artifacts focused in this visit. Enter on the centre SHALL open it in the Reader, and the Reader SHALL offer a Focus action. Routes earlier Product Explorer pages produced for a focused projection (`#/graph/focus/ID`) SHALL resolve to the Focus view in place.
 
-<!-- pdac:cite id="FR-EXPLORER-TOPOLOGY" digest="sha256:8509d81d58828ef42f862d8b56403db999bdf66e65fc1aa1288853c6a0a5a66c" -->
+<!-- pdac:cite id="FR-EXPLORER-TOPOLOGY" digest="sha256:015932a604e9ca3a3e74a09a4e48b97c9244a1fe7c128847e8d3abc081498996" -->
 <!-- pdac:cite id="TERM-FOCUSED-TOPOLOGY" digest="sha256:d897b290de2106f0d388c73aec2f12155e9e126dd53198f835eab6f155d69d1f" -->
 
 #### Scenario: Neighbours grouped by kind on fixed sides
@@ -546,7 +546,7 @@ Artifact-selection latency, Overview map drawing, neighbourhood lighting and ope
 
 An artifact's relationships SHALL be presented grouped within each direction, by relationship type and by the artifact kind at the other end, rather than as one undifferentiated list. Every group SHALL state its direction, its relationship type, the kind at the other end and the exact number of relationships it contains, and each direction SHALL state its total. Grouping and ordering SHALL be derived from the compiled graph and SHALL be identical for identical model content.
 
-<!-- pdac:cite id="FR-EXPLORER-READER" digest="sha256:5ff243cfe4df8145c5d35226a2dc361c7ca7aa637917f2ecc9aee44a91b75c04" -->
+<!-- pdac:cite id="FR-EXPLORER-READER" digest="sha256:32c1e6cfffebf8fefb15994e1b61b25f877f1ad5dbf19f569b25c1e31c8c1e41" -->
 
 #### Scenario: Neighbours arrive grouped, not spilled
 
@@ -567,7 +567,7 @@ An artifact's relationships SHALL be presented grouped within each direction, by
 
 A relationship group large enough to overwhelm the view SHALL start collapsed, showing its exact count rather than its members, and SHALL reveal its members only when the reader expands it. Expansion SHALL be operable by keyboard, and the collapsed or expanded state SHALL be exposed to assistive technology as state rather than conveyed only by appearance. A group small enough to read at a glance SHALL be shown expanded, so nothing is hidden without reason.
 
-<!-- pdac:cite id="FR-EXPLORER-READER" digest="sha256:5ff243cfe4df8145c5d35226a2dc361c7ca7aa637917f2ecc9aee44a91b75c04" -->
+<!-- pdac:cite id="FR-EXPLORER-READER" digest="sha256:32c1e6cfffebf8fefb15994e1b61b25f877f1ad5dbf19f569b25c1e31c8c1e41" -->
 
 #### Scenario: A high-degree artifact stays readable
 
@@ -649,7 +649,7 @@ Relationship links on the artifact detail SHALL carry the active catalog state, 
 
 Every identifier of an artifact the model contains, where it appears in the selected artifact's metadata or authored body, SHALL be a link that makes that artifact the new focus and carries the active catalog state; the authored text SHALL otherwise be displayed exactly as written, and an identifier the model does not contain SHALL remain plain text. The detail SHALL offer the previous and the next artifact of the current list in one step each, SHALL state the selected artifact's position within its kind, and SHALL offer to copy the artifact's identifier and the address of the current view.
 
-<!-- pdac:cite id="FR-EXPLORER-READER" digest="sha256:5ff243cfe4df8145c5d35226a2dc361c7ca7aa637917f2ecc9aee44a91b75c04" -->
+<!-- pdac:cite id="FR-EXPLORER-READER" digest="sha256:32c1e6cfffebf8fefb15994e1b61b25f877f1ad5dbf19f569b25c1e31c8c1e41" -->
 
 #### Scenario: Following an edge keeps the discovery
 
@@ -718,7 +718,7 @@ The artifact list SHALL group artifacts by kind in groups the reader can open an
 
 The reader SHALL be able to collapse the master area to a rail of the artifact kinds — each an icon with its text token — through a visible control and a stated shortcut, and to restore it the same ways. The rail SHALL mark the selected artifact's kind by more than colour, and activating a kind on the rail SHALL restore the master area with that kind's group open and in view. While collapsed, the Reader SHALL take the freed width.
 
-<!-- pdac:cite id="FR-EXPLORER-READER" digest="sha256:5ff243cfe4df8145c5d35226a2dc361c7ca7aa637917f2ecc9aee44a91b75c04" -->
+<!-- pdac:cite id="FR-EXPLORER-READER" digest="sha256:32c1e6cfffebf8fefb15994e1b61b25f877f1ad5dbf19f569b25c1e31c8c1e41" -->
 <!-- pdac:cite id="QR-ACCESSIBILITY" digest="sha256:70d2e408d81bf54c938dff3da9f45fd0b7629ed926aeb82a3f2166490a462188" -->
 
 #### Scenario: The selection's group opens and shows the entry
@@ -745,13 +745,13 @@ On a viewport no wider than 40rem, every map SHALL open with its artifact labels
 - The Focus view SHALL draw the focus at the top and its kind groups stacked beneath it in the Columns order, with exactly one line joining each drawn neighbour to the focus. It SHALL draw no background marks.
 - The fit control SHALL fit the width.
 
-Every map interaction (pan, pinch, controls, keys, lighting, the summary card) SHALL be unchanged.
+In the Focus view, a neighbour's box SHALL name it by its kind and title, the title using up to two lines, without repeating its identifier. The identifier SHALL stay in the box's accessible name and in the summary card. Every map interaction (pan, pinch, controls, keys, lighting, the summary card) SHALL be unchanged.
 
-In the Reader, the back, previous and next controls SHALL stay within reach while the artifact scrolls. A horizontal swipe across the artifact SHALL step to the next or previous artifact exactly as those controls do, and a vertical scroll SHALL NOT.
+In the Reader, a reference in the metadata SHALL be named by its kind and title. Its identifier SHALL stay in the reference's accessible name. The back, previous and next controls SHALL stay within reach while the artifact scrolls. A horizontal swipe across the artifact SHALL step to the next or previous artifact exactly as those controls do, and a vertical scroll SHALL NOT.
 
 <!-- pdac:cite id="FR-EXPLORER-PROJECTIONS" digest="sha256:3d907ff7af20caec11d8a18f38e0d03c113697de32fe78b89f74f336bb6e0582" -->
-<!-- pdac:cite id="FR-EXPLORER-TOPOLOGY" digest="sha256:8509d81d58828ef42f862d8b56403db999bdf66e65fc1aa1288853c6a0a5a66c" -->
-<!-- pdac:cite id="FR-EXPLORER-READER" digest="sha256:5ff243cfe4df8145c5d35226a2dc361c7ca7aa637917f2ecc9aee44a91b75c04" -->
+<!-- pdac:cite id="FR-EXPLORER-TOPOLOGY" digest="sha256:015932a604e9ca3a3e74a09a4e48b97c9244a1fe7c128847e8d3abc081498996" -->
+<!-- pdac:cite id="FR-EXPLORER-READER" digest="sha256:32c1e6cfffebf8fefb15994e1b61b25f877f1ad5dbf19f569b25c1e31c8c1e41" -->
 <!-- pdac:cite id="QR-PRESENTATION" digest="sha256:c1ad61f92d09b08c0f85c257f3735c4f6176268672a7cca6e8e56c3fef1ae3e9" -->
 
 #### Scenario: The Focus view stacks on a phone

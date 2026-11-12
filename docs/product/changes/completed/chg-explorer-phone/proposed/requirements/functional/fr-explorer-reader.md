@@ -20,6 +20,7 @@ verification:
   - scenario: The reader's navigation context — how they arrived — remains visible and retraceable from the Reader
   - scenario: Every artifact and every relationship in the compiled model is reachable, including artifacts with no relationships
   - scenario: On a narrow viewport the list and the detail become separate navigable states rather than a compressed desktop layout
+  - scenario: On a phone-width viewport a reference in the metadata is named by its kind and title without repeating its identifier, which stays in its accessible name and in the Reader once it is followed
   - scenario: On a phone-width viewport the previous, next and back-to-list controls stay within reach while the artifact is read, and a horizontal swipe on the artifact steps to the next or previous artifact exactly as those controls do
   - scenario: Authored content containing HTML tags, script tags, quotes and brackets is displayed as text and never parsed as markup or executed, whether rendered from markup or from embedded data
   - scenario: Nothing in the page creates, edits, annotates, approves or persists anything
@@ -35,7 +36,7 @@ The reader's navigation context MUST survive reading: how they arrived — the d
 
 Every artifact and every relationship in the compiled model MUST be reachable through the page. Artifacts with no relationships MUST be reachable and readable, and MUST report the absence of relationships in both directions rather than appearing incomplete. Every artifact MUST display its status.
 
-On viewports too narrow for a side-by-side arrangement, the master and detail MUST become distinct navigable states rather than a scaled-down desktop layout. On a viewport as narrow as a phone, the controls that step to the previous and next artifact and return to the list MUST stay within reach while the reader scrolls through the artifact, and a horizontal swipe across the artifact MUST step to the next or previous artifact exactly as those controls do. A swipe is a shortcut, never the only route.
+On viewports too narrow for a side-by-side arrangement, the master and detail MUST become distinct navigable states rather than a scaled-down desktop layout. On a viewport as narrow as a phone, the controls that step to the previous and next artifact and return to the list MUST stay within reach while the reader scrolls through the artifact, and a horizontal swipe across the artifact MUST step to the next or previous artifact exactly as those controls do. A swipe is a shortcut, never the only route. On such a viewport a reference to another artifact in the selected artifact's metadata MAY be named by its kind and title alone, provided its identifier stays in its accessible name and is shown once the reader follows it.
 
 Authored content MUST NOT be able to become executable or structural: content that reaches the page as rendered markup and content that reaches it as embedded data the page renders at open time MUST both be escaped or otherwise neutralized so that authored HTML, script or attribute sequences are displayed as the text the author wrote. The page MUST offer no capability to create, edit, annotate or approve anything, and MUST NOT persist anything a reader does outside the address of the current view.
 

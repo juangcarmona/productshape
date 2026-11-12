@@ -5,8 +5,8 @@
 Product Change **CHG-EXPLORER-PHONE** has been approved and applied. On a phone, the Product Explorer's maps shrink the whole drawing into the screen and become unreadable. The Focus view is wider than a phone at any legible size. In the Reader, stepping through a list means scrolling back to the top of each artifact. The generator does not yet implement the phone behaviour the requirements now state.
 
 <!-- pdac:cite id="FR-EXPLORER-PROJECTIONS" digest="sha256:3d907ff7af20caec11d8a18f38e0d03c113697de32fe78b89f74f336bb6e0582" -->
-<!-- pdac:cite id="FR-EXPLORER-TOPOLOGY" digest="sha256:8509d81d58828ef42f862d8b56403db999bdf66e65fc1aa1288853c6a0a5a66c" -->
-<!-- pdac:cite id="FR-EXPLORER-READER" digest="sha256:5ff243cfe4df8145c5d35226a2dc361c7ca7aa637917f2ecc9aee44a91b75c04" -->
+<!-- pdac:cite id="FR-EXPLORER-TOPOLOGY" digest="sha256:015932a604e9ca3a3e74a09a4e48b97c9244a1fe7c128847e8d3abc081498996" -->
+<!-- pdac:cite id="FR-EXPLORER-READER" digest="sha256:32c1e6cfffebf8fefb15994e1b61b25f877f1ad5dbf19f569b25c1e31c8c1e41" -->
 <!-- pdac:cite id="QR-PRESENTATION" digest="sha256:c1ad61f92d09b08c0f85c257f3735c4f6176268672a7cca6e8e56c3fef1ae3e9" -->
 
 ## What Changes

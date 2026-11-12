@@ -4,7 +4,7 @@
 
 The three maps share one engine. Each builder lays out a plane in pixels, and `fitMap` places a camera over the plane's fit box. On a phone, the Overview and Focus layouts are designed for a wide screen, and fitting them shrinks every label. The phone header, type size and catalog opening already shipped as a fix (phase 1).
 
-<!-- pdac:cite id="FR-EXPLORER-TOPOLOGY" digest="sha256:8509d81d58828ef42f862d8b56403db999bdf66e65fc1aa1288853c6a0a5a66c" -->
+<!-- pdac:cite id="FR-EXPLORER-TOPOLOGY" digest="sha256:015932a604e9ca3a3e74a09a4e48b97c9244a1fe7c128847e8d3abc081498996" -->
 
 ## Decisions
 

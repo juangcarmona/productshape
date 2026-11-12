@@ -796,6 +796,17 @@ describe('the embedded application', () => {
     expect(plane.querySelectorAll('svg.edges path').length).toBe(boxes.length);
   });
 
+  it('keeps every identifier in the accessible name where a phone shows only the title', () => {
+    navigate('#/focus/UC-A');
+    for (const box of doc.querySelectorAll('#map-focus .fbox:not(.centre)')) {
+      expect(box.getAttribute('aria-label')).toContain(box.getAttribute('data-id') as string);
+    }
+    navigate('#/artifacts/UC-A');
+    const refs = [...doc.querySelectorAll('#detail a.ref')];
+    expect(refs.length).toBeGreaterThan(0);
+    for (const ref of refs) expect(ref.getAttribute('aria-label')).toContain('ACT-A');
+  });
+
   it('keeps the wide Focus view, with its background, off a phone', () => {
     navigate('#/focus/UC-A');
     expect(doc.querySelectorAll('#map-focus .dot').length).toBeGreaterThan(0);
@@ -833,6 +844,25 @@ describe('the embedded application', () => {
     touch('touchend', 120, 410);
     expect(dom.window.location.hash).not.toBe(start);
     expect(dom.window.location.hash.startsWith('#/artifacts/')).toBe(true);
+  });
+
+  it('steps back on a rightward swipe and ignores a second finger', () => {
+    loadPhone('#/artifacts/UC-A');
+    touch('touchstart', 100, 400);
+    touch('touchend', 300, 405);
+    const back = dom.window.location.hash;
+    expect(back).not.toBe('#/artifacts/UC-A');
+    const host = doc.getElementById('detail') as HTMLElement;
+    const ev = new dom.window.Event('touchstart', { bubbles: true });
+    Object.defineProperty(ev, 'touches', {
+      value: [
+        { clientX: 300, clientY: 400 },
+        { clientX: 310, clientY: 400 },
+      ],
+    });
+    host.dispatchEvent(ev);
+    touch('touchend', 100, 400);
+    expect(dom.window.location.hash).toBe(back);
   });
 
   it('does not step on a swipe off a phone', () => {

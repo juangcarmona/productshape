@@ -28,6 +28,7 @@ A Product Stakeholder can open the Product Explorer on a phone and read it witho
 - **Columns view:** opens with one column across the width, and the reader pans sideways to the others.
 - **Focus view:** puts the focus at the top with its kind groups stacked beneath it, each neighbour still joined to it by a line, and leaves out the faded background, whose marks are too small to use there.
 - **Fit control:** fits the width instead of the whole drawing.
+- **Boxes:** the Focus view's neighbour boxes and the Reader's metadata references name an artifact by its kind and title, without repeating its identifier in capitals. The identifier stays in the accessible name, the summary card and the Reader's heading.
 - **Reader:** keeps previous, next and back-to-list within reach while the reader scrolls, and a horizontal swipe steps to the next or previous artifact.
 
 `QR-PRESENTATION` states what "readable on a phone" means, so it can be measured:

@@ -15,14 +15,14 @@
 - [x] 2.5 Make the fit control fit the width on a phone.
 
 <!-- pdac:cite id="FR-EXPLORER-PROJECTIONS" digest="sha256:3d907ff7af20caec11d8a18f38e0d03c113697de32fe78b89f74f336bb6e0582" -->
-<!-- pdac:cite id="FR-EXPLORER-TOPOLOGY" digest="sha256:8509d81d58828ef42f862d8b56403db999bdf66e65fc1aa1288853c6a0a5a66c" -->
+<!-- pdac:cite id="FR-EXPLORER-TOPOLOGY" digest="sha256:015932a604e9ca3a3e74a09a4e48b97c9244a1fe7c128847e8d3abc081498996" -->
 
 ## 3. Reader
 
 - [x] 3.1 Stick the Reader bar to the top of the detail on a phone.
 - [x] 3.2 Step to the next or previous artifact on a horizontal swipe, ignoring vertical scrolls and scrollable content.
 
-<!-- pdac:cite id="FR-EXPLORER-READER" digest="sha256:5ff243cfe4df8145c5d35226a2dc361c7ca7aa637917f2ecc9aee44a91b75c04" -->
+<!-- pdac:cite id="FR-EXPLORER-READER" digest="sha256:32c1e6cfffebf8fefb15994e1b61b25f877f1ad5dbf19f569b25c1e31c8c1e41" -->
 
 ## 4. Verification
 

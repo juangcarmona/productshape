@@ -15,6 +15,7 @@ The supported published CLI baseline is `@prodshape/cli@0.25.0`. Every stable pu
   - the Columns view opens on the selected artifact's column, across the width;
   - the Focus view stacks its groups beneath the focus without the faded background;
   - the fit control fits the width;
+  - boxes in the Focus view and in the Reader's metadata name an artifact by its kind and title, without repeating its identifier;
   - the Reader keeps back, previous and next at the top while the artifact scrolls, and a horizontal swipe steps through the list.
 
   `FR-EXPLORER-PROJECTIONS`, `FR-EXPLORER-TOPOLOGY`, `FR-EXPLORER-READER` and `QR-PRESENTATION` now state this behaviour. Wider viewports are unchanged.

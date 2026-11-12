@@ -741,7 +741,8 @@ dl.keys dd { margin: 0; }
   body[data-menu='open'] header.site .lensbtn .lbl { display: inline; }
   body[data-menu='open'] header.site .seg { grid-column: 1 / -1; justify-self: end; }
   header.site .seg button { min-width: 2.6rem; min-height: 2.6rem; justify-content: center; }
-  .tbtn { min-height: 2.4rem; padding: 0.2rem 0.65rem; font-size: 0.82rem; }
+  .tbtn { min-height: 2.5rem; padding: 0.2rem 0.65rem; font-size: 0.82rem; }
+  .rbar .backlink { display: inline-flex; align-items: center; min-height: 2.5rem; }
   .bigfind, .ovhead .bigfind { height: 2.75rem; font-size: 0.95rem; }
   .ovhead .bigfind kbd, .bigfind kbd { display: none; }
   .tofacts { display: inline-block; padding: 0.4rem 0; }
@@ -758,6 +759,10 @@ dl.keys dd { margin: 0; }
   }
   .rbar .tbtn { min-width: 2.6rem; justify-content: center; }
   .rbar .tbtn .lbl { display: none; }
+  /* Boxes name an artifact by its title; the kind is on the token or icon beside it, and the
+     identifier stays in the accessible name, the summary card and the Reader's own heading. */
+  a.ref .rid, .fbox:not(.centre) .bid { display: none; }
+  .fbox:not(.centre) .bt { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
   .mcard[data-folded] { max-height: none; }
   .mcard[data-folded] > :not(.idline):not(.chead):not(.ctitle):not(.cardfold) { display: none; }
   .mcard[data-folded] h3.ctitle { margin-bottom: 0; }
@@ -1522,6 +1527,7 @@ const script = String.raw`
       ref.appendChild(tokenFor(target.kind));
       ref.appendChild(el('span', 'rt', target.title || target.id));
       ref.appendChild(el('span', 'rid', target.id));
+      ref.setAttribute('aria-label', (target.title || target.id) + ' (' + target.id + ')');
       dd.appendChild(ref);
     }
   };
@@ -1552,6 +1558,10 @@ const script = String.raw`
     var host = doc.getElementById('detail');
     if (!host) return;
     clear(host);
+    if (host.getAttribute('data-shown') !== String(state.id)) {
+      host.scrollTop = 0;
+      host.setAttribute('data-shown', String(state.id));
+    }
 
     if (state.unknown) {
       var box = el('div', 'unknown');
@@ -1886,31 +1896,31 @@ const script = String.raw`
      boxes stay readable however tall the columns grow. */
   var fitMap = function (m) {
     if (!m.plane) return;
-    var size = viewSize(m);
-    var pad = 24;
-    var f = m.fit;
-    var kx = (size.w - 2 * pad) / Math.max(1, f.w);
-    var ky = (size.h - 2 * pad - 28) / Math.max(1, f.h);
-    var k;
     var box = m.view.parentNode;
     if (m.name === 'overview' && box && box.style) {
       box.style.height = '';
       m.view.style.touchAction = '';
     }
+    var size = viewSize(m);
+    var pad = isPhone() ? 16 : 24;
+    var f = m.fit;
+    var kx = (size.w - 2 * pad) / Math.max(1, f.w);
+    var ky = (size.h - 2 * pad - 28) / Math.max(1, f.h);
+    var k;
     if (isPhone() && m.name === 'columns') {
       /* One column across the width, at the selection's column, otherwise the first. */
       k = Math.max(0.6, Math.min(1.15, (size.w - 2 * pad) / CBOX_W));
       var at = state.id && m.rects[state.id] ? m.rects[state.id].x : f.x;
-      m.cam = { x: pad - at * k, y: pad + 18 - f.y * k, k: k };
+      m.cam = { x: pad - at * k, y: pad + 42 - f.y * k, k: k };
     } else if (isPhone()) {
       /* Fit the width at no more than full size, from the top; the reader pans down. */
       k = Math.max(0.6, Math.min(1, kx));
       /* Below the zoom controls, so they never cover the first box. */
-      m.cam = { x: Math.max(pad, (size.w - f.w * k) / 2) - f.x * k, y: pad + 34 - f.y * k, k: k };
+      m.cam = { x: Math.max(pad, (size.w - f.w * k) / 2) - f.x * k, y: pad + 42 - f.y * k, k: k };
       if (m.name === 'overview') {
         /* The stacked Overview is as tall as its drawing, so the page scrolls past it naturally;
            a vertical swipe scrolls, a sideways drag still pans. */
-        if (box && box.style) box.style.height = Math.ceil(pad + 34 + f.h * k + pad) + 'px';
+        if (box && box.style) box.style.height = Math.ceil(pad + 42 + f.h * k + pad) + 'px';
         m.view.style.touchAction = 'pan-y';
       }
     } else if (m.name === 'columns') {
@@ -1920,7 +1930,13 @@ const script = String.raw`
       k = Math.max(0.2, Math.min(m.name === 'focus' ? 1.25 : 1.8, kx, ky));
       m.cam = { x: (size.w - f.w * k) / 2 - f.x * k, y: pad + 22 + Math.max(0, (size.h - 2 * pad - 28 - f.h * k) / 2) - f.y * k, k: k };
     }
+    m.fitK = k;
     applyCam(m);
+  };
+  /* On a phone the Overview lets vertical swipes scroll the page; once zoomed in, the map takes
+     them back so every part of the drawing can still be panned to. */
+  var syncTouch = function (m) {
+    if (m.name === 'overview' && isPhone()) m.view.style.touchAction = m.cam.k > (m.fitK || 0) + 0.01 ? 'none' : 'pan-y';
   };
   var zoomAt = function (m, px, py, factor) {
     var k = Math.max(0.12, Math.min(4, m.cam.k * factor));
@@ -1930,6 +1946,7 @@ const script = String.raw`
     m.cam.x = px - wx * k;
     m.cam.y = py - wy * k;
     applyCam(m);
+    syncTouch(m);
   };
   var zoomCentre = function (m, factor) {
     var size = viewSize(m);
@@ -2572,7 +2589,7 @@ const script = String.raw`
     boxContent(cb, centre, null);
     cb.setAttribute('aria-label', (lensOn() ? '' : id + ' — ') + (centre.title || id) + ' (' + (LABELS[centre.kind] || centre.kind) + '), the focus, ' + count + ' direct neighbours. Enter opens it in the Reader.');
   };
-  var PHONE_W = 300;
+  var PHONE_W = 280;
   var SPINE = 14;
   var drawPhoneFocus = function (m, id, centre, rels, groups, heightOf) {
     var H = CENTRE_H + 28 + heightOf(groups);
@@ -3640,7 +3657,8 @@ const script = String.raw`
       var jump = target.closest('[data-jump]');
       if (jump) {
         var heading = doc.getElementById(jump.getAttribute('data-jump'));
-        if (heading) detailHost.scrollTop = Math.max(0, heading.offsetTop - 12);
+        var bar = isPhone() ? detailHost.querySelector('.rbar') : null;
+        if (heading) detailHost.scrollTop = Math.max(0, heading.offsetTop - 12 - (bar ? bar.offsetHeight : 0));
       }
     });
 
@@ -3685,10 +3703,10 @@ const script = String.raw`
   window.addEventListener('resize', function () {
     var m = activeMap();
     if (!m || !m.plane) return;
-    /* Crossing the phone boundary changes the layout; the build key notices and redraws once. */
-    var before = m.key;
-    syncMap(true);
-    if (m.key === before) fitMap(m);
+    /* Crossing the phone boundary changes the layout and redraws once; any other resize refits. */
+    var want = '|' + (isPhone() ? 'phone' : 'wide');
+    if (m.key && m.key.indexOf(want) < 0) syncMap(true);
+    else fitMap(m);
   });
 
   var appearance = doc.querySelectorAll('[data-appearance-set]');
