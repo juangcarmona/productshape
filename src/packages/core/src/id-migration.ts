@@ -2,7 +2,7 @@
  * One-time migration of artifact IDs that end in a numeric suffix (`FR-CITE-001` -> `FR-CITE`).
  *
  * The suffix is a convention inherited from the alpha templates, not a requirement of the
- * identifier grammar (`PREFIX-[A-Z0-9]+(-[A-Z0-9]+)*`). From v0.23 an ID is `PREFIX-NAME`; a
+ * identifier grammar (`PREFIX-[A-Z0-9]+(-[A-Z0-9]+)*`). From v0.24 an ID is `PREFIX-NAME`; a
  * numeric segment is a tie-breaker added only to separate two IDs that would otherwise be equal.
  *
  * The migration is planned without touching the disk (`planIdSuffixMigration`) and applied as one

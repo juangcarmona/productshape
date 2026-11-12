@@ -54,7 +54,7 @@ Run these FIRST and treat their output as the authoritative structural baseline:
    - Missing failure behaviour: use cases whose `## Failure Conditions` or `## Alternative Flows` are empty, trivial or ignore failures the main flow implies.
    - Weak traceability: requirements whose `derived-from` is formally present but thin; one tenuous source for a broad obligation, or derivation that does not actually support the requirement's content.
    - Unvalidated recovered knowledge: artifacts carrying `provenance` that no human has confirmed; a draft with low confidence (PRODUCT111), or an active artifact whose provenance records inference rather than observation. Recovered claims are candidates until validated, so these are QUESTIONs for a reviewer, not defects.
-   - Legacy numeric ID suffixes: IDs ending in `-001`-style numbers, which the ID convention retired in 0.23. Report them as an OBSERVATION and point to `references/id-suffix-migration.md`; never rename them yourself.
+   - Legacy numeric ID suffixes: IDs ending in `-001`-style numbers, which the ID convention retired in 0.24. Report them as an OBSERVATION and point to `references/id-suffix-migration.md`; never rename them yourself.
 4. Classify every finding as exactly one of ERROR, OBSERVATION or QUESTION, per `references/finding-classification.md`.
 5. For each finding record: classification, artifact ID(s), file path, evidence (diagnostic code or quoted text), and whether it is graph-derived fact or AI interpretation.
 6. Assemble the report (see Expected outputs) and present it to the human. Recommend follow-ups but change nothing; the only mechanical remedy you may recommend running directly is named in `references/diagnostic-codes.md`.

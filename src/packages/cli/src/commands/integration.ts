@@ -6,6 +6,7 @@ import {
   InstallConflictError,
   planProvider,
   planProviderRemoval,
+  refreshTemplates,
   rendererFor,
   updateIntegrations,
 } from '@prodshape/distribution';
@@ -217,6 +218,28 @@ export async function runIntegrationUpdate(
     }
   }
 
+  // Installed authoring templates are not managed files, so the provider update never reaches
+  // them. Refresh the untouched copies of earlier releases; keep anything an adopter edited.
+  let templates;
+  try {
+    templates = await refreshTemplates(repo.root, { force: options.force });
+  } catch (error) {
+    throw asCliError(error);
+  }
+  if (templates.written.length > 0) {
+    io.out(
+      `Refreshed ${templates.written.length} authoring template(s) to the current bundled version:`,
+    );
+    for (const path of templates.written) io.out(`  ${path}`);
+  }
+  const keptTemplates = options.force ? [] : templates.customized;
+  if (keptTemplates.length > 0) {
+    io.out(
+      `Kept ${keptTemplates.length} customized authoring template(s); compare with \`prodshape template <kind>\`, or re-run with --force to replace them:`,
+    );
+    for (const path of keptTemplates) io.out(`  ${path}`);
+  }
+
   // Update OpenSpec integration if installed.
   const openspecInstalled = await isOpenSpecIntegrationInstalled(repo.root);
   if (openspecInstalled) {
@@ -265,7 +288,7 @@ export async function runIntegrationUpdate(
     io.out('No integrations installed; add one with: prodshape integration add <provider>');
   }
 
-  // Upgrade step: IDs ending in a numeric suffix (breaking change in 0.23). Shown on every
+  // Upgrade step: IDs ending in a numeric suffix (breaking change in 0.24). Shown on every
   // update, applied only with consent: asked in a terminal, otherwise only with the explicit flag.
   return runIdSuffixMigration(io, repo, {
     apply: options.applyIdMigration,

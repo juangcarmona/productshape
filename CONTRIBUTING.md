@@ -30,7 +30,7 @@ pnpm test
 
 Run the single command rather than the five: a partial run passes locally and fails in CI, and `format:check` is the one that gets skipped.
 
-`pnpm build` before `pnpm test`: one test packs the CLI tarball and needs `dist/`. If you changed a JSON Schema, also run `pnpm docs:frontmatter`. If you changed anything under `skills/`, `commands/` or `templates/`, run `pnpm sync:assets` to mirror it into `src/packages/distribution/assets/` and then `prodshape integration update`, or CI's drift check will fail.
+`pnpm build` before `pnpm test`: one test packs the CLI tarball and needs `dist/`. If you changed a JSON Schema, also run `pnpm docs:frontmatter`. If you changed anything under `skills/`, `commands/` or `templates/`, run `pnpm sync:assets` to mirror it into `src/packages/distribution/assets/` and then `prodshape integration update`, or CI's drift check will fail. If you changed a template, also run `pnpm templates:history` (from a full clone) so `integration update` still recognises the previous version as untouched and refreshes it in adopters' `.product/templates/`.
 
 Node >= 22 (the current Node.js LTS lines) and pnpm (see `packageManager` in `package.json`) are required.
 

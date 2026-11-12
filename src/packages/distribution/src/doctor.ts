@@ -4,6 +4,7 @@ import { frameworkVersion, loadBundledAssets } from './assets.js';
 import { checkIntegrations, type IntegrationDiagnostic } from './install.js';
 import { InstallationLockError, lockRelativePath, type InstallationLock } from './lock.js';
 import { readLock } from './mutation.js';
+import { planTemplateRefresh } from './templates.js';
 
 export interface DoctorCheck {
   name: string;
@@ -103,10 +104,18 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
       detail: '.product/templates absent (informational; run: prodshape init)',
     });
   } else if (missingTemplates.length === 0) {
+    // Outdated copies are informational: they still work, and refreshing them is an upgrade step.
+    const refresh = await planTemplateRefresh(root);
+    const notes = [
+      refresh.outdated.length > 0
+        ? `${refresh.outdated.length} from an earlier release (run: prodshape integration update)`
+        : '',
+      refresh.customized.length > 0 ? `${refresh.customized.length} customized` : '',
+    ].filter(Boolean);
     checks.push({
       name: 'authoring templates',
       ok: true,
-      detail: `${templateNames.length} authoring template(s) present`,
+      detail: `${templateNames.length} authoring template(s) present${notes.length > 0 ? `; ${notes.join(', ')}` : ''}`,
     });
   } else {
     checks.push({

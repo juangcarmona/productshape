@@ -77,3 +77,5 @@ export type {
 } from './mutation.js';
 export { detectSddFrameworks, sddFrameworkById, sddFrameworks } from './sdd.js';
 export type { SddFramework, SddFrameworkId } from './sdd.js';
+export { planTemplateRefresh, refreshTemplates, templatesDir } from './templates.js';
+export type { TemplateRefreshPlan, TemplateRefreshResult } from './templates.js';

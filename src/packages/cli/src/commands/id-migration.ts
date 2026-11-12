@@ -107,7 +107,7 @@ export async function runIdSuffixMigration(
   }
 
   io.out(
-    'ID-suffix migration (breaking change in 0.23): artifact IDs no longer carry a numeric suffix.',
+    'ID-suffix migration (breaking change in 0.24): artifact IDs no longer carry a numeric suffix.',
   );
   describe(io, plan);
 

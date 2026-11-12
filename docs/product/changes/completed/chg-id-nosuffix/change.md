@@ -3,7 +3,7 @@ id: CHG-ID-NOSUFFIX
 type: product-change
 title: Drop the numeric suffix from artifact IDs
 status: applied
-base-revision: '4e800be9d618bb7f6613c5aba6b8c19849024f9c'
+base-revision: 'b5e46600c5ccb48266f44501ab3c3b49a7e1303d'
 operations:
   add:
     - BR-ID-FORM

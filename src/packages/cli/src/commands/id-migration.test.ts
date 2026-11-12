@@ -84,7 +84,7 @@ async function exists(path: string): Promise<boolean> {
   }
 }
 
-/** Re-create the pre-0.23 shape of the minimal example: numeric suffixes on five artifacts. */
+/** Re-create the pre-0.24 shape of the minimal example: numeric suffixes on five artifacts. */
 async function reintroduceSuffixes(): Promise<void> {
   const modelDir = join(workDir, 'docs', 'product', 'model');
   for (const file of await walk(modelDir)) {

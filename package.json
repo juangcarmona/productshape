@@ -29,7 +29,8 @@
     "release": "changeset publish",
     "measure:snapshot": "tsx src/scripts/measure-snapshot.mts",
     "shots:snapshot": "tsx src/scripts/screenshot-snapshot.mts",
-    "release-drift:check": "node src/scripts/check-release-drift.mjs"
+    "release-drift:check": "node src/scripts/check-release-drift.mjs",
+    "templates:history": "tsx src/scripts/sync-template-history.mts"
   },
   "devDependencies": {
     "@astrojs/mdx": "8.1.0",
