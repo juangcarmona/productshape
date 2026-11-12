@@ -1,13 +1,14 @@
 ---
 id: FR-SNAPSHOT-ORIENTATION
 type: functional-requirement
-title: Orient the reader before exposing the whole product model
+title: Orient the reader on an Overview that maps every artifact by kind
 status: active
 derived-from:
   - UC-SNAPSHOT-EXPLORE
   - BR-CANONICAL
 verification:
-  - scenario: The state the snapshot opens in contains no artifact body and no artifact-level graph
+  - scenario: The state the snapshot opens in contains no artifact body; the only artifact-level content it shows is the Overview map, one chip per artifact carrying its identifier
+  - scenario: The Overview map shows one region per artifact kind present, headed by the kind's name and count, with every artifact of that kind as a chip
   - scenario: The orientation view states the product identity, the source revision, the total artifact count and the total relationship count
   - scenario: The orientation view states the count of artifacts of each kind present in the model and offers an entry point into each canonical artifact family
   - scenario: The orientation view explains in plain language that the page is a generated, read-only projection that is never authoritative
@@ -22,13 +23,13 @@ verification:
 
 ## Requirement
 
-The Product Snapshot MUST open in an orientation view — the Product Explorer's Overview — whose purpose is to convey the aggregate shape of the product. It MUST NOT render any artifact's authored content and MUST NOT render any artifact-level graph: no projection in which individual artifacts appear as nodes. The Overview communicates the aggregate shape of the product; it does not draw every artifact.
+The Product Snapshot MUST open in an orientation view — the Product Explorer's Overview — whose purpose is to convey the shape of the product. It MUST NOT render any artifact's authored content. Its centre is the **Overview map** FR-SNAPSHOT-PROJECTIONS defines: one region per artifact kind present, headed by the kind's name, token and count, holding every artifact of that kind as a compact chip that carries the artifact's stable identifier, with use cases and domain terms grouped by bounded context. A chip names its artifact and nothing more: the artifact's title and kind are available on hover, on keyboard focus and to assistive technology, and its content is one step away in the Focus view and the Reader.
 
 The Overview MUST expose:
 
 - the product's identity as the model records it, and the source revision the snapshot was generated from, presented so a reader finds them without searching;
 - the total number of artifacts and the total number of relationships in the compiled model;
-- the number of artifacts of each kind present in the model, with an entry point from each kind into the artifacts of that canonical family — actors, journeys, use cases, business rules, domain terms, bounded contexts, requirements and the rest;
+- the number of artifacts of each kind present in the model — on the Overview map's region headings — with an entry point from each kind into the artifacts of that canonical family — actors, journeys, use cases, business rules, domain terms, bounded contexts, requirements and the rest;
 - a plain-language statement that the page is a generated, read-only projection of authored files, regenerable at any time and never authoritative;
 - a kind-level aggregate of the relationships, showing which artifact kinds relate to which artifact kinds, by relationship type, with the number of relationships in each combination;
 - permanent access to global search.
@@ -49,9 +50,9 @@ The Overview MUST describe only the artifact kinds the model actually contains, 
 
 ## Rationale
 
-A reader who has never seen the product needs to know what kind of thing it is before they can usefully read any part of it. Orientation is a different job from reading, and it is the job the first screen should do: how big is this, what is it made of, how do the parts connect in aggregate, and how much should I trust what I am looking at.
+A reader who has never seen the product needs to know what kind of thing it is before they can usefully read any part of it. The map answers that question at a glance in a way the kind counts alone did not: how many of each kind there are, how they divide by context, and — on hover — what each one touches, all without a word of authored content. Orientation is a different job from reading, and it is the job the first screen should do: how big is this, what is it made of, how do the parts connect in aggregate, and how much should I trust what I am looking at.
 
-The kind-level aggregate is what makes orientation possible without drawing the graph: the model's relationships collapse into a small table of kind-to-kind combinations, which is the level at which "how does this product hold together" is actually answerable. Search being permanently reachable from the first screen serves the reader who arrived already knowing what they want — orientation must never be a toll gate.
+The kind-level aggregate complements the map: the model's relationships collapse into a small table of kind-to-kind combinations with exact counts, which is the level at which "how does this product hold together" is answerable as numbers rather than as a picture. Search being permanently reachable from the first screen serves the reader who arrived already knowing what they want — orientation must never be a toll gate.
 
 Entry points shorten the path from "what is this" to "let me read one". A journey's recorded steps, a context's references and a relationship count are all facts the model already records, so offering them as ways in adds no claim — provided each says what it counts and the ordering never pretends to be advice.
 
@@ -59,7 +60,7 @@ The prohibition on fabricated conclusions matters most here, because a summary i
 
 ## Acceptance Scenarios
 
-- A reader opens a snapshot for the first time. Without scrolling past the first screen they can state which product it is, which revision it reflects, roughly how large the model is, what kinds of artifact it contains, and that the page is generated and read-only. Inspecting the document confirms no artifact body and no artifact-level graph is present.
+- A reader opens a snapshot for the first time. Without scrolling past the first screen they can state which product it is, which revision it reflects, roughly how large the model is, what kinds of artifact it contains, and that the page is generated and read-only. The Overview map shows every artifact as a chip in its kind's region; inspecting the document confirms no artifact body is present.
 - The reader reads the kind-level aggregate and can state, without opening any artifact, which kinds govern which, which derive from which, and how many such relationships exist; the counts match `prodshape graph` output exactly.
 - From the Overview the reader enters each canonical artifact family present in the model, and reaches global search without leaving the first screen.
 - The Overview is examined for any claim beyond identity, revision, counts, entry points, the projection explanation and the aggregate. No artifact is described as important, central, healthy, complete, owned, ranked or ordered by anything other than a stated, derived criterion.

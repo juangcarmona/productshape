@@ -13,12 +13,12 @@ synonyms:
 
 A generated, read-only, self-contained projection of the product graph at a recorded source revision — one HTML file containing every artifact, its relationships in both directions, a search index and the graph projections, explorable in a browser with no repository, tooling or server.
 
-Completeness is a property of the file, not of the display: the snapshot holds the whole model and makes all of it reachable, while presenting it progressively through the Product Explorer — an orientation view first, discovery through the Catalog, one selected artifact at a time in the Reader, and relationship neighbourhoods only when the reader asks. A snapshot is derived and regenerable at any time; it is read-only by nature — there is nothing on it to edit and it retains nothing the reader does — and it is never authoritative.
+Completeness is a property of the file: the snapshot holds the whole model and makes all of it reachable through the Product Explorer — an Overview that maps every artifact by kind, a Focus view and a Columns view over the same map, discovery through the Catalog, and one selected artifact at a time in the Reader. A snapshot is derived and regenerable at any time; it is read-only by nature — there is nothing on it to edit and it retains nothing the reader does — and it is never authoritative.
 
 ## Distinguish From
 
 - **The Product Graph.** The graph is the derived structure the toolkit computes and reasons over; the snapshot is a set of renderings of that structure for human exploration. The graph exists for tools and validation, the snapshot for people without the repository.
-- **A Graph Projection.** A projection is one purpose-built rendering of part or an aggregation of the graph. The snapshot is the file that carries the projections — the kind-level aggregate and the Focused Topology — and never treats either as the universal view.
+- **A Graph Projection.** A projection is one purpose-built rendering of part or an aggregation of the graph. The snapshot is the file that carries the projections — the kind-level aggregate and the Overview, Focus and Columns maps — and never treats any of them as the only route to the model.
 - **A consumer document.** A consumer document uses citations to bind its own delivery or design statements to canonical product text. A snapshot instead projects the whole model for human exploration and carries no delivery state.
 - **A web application.** A snapshot involves no server, no database, no session, no stored state and no editing; it is a file. Its interactivity only chooses which of its own embedded content is displayed. The product's constraints continue to forbid interactive web applications.
 
