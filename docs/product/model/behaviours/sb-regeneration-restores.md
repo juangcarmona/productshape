@@ -15,7 +15,7 @@ then:
 
 ## Intent
 
-Establish that no product knowledge lives only in derived form: the compiled graph, reverse indexes, diagrams, snapshots and reports are projections a single rebuild reproduces, so deleting them loses nothing.
+Establish that no product knowledge lives only in derived form: the compiled graph, reverse indexes, diagrams, Product Explorer pages and reports are projections a single rebuild reproduces, so deleting them loses nothing.
 
 ## Boundaries
 

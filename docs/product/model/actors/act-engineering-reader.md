@@ -12,14 +12,14 @@ The ProductShape Engineering Reader wants to understand how ProductShape is stru
 
 ## Goals
 
-- Find ProductShape's published Product Snapshot, Architecture Snapshot and available E2E journey evidence.
+- Find ProductShape's published Product Explorer, Architecture Snapshot and available E2E journey evidence.
 - Understand which source and revision or run each output represents.
 - Navigate from a generated output to its relevant canonical source.
 
 ## Responsibilities
 
 - Read and follow the engineering portal's published links.
-- Treat snapshots and reports as derived, read-only outputs.
+- Treat Product Explorer pages and reports as derived, read-only outputs.
 
 ## Boundaries
 

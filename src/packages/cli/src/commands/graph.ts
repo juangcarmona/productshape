@@ -1,10 +1,10 @@
-import { writeFile } from 'node:fs/promises';
+import { rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
   buildGeneratedOutputs,
   buildGraphJson,
   buildMermaid,
-  buildSnapshotHtml,
+  buildExplorerHtml,
   blockingDiagnostics,
   gitHead,
   stableJson,
@@ -12,6 +12,11 @@ import {
   writeGeneratedOutputs,
 } from '@prodshape/core';
 import { exitCodes, formatDiagnosticLine, resolveRepository, type CliIo } from '../context.js';
+
+/** The Product Explorer page, written to the generated-output area by `graph --format html`. */
+export const explorerFile = 'explorer.html';
+/** The name the same page had before it was called the Product Explorer; removed on generation. */
+export const legacyExplorerFile = 'snapshot.html';
 
 export interface GraphOptions {
   format?: 'summary' | 'json' | 'mermaid' | 'html';
@@ -41,13 +46,17 @@ export async function runGraph(io: CliIo, options: GraphOptions): Promise<number
       break;
     case 'html': {
       const revision = await gitHead(repo.root);
-      const html = buildSnapshotHtml(graph, artifacts, revision, {
+      const html = buildExplorerHtml(graph, artifacts, revision, {
         productName: options.productName,
         productUrl: options.productUrl,
         productVersion: options.productVersion,
       });
-      await writeFile(join(repo.generatedDir, 'snapshot.html'), html, 'utf8');
-      io.out(`Snapshot written to ${repo.config.prodshape.generated.root}/snapshot.html`);
+      await writeFile(join(repo.generatedDir, explorerFile), html, 'utf8');
+      // Releases before the Product Explorer name wrote the same page as snapshot.html. The
+      // generated-output area is the tool's own, so the stale copy is removed rather than left
+      // beside the current one.
+      await rm(join(repo.generatedDir, legacyExplorerFile), { force: true });
+      io.out(`Product Explorer written to ${repo.config.prodshape.generated.root}/${explorerFile}`);
       break;
     }
     default: {

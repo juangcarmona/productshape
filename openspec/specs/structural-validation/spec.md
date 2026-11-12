@@ -56,7 +56,7 @@ Validation SHALL report the warnings PRODUCT101 (file-name misalignment), PRODUC
 
 Diagnostics SHALL be ordered by file, then line and entry (absent before present, compared numerically), then code, field, target, artifact and change; `--format json` SHALL emit them as JSON with the fields severity, code, message, file and, when applicable, artifact, change, field, target, line and entry. A Product Change ID SHALL appear in change and a cited ID in target, never artifact. Identical repository content SHALL produce byte-identical diagnostic output on every platform.
 
-{pdac:cite id="QR-DETERMINISM" digest="sha256:3f52f1051dbd065f0bcdfa951ffb2fdcf3b16265f3080c325931e83cbf9f86f2"}
+{pdac:cite id="QR-DETERMINISM" digest="sha256:96900884875f14787927c8bc1d20f1c1e083171167609ec1b754dfb097610409"}
 
 #### Scenario: JSON output
 

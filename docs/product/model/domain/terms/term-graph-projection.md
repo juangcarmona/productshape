@@ -17,7 +17,7 @@ The Product Explorer has four. The **kind-level aggregate** groups artifacts and
 ## Distinguish From
 
 - **The Product Graph.** The graph is the single derived structure compiled from the authored artifacts: complete, typed and directed. A projection is a rendering decision made over that structure. The graph has one definition; projections are plural by design, because no single arrangement answers every question.
-- **A Product Snapshot.** The snapshot is the generated file that carries the projections along with the artifact content and the search index. The projections are what the snapshot shows; the snapshot is what a reader is given.
+- **A Product Explorer.** The Product Explorer is the generated file that carries the projections along with the artifact content and the search index. The projections are what the Product Explorer shows; the Product Explorer is what a reader is given.
 - **A diagram of the model.** A diagram is a drawing someone arranged, judged by how faithfully it reproduces the structure. A projection is laid out by a fixed, deterministic rule from the graph alone, and judged by whether it answers its question.
 - **A filter or a query.** Filtering narrows what a reader sees. The projection is the prior decision about what to select, aggregate and arrange at all.
 

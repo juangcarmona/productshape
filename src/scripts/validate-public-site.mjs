@@ -16,7 +16,7 @@ const siteOrigin = option('--site-origin');
 if (!['public', 'engineering'].includes(profile)) throw new Error('Invalid profile.');
 if (!basePath.startsWith('/') || !basePath.endsWith('/')) throw new Error('Invalid base path.');
 if (new URL(siteOrigin).origin !== siteOrigin) throw new Error('Expected an HTTP(S) site origin.');
-const exampleSnapshotFile = 'en/explore/index.html';
+const exampleExplorerFile = 'en/explore/index.html';
 const files = new Set();
 async function inventory(path = '') {
   for (const entry of await readdir(join(directory, path), { withFileTypes: true })) {
@@ -84,17 +84,17 @@ if (profile === 'public') {
       requireFile(`${locale}/${route}index.html`);
     }
   }
-  // The example Product Snapshot is a standalone generated document, not a shell page: it owns
+  // The example Product Explorer is a standalone generated document, not a shell page: it owns
   // its interface and must load without any resource from outside the published file.
-  requireFile(exampleSnapshotFile);
-  const example = await readFile(join(directory, exampleSnapshotFile), 'utf8');
-  if (!/<title>[^<]*Product Snapshot<\/title>/u.test(example)) {
-    throw new Error(`${exampleSnapshotFile}: not a generated Product Snapshot.`);
+  requireFile(exampleExplorerFile);
+  const example = await readFile(join(directory, exampleExplorerFile), 'utf8');
+  if (!/<title>[^<]*Product Explorer<\/title>/u.test(example)) {
+    throw new Error(`${exampleExplorerFile}: not a generated Product Explorer.`);
   }
   for (const match of example.matchAll(
     /<(?:script|link|img|iframe)\b[^>]*\b(?:src|href)\s*=\s*(["'])(.*?)\1/giu,
   )) {
-    throw new Error(`${exampleSnapshotFile}: loads an external resource: ${match[2]}`);
+    throw new Error(`${exampleExplorerFile}: loads an external resource: ${match[2]}`);
   }
   for (const file of files) {
     if (
@@ -134,7 +134,7 @@ const shellPages = [...files].filter(
     file === 'index.html' ||
     file === '404.html' ||
     (profile === 'public'
-      ? localizedRoutePattern.test(file) && file !== exampleSnapshotFile
+      ? localizedRoutePattern.test(file) && file !== exampleExplorerFile
       : file === 'en/index.html' || /^en\/engineering\/(?:[^/]+\/)?index\.html$/u.test(file)),
 );
 for (const file of shellPages) {

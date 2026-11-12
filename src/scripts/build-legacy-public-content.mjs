@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defaultLocale, locales } from '../public-site/site.config.mjs';
-import { exampleSnapshotRoute, generateExampleSnapshot } from './example-snapshot.mjs';
+import { exampleExplorerRoute, generateExampleExplorer } from './example-explorer.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const args = process.argv.slice(2);
@@ -11,7 +11,7 @@ const profileArgument = args.indexOf('--profile');
 const outputArgument = args.indexOf('--out');
 const baseArgument = args.indexOf('--base-path');
 const originArgument = args.indexOf('--site-origin');
-const snapshotSourceArgument = args.indexOf('--snapshot-source');
+const explorerSourceArgument = args.indexOf('--explorer-source');
 const engineeringManifestArgument = args.indexOf('--engineering-manifest');
 const profile =
   profileArgument >= 0 ? args[profileArgument + 1] : process.env.SITE_PROFILE || 'public';
@@ -32,11 +32,11 @@ const siteOrigin = normalizeOrigin(
     : process.env.SITE_ORIGIN ||
         (profile === 'public' ? 'https://productshape.dev' : engineeringOrigin),
 );
-const snapshotSource = resolve(
+const explorerSource = resolve(
   root,
-  snapshotSourceArgument >= 0
-    ? args[snapshotSourceArgument + 1]
-    : '.product/generated/snapshot.html',
+  explorerSourceArgument >= 0
+    ? args[explorerSourceArgument + 1]
+    : '.product/generated/explorer.html',
 );
 const engineeringManifestPath = resolve(
   root,
@@ -157,7 +157,7 @@ await cp(join(root, 'src/public-site/diagrams'), join(outDir, 'assets/diagrams')
 
 if (profile === 'public') {
   await cp(
-    join(root, 'docs/assets/snapshot/01-overview-desktop.png'),
+    join(root, 'docs/assets/explorer/01-overview-desktop.png'),
     join(outDir, 'assets/product-explorer.png'),
   );
   for (const locale of localeNames) {
@@ -182,9 +182,9 @@ if (profile === 'public') {
     }
   }
   await cp(join(outDir, 'en/index.html'), join(outDir, 'index.html'));
-  await generateExampleSnapshot({
+  await generateExampleExplorer({
     root,
-    destination: join(outDir, exampleSnapshotRoute, 'index.html'),
+    destination: join(outDir, exampleExplorerRoute, 'index.html'),
     productUrl: `${siteOrigin}${basePath}`,
   });
   await writeFile(join(outDir, 'sitemap.xml'), renderSitemap());
@@ -206,7 +206,7 @@ if (profile === 'public') {
     recursive: true,
   });
   await mkdir(join(outDir, 'en/model'), { recursive: true });
-  await cp(snapshotSource, join(outDir, 'en/model/explorer.html'));
+  await cp(explorerSource, join(outDir, 'en/model/explorer.html'));
   const manifest = await readEngineeringManifest();
   const portal = renderEngineeringPortalLanding(manifest);
   const portalPage = engineeringPortalPage(portal, 'ProductShape Engineering Portal');
@@ -276,7 +276,7 @@ function publicEngineeringPortalHref() {
   return `${engineeringOrigin}${engineeringBasePath}`;
 }
 
-function productSnapshotHref() {
+function productExplorerHref() {
   return `${engineeringOrigin}${engineeringBasePath}en/model/explorer.html`;
 }
 
@@ -285,7 +285,7 @@ function engineeringHref() {
 }
 
 function modelHref() {
-  return profile === 'public' ? productSnapshotHref() : `${basePath}en/model/explorer.html`;
+  return profile === 'public' ? productExplorerHref() : `${basePath}en/model/explorer.html`;
 }
 
 async function readEngineeringManifest() {
@@ -296,7 +296,7 @@ async function readEngineeringManifest() {
   } catch (error) {
     if (error.code === 'ENOENT') {
       return {
-        productSnapshot: { sourceRevision: revision },
+        productExplorer: { sourceRevision: revision },
         architectureSnapshot: { sourceRevision: revision },
         e2eReports: [],
       };
@@ -306,17 +306,17 @@ async function readEngineeringManifest() {
     );
   }
   if (
-    manifest.schemaVersion !== 2 ||
-    !manifest.productSnapshot ||
-    typeof manifest.productSnapshot.sourceRevision !== 'string' ||
-    !manifest.productSnapshot.sourceRevision.trim() ||
+    manifest.schemaVersion !== 3 ||
+    !manifest.productExplorer ||
+    typeof manifest.productExplorer.sourceRevision !== 'string' ||
+    !manifest.productExplorer.sourceRevision.trim() ||
     !manifest.architectureSnapshot ||
     typeof manifest.architectureSnapshot.sourceRevision !== 'string' ||
     !manifest.architectureSnapshot.sourceRevision.trim() ||
     !Array.isArray(manifest.e2eReports)
   ) {
     throw new Error(
-      'Engineering output manifest must use schemaVersion 2 with source revisions for both snapshots and an e2eReports array.',
+      'Engineering output manifest must use schemaVersion 3 with source revisions for the Product Explorer and the Architecture Snapshot and an e2eReports array.',
     );
   }
   const reports = [];
@@ -347,7 +347,7 @@ async function readEngineeringManifest() {
     reports.push({ ...report, href: `${basePath}reports/${report.path}` });
   }
   return {
-    productSnapshot: manifest.productSnapshot,
+    productExplorer: manifest.productExplorer,
     architectureSnapshot: manifest.architectureSnapshot,
     e2eReports: reports,
   };
@@ -389,7 +389,7 @@ function renderEngineeringPortalLanding(manifest) {
   const noReports = manifest.e2eReports.length
     ? ''
     : '<p class="portal-empty">No E2E journey report has been published yet.</p>';
-  return `<section class="page-hero"><div class="wrap"><p class="eyebrow">Engineering publications</p><h1>ProductShape Engineering Portal</h1><p class="lead">Generated views and evidence from ProductShape’s own engineering process. These publications link back to their canonical sources.</p></div></section><section class="section"><div class="wrap portal-grid"><article class="portal-card"><p class="eyebrow">Product Snapshot · generated</p><h2><a href="${basePath}en/model/explorer.html">Explore the Product Snapshot</a></h2><p>Read-only projection of the accepted Product Definition model.</p><p>Source revision <code>${escapeHtml(manifest.productSnapshot.sourceRevision)}</code> · <a href="${repoUrl}/tree/main/docs/product/model">Canonical product model →</a></p></article><article class="portal-card"><p class="eyebrow">Architecture Snapshot · generated from canonical documentation</p><h2><a href="${basePath}en/engineering/">Read ProductShape architecture</a></h2><p>Explore the twelve arc42 sections used to document ProductShape’s own architecture.</p><p>Source revision <code>${escapeHtml(manifest.architectureSnapshot.sourceRevision)}</code> · <a href="${repoUrl}/tree/main/docs/architecture">Canonical architecture documentation →</a></p></article>${reportCards}${noReports}</div></section>`;
+  return `<section class="page-hero"><div class="wrap"><p class="eyebrow">Engineering publications</p><h1>ProductShape Engineering Portal</h1><p class="lead">Generated views and evidence from ProductShape’s own engineering process. These publications link back to their canonical sources.</p></div></section><section class="section"><div class="wrap portal-grid"><article class="portal-card"><p class="eyebrow">Product Explorer · generated</p><h2><a href="${basePath}en/model/explorer.html">Explore the Product Explorer</a></h2><p>Read-only projection of the accepted Product Definition model.</p><p>Source revision <code>${escapeHtml(manifest.productExplorer.sourceRevision)}</code> · <a href="${repoUrl}/tree/main/docs/product/model">Canonical product model →</a></p></article><article class="portal-card"><p class="eyebrow">Architecture Snapshot · generated from canonical documentation</p><h2><a href="${basePath}en/engineering/">Read ProductShape architecture</a></h2><p>Explore the twelve arc42 sections used to document ProductShape’s own architecture.</p><p>Source revision <code>${escapeHtml(manifest.architectureSnapshot.sourceRevision)}</code> · <a href="${repoUrl}/tree/main/docs/architecture">Canonical architecture documentation →</a></p></article>${reportCards}${noReports}</div></section>`;
 }
 
 function renderSitemap() {
@@ -402,7 +402,7 @@ function renderSitemap() {
         urls.push(`${siteOrigin}${basePath}${locale}/guides/${guide.slug}/`);
       }
     }
-    urls.push(`${siteOrigin}${basePath}${exampleSnapshotRoute}`);
+    urls.push(`${siteOrigin}${basePath}${exampleExplorerRoute}`);
   } else {
     urls.push(`${siteOrigin}${basePath}`);
     urls.push(`${siteOrigin}${basePath}en/`);
@@ -485,7 +485,7 @@ function shell({ locale, pageKind = '', title, description, body, routePath = ''
     profile === 'engineering'
       ? [
           ['portal', 'Engineering'],
-          ['model', 'Product Snapshot'],
+          ['model', 'Product Explorer'],
           ['architecture', 'Architecture Snapshot'],
           ['public', 'Public site ↗'],
         ]
@@ -531,7 +531,7 @@ function renderHome(words, locale) {
   const start = `${basePath}${locale}/get-started/`;
   const model = modelHref();
   const engineering = engineeringHref();
-  return `<section class="hero wrap"><div><p class="eyebrow">${escapeHtml(home.eyebrow)}</p><h1>${escapeHtml(home.title)}</h1><p class="lead">${escapeHtml(home.intro)}</p><div class="actions"><a class="button" href="${start}">${escapeHtml(home.primaryAction)}</a><a class="button secondary" href="${model}">${escapeHtml(home.secondaryAction)}</a></div></div><figure class="hero-art"><img src="${basePath}assets/product-explorer.png" width="1440" height="900" alt="${locale === 'es' ? 'Vista real del explorador del modelo de producto de ProductShape' : 'Real view of the ProductShape product model explorer'}"><figcaption class="image-caption">${locale === 'es' ? 'Una instantánea real del modelo, regenerada desde este repositorio.' : 'A real model snapshot, regenerated from this repository.'}</figcaption></figure></section><div class="wrap"><div class="proof-line"><strong>${escapeHtml(home.proofLabel)}</strong><span>${escapeHtml(home.proof)}</span></div></div><section class="section"><div class="wrap"><div class="section-heading"><div><p class="eyebrow">${locale === 'es' ? 'Una estructura común' : 'A shared structure'}</p><h2>${escapeHtml(home.flowTitle)}</h2></div><p>${escapeHtml(home.flowIntro)}</p></div>${flowGraphic(locale)}<div class="flow-grid">${home.flow.map((step) => `<article class="flow-step"><span class="step-number">${step.number}</span><h3>${escapeHtml(step.title)}</h3><p>${escapeHtml(step.text)}</p></article>`).join('')}</div></div></section><section class="section"><div class="wrap split-section"><div><p class="eyebrow">${locale === 'es' ? 'El límite importante' : 'The important boundary'}</p><h2>${escapeHtml(home.principleTitle)}</h2></div><div class="statement"><p>${escapeHtml(home.principleText)}</p></div></div></section><section class="section"><div class="wrap"><div class="section-heading"><div><p class="eyebrow">${locale === 'es' ? 'Dogfooding público' : 'Public dogfooding'}</p><h2>${escapeHtml(home.explorerTitle)}</h2></div><p>${escapeHtml(home.explorerText)}</p></div><p><a class="button secondary" href="${model}">${escapeHtml(words.nav.model)} →</a></p><p class="example-line">${escapeHtml(home.exampleText)} <a href="${basePath}${exampleSnapshotRoute}">${escapeHtml(home.exampleAction)} →</a></p></div></section><section class="section"><div class="wrap split-section"><div><p class="eyebrow">${locale === 'es' ? 'Implementación' : 'Implementation'}</p><h2>${escapeHtml(home.architectureTitle)}</h2></div><div><p class="lead">${escapeHtml(home.architectureText)}</p><a href="${engineering}">${escapeHtml(words.nav.engineering)} →</a></div></div></section><section class="section"><div class="wrap"><div class="cta-band"><div><p class="eyebrow">${locale === 'es' ? 'Siguiente paso' : 'Next step'}</p><h2>${escapeHtml(home.closingTitle)}</h2><p>${escapeHtml(home.closingText)}</p></div><a class="button" href="${start}">${escapeHtml(words.nav.start)} →</a></div></div></section>`;
+  return `<section class="hero wrap"><div><p class="eyebrow">${escapeHtml(home.eyebrow)}</p><h1>${escapeHtml(home.title)}</h1><p class="lead">${escapeHtml(home.intro)}</p><div class="actions"><a class="button" href="${start}">${escapeHtml(home.primaryAction)}</a><a class="button secondary" href="${model}">${escapeHtml(home.secondaryAction)}</a></div></div><figure class="hero-art"><img src="${basePath}assets/product-explorer.png" width="1440" height="900" alt="${locale === 'es' ? 'Vista real del explorador del modelo de producto de ProductShape' : 'Real view of the ProductShape product model explorer'}"><figcaption class="image-caption">${locale === 'es' ? 'Un Product Explorer real del modelo, regenerado desde este repositorio.' : 'A real Product Explorer, regenerated from this repository.'}</figcaption></figure></section><div class="wrap"><div class="proof-line"><strong>${escapeHtml(home.proofLabel)}</strong><span>${escapeHtml(home.proof)}</span></div></div><section class="section"><div class="wrap"><div class="section-heading"><div><p class="eyebrow">${locale === 'es' ? 'Una estructura común' : 'A shared structure'}</p><h2>${escapeHtml(home.flowTitle)}</h2></div><p>${escapeHtml(home.flowIntro)}</p></div>${flowGraphic(locale)}<div class="flow-grid">${home.flow.map((step) => `<article class="flow-step"><span class="step-number">${step.number}</span><h3>${escapeHtml(step.title)}</h3><p>${escapeHtml(step.text)}</p></article>`).join('')}</div></div></section><section class="section"><div class="wrap split-section"><div><p class="eyebrow">${locale === 'es' ? 'El límite importante' : 'The important boundary'}</p><h2>${escapeHtml(home.principleTitle)}</h2></div><div class="statement"><p>${escapeHtml(home.principleText)}</p></div></div></section><section class="section"><div class="wrap"><div class="section-heading"><div><p class="eyebrow">${locale === 'es' ? 'Dogfooding público' : 'Public dogfooding'}</p><h2>${escapeHtml(home.explorerTitle)}</h2></div><p>${escapeHtml(home.explorerText)}</p></div><p><a class="button secondary" href="${model}">${escapeHtml(words.nav.model)} →</a></p><p class="example-line">${escapeHtml(home.exampleText)} <a href="${basePath}${exampleExplorerRoute}">${escapeHtml(home.exampleAction)} →</a></p></div></section><section class="section"><div class="wrap split-section"><div><p class="eyebrow">${locale === 'es' ? 'Implementación' : 'Implementation'}</p><h2>${escapeHtml(home.architectureTitle)}</h2></div><div><p class="lead">${escapeHtml(home.architectureText)}</p><a href="${engineering}">${escapeHtml(words.nav.engineering)} →</a></div></div></section><section class="section"><div class="wrap"><div class="cta-band"><div><p class="eyebrow">${locale === 'es' ? 'Siguiente paso' : 'Next step'}</p><h2>${escapeHtml(home.closingTitle)}</h2><p>${escapeHtml(home.closingText)}</p></div><a class="button" href="${start}">${escapeHtml(words.nav.start)} →</a></div></div></section>`;
 }
 
 function flowGraphic(locale) {

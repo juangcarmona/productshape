@@ -1,11 +1,11 @@
 ---
 id: QR-PRESENTATION
 type: quality-requirement
-title: Present the snapshot as a calm, compact, text-first engineering instrument
+title: Present the Product Explorer as a calm, compact, text-first engineering instrument
 status: active
 quality-attribute: presentation
 applies-to:
-  - UC-SNAPSHOT-EXPLORE
+  - UC-EXPLORER-BROWSE
 verification:
   - scenario: The interface renders in a light and a dark appearance, following the reader's environment preference by default, with one control offering light, dark and the environment's preference
   - scenario: Every appearance is complete — no text, control, kind colour, status indicator or projection keeps a colour designed only for the other appearance
@@ -22,9 +22,9 @@ verification:
 
 ## Requirement
 
-The generated Product Snapshot MUST present itself as a precise, calm engineering instrument rather than a decorated document or a dashboard.
+The generated Product Explorer MUST present itself as a precise, calm engineering instrument rather than a decorated document or a dashboard.
 
-**Appearance.** The interface MUST render in two appearances, light and dark. By default it MUST follow the appearance the reader's environment prefers. It MUST offer exactly one appearance control, with three choices: light, dark, and the environment's preference. A reader's choice is exploration state: it MUST live only in the address of the current view, as FR-SNAPSHOT-ADDRESSING defines, and MUST NOT be remembered anywhere else. Each appearance MUST be complete: every text, control, kind colour, status indicator and projection has a colour designed for that appearance, and no element carries a colour designed only for the other one.
+**Appearance.** The interface MUST render in two appearances, light and dark. By default it MUST follow the appearance the reader's environment prefers. It MUST offer exactly one appearance control, with three choices: light, dark, and the environment's preference. A reader's choice is exploration state: it MUST live only in the address of the current view, as FR-EXPLORER-ADDRESSING defines, and MUST NOT be remembered anywhere else. Each appearance MUST be complete: every text, control, kind colour, status indicator and projection has a colour designed for that appearance, and no element carries a colour designed only for the other one.
 
 **Typography.** Body and interface text MUST use the reader's system sans-serif stack. Artifact identifiers and revision values MUST render in a monospaced face wherever they appear, so an identifier is recognizable as an identifier and comparable character by character. No font may be fetched; the requirement is satisfied with faces the reader's system already provides.
 
@@ -36,7 +36,7 @@ The generated Product Snapshot MUST present itself as a precise, calm engineerin
 
 **Density.** The interface MUST be compact. Orientation, the artifact list, and the selected artifact's identity and relationships MUST be legible together on an ordinary desktop viewport without decorative whitespace displacing content that the reader needs.
 
-**Neon highlight.** On the map views FR-SNAPSHOT-PROJECTIONS defines, the artifact the reader is hovering, has keyboard focus on or has selected, together with its direct neighbours and the relationship lines between them, MAY be lit with a neon glow drawn in each artifact's kind colour, while everything else dims. The highlight MUST be designed for each appearance — luminous on the dark surface, and crisp rather than washed out on the light one — and MUST keep every lit text at the contrast QR-ACCESSIBILITY requires. It is a transient state of attention, not decoration: it MUST NOT appear on content no one is attending to, and it MUST NOT be the only signal of what is lit, which is also conveyed by an outline or border weight and by the dimming of everything else.
+**Neon highlight.** On the map views FR-EXPLORER-PROJECTIONS defines, the artifact the reader is hovering, has keyboard focus on or has selected, together with its direct neighbours and the relationship lines between them, MAY be lit with a neon glow drawn in each artifact's kind colour, while everything else dims. The highlight MUST be designed for each appearance — luminous on the dark surface, and crisp rather than washed out on the light one — and MUST keep every lit text at the contrast QR-ACCESSIBILITY requires. It is a transient state of attention, not decoration: it MUST NOT appear on content no one is attending to, and it MUST NOT be the only signal of what is lit, which is also conveyed by an outline or border weight and by the dimming of everything else.
 
 **Prohibited treatments.** Apart from the neon highlight above, the page MUST NOT use gradients, glass or blur effects, decorative illustration, oversized hero typography, or a generic rounded-card dashboard treatment of its content.
 
@@ -44,7 +44,7 @@ These properties are product obligations about the reading experience, not a sty
 
 ## Measurement
 
-Measured by inspecting the rendered page in a browser, at a desktop viewport and at a narrow viewport, in each appearance, for a snapshot generated from the current ProductShape model and for one generated from a materially larger model containing high-degree artifacts, isolated artifacts and long titles and bodies. Each measure below is a count with a target of zero, and the inspection is recorded as screenshots so a later regression is comparable against the same evidence.
+Measured by inspecting the rendered page in a browser, at a desktop viewport and at a narrow viewport, in each appearance, for a Product Explorer generated from the current ProductShape model and for one generated from a materially larger model containing high-degree artifacts, isolated artifacts and long titles and bodies. Each measure below is a count with a target of zero, and the inspection is recorded as screenshots so a later regression is comparable against the same evidence.
 
 - **Appearance.** Open the page with the reader's environment expressing a light preference and again expressing a dark preference, with no choice in the address; then choose each option of the appearance control. Measure: the count of openings that do not render the preferred appearance, the count of choices that do not render the chosen appearance, the count of appearance controls beyond one, and the count of elements whose colour belongs to the other appearance.
 - **Persistence.** After choosing an appearance, inspect browser storage and cookies and reopen the page without the address. Measure: the count of places the choice was remembered outside the address.
@@ -64,10 +64,10 @@ Measured by inspecting the rendered page in a browser, at a desktop viewport and
 - Each appearance is inspected element by element: no text, control, kind colour, status indicator or projection carries a colour belonging to the other appearance.
 - Computed styles confirm system sans-serif prose and interface text, and monospaced rendering of every artifact identifier and every revision value — in the orientation view, the artifact list, the artifact detail, the relationship groups, the search results and the map views.
 - The rendered page is reviewed against the structure measures: regions are delimited by thin borders, columns and rows align within each region, controls are square or low-radius, and only transient overlays are elevated.
-- Each appearance uses one accent colour. Each artifact kind's colour is recorded from every view of an appearance and is identical in all of them, and identical again in a second snapshot generated from the same model content; the kinds are distinguishable from one another.
+- Each appearance uses one accent colour. Each artifact kind's colour is recorded from every view of an appearance and is identical in all of them, and identical again in a second Product Explorer generated from the same model content; the kinds are distinguishable from one another.
 - Every place a kind is shown carries the same icon for that kind beside its text token.
 - With colour removed, a reader can still determine each artifact's kind, each relationship's direction, each artifact's status and which artifact is selected.
-- At a desktop viewport, orientation, the artifact list and the selected artifact's identity and relationships are all legible without decorative space displacing them; at a narrow viewport the layout adapts as FR-SNAPSHOT-READER requires and remains compact rather than sparse.
+- At a desktop viewport, orientation, the artifact list and the selected artifact's identity and relationships are all legible without decorative space displacing them; at a narrow viewport the layout adapts as FR-EXPLORER-READER requires and remains compact rather than sparse.
 - Each map view is inspected in both appearances with an artifact lit: the glow reads as intended on each surface, lit text keeps AA contrast, and the lit state is also visible with colour removed.
 - The rendered page is searched for gradients, glass or blur effects other than the neon highlight, decorative illustration, hero-scale typography and rounded-card dashboard treatment. None is present.
 - Screenshots at both viewports, in both appearances, for both representative models, are recorded alongside the measures, so the presentation this requirement describes is evidenced rather than asserted.

@@ -27,8 +27,8 @@
     "release-workflow:check": "node src/scripts/check-release-workflow.mjs",
     "version": "changeset version && pnpm exec prettier --write --no-error-on-unmatched-pattern .changeset/pre.json && pnpm build && node src/packages/cli/dist/bin.js integration update && node --import tsx src/scripts/bump-baseline-docs.mts",
     "release": "changeset publish",
-    "measure:snapshot": "tsx src/scripts/measure-snapshot.mts",
-    "shots:snapshot": "tsx src/scripts/screenshot-snapshot.mts",
+    "measure:explorer": "tsx src/scripts/measure-explorer.mts",
+    "shots:explorer": "tsx src/scripts/screenshot-explorer.mts",
     "release-drift:check": "node src/scripts/check-release-drift.mjs",
     "templates:history": "tsx src/scripts/sync-template-history.mts"
   },

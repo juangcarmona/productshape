@@ -104,10 +104,10 @@ EOF
 
 npx --no-install prodshape validate
 npx --no-install prodshape graph --format html
-open .product/generated/snapshot.html   # xdg-open on Linux
+open .product/generated/explorer.html   # xdg-open on Linux
 ```
 
-`validate` reports one warning because the rule has no consumers yet. The model is telling you what to connect next. The snapshot is your product definition rendered as a browsable graph; print a starting point for any kind with `prodshape template <kind>` and re-run.
+`validate` reports one warning because the rule has no consumers yet. The model is telling you what to connect next. The Product Explorer is your product definition rendered as a browsable graph; print a starting point for any kind with `prodshape template <kind>` and re-run.
 
 ### Release contract (what CI executes)
 
@@ -212,7 +212,7 @@ The pinned conformance workflow builds and packs ProductShape, installs that tar
 
 ## Current status
 
-`@prodshape/cli@0.24.0` is the supported published baseline. It includes deterministic brownfield recovery sessions, Product Change overlay validation and apply with the affected-citation report, citation emission and verification (including provider-aware OpenSpec population verification), snapshot generation, schema discovery, filename repair, SDD-aware initialization, `prodshape change create`, `prodshape drift`, `prodshape --version`, and generated AI/OpenSpec integrations. The [root changelog](CHANGELOG.md) records every stable CLI release; version `0.10.0` was prepared but never published, and its changes shipped in `0.11.0`.
+`@prodshape/cli@0.24.0` is the supported published baseline. It includes deterministic brownfield recovery sessions, Product Change overlay validation and apply with the affected-citation report, citation emission and verification (including provider-aware OpenSpec population verification), Product Explorer generation, schema discovery, filename repair, SDD-aware initialization, `prodshape change create`, `prodshape drift`, `prodshape --version`, and generated AI/OpenSpec integrations. The [root changelog](CHANGELOG.md) records every stable CLI release; version `0.10.0` was prepared but never published, and its changes shipped in `0.11.0`.
 
 Remaining open decisions are in [OPEN-DECISIONS.md](OPEN-DECISIONS.md). Deliberately out of scope, among others, are graph databases, web UIs, MCP servers, Jira integration, multi-repository graphs, automatic brownfield recovery, roadmaps and OKRs, hosted services and telemetry. The full list, plus known design limitations, is in [Limitations](docs/limitations.md).
 

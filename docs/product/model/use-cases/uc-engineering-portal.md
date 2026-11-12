@@ -26,7 +26,7 @@ The reader opens the ProductShape engineering portal.
 
 ## Main Flow
 
-1. The reader sees distinct entries for the Product Snapshot, Architecture Snapshot and any available E2E journey reports.
+1. The reader sees distinct entries for the Product Explorer, Architecture Snapshot and any available E2E journey reports.
 2. The reader selects an output and sees its purpose and source identity, including revision or run information when available.
 3. The reader follows a link to the relevant canonical source for further detail.
 

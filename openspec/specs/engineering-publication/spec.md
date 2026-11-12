@@ -10,17 +10,17 @@ The engineering publication surface lets readers inspect distinct, source-aware 
 
 The portal MUST distinguish Product, architecture and E2E outputs and show only outputs that have been produced.
 
-<!-- pdac:cite id="FR-ENGINEERING-PORTAL" digest="sha256:f32c683fd04766f8987f17efbce625468e6181549ec83216192b6bcc3e0063b8" -->
+<!-- pdac:cite id="FR-ENGINEERING-PORTAL" digest="sha256:614a020f40817d6dd28c11b85507ac700bdfcf7cfd358cdca3600978fcc48b07" -->
 
-#### Scenario: Product Snapshot remains distinct
+#### Scenario: Product Explorer remains distinct
 
-- **WHEN** the Product Snapshot is available in the engineering portal
+- **WHEN** the Product Explorer is available in the engineering portal
 - **THEN** it is identified as a read-only projection of the Product Definition model and remains separate from architecture documentation and E2E reports
 
 #### Scenario: Architecture Snapshot remains distinct
 
 - **WHEN** ProductShape's Architecture Snapshot is available
-- **THEN** the portal identifies it separately from the Product Snapshot and links to ProductShape's canonical architecture documentation
+- **THEN** the portal identifies it separately from the Product Explorer and links to ProductShape's canonical architecture documentation
 
 #### Scenario: Unavailable output is not implied
 
@@ -29,14 +29,14 @@ The portal MUST distinguish Product, architecture and E2E outputs and show only 
 
 ### Requirement: Published outputs identify their source
 
-Each available snapshot MUST identify its source revision. Each E2E report MUST identify its originating commit or run and recorded result, and link to relevant source evidence.
+Each available Product Explorer MUST identify its source revision. Each E2E report MUST identify its originating commit or run and recorded result, and link to relevant source evidence.
 
-<!-- pdac:cite id="FR-ENGINEERING-PORTAL" digest="sha256:f32c683fd04766f8987f17efbce625468e6181549ec83216192b6bcc3e0063b8" -->
+<!-- pdac:cite id="FR-ENGINEERING-PORTAL" digest="sha256:614a020f40817d6dd28c11b85507ac700bdfcf7cfd358cdca3600978fcc48b07" -->
 
-#### Scenario: Snapshot source revision is visible
+#### Scenario: Product Explorer source revision is visible
 
-- **WHEN** the reader opens an available Product Snapshot or Architecture Snapshot
-- **THEN** the portal identifies the source revision represented by that snapshot and links to its canonical source
+- **WHEN** the reader opens an available Product Explorer or Architecture Snapshot
+- **THEN** the portal identifies the source revision represented by that Product Explorer and links to its canonical source
 
 #### Scenario: E2E run and result are visible
 

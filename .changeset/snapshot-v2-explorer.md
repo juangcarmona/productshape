@@ -3,7 +3,7 @@
 '@prodshape/cli': minor
 ---
 
-The Product Snapshot gains three map views (CHG-SNAPSHOT-V2):
+The Product Explorer gains three map views (CHG-SNAPSHOT-V2):
 
 - **Overview map.** It opens on every artifact as a chip, grouped by kind, with use cases and domain terms gathered under their bounded context.
 - **Focus view** (`#/focus/ID`). It centres one artifact with its neighbours grouped by kind around it and the rest of the model faded behind, with a breadcrumb.
@@ -13,4 +13,4 @@ Every map pans, zooms (wheel, pinch, controls, `+ - 0`) and is operable by keybo
 
 A **business lens** (header toggle or `l`) presents a use case in business language. It shows the goal and trigger, who uses it, the rules it must obey, how they are proved, what else it must be, and what a change would put in question, with no identifiers.
 
-The Focused Topology pane beside the Reader is replaced by the Focus view and a Focus action in the Reader. Addresses from earlier snapshots keep working: `#/graph/focus/ID` now opens the Focus view.
+The Focused Topology pane beside the Reader is replaced by the Focus view and a Focus action in the Reader. Addresses from earlier Product Explorer pages keep working: `#/graph/focus/ID` now opens the Focus view.

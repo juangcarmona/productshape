@@ -94,7 +94,7 @@ const browser = await puppeteer.launch({
   args: ['--no-sandbox', '--disable-setuid-sandbox'],
 });
 const page = await browser.newPage();
-// The example Product Snapshot must work offline: record any request that leaves the local server.
+// The example Product Explorer must work offline: record any request that leaves the local server.
 const externalRequests = [];
 page.on('request', (request) => {
   const url = request.url();
@@ -159,17 +159,17 @@ try {
       throw new Error(`${route}: Archify renderer marker is missing.`);
     }
     if (route.endsWith('/explore/')) {
-      const snapshot = await page.evaluate(() => ({
+      const explorer = await page.evaluate(() => ({
         title: document.title,
         mentionsRule: document.documentElement.outerHTML.includes('BR-REFUND-001'),
       }));
-      if (!snapshot.title.endsWith('Product Snapshot') || !snapshot.mentionsRule) {
-        throw new Error(`${route}: the example Product Snapshot did not render.`);
+      if (!explorer.title.endsWith('Product Explorer') || !explorer.mentionsRule) {
+        throw new Error(`${route}: the example Product Explorer did not render.`);
       }
       if (externalRequests.length > 0) {
         throw new Error(`${route}: requested resources outside the site: ${externalRequests}`);
       }
-      evidence.checks.exampleSnapshotOffline = true;
+      evidence.checks.exampleExplorerOffline = true;
     }
     externalRequests.length = 0;
     evidence.routes.push({ route, status: response.status(), ...details });

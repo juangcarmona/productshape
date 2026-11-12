@@ -20,7 +20,7 @@ The product MUST behave identically on Linux, Windows and macOS. Every command �
 
 ## Measurement
 
-Conformance is measured by cross-platform comparison: the same repository content is processed on Linux, Windows and macOS, and the outputs are compared. The pass threshold is exact equality — diagnostic lists are identical entry for entry and in order, exit codes match, product diffs and citation statuses match, and generated files such as product graphs, indexes and snapshots are byte-identical across the three platforms, including when the checkout uses CRLF line endings or backslash paths natively. Any divergence is a conformance failure; there is no tolerance band.
+Conformance is measured by cross-platform comparison: the same repository content is processed on Linux, Windows and macOS, and the outputs are compared. The pass threshold is exact equality — diagnostic lists are identical entry for entry and in order, exit codes match, product diffs and citation statuses match, and generated files such as product graphs, indexes and Product Explorer pages are byte-identical across the three platforms, including when the checkout uses CRLF line endings or backslash paths natively. Any divergence is a conformance failure; there is no tolerance band.
 
 ## Verification
 

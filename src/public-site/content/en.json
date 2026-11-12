@@ -44,7 +44,7 @@
     "principleTitle": "Tools check structure. People decide meaning.",
     "principleText": "ProductShape can find broken references and changed definitions. It cannot decide whether an idea is true, whether a change is right, or whether implementation is complete.",
     "explorerTitle": "See the ProductShape model, not a sales demo.",
-    "explorerText": "This repository defines itself with the same product model it asks teams to create. Browse real artifacts and their relationships in a generated, read-only snapshot.",
+    "explorerText": "This repository defines itself with the same product model it asks teams to create. Browse real artifacts and their relationships in a generated, read-only Product Explorer.",
     "exampleText": "Prefer a smaller model? This example shop is generated from its own Markdown on every build.",
     "exampleAction": "Explore an example product",
     "architectureTitle": "Built to stay understandable.",
@@ -160,7 +160,7 @@
     "eyebrow": "ProductShape, described with ProductShape",
     "title": "Explore the live self-model.",
     "intro": "This is a generated, read-only projection of the accepted product model in this repository. Its revision is shown inside the explorer.",
-    "open": "Open the model snapshot in a new tab",
+    "open": "Open the model Product Explorer in a new tab",
     "source": "Browse the authored model files",
     "notice": "The model is authored in English. The explorer is generated from those canonical files and does not add or store product knowledge."
   },

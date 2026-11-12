@@ -12,7 +12,7 @@ The parsing contract that turns canonical Markdown-plus-frontmatter files into t
 
 `src/packages/core` SHALL parse a Markdown artifact file into YAML frontmatter and body, reporting invalid YAML as a diagnostic rather than throwing, and SHALL normalize content to LF before computing any content digest.
 
-{pdac:cite id="FR-PARSE" digest="sha256:942d7a47c1f94f91058762c96f896d37899179d876275d632f0e4c65b7c5ddd0"}
+{pdac:cite id="FR-PARSE" digest="sha256:9e000f65f0b5073a26da7b30dc8fc6d8112c262634c8329a5eea75ce694d6a09"}
 
 {pdac:cite id="CON-MARKDOWN" digest="sha256:8f07fa7e54a8123f1333a005b30af1c922b4f2be9a8b980d6e674e91edf1fcd6"}
 
@@ -53,7 +53,7 @@ The repository SHALL contain fixtures with, per artifact kind, a minimal valid a
 
 The core SHALL discover every Markdown artifact under the configured model root (excluding `index.md`), in deterministic order with POSIX-normalized repository-relative paths, and load each through the established parsing and schema-validation contract.
 
-{pdac:cite id="QR-DETERMINISM" digest="sha256:3f52f1051dbd065f0bcdfa951ffb2fdcf3b16265f3080c325931e83cbf9f86f2"}
+{pdac:cite id="QR-DETERMINISM" digest="sha256:96900884875f14787927c8bc1d20f1c1e083171167609ec1b754dfb097610409"}
 
 #### Scenario: Deterministic discovery order
 

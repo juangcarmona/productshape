@@ -18,9 +18,9 @@ The architecture supports a repository-first workflow. The model is authored as 
 | --- | --- | --- |
 | 1 | Same authored content produces the same structural results | Pure deterministic core, normalized serialization, ordered diagnostics |
 | 2 | Usable across Windows, macOS, and Linux | Node.js CLI, portable path handling, no shell-dependent core behavior |
-| 3 | Product truth stays reviewable and owned by its repository | Markdown and YAML are canonical; graph, reports, and snapshots are derived |
+| 3 | Product truth stays reviewable and owned by its repository | Markdown and YAML are canonical; graph, reports, and Product Explorer pages are derived |
 | 4 | Provider integrations do not change product semantics | Separate renderers consume canonical assets through explicit adapters |
-| 5 | People can inspect the model without installing the CLI | A generated, self-contained, read-only Product Snapshot |
+| 5 | People can inspect the model without installing the CLI | A generated, self-contained, read-only Product Explorer |
 
 <!-- pdac:cite id="QR-DETERMINISM" digest="sha256:222606693286667f7974e3dd8b88e6248ca29ce75cb54c9285cc7aaef2c08da3" -->
 

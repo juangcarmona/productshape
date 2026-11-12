@@ -13,7 +13,7 @@ verification:
 
 ## Requirement
 
-The engineering portal MUST present the Product Snapshot, Architecture Snapshot and E2E journey reports as distinct output types. It MUST list only outputs that have been produced and made available, identify the source revision or originating run when known, and link to the relevant canonical source. It MUST NOT present a generated output as an editable or canonical source.
+The engineering portal MUST present the Product Explorer, Architecture Snapshot and E2E journey reports as distinct output types. It MUST list only outputs that have been produced and made available, identify the source revision or originating run when known, and link to the relevant canonical source. It MUST NOT present a generated output as an editable or canonical source.
 
 ## Rationale
 

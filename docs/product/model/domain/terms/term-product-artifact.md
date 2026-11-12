@@ -15,7 +15,7 @@ An independently addressable unit of product knowledge carrying a stable immutab
 
 - **A Product Change.** A change carries its own stable ID and lifecycle, but it is not a product artifact: it records why and how the artifact set is proposed to evolve.
 - **A citation.** A citation identifies canonical artifact content from a consumer document, but it is a reference to an artifact, not an artifact itself.
-- **Generated outputs.** Compiled graphs, reverse indexes, diagrams, snapshots and reports may render artifact content, but they are derived and reproducible; only the authored file is the artifact.
+- **Generated outputs.** Compiled graphs, reverse indexes, diagrams, Product Explorer pages and reports may render artifact content, but they are derived and reproducible; only the authored file is the artifact.
 - **A file.** The artifact is the identified unit of knowledge; the file is merely its current storage location. Moving or renaming the file does not create or destroy an artifact.
 
 ## Usage

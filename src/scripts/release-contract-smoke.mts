@@ -231,10 +231,10 @@ for (const phrase of stalePendingPhrases) {
 }
 
 const countSources = [
-  'docs/product/model/requirements/functional/fr-snapshot-search.md',
+  'docs/product/model/requirements/functional/fr-explorer-search.md',
   'docs/product/model/requirements/quality/qr-scalability.md',
-  'src/scripts/screenshot-snapshot.mts',
-  'docs/assets/snapshot/manifest.json',
+  'src/scripts/screenshot-explorer.mts',
+  'docs/assets/explorer/manifest.json',
 ];
 for (const path of countSources) {
   const content = await readFile(join(repoRoot, path), 'utf8');

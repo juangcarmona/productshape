@@ -18,7 +18,7 @@ The product MUST parse every product artifact file into its structured frontmatt
 
 ## Rationale
 
-Everything the toolkit does — validation, the product graph, impact analysis, Product Change overlays, citations and snapshots — starts from parsed artifacts. If parsing varies between runs or platforms, every downstream guarantee of determinism collapses. And because product repositories are edited by humans and AI assistants alike, malformed files are a normal condition, not an exceptional one: an author fixing one broken artifact must still see the diagnostics for all the others, otherwise repair becomes a one-file-at-a-time ordeal and the canonical files stop being trustworthy as a whole.
+Everything the toolkit does — validation, the product graph, impact analysis, Product Change overlays, citations and Product Explorer pages — starts from parsed artifacts. If parsing varies between runs or platforms, every downstream guarantee of determinism collapses. And because product repositories are edited by humans and AI assistants alike, malformed files are a normal condition, not an exceptional one: an author fixing one broken artifact must still see the diagnostics for all the others, otherwise repair becomes a one-file-at-a-time ordeal and the canonical files stop being trustworthy as a whole.
 
 ## Acceptance Scenarios
 

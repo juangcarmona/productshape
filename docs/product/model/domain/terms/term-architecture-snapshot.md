@@ -14,7 +14,7 @@ A read-only published view of ProductShape's canonical architecture documentatio
 
 ## Distinguish From
 
-The Product Snapshot is generated from the Product Definition model and describes product intent. The Architecture Snapshot is generated from ProductShape's architecture documentation and describes how ProductShape is designed. Neither is the canonical source for the other.
+The Product Explorer is generated from the Product Definition model and describes product intent. The Architecture Snapshot is generated from ProductShape's architecture documentation and describes how ProductShape is designed. Neither is the canonical source for the other.
 
 ## Usage
 

@@ -1,11 +1,11 @@
 ---
 id: QR-ACCESSIBILITY
 type: quality-requirement
-title: Make the generated snapshot fully operable without a pointer or colour vision
+title: Make the generated Product Explorer fully operable without a pointer or colour vision
 status: active
 quality-attribute: accessibility
 applies-to:
-  - UC-SNAPSHOT-EXPLORE
+  - UC-EXPLORER-BROWSE
 verification:
   - scenario: Every capability of the page is reachable and operable by keyboard alone, with no trapped focus and no pointer-only control
   - scenario: The focused element is always visibly identifiable, including inside the projections, and focus lands somewhere meaningful after every view or selection change
@@ -21,7 +21,7 @@ verification:
 
 ## Requirement
 
-The generated Product Snapshot MUST be fully operable and fully understandable without a pointing device and without colour discrimination.
+The generated Product Explorer MUST be fully operable and fully understandable without a pointing device and without colour discrimination.
 
 Every capability of the page — orientation, browsing, filtering, search, artifact selection, relationship traversal, group expansion, and every Graph Projection including node selection — MUST be reachable and operable using the keyboard alone, in an order that follows the page's visible structure, with no focus trap and no control that only a pointer can activate. Whenever the active view or the selected artifact changes, focus MUST land on an element that makes sense as the next place to be, rather than being lost or returned to the top of the document.
 
@@ -31,7 +31,7 @@ All text MUST meet WCAG 2.1 AA contrast against its background, in every appeara
 
 ## Measurement
 
-- **Keyboard completeness.** Enumerate every capability the snapshot offers, then operate each one using only the keyboard. The measure is the count of capabilities that cannot be reached or activated; the target is zero.
+- **Keyboard completeness.** Enumerate every capability the Product Explorer offers, then operate each one using only the keyboard. The measure is the count of capabilities that cannot be reached or activated; the target is zero.
 - **Focus visibility and placement.** Traverse the entire page by keyboard and, at every stop, record whether the focused element is visually identifiable. After each view change and each artifact selection, record where focus landed. The measure is the count of stops with no visible focus indicator and the count of transitions after which focus was lost or reset to the document start; the target is zero for both.
 - **Structure.** Extract the landmark regions and the heading outline from the generated document. The measure is the count of missing landmarks for the page's regions and the count of skipped heading levels; the target is zero for both.
 - **State exposure.** Inspect the accessible representation of the artifact list, the relationship groups, the collapsible neighbour groups, and the navigation between views. The measure is the count of selected, expanded or current states expressed only visually; the target is zero.
@@ -43,7 +43,7 @@ All text MUST meet WCAG 2.1 AA contrast against its background, in every appeara
 - **Hover independence.** Enumerate information revealed on hover or pointer proximity. The measure is the count of such items that are not also available without a pointer; the target is zero.
 - **Reduced motion.** Open the page with a reduced-motion preference expressed and record any animation or transition that still runs. The measure is the count of non-essential ones; the target is zero.
 
-Each measurement is taken against the snapshot generated from the current ProductShape model and against a snapshot generated from a materially larger model containing dense relationships, high-degree artifacts, isolated artifacts, and long titles and bodies, so that states reachable only at scale — collapsed groups, truncated labels, long lists — are included.
+Each measurement is taken against the Product Explorer generated from the current ProductShape model and against a Product Explorer generated from a materially larger model containing dense relationships, high-degree artifacts, isolated artifacts, and long titles and bodies, so that states reachable only at scale — collapsed groups, truncated labels, long lists — are included.
 
 ## Verification
 
@@ -56,4 +56,4 @@ Each measurement is taken against the snapshot generated from the current Produc
 - Every text-and-background pair the stylesheet can produce is computed against WCAG 2.1 AA and passes in every appearance, including the kind colours applied to text.
 - With colour removed, a reader can still determine each artifact's kind, each relationship's direction, each artifact's status and which artifact is selected.
 - With a reduced-motion preference set, opening the page, changing selection, expanding a group and opening a projection run without non-essential animation.
-- Both the current-model snapshot and the larger-model snapshot pass every check above.
+- Both the current-model Product Explorer and the larger-model Product Explorer pass every check above.
