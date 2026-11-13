@@ -1,2 +1,0 @@
-$ node scripts/check-release-workflow.mjs
-Release workflow check passed (21 assertions).

@@ -80,7 +80,7 @@ Official references (checked 2026-10-19): [Direct Upload](https://developers.clo
 - Provenance: clean/full workflow revision, local dirty flag, matching manifest profile/base/origin; byte-identical copied Snapshot; twelve sections/source links preserved; unavailable E2E reports omitted and existing valid/invalid manifest fixtures retained.
 - Validator negative fixtures: missing CSS/image/local page, incorrect base/origin, leaked engineering route, absent/invalid metadata or 404. Avoid exact-string tests that simply mirror shell markup.
 - Real Chromium: public English/Spanish, portal, architecture overview and representative section, generated Snapshot. Desktop/narrow light/dark screenshots; choose light/dark/system, simulate system preference, verify theme assets; mobile menu keyboard activation, expansion, Escape/focus return and route following; no horizontal overflow or console errors. Validate all twelve section links programmatically.
-- All repository deterministic checks from engineering-lifecycle.md and current workflow definitions; record commands/results plus passing CI URL for the final head. Browser evidence is local until a hosted preview is owner-authorized; state this limit explicitly.
+- All repository deterministic checks from current workflow definitions; record commands/results plus passing CI URL for the final head. Browser evidence is local until a hosted preview is owner-authorized; state this limit explicitly.
 
 ## Amended design: contain existing Snapshot narrow layout
 

@@ -28,7 +28,7 @@
 - [x] 3.2 Document conditional Direct Upload dashboard versus Wrangler folder paths, preview/production branch semantics, prior-artifact rollback, project-mode verification and productshape.dev activation with official references; verify no account fact or hosted availability is claimed and execute no upload/DNS command.
 - [x] 3.3 Record an acceptance-criterion matrix and Chromium desktop/narrow light/dark evidence for public English/Spanish, portal, architecture and standalone Snapshot; verify browser errors/overflow, all twelve links and themes/navigation using the plan's procedure.
 - [x] 3.4 Refresh all affected citations using inspect/cite where needed and verify every current OpenSpec document with the CLI available; require no stale/tampered/unresolved or unclassified result.
-- [x] 3.5 Run all applicable deterministic checks derived from current CI workflows/engineering-lifecycle.md, push and record passing final-head CI plus exact local command evidence; verify no skipped required check is represented as passing.
+- [x] 3.5 Run all applicable deterministic checks derived from current CI workflows, push and record passing final-head CI plus exact local command evidence; verify no skipped required check is represented as passing.
 - [x] 3.6 Request the isolated gpt-6-astra final audit over final plan/diff/evidence, preserve decision/commit/round in the FF record, and update the existing PR; verify human-owned Done judgements/maintainer approval remain explicit and stop before merge/publication.
 
 <!-- pdac:cite id="BR-CANONICAL-001" digest="sha256:7ed6dc7c588e0b79da8e6036548cf2fd2c6a1b02a9393f467f50cb0cb02475d6" -->
