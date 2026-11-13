@@ -38,7 +38,7 @@ ProductShape remains the implementation and Product Definition as Code the metho
 <!-- pdac:cite id="CON-MARKDOWN-001" digest="sha256:e1d4c39d7e5fc5f1a1573dbb6433986a26248289c9a97c11bb039db7af0f5c17" -->
 <!-- pdac:cite id="FR-SNAPSHOT-001" digest="sha256:4b516c17b1b0895996d48135fa1729bd2cc20913f98a8d820d5a5c82a0310a5d" -->
 
-Impact discovery compared the model's artifact families to this delivery change before planning. `docs/delivery/ff/300/2026-10-19T1228Z/product-impact.json` records fresh inspect and impact output for all nine dependencies above. Checked neighbors left unchanged: ACT-PUBLIC-READER and ACT-ENGINEERING-READER (reader roles); TERM-ARCHITECTURE-SNAPSHOT (existing generated meaning); UC-SNAPSHOT-001 and TERM-PRODUCT-SNAPSHOT (unchanged generation); product definition and delivery-integration command artifacts (no CLI behavior changes). QR-ACCESSIBILITY-001 / QR-PRESENTATION-001 are Snapshot requirements, used as the existing visual reference for marketing and as binding existing obligations for the narrow Snapshot correction below. CON-NO-WEB-UI remains unchanged; no authoring, approval or stored product state is introduced.
+Impact discovery compared the model's artifact families to this delivery change before planning. Checked neighbors left unchanged: ACT-PUBLIC-READER and ACT-ENGINEERING-READER (reader roles); TERM-ARCHITECTURE-SNAPSHOT (existing generated meaning); UC-SNAPSHOT-001 and TERM-PRODUCT-SNAPSHOT (unchanged generation); product definition and delivery-integration command artifacts (no CLI behavior changes). QR-ACCESSIBILITY-001 / QR-PRESENTATION-001 are Snapshot requirements, used as the existing visual reference for marketing and as binding existing obligations for the narrow Snapshot correction below. CON-NO-WEB-UI remains unchanged; no authoring, approval or stored product state is introduced.
 
 Product definition drift: no new drift identified for this bounded completion. Existing #296 drift findings about diagram accessibility and E2E result detail remain visible in that proposal and are not silently resolved here.
 
@@ -48,7 +48,7 @@ Product definition drift: no new drift identified for this bounded completion. E
 
 ## Ready and documentation evidence
 
-The issue supplies all thirteen configured Ready dimensions; priority is optional and no unknown blocks reversible work. External KB/attachment roles are absent, so repository docs and the self-contained issue are the available sources. PR #297 has no `docs/reviews/issue-296.md`; #296 remains open/in-progress despite its merged PR. Its unsynced OpenSpec delta and review debt are reported, not administratively closed or archived by #300.
+The issue records the problem, scope, acceptance criteria and dependencies. Repository docs and the self-contained issue are the available sources. The unsynced OpenSpec delta from #296 is outside #300's scope.
 
 ## Definition of Done
 

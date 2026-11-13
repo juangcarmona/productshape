@@ -1,2 +1,0 @@
-$ node scripts/check-current-lifecycle-language.mjs
-Current lifecycle language check passed across 185 files.
