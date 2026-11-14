@@ -1,5 +1,11 @@
 # @prodshape/cli
 
+## 0.26.1
+
+### Patch Changes
+
+- 4ec9889: Honor explicit PDaC serialization selection when generating initialization configuration. Preserve the configured contract on repeated initialization and reject conflicting selections before writing.
+
 ## 0.26.0
 
 ### Minor Changes
