@@ -10,6 +10,10 @@ The supported published CLI baseline is `@prodshape/cli@0.26.1`. Every stable pu
 
 ## [0.26.1]
 
+### Fixed
+
+- Explicit PDaC v1alpha2 initialization now writes the selected serialization contract. Repeated initialization preserves the configured version, and conflicting selections stop before writing.
+
 ## [0.26.0]
 
 ### Added
