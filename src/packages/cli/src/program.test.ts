@@ -573,3 +573,63 @@ describe('self-application', () => {
     expect(result.out.at(-1)).toMatch(/0 error\(s\), 0 warning\(s\) across \d+ artifact\(s\)/);
   });
 });
+
+describe('serialization selection during init', () => {
+  for (const full of [false, true]) {
+    it(`persists explicit v1alpha2 in ${full ? 'full' : 'kernel'} initialization and keeps dry runs read-only`, async () => {
+      const root = await mkdtemp(join(tmpdir(), 'prodshape-init-version-'));
+      try {
+        const args = [
+          '--serialization-version',
+          'v1alpha2',
+          'init',
+          '--sdd',
+          'none',
+          '--gitignore',
+          ...(full ? ['--full'] : []),
+        ];
+        expect((await run([...args, '--dry-run'], root)).code).toBe(0);
+        await expect(access(join(root, '.product/config.yaml'))).rejects.toThrow();
+        expect((await run(args, root)).code).toBe(0);
+        expect(await readFile(join(root, '.product/config.yaml'), 'utf8')).toMatch(
+          /^version: v1alpha2$/m,
+        );
+        expect((await run(['--serialization-version', 'v1alpha2', 'validate'], root)).code).toBe(0);
+        expect((await run(['init', '--sdd', 'none', '--gitignore', '--force'], root)).code).toBe(0);
+        expect(await readFile(join(root, '.product/config.yaml'), 'utf8')).toMatch(
+          /^version: v1alpha2$/m,
+        );
+      } finally {
+        await rm(root, { recursive: true, force: true });
+      }
+    });
+  }
+
+  it('retains the default v1alpha1 and refuses an explicit conflict without rewriting it', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'prodshape-init-conflict-'));
+    try {
+      expect((await run(['init', '--sdd', 'none', '--gitignore'], root)).code).toBe(0);
+      const before = await readFile(join(root, '.product/config.yaml'), 'utf8');
+      expect(before).toMatch(/^version: v1alpha1$/m);
+      for (const suffix of [[], ['--dry-run'], ['--force']]) {
+        const result = await run(
+          [
+            '--serialization-version',
+            'v1alpha2',
+            'init',
+            '--sdd',
+            'none',
+            '--gitignore',
+            ...suffix,
+          ],
+          root,
+        );
+        expect(result.code).not.toBe(0);
+        expect(result.err.join('\n')).toContain('PRODUCT050');
+        expect(await readFile(join(root, '.product/config.yaml'), 'utf8')).toBe(before);
+      }
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+});

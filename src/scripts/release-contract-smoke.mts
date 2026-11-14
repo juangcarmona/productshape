@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { baselineDocs } from './baseline-docs.mts';
@@ -315,6 +315,19 @@ try {
       `prodshape --version returned ${JSON.stringify(version.stdout.trim())}; expected ${cliPackage.version}`,
     );
   }
+
+  const v1alpha2Consumer = join(scratch, 'v1alpha2-init');
+  await mkdir(v1alpha2Consumer);
+  await run(
+    executable,
+    ['--serialization-version', 'v1alpha2', 'init', '--full', '--sdd', 'none', '--gitignore'],
+    v1alpha2Consumer,
+    { ...process.env, CI: '1' },
+  );
+  const initializedConfig = await readFile(join(v1alpha2Consumer, '.product/config.yaml'), 'utf8');
+  if (!/^version: v1alpha2$/m.test(initializedConfig))
+    throw new Error('Packed explicit v1alpha2 initialization selected another contract');
+  await run(executable, ['--serialization-version', 'v1alpha2', 'validate'], v1alpha2Consumer);
 
   process.stdout.write(
     `Release contract passed: packed ${documentedSpec}, sandbox quickstart (current -> stale PRODUCT061), governed walkthrough (CHG-INITIAL applied, CHG-USER-SCOPE named 1 affected citation, 1 stale PRODUCT061), --version ${cliPackage.version}\n`,

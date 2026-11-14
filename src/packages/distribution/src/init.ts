@@ -1,5 +1,6 @@
 import { access, mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import type { SerializationVersion } from '@prodshape/core';
 import { loadBundledAssets, type CanonicalAssets } from './assets.js';
 import {
   gitignoreRelativePath,
@@ -17,6 +18,7 @@ export const defaultGeneratedRoot = '.product/generated';
 export interface InitOptions {
   root: string;
   ai: string[];
+  serializationVersion?: SerializationVersion;
   force?: boolean;
   /**
    * Install the full reference profile: the per-kind model layout, the change archives and the
@@ -136,9 +138,13 @@ export interface InitPlan {
   nextSteps: string[];
 }
 
-export function configContent(ai: string[], shorthand = false): string {
+export function configContent(
+  ai: string[],
+  shorthand = false,
+  serializationVersion: SerializationVersion = 'v1alpha1',
+): string {
   return [
-    'version: v1alpha1',
+    `version: ${serializationVersion}`,
     'product-root: docs/product',
     'validation:',
     '  warnings-as-errors: false',
@@ -246,7 +252,11 @@ export async function planInit(options: InitOptions): Promise<InitPlan> {
     await add(`${dir}/.gitkeep`, 'scaffold', '', { preserveAlways: true });
   }
 
-  await add('.product/config.yaml', 'config', configContent(ai, shorthand));
+  await add(
+    '.product/config.yaml',
+    'config',
+    configContent(ai, shorthand, options.serializationVersion),
+  );
   await add('docs/product/README.md', 'readme', productReadme);
 
   const assets: CanonicalAssets = await loadBundledAssets();

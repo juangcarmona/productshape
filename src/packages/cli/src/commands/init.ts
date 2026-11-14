@@ -443,7 +443,19 @@ export async function runInit(io: CliIo, options: InitCliOptions): Promise<numbe
 
   // Read any existing configuration first, so a preserved config.yaml keeps deciding what is
   // rendered rather than a flag silently disagreeing with it.
-  const existing = await loadConfig(join(io.cwd, '.product', 'config.yaml'), io.cwd);
+  const existing = await loadConfig(
+    join(io.cwd, '.product', 'config.yaml'),
+    io.cwd,
+    io.serializationVersion,
+  );
+  if (existing.diagnostics.some((diagnostic) => diagnostic.severity === 'error')) {
+    throw new CliError(
+      existing.diagnostics
+        .map((diagnostic) => `${diagnostic.code}: ${diagnostic.message}`)
+        .join('\n'),
+      exitCodes.invalidInvocation,
+    );
+  }
 
   // Asked from the configured generated root, so a repository that relocated it is offered the
   // rule it actually needs rather than the default one.
@@ -457,6 +469,7 @@ export async function runInit(io: CliIo, options: InitCliOptions): Promise<numbe
   const plan = await planInit({
     root: io.cwd,
     ai,
+    serializationVersion: existing.config.version,
     existingShorthand: existing.config.prodshape.integrations['shorthand-commands'],
     gitignore,
     generatedRoot,
