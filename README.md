@@ -208,6 +208,8 @@ Running `init` with no `--ai` in an interactive terminal reports which of these 
 
 ## PDaC conformance
 
+The [v0.3 qualification workflow](.github/workflows/pdac-v030.yml) exercises the isolated packaged CLI against PDaC `0.3.0 / v1alpha2`, with published runner `pdac-conformance@1.1.0` and the trusted operation adapter. The published `@prodshape/cli@0.26.1` artifact passed **147/147 cases**, including optional Verification Evidence, with no skips. [Exact source revisions, raw reports and reproduction](https://github.com/product-definition-as-code/spec/blob/main/docs/releases/v0.3.0.md). This is a bounded reference-implementation result, not independent validation or complete normative coverage.
+
 The pinned conformance workflow builds and packs ProductShape, installs that tarball outside the workspace, and runs the spec's conformance tests via the external runner [`pdac-conformance`](https://www.npmjs.com/package/pdac-conformance) (`1.0.1`) against [PDaC spec commit `b3f44d2179a58bbee0478fae517ab75f3249ca39`](https://github.com/product-definition-as-code/spec/commit/b3f44d2179a58bbee0478fae517ab75f3249ca39), the v0.2.0 specification content with RFC 0112 applied: all 45 cases pass and all 12 pinned digests verify, claimed as specification `0.2.0` on serialization `v1alpha1`. The published tests are not a complete normative set, so the badge claims only this pinned executable profile; ProductShape's own fixtures, self-model and traceability checks run separately as **Internal contracts**.
 
 ## Current status
