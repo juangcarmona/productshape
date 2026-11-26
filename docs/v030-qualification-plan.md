@@ -1,5 +1,7 @@
 # PDaC v0.3 qualification
 
+**Historical implementation plan.** Completed qualification is recorded in the [normative repository release evidence](https://github.com/product-definition-as-code/spec/blob/main/docs/releases/v0.3.0.md). The pinned v0.3 workflow now uses the published runner 1.1.0.
+
 Tracking: https://github.com/juangcarmona/productshape/issues/264
 
 The accepted contracts are spec revision `ec68206de270b0d3102ab03a5a9dc9c5785d356a` and conformance runner revision `252f8171b34ee9bff29716043cc69b53155a9dad`. Existing v1alpha1 repositories retain their semantics; v1alpha2 explicitly selects v0.3.
